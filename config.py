@@ -21,7 +21,9 @@ if os.path.exists(env_file):
 # ============================================================
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "9067929792:AAFA3a7hUEemQhX73uqnACaAaxi6qguihFQ")
 ADMIN_IDS = [int(x.strip()) for x in os.getenv("ADMIN_IDS", os.getenv("ADMIN_ID", "8313153487")).split(",") if x.strip()]
-SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME", "HeyLocket")
+SUPPORT_PHONE = os.getenv("SUPPORT_PHONE", "0345222802")
+SUPPORT_TELEGRAM = os.getenv("SUPPORT_TELEGRAM", "https://t.me/+84345222802")
+SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME", "+84345222802")
 
 # ============================================================
 #  2. CẤU HÌNH THANH TOÁN (VIETQR)

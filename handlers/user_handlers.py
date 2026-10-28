@@ -950,12 +950,13 @@ async def cb_my_orders(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 async def support_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    contact_label = "Hotline / Zalo hỗ trợ:" if SUPPORT_USERNAME.isdigit() else "Admin hỗ trợ:"
     support_text = (
         "💬 <b>TRUNG TÂM HỖ TRỢ KHÁCH HÀNG 24/7</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "Đội ngũ kỹ thuật luôn sẵn sàng hỗ trợ bạn kích hoạt và giải quyết mọi thắc mắc:\n\n"
-        f"📞 <b>{contact_label}</b> <code>{SUPPORT_USERNAME}</code>\n"
+        "👤 <b>Admin hỗ trợ:</b> Như Quỳnh\n"
+        "📞 <b>Hotline / Zalo:</b> <code>0345.222.802</code>\n"
+        "✈️ <b>Telegram cá nhân:</b> <a href=\"https://t.me/+84345222802\">Như Quỳnh (Click để chat)</a>\n"
         "⏰ <b>Thời gian làm việc:</b> 08:00 - 24:00 (Hàng ngày)\n"
         "🛡 <b>Chính sách cam kết:</b> Bảo hành 1-1 trọn đời gói mua\n\n"
         "💡 <i>Gửi kèm Mã đơn hàng hoặc ảnh chụp màn hình để được xử lý nhanh nhất!</i>"
@@ -970,12 +971,13 @@ async def support_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def cb_support(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    contact_label = "Hotline / Zalo hỗ trợ:" if SUPPORT_USERNAME.isdigit() else "Admin hỗ trợ:"
     support_text = (
         "💬 <b>TRUNG TÂM HỖ TRỢ KHÁCH HÀNG 24/7</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "Đội ngũ kỹ thuật luôn sẵn sàng hỗ trợ bạn kích hoạt và giải quyết mọi thắc mắc:\n\n"
-        f"📞 <b>{contact_label}</b> <code>{SUPPORT_USERNAME}</code>\n"
+        "👤 <b>Admin hỗ trợ:</b> Như Quỳnh\n"
+        "📞 <b>Hotline / Zalo:</b> <code>0345.222.802</code>\n"
+        "✈️ <b>Telegram cá nhân:</b> <a href=\"https://t.me/+84345222802\">Như Quỳnh (Click để chat)</a>\n"
         "⏰ <b>Thời gian làm việc:</b> 08:00 - 24:00 (Hàng ngày)\n"
         "🛡 <b>Chính sách cam kết:</b> Bảo hành 1-1 trọn đời gói mua\n\n"
         "💡 <i>Gửi kèm Mã đơn hàng hoặc ảnh chụp màn hình để được xử lý nhanh nhất!</i>"

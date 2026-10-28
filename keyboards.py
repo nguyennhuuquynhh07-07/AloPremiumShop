@@ -110,12 +110,16 @@ def orders_kb(has_done_order: bool = False, has_spotify: bool = False) -> Inline
 
 
 def support_kb() -> InlineKeyboardMarkup:
-    val = SUPPORT_USERNAME.lstrip("@").strip()
-    rows = []
-    if val and val != "yoursupport":
-        rows.append([InlineKeyboardButton("💬 Chat với nhân viên hỗ trợ", url=f"https://t.me/{val}")])
-    rows.append([InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide")])
-    rows.append([InlineKeyboardButton("🏠 Về trang chủ", callback_data="back_main")])
+    tele_url = getattr(config, "SUPPORT_TELEGRAM", "https://t.me/+84345222802")
+    phone = getattr(config, "SUPPORT_PHONE", "0345222802")
+    rows = [
+        [
+            InlineKeyboardButton("✈️ Chat Telegram hỗ trợ", url=tele_url),
+            InlineKeyboardButton("💬 Chat Zalo", url=f"https://zalo.me/{phone}"),
+        ],
+        [InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide")],
+        [InlineKeyboardButton("🏠 Về trang chủ", callback_data="back_main")],
+    ]
     return InlineKeyboardMarkup(rows)
 
 

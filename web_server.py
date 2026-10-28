@@ -98,7 +98,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "bank_name": getattr(config, "BANK_NAME", "TPBank"),
                 "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
                 "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
-                "support_username": getattr(config, "SUPPORT_USERNAME", "HeyLocket"),
+                "support_username": getattr(config, "SUPPORT_USERNAME", "+84345222802"),
+                "support_phone": getattr(config, "SUPPORT_PHONE", "0345222802"),
+                "support_telegram": getattr(config, "SUPPORT_TELEGRAM", "https://t.me/+84345222802"),
                 "server_url": getattr(config, "SERVER_BASE_URL", ""),
             })
             return
