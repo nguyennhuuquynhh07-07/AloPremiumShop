@@ -10,6 +10,7 @@ __pycache__/
 
 # Dữ liệu giao dịch và đơn hàng khách hàng
 orders.json
+data/*.json
 
 # Log & file tạm hệ thống
 *.log

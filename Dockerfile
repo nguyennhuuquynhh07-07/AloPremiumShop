@@ -11,3 +11,4 @@ COPY . .
 
 # Chạy bot Telegram
 CMD ["python", "bot.py"]
+
