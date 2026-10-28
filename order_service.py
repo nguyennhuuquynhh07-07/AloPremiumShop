@@ -165,3 +165,4 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
     except Exception as e:
         logger.error(f"Error activating order {order_id}: {e}")
         return False, str(e)
+

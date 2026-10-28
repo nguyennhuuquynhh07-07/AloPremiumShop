@@ -30,6 +30,7 @@ from telegram.ext import (
     filters,
 )
 
+import config
 from config import BOT_TOKEN, ADMIN_IDS
 from handlers.user_handlers import (
     start, menu_cmd, myorders_cmd, support_cmd,
