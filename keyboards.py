@@ -1,5 +1,6 @@
 """
 keyboards.py – Tất cả inline keyboard chuyên nghiệp của bot
+Tích hợp copy 1 chạm, hướng dẫn iOS trực quan và điều khiển đơn hàng thông minh.
 """
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -20,8 +21,11 @@ def main_menu_kb() -> InlineKeyboardMarkup:
         InlineKeyboardButton("📦 Đơn hàng đã mua",  callback_data="my_orders"),
     ])
     rows.append([
-        InlineKeyboardButton("🌐 Đổi ngôn ngữ",    callback_data="cmd_setlang"),
-        InlineKeyboardButton("💬 Hỗ trợ CSKH",      callback_data="support"),
+        InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
+        InlineKeyboardButton("💬 Hỗ trợ CSKH",          callback_data="support"),
+    ])
+    rows.append([
+        InlineKeyboardButton("🌐 Đổi ngôn ngữ",        callback_data="cmd_setlang"),
     ])
     return InlineKeyboardMarkup(rows)
 
@@ -61,9 +65,10 @@ def payment_kb(order_id: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("✅ Tôi đã chuyển khoản", callback_data=f"paid:{order_id}")],
         [
-            InlineKeyboardButton("❌ Huỷ đơn hàng",   callback_data=f"cancel:{order_id}"),
-            InlineKeyboardButton("🏠 Về trang chủ",  callback_data="back_main")
+            InlineKeyboardButton("📖 Hướng dẫn cài đặt", callback_data="show_guide"),
+            InlineKeyboardButton("❌ Huỷ đơn hàng",       callback_data=f"cancel:{order_id}")
         ],
+        [InlineKeyboardButton("🏠 Về trang chủ",         callback_data="back_main")],
     ])
 
 
@@ -73,94 +78,100 @@ def confirm_buy_kb(order_id: str) -> InlineKeyboardMarkup:
 
 # ── SAU KHI GỬI XÁC NHẬN HOẶC HOÀN THÀNH ─────────────────────────────────────
 
-def success_kb() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("📥 Tải file .mobileconfig", callback_data="get_mobileconfig"),
-            InlineKeyboardButton("💬 Hỗ trợ kỹ thuật", callback_data="support"),
-        ],
-        [
-            InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")
-        ]
+def success_kb(dns_link: str = None) -> InlineKeyboardMarkup:
+    rows = []
+    if dns_link:
+        rows.append([
+            InlineKeyboardButton("📋 Copy Link DNS (Chạm là chép)", api_kwargs={"copy_text": {"text": dns_link}})
+        ])
+    rows.append([
+        InlineKeyboardButton("📥 Tải file .mobileconfig", callback_data="get_mobileconfig"),
+        InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
     ])
+    rows.append([
+        InlineKeyboardButton("💬 Hỗ trợ kỹ thuật", callback_data="support"),
+        InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")
+    ])
+    return InlineKeyboardMarkup(rows)
 
 
-def orders_kb() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("🛒 Mua gói dịch vụ", callback_data="back_products"),
-            InlineKeyboardButton("🏠 Về trang chủ",   callback_data="back_main")
-        ]
+def orders_kb(has_done_order: bool = False, has_spotify: bool = False) -> InlineKeyboardMarkup:
+    rows = []
+    if has_done_order:
+        rows.append([InlineKeyboardButton("📥 Tải lại file cấu hình DNS", callback_data="get_mobileconfig")])
+    if has_spotify:
+        rows.append([InlineKeyboardButton("🔄 Reset thiết bị Spotify", callback_data="user_reset_spotify_menu")])
+    rows.append([
+        InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
+        InlineKeyboardButton("🛒 Mua thêm gói",         callback_data="back_products")
     ])
+    rows.append([InlineKeyboardButton("🏠 Về trang chủ", callback_data="back_main")])
+    return InlineKeyboardMarkup(rows)
 
 
 def support_kb() -> InlineKeyboardMarkup:
     val = SUPPORT_USERNAME.lstrip("@").strip()
     rows = []
     if val and val != "yoursupport":
-        if val.isdigit():
-            rows.append([InlineKeyboardButton(f"💬 Nhắn Zalo ({val})", url=f"https://zalo.me/{val}")])
-            rows.append([InlineKeyboardButton("✈️ Nhắn Telegram hỗ trợ", url=f"https://t.me/+84{val[1:] if val.startswith('0') else val}")])
-        else:
-            rows.append([InlineKeyboardButton(f"💬 Nhắn tin hỗ trợ (@{val})", url=f"https://t.me/{val}")])
-    rows.append([InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")])
+        rows.append([InlineKeyboardButton("💬 Chat với nhân viên hỗ trợ", url=f"https://t.me/{val}")])
+    rows.append([InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide")])
+    rows.append([InlineKeyboardButton("🏠 Về trang chủ", callback_data="back_main")])
     return InlineKeyboardMarkup(rows)
 
 
-# ── TÀI KHOẢN (Account) ───────────────────────────────────────────────────────
+def account_kb(dns_link: str = None) -> InlineKeyboardMarkup:
+    rows = []
+    if dns_link:
+        rows.append([
+            InlineKeyboardButton("📋 Copy Link DNS Profile", api_kwargs={"copy_text": {"text": dns_link}})
+        ])
+    rows.append([
+        InlineKeyboardButton("📥 Tải file .mobileconfig", callback_data="get_mobileconfig"),
+        InlineKeyboardButton("📦 Đơn hàng đã mua",        callback_data="my_orders"),
+    ])
+    rows.append([
+        InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS",  callback_data="show_guide"),
+        InlineKeyboardButton("🏠 Về menu chính",          callback_data="back_main"),
+    ])
+    return InlineKeyboardMarkup(rows)
 
-def account_kb(dns_link: str) -> InlineKeyboardMarkup:
+
+def back_main_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("📥 Tải file .mobileconfig (1 chạm)", callback_data="get_mobileconfig"),
-        ],
-        [
-            InlineKeyboardButton("🌐 Cài qua Safari", url=dns_link),
-            InlineKeyboardButton("📦 Đơn đã mua", callback_data="my_orders"),
-        ],
-        [
-            InlineKeyboardButton("🛒 Mua thêm gói", callback_data="back_products"),
-            InlineKeyboardButton("🏠 Menu chính",   callback_data="back_main")
-        ]
+        [InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide")],
+        [InlineKeyboardButton("🏠 Về trang chủ", callback_data="back_main")]
     ])
 
-
-# ── ĐỔI NGÔN NGỮ (Language) ───────────────────────────────────────────────────
 
 def language_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🇻🇳 Tiếng Việt (Mặc định)", callback_data="lang:vi"),
-            InlineKeyboardButton("🇬🇧 English",             callback_data="lang:en"),
+            InlineKeyboardButton("Tiếng Việt 🇻🇳", callback_data="lang:vi"),
+            InlineKeyboardButton("English 🇬🇧",    callback_data="lang:en"),
         ],
-        [InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")]
+        [InlineKeyboardButton("🏠 Về trang chủ", callback_data="back_main")]
     ])
 
-
-# ── TÀI LIỆU API & BẢNG MÃ LỖI ───────────────────────────────────────────────
 
 def apidocs_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("⚠️ Bảng Mã Lỗi HTTP", callback_data="apidocs:errors"),
-            InlineKeyboardButton("💬 Hỗ trợ CTV",       callback_data="support"),
-        ],
-        [InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")]
+            InlineKeyboardButton("📑 Bảng tra cứu mã lỗi HTTP", callback_data="apidocs:errors"),
+            InlineKeyboardButton("🏠 Về trang chủ",            callback_data="back_main"),
+        ]
     ])
 
 
 def apierrors_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("📖 Xem Endpoints API", callback_data="apidocs:overview"),
-            InlineKeyboardButton("💬 Hỗ trợ CTV",       callback_data="support"),
-        ],
-        [InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")]
+            InlineKeyboardButton("📘 Tổng quan tài liệu API", callback_data="apidocs:overview"),
+            InlineKeyboardButton("🏠 Về trang chủ",          callback_data="back_main"),
+        ]
     ])
 
 
-
-# ── DUYỆT ĐƠN HÀNG (Admin) ───────────────────────────────────────────────────
+# ── ADMIN KEYBOARDS ──────────────────────────────────────────────────────────
 
 def admin_approval_kb(order_id: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
@@ -171,40 +182,34 @@ def admin_approval_kb(order_id: str) -> InlineKeyboardMarkup:
     ])
 
 
-# ── ADMIN ─────────────────────────────────────────────────────────────────────
-
 def admin_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("📊 Thống kê (/stats)", callback_data="admin:stats"),
-            InlineKeyboardButton("📋 Đơn gần đây (/orders)", callback_data="admin:recent"),
+            InlineKeyboardButton("📊 Thống kê doanh thu", callback_data="admin:stats"),
+            InlineKeyboardButton("📋 Đơn hàng gần đây",    callback_data="admin:recent"),
         ],
         [
-            InlineKeyboardButton("👥 Người dùng (/users)", callback_data="admin:users_list"),
-            InlineKeyboardButton("🪙 Token CTV (/tokens)", callback_data="admin:balance"),
+            InlineKeyboardButton("🪙 Số dư Coin CTV",     callback_data="admin:balance"),
+            InlineKeyboardButton("👥 Quản lý người dùng",  callback_data="admin:users_list"),
         ],
         [
-            InlineKeyboardButton("🔍 Tìm kiếm (/find)",   callback_data="admin:find_menu"),
-            InlineKeyboardButton("🔄 Reset Spotify (/rs)", callback_data="admin:reset_menu"),
+            InlineKeyboardButton("💳 Kiểm tra VietQR",    callback_data="admin:checkbank"),
+            InlineKeyboardButton("🔍 Tìm kiếm đơn / user", callback_data="admin:find_menu"),
         ],
         [
-            InlineKeyboardButton("📢 Gửi broadcast (/noti)", callback_data="admin:broadcast"),
-            InlineKeyboardButton("💳 Test Bank (/checkbank)", callback_data="admin:checkbank"),
+            InlineKeyboardButton("🔎 Tra cứu thông tin UID", callback_data="admin:check_uid_menu"),
+            InlineKeyboardButton("🔄 Reset thiết bị Spotify", callback_data="admin:reset_menu"),
         ],
         [
-            InlineKeyboardButton("🏷️ Mã giảm giá (/addcode)", callback_data="admin:codes"),
-            InlineKeyboardButton("🏠 Về menu người dùng",      callback_data="back_main"),
+            InlineKeyboardButton("📢 Gửi thông báo toàn hệ thống", callback_data="admin:broadcast"),
+        ],
+        [
+            InlineKeyboardButton("🏠 Đóng bảng điều khiển", callback_data="admin:close"),
         ]
     ])
 
 
 def back_admin_kb() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([[
-        InlineKeyboardButton("🔙 Quay lại Admin", callback_data="admin:menu")
-    ]])
-
-
-def back_main_kb() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([[
-        InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")
-    ]])
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Về bảng điều khiển", callback_data="admin:menu")]
+    ])

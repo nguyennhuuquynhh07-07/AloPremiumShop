@@ -35,6 +35,7 @@ ACCOUNT_NAME = os.getenv("ACCOUNT_HOLDER", "NGUYEN NHU QUYNH")
 ACCOUNT_HOLDER = ACCOUNT_NAME
 PRICE_VND = int(os.getenv("PRICE_VND", "200000"))
 AUTO_APPROVE = os.getenv("AUTO_APPROVE", "False").lower() in ("true", "1", "yes")
+SEPAY_API_TOKEN = os.getenv("SEPAY_API_TOKEN", "")  # Tùy chọn: Token SePay để tự động duyệt chuyển khoản
 
 # ============================================================
 #  3. CẤU HÌNH API CTV (locket.2707226.xyz) - GÓI LOCKET & SPOTIFY

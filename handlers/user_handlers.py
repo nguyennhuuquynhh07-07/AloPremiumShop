@@ -701,9 +701,31 @@ async def cb_paid(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await query.answer("Đơn hàng đang chờ Admin duyệt, bạn vui lòng không bấm lại!", show_alert=True)
         return
 
-    db.update_order(order_id, status="pending_approval")
     pv = PRODUCTS[order["product"]]
     plnv = pv["plans"][order["plan"]]
+
+    if getattr(config, "AUTO_APPROVE", False):
+        from order_service import execute_order_activation
+        ok, act_msg = await execute_order_activation(ctx.bot, order_id)
+        if ok:
+            from config import ADMIN_IDS
+            for admin_id in ADMIN_IDS:
+                try:
+                    await ctx.bot.send_message(
+                        admin_id,
+                        f"⚡ <b>[AUTO-APPROVE] ĐƠN HÀNG ĐÃ DUYỆT TỰ ĐỘNG!</b>\n\n"
+                        f"🧾 Mã đơn: <code>ORDER_{order_id}</code>\n"
+                        f"👤 Khách: @{order['username']} (ID: <code>{order['user_id']}</code>)\n"
+                        f"📦 Gói: {pv['emoji']} {pv['name']} — {plnv['label']}\n"
+                        f"💰 Số tiền: <b>{utils.fmt_price(order['price'])}</b>\n"
+                        f"🎯 Tài khoản: <b>{order['display_name']}</b>",
+                        parse_mode=ParseMode.HTML
+                    )
+                except Exception:
+                    pass
+            return
+
+    db.update_order(order_id, status="pending_approval")
 
     customer_msg = (
         f"⏳ <b>XÁC NHẬN THANH TOÁN ĐÃ ĐƯỢC GỬI!</b>\n"
@@ -1080,3 +1102,82 @@ async def resetspotify_user_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"💡 <i>Vui lòng kiểm tra lại UID hoặc liên hệ hỗ trợ /support để được giúp đỡ.</i>",
             parse_mode=ParseMode.HTML
         )
+
+
+# ── HƯỚNG DẪN CÀI ĐẶT TRỰC QUAN (SAFARI 3 BƯỚC) ──────────────────────────────
+
+GUIDE_TEXT = """
+📲 <b>HƯỚNG DẪN CÀI ĐẶT CẤU HÌNH TRÊN IPHONE (iOS)</b>
+━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔹 <b>BƯỚC 1: Tải hồ sơ qua trình duyệt Safari</b>
+• Nhấn nút <b>Copy Link DNS</b> hoặc link tải mà bot gửi.
+• Mở trình duyệt <b>Safari</b> trên iPhone, dán link vào thanh địa chỉ rồi bấm <b>Đi (Go)</b>.
+• Khi Safari hỏi: <i>"Trang web này đang cố tải về một hồ sơ cấu hình. Bạn có muốn cho phép không?"</i> → Bấm chọn <b>Cho phép (Allow)</b>.
+• Khi hiện thông báo <i>"Đã tải về hồ sơ"</i> → Bấm <b>Đóng</b>.
+<i>(Hồ sơ đã tự động nạp vào mục Cài đặt của iPhone, bạn KHÔNG CẦN tìm trong ứng dụng Tệp!)</i>
+
+🔹 <b>BƯỚC 2: Cài đặt hồ sơ vào hệ thống</b>
+• Mở ứng dụng <b>Cài đặt (Settings)</b> trên iPhone.
+• Ở ngay dòng đầu tiên (dưới tên iCloud của bạn), nhấn vào <b>Đã tải về hồ sơ (Profile Downloaded)</b>.
+• Nhấn <b>Cài đặt (Install)</b> ở góc trên bên phải → Nhập mật mã mở khóa màn hình iPhone → Tiếp tục nhấn <b>Cài đặt</b> xác nhận.
+
+🔹 <b>BƯỚC 3: Bật tin cậy chứng chỉ (Dành cho gói Siêu VIP 3-in-1)</b>
+• Vào <b>Cài đặt (Settings)</b> → <b>Cài đặt chung (General)</b> → <b>Giới thiệu (About)</b>.
+• Kéo xuống dưới cùng, chọn <b>Cài đặt tin cậy chứng nhận (Certificate Trust Settings)</b>.
+• Tại mục <i>"Bật tin cậy hoàn toàn cho các chứng nhận gốc"</i>, tìm dòng <b>Locket Gold Root CA</b> và <b>BẬT XANH CÔNG TẮC (ON)</b>.
+• Chọn <b>Tiếp tục (Continue)</b> để xác nhận.
+
+🎉 <b>Hoàn tất!</b> Mở Locket, Spotify hoặc YouTube lên để tận hưởng trọn vẹn các tính năng VIP!
+"""
+
+async def guide_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Lệnh /guide – Xem hướng dẫn cài đặt iOS trực quan."""
+    from keyboards import back_main_kb
+    await update.message.reply_text(GUIDE_TEXT, parse_mode=ParseMode.HTML, reply_markup=back_main_kb())
+
+
+async def cb_show_guide(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Callback bấm nút xem Hướng dẫn cài đặt iOS."""
+    query = update.callback_query
+    await query.answer()
+    from keyboards import back_main_kb
+    try:
+        await query.message.reply_text(GUIDE_TEXT, parse_mode=ParseMode.HTML, reply_markup=back_main_kb())
+    except Exception:
+        await query.edit_message_text(GUIDE_TEXT, parse_mode=ParseMode.HTML, reply_markup=back_main_kb())
+
+
+async def cb_user_reset_spotify_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Khách bấm nút Reset thiết bị Spotify trong menu đơn hàng."""
+    query = update.callback_query
+    await query.answer()
+    user_id = query.from_user.id
+    orders = db.get_user_orders(user_id)
+    spot_orders = [o for o in orders if o.get("product") == "spotify" and o.get("status") == "done"]
+
+    if spot_orders:
+        latest_spot = sorted(spot_orders, key=lambda x: x["created_at"], reverse=True)[0]
+        uid = latest_spot.get("uid")
+        try:
+            res = api.spotify_reset(uid)
+            resp_msg = res.get("message", "Đã giải phóng phiên thiết bị thành công!")
+            text = (
+                f"✅ <b>ĐÃ RESET THIẾT BỊ SPOTIFY THÀNH CÔNG!</b>\n\n"
+                f"🆔 <b>UID:</b> <code>{uid}</code>\n"
+                f"💬 <b>Kết quả:</b> {resp_msg}\n\n"
+                f"👉 Bây giờ bạn có thể mở ứng dụng Spotify trên thiết bị mới để kết nối nghe nhạc bình thường!"
+            )
+            await query.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=orders_kb(True, True))
+            return
+        except Exception as e:
+            logger.warning(f"Auto reset spotify error: {e}")
+
+    await query.message.reply_text(
+        "🔄 <b>TỰ ĐỘNG RESET THIẾT BỊ SPOTIFY</b>\n\n"
+        "Nếu bạn đổi điện thoại hoặc cài lại app, hãy dùng lệnh sau để reset:\n"
+        "👉 <code>/resetspotify &lt;uid_hoặc_link_spotify&gt;</code>\n\n"
+        "<i>Ví dụ:</i> <code>/resetspotify 31t3tcqtl7dugzvuubw2ydhqy6km</code>",
+        parse_mode=ParseMode.HTML,
+        reply_markup=orders_kb(True, True)
+    )

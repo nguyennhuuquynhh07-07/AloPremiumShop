@@ -39,7 +39,7 @@ from handlers.user_handlers import (
     cb_my_orders, cb_support, cb_my_account,
     cb_cmd_setlang, cb_lang, cb_apidocs, cb_get_mobileconfig,
     cb_back_main, cb_back_products,
-    receive_identifier, cancel_conv, resetspotify_user_cmd,
+    receive_identifier, cancel_conv, resetspotify_user_cmd, guide_cmd, cb_show_guide, cb_user_reset_spotify_menu,
     WAITING_IDENTIFIER,
 )
 from handlers.admin_handlers import (
@@ -48,7 +48,7 @@ from handlers.admin_handlers import (
     noti_cmd, notistop_cmd,
     rs_cmd, stats_cmd, users_cmd, find_cmd,
     ban_cmd, unban_cmd, orders_cmd, tokens_cmd,
-    checkbank_cmd, addcode_cmd, delcode_cmd, coin_cmd, packages_cmd,
+    checkbank_cmd, addcode_cmd, delcode_cmd, coin_cmd, packages_cmd, duyet_cmd,
     handle_admin_text_input,
 )
 
@@ -82,6 +82,91 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+
+# ── Luồng quét tự động số dư ngân hàng qua SePay (Techcombank) ───────────────
+
+async def check_sepay_auto_payments(bot):
+    token = getattr(config, "SEPAY_API_TOKEN", "")
+    if not token:
+        return
+
+    import database as db
+    orders = db.get_orders()
+    pending = [o for o in orders.values() if o.get("status") in ("waiting_payment", "pending_approval", "pending")]
+    if not pending:
+        return
+
+    url = "https://my.sepay.vn/userapi/transactions/list?limit=20"
+    headers = {"Authorization": f"Bearer {token}"}
+
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=8) as client:
+            r = await client.get(url, headers=headers)
+            if r.status_code != 200:
+                return
+            data = r.json()
+            transactions = data.get("transactions", [])
+            if not transactions:
+                return
+
+            from order_service import execute_order_activation
+            import utils
+            for order in pending:
+                order_id = order["order_id"].upper()
+                req_amount = float(order.get("price", 0))
+
+                for tx in transactions:
+                    content = str(tx.get("transaction_content", "")).upper()
+                    amount_in = float(tx.get("amount_in", 0) or 0)
+
+                    # Khớp mã đơn ORDER_XXXX hoặc XXXX và số tiền >= giá gói
+                    if (order_id in content or f"ORDER_{order_id}" in content) and amount_in >= req_amount:
+                        logger.info(f"✅ SePay tự động phát hiện thanh toán cho đơn ORDER_{order_id} ({amount_in}đ)!")
+                        ok, msg = await execute_order_activation(bot, order["order_id"])
+                        if ok:
+                            try:
+                                await bot.send_message(
+                                    chat_id=order["user_id"],
+                                    text=(
+                                        f"🔔 <b>HỆ THỐNG ĐÃ TỰ ĐỘNG NHẬN ĐƯỢC THANH TOÁN {utils.fmt_price(int(amount_in))}!</b>\n"
+                                        f"Gói dịch vụ <b>{order['product']}</b> đã được kích hoạt thành công."
+                                    ),
+                                    parse_mode="HTML"
+                                )
+                            except Exception:
+                                pass
+
+                            for aid in config.ADMIN_IDS:
+                                try:
+                                    await bot.send_message(
+                                        chat_id=aid,
+                                        text=(
+                                            f"💰 <b>[SEPAY AUTO] NHẬN TIỀN THÀNH CÔNG!</b>\n\n"
+                                            f"• Mã đơn: <code>ORDER_{order_id}</code>\n"
+                                            f"• Khách: @{order['username']}\n"
+                                            f"• Số tiền: <b>{utils.fmt_price(int(amount_in))}</b>\n"
+                                            f"• Hệ thống đã tự động kích hoạt và giao hồ sơ cho khách!"
+                                        ),
+                                        parse_mode="HTML"
+                                    )
+                                except Exception:
+                                    pass
+                        break
+    except Exception as e:
+        logger.warning(f"SePay worker error: {e}")
+
+
+async def sepay_worker(bot):
+    """Vòng lặp chạy ngầm quét biến động số dư Techcombank mỗi 8 giây"""
+    logger.info("🚀 Luồng SePay worker đã khởi động (quét Techcombank tự động)...")
+    while True:
+        try:
+            await check_sepay_auto_payments(bot)
+        except Exception as e:
+            logger.warning(f"SePay worker loop error: {e}")
+        await asyncio.sleep(8)
+
 async def post_init(application):
     """Thiết lập danh sách lệnh Menu Telegram cho Người dùng và Admin"""
     user_commands = [
@@ -90,6 +175,7 @@ async def post_init(application):
         BotCommand("myorders", "Đơn hàng đã mua"),
         BotCommand("resetspotify", "Reset thiết bị Spotify"),
         BotCommand("support", "Hỗ trợ CSKH"),
+        BotCommand("guide", "Hướng dẫn cài đặt iOS"),
         BotCommand("help", "Hướng dẫn sử dụng"),
     ]
 
@@ -105,6 +191,7 @@ async def post_init(application):
         BotCommand("rs", "Reset thiết bị Spotify"),
         BotCommand("addcode", "Tạo mã giảm giá"),
         BotCommand("noti", "Gửi thông báo toàn hệ thống"),
+        BotCommand("duyet", "Duyệt đơn thủ công"),
         BotCommand("cancel", "Hủy thao tác đang làm"),
     ]
 
@@ -118,6 +205,10 @@ async def post_init(application):
         logger.info("✅ Đã cập nhật danh sách lệnh Telegram Menu thành công.")
     except Exception as e:
         logger.warning(f"Không thể cập nhật BotCommand: {e}")
+
+    if getattr(config, "SEPAY_API_TOKEN", ""):
+        asyncio.create_task(sepay_worker(application.bot))
+        logger.info("⚡ Đã kích hoạt quét giao dịch tự động SePay.")
 
 
 def main():
@@ -168,11 +259,13 @@ def main():
     app.add_handler(CommandHandler("menu",      menu_cmd))
     app.add_handler(CommandHandler("myorders",  myorders_cmd))
     app.add_handler(CommandHandler("support",   support_cmd))
+    app.add_handler(CommandHandler("guide",      guide_cmd))
     app.add_handler(CommandHandler("resetspotify", resetspotify_user_cmd))
     app.add_handler(CommandHandler("cancel",    cancel_conv))
 
     # ── Lệnh Admin ───────────────────────────────────────────────────────────
     app.add_handler(CommandHandler("admin",     admin_cmd))
+    app.add_handler(CommandHandler("duyet",     duyet_cmd))
     app.add_handler(CommandHandler("coin",      coin_cmd))
     app.add_handler(CommandHandler("balance",   coin_cmd))
     app.add_handler(CommandHandler("packages",  packages_cmd))
@@ -195,6 +288,8 @@ def main():
     app.add_handler(buy_conv)
 
     # ── Callback người dùng ──────────────────────────────────────────────────
+    app.add_handler(CallbackQueryHandler(cb_show_guide,   pattern=r"^show_guide$"))
+    app.add_handler(CallbackQueryHandler(cb_user_reset_spotify_menu, pattern=r"^user_reset_spotify_menu$"))
     app.add_handler(CallbackQueryHandler(cb_product,       pattern=r"^product:"))
     app.add_handler(CallbackQueryHandler(cb_paid,          pattern=r"^paid:"))
     app.add_handler(CallbackQueryHandler(cb_buy,           pattern=r"^buy:"))

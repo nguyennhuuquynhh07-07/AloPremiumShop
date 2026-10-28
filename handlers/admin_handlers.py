@@ -43,6 +43,65 @@ def build_admin_menu_text() -> str:
     except Exception:
         pass
 
+
+# ── /coin & /balance: Tra cứu số dư Coin CTV ─────────────────────────────────
+
+async def coin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Tra cứu số dư Coin CTV và trạng thái tài khoản API (GET /api/keys/me)."""
+    if not is_admin(update.effective_user.id):
+        return
+
+    msg = await update.message.reply_text("⏳ Đang tra cứu số dư tài khoản CTV từ hệ thống API...", parse_mode=ParseMode.HTML)
+    try:
+        res = api.get_account_info()
+        data = res.get("data", res)
+        username = data.get("username", "CTV")
+        balance = data.get("balanceCoin", 0)
+        is_activated = data.get("isActivated", False)
+        status_text = "🟢 Đã kích hoạt" if is_activated else "🔴 Chưa kích hoạt"
+
+        text = (
+            f"🪙 <b>THÔNG TIN TÀI KHOẢN CTV (locket.2707226.xyz)</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"👤 <b>Tên CTV:</b> <code>{username}</code>\n"
+            f"💰 <b>Số dư Coin:</b> <b>{balance} Coin</b>\n"
+            f"🛡️ <b>Trạng thái:</b> {status_text}\n"
+            f"🌐 <b>API URL:</b> <code>{config.API_BASE_URL}</code>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"💡 <i>Mỗi đơn kích hoạt Locket/Spotify sẽ tự động trừ Coin tương ứng. Nếu Coin sắp hết hãy nạp thêm trên Dashboard!</i>"
+        )
+        await msg.edit_text(text, parse_mode=ParseMode.HTML)
+    except Exception as e:
+        await msg.edit_text(f"❌ Không thể tra cứu số dư CTV: <code>{e}</code>", parse_mode=ParseMode.HTML)
+
+
+# ── /packages: Tra cứu danh sách gói từ máy chủ API ──────────────────────────
+
+async def packages_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Tra cứu bảng giá Coin và mã gói cước trực tiếp từ API (GET /api/packages)."""
+    if not is_admin(update.effective_user.id):
+        return
+
+    msg = await update.message.reply_text("⏳ Đang lấy bảng giá gói cước từ máy chủ API...", parse_mode=ParseMode.HTML)
+    try:
+        res = api.get_packages("all")
+        data = res.get("data", [])
+        lines = [
+            "📦 <b>DANH SÁCH GÓI CƯỚC & GIÁ COIN TRÊN MÁY CHỦ API</b>",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━"
+        ]
+        for p in data:
+            code = p.get("code")
+            name = p.get("name")
+            days = p.get("durationDays", 0)
+            coin = p.get("priceCoin", 0)
+            lines.append(f"• <b>{code}</b>: {name} ({days} ngày) ➔ <b>{coin} Coin</b>")
+        lines.append("\n💡 <i>Mã gói này tương ứng với cấu hình trong config.py.</i>")
+        await msg.edit_text("\n".join(lines), parse_mode=ParseMode.HTML)
+    except Exception as e:
+        await msg.edit_text(f"❌ Không thể lấy danh sách gói: <code>{e}</code>", parse_mode=ParseMode.HTML)
+
+
     admin_controls = (
         "<b>Admin control</b>\n"
         "<pre>\n"
@@ -111,6 +170,65 @@ async def stats_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         coin_text = f"{coin_val:,.0f} Coin ({utils.fmt_price(coin_val * 1000)})"
     except Exception:
         pass
+
+
+# ── /coin & /balance: Tra cứu số dư Coin CTV ─────────────────────────────────
+
+async def coin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Tra cứu số dư Coin CTV và trạng thái tài khoản API (GET /api/keys/me)."""
+    if not is_admin(update.effective_user.id):
+        return
+
+    msg = await update.message.reply_text("⏳ Đang tra cứu số dư tài khoản CTV từ hệ thống API...", parse_mode=ParseMode.HTML)
+    try:
+        res = api.get_account_info()
+        data = res.get("data", res)
+        username = data.get("username", "CTV")
+        balance = data.get("balanceCoin", 0)
+        is_activated = data.get("isActivated", False)
+        status_text = "🟢 Đã kích hoạt" if is_activated else "🔴 Chưa kích hoạt"
+
+        text = (
+            f"🪙 <b>THÔNG TIN TÀI KHOẢN CTV (locket.2707226.xyz)</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"👤 <b>Tên CTV:</b> <code>{username}</code>\n"
+            f"💰 <b>Số dư Coin:</b> <b>{balance} Coin</b>\n"
+            f"🛡️ <b>Trạng thái:</b> {status_text}\n"
+            f"🌐 <b>API URL:</b> <code>{config.API_BASE_URL}</code>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"💡 <i>Mỗi đơn kích hoạt Locket/Spotify sẽ tự động trừ Coin tương ứng. Nếu Coin sắp hết hãy nạp thêm trên Dashboard!</i>"
+        )
+        await msg.edit_text(text, parse_mode=ParseMode.HTML)
+    except Exception as e:
+        await msg.edit_text(f"❌ Không thể tra cứu số dư CTV: <code>{e}</code>", parse_mode=ParseMode.HTML)
+
+
+# ── /packages: Tra cứu danh sách gói từ máy chủ API ──────────────────────────
+
+async def packages_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Tra cứu bảng giá Coin và mã gói cước trực tiếp từ API (GET /api/packages)."""
+    if not is_admin(update.effective_user.id):
+        return
+
+    msg = await update.message.reply_text("⏳ Đang lấy bảng giá gói cước từ máy chủ API...", parse_mode=ParseMode.HTML)
+    try:
+        res = api.get_packages("all")
+        data = res.get("data", [])
+        lines = [
+            "📦 <b>DANH SÁCH GÓI CƯỚC & GIÁ COIN TRÊN MÁY CHỦ API</b>",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━"
+        ]
+        for p in data:
+            code = p.get("code")
+            name = p.get("name")
+            days = p.get("durationDays", 0)
+            coin = p.get("priceCoin", 0)
+            lines.append(f"• <b>{code}</b>: {name} ({days} ngày) ➔ <b>{coin} Coin</b>")
+        lines.append("\n💡 <i>Mã gói này tương ứng với cấu hình trong config.py.</i>")
+        await msg.edit_text("\n".join(lines), parse_mode=ParseMode.HTML)
+    except Exception as e:
+        await msg.edit_text(f"❌ Không thể lấy danh sách gói: <code>{e}</code>", parse_mode=ParseMode.HTML)
+
 
     text = (
         "📊 <b>THỐNG KÊ TOÀN DIỆN HỆ THỐNG</b>\n"
@@ -867,92 +985,9 @@ async def cb_admin_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.HTML
     )
 
-    try:
-        if order["product"] == "combo3in1":
-            import io
-            from locket_service import build_mobileconfig_xml
-            from config import SERVER_BASE_URL
-            from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
-            token = order.get("token") or order.get("uid") or "vip"
-            download_url = order.get("download_url") or f"{SERVER_BASE_URL}/d/{token}"
-            xml_str = build_mobileconfig_xml(username=order.get("display_name") or order.get("uid"), token=token, cf_url=SERVER_BASE_URL)
-
-            db.update_order(order_id, status="done", done_at=datetime.now().isoformat())
-            db.record_sale(order["product"], order["plan"], order["price"])
-
-            await query.edit_message_text(
-                f"✅ <b>ĐÃ DUYỆT ĐƠN HÀNG THÀNH CÔNG!</b>\n\n"
-                f"🧾 Mã đơn: <code>ORDER_{order_id}</code>\n"
-                f"👤 Khách: @{order['username']} (ID: <code>{order['user_id']}</code>)\n"
-                f"👑 Gói: {pv['emoji']} {pv['name']} ({plnv['label']})\n"
-                f"🎯 Tài khoản: <b>{order['display_name']}</b> (<code>{order['uid']}</code>)\n"
-                f"💰 Đã nhận: <b>{utils.fmt_price(order['price'])}</b>\n\n"
-                f"🎉 <i>Đã gửi Link & File cấu hình 3-in-1 cho khách hàng!</i>",
-                parse_mode=ParseMode.HTML
-            )
-
-            guide_3in1 = (
-                f"🎉 <b>KÍCH HOẠT THÀNH CÔNG GÓI SIÊU VIP 3-IN-1!</b>\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"👤 <b>Tài khoản:</b> {order.get('display_name')} (<code>@{order.get('uid')}</code>)\n"
-                f"👑 <b>Gói kích hoạt:</b>\n"
-                f"  • 💛 <b>Locket Gold Pro</b> (Vĩnh viễn 2099)\n"
-                f"  • 🎵 <b>Spotify Premium</b>\n"
-                f"  • ▶️ <b>YouTube Premium</b> (Chặn QC + PiP nền)\n"
-                f"🛡️ <b>Trạng thái:</b> ✅ <i>Đã thanh toán {utils.fmt_price(order['price'])}</i>\n\n"
-                f"📋 <b>Link Tải Hồ Sơ Cấu Hình (Chạm để sao chép):</b>\n"
-                f"<code>{download_url}</code>\n\n"
-                f"📲 <b>HƯỚNG DẪN CÀI ĐẶT TRÊN IPHONE:</b>\n"
-                f"1️⃣ Copy link trên rồi mở trình duyệt <b>Safari</b> dán vào thanh địa chỉ để tải hồ sơ.\n"
-                f"2️⃣ Khi Safari hỏi, chọn <b>Cho phép (Allow)</b>.\n"
-                f"3️⃣ Mở <b>Cài đặt (Settings)</b> trên iPhone → chọn <b>Đã tải về hồ sơ</b> ở đầu trang → bấm <b>Cài đặt</b>.\n"
-                f"4️⃣ <b>Bật tin cậy chứng chỉ gốc (Bắt buộc):</b>\n"
-                f"   • Vào <b>Cài đặt</b> → <b>Cài đặt chung</b> → <b>Giới thiệu</b> → <b>Cài đặt tin cậy chứng nhận</b>.\n"
-                f"   • BẬT XANH công tắc cho <b>Locket Gold Root CA</b>.\n\n"
-                f"✨ <i>Hoàn tất! Mở app Locket, Spotify hoặc YouTube lên để trải nghiệm!</i>"
-            )
-
-            kb_3in1 = InlineKeyboardMarkup([
-                [InlineKeyboardButton("📋 Copy Link Tải Hồ Sơ", api_kwargs={"copy_text": {"text": download_url}})],
-                [InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")]
-            ])
-
-            buf = io.BytesIO(xml_str.encode("utf-8"))
-            buf.name = f"VipPro3in1_{order.get('uid', 'vip')}.mobileconfig"
-            buf.seek(0)
-
-            try:
-                await ctx.bot.send_document(
-                    chat_id=order["user_id"],
-                    document=buf,
-                    filename=buf.name,
-                    caption=guide_3in1,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=kb_3in1
-                )
-            except Exception as e:
-                logger.error(f"Error sending 3in1 doc: {e}")
-                await ctx.bot.send_message(
-                    chat_id=order["user_id"],
-                    text=guide_3in1,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=kb_3in1
-                )
-            return
-
-        # Gọi API kích hoạt gói
-        target_account = order.get("account_target") or order.get("display_name") or order["uid"]
-        result = api.create_subscription(
-            uid=target_account,
-            package_code=plnv["packageCode"],
-            service=pv["service"],
-            note=f"Order {order_id} via Telegram Bot"
-        )
-        db.update_order(order_id, status="done", done_at=datetime.now().isoformat())
-        db.record_sale(order["product"], order["plan"], order["price"])
-
-        # Cập nhật tin nhắn Admin
+    from order_service import execute_order_activation
+    ok, act_msg = await execute_order_activation(ctx.bot, order_id)
+    if ok:
         await query.edit_message_text(
             f"✅ <b>ĐÃ DUYỆT ĐƠN HÀNG THÀNH CÔNG!</b>\n\n"
             f"🧾 Mã đơn: <code>ORDER_{order_id}</code>\n"
@@ -960,67 +995,20 @@ async def cb_admin_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"📦 Gói: {pv['emoji']} {pv['name']} ({plnv['label']})\n"
             f"🎯 Tài khoản: <b>{order['display_name']}</b> (<code>{order['uid']}</code>)\n"
             f"💰 Đã nhận: <b>{utils.fmt_price(order['price'])}</b>\n\n"
-            f"🎉 <i>Gói đã kích hoạt trên API và đã gửi link cài DNS cho khách!</i>",
+            f"🎉 <i>Hệ thống đã kích hoạt và gửi đầy đủ cấu hình cho khách!</i>",
             parse_mode=ParseMode.HTML
         )
-
-        # Gửi link cài đặt DNS Profile cho khách hàng
-        from handlers.user_handlers import _build_success_message
-        from config import DNS_BASE_URL, DNS_SLUG
-        from keyboards import success_kb
-        dns_link = f"{DNS_BASE_URL}/{DNS_SLUG}"
-        success_text = _build_success_message(order, pv, plnv, dns_link)
-
-        try:
-            await ctx.bot.send_message(
-                order["user_id"],
-                success_text,
-                parse_mode=ParseMode.HTML,
-                reply_markup=success_kb()
-            )
-
-            # Tự động tạo và gửi file .mobileconfig cài đặt trực tiếp
-            try:
-                profile_file = utils.generate_mobileconfig(
-                    service_name=pv["name"],
-                    display_name=order.get("display_name") or order.get("uid"),
-                    dns_link=dns_link
-                )
-                safe_uid = (order.get("uid") or "vip").replace(" ", "_")
-                file_name = f"{order['product'].capitalize()}_{safe_uid}.mobileconfig"
-                await ctx.bot.send_document(
-                    chat_id=order["user_id"],
-                    document=profile_file,
-                    filename=file_name,
-                    caption=(
-                        f"📥 <b>HỒ SƠ CẤU HÌNH DNS PROFILE ({pv['name']})</b>\n"
-                        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                        f"👤 Tài khoản: <b>@{order.get('display_name', order.get('uid'))}</b>\n\n"
-                        f"⚡ <b>Cài đặt 1 chạm trên iPhone:</b>\n"
-                        f"1️⃣ Bấm vào file đính kèm trên để tải về\n"
-                        f"2️⃣ Bấm <b>\"Cho phép\" (Allow)</b>\n"
-                        f"3️⃣ Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b> là xong!"
-                    ),
-                    parse_mode=ParseMode.HTML
-                )
-            except Exception as e_file:
-                logger.warning(f"Could not send .mobileconfig file directly: {e_file}")
-
-        except Exception as e:
-            logger.error(f"Error sending DNS instructions to user {order['user_id']}: {e}")
-
-    except Exception as e:
-        logger.error(f"API create error during approval: {e}")
-        db.update_order(order_id, status="failed")
+    else:
         from keyboards import admin_approval_kb
         await query.edit_message_text(
             f"❌ <b>Duyệt đơn thất bại (Lỗi API)!</b>\n\n"
             f"Mã đơn: <code>ORDER_{order_id}</code>\n"
-            f"Lỗi: <code>{e}</code>\n\n"
+            f"Lỗi: <code>{act_msg}</code>\n\n"
             f"Vui lòng kiểm tra lại số dư coin CTV hoặc kết nối API.",
             parse_mode=ParseMode.HTML,
             reply_markup=admin_approval_kb(order_id)
         )
+    return
 
 
 async def cb_admin_reject(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1109,3 +1097,87 @@ async def packages_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await msg.edit_text("\n".join(lines), parse_mode=ParseMode.HTML)
     except Exception as e:
         await msg.edit_text(f"❌ Không thể lấy danh sách gói: <code>{e}</code>", parse_mode=ParseMode.HTML)
+
+
+# ── /coin & /balance: Tra cứu số dư Coin CTV ─────────────────────────────────
+
+async def coin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Tra cứu số dư Coin CTV và trạng thái tài khoản API (GET /api/keys/me)."""
+    if not is_admin(update.effective_user.id):
+        return
+
+    msg = await update.message.reply_text("⏳ Đang tra cứu số dư tài khoản CTV từ hệ thống API...", parse_mode=ParseMode.HTML)
+    try:
+        res = api.get_account_info()
+        data = res.get("data", res)
+        username = data.get("username", "CTV")
+        balance = data.get("balanceCoin", 0)
+        is_activated = data.get("isActivated", False)
+        status_text = "🟢 Đã kích hoạt" if is_activated else "🔴 Chưa kích hoạt"
+
+        text = (
+            f"🪙 <b>THÔNG TIN TÀI KHOẢN CTV (locket.2707226.xyz)</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"👤 <b>Tên CTV:</b> <code>{username}</code>\n"
+            f"💰 <b>Số dư Coin:</b> <b>{balance} Coin</b>\n"
+            f"🛡️ <b>Trạng thái:</b> {status_text}\n"
+            f"🌐 <b>API URL:</b> <code>{config.API_BASE_URL}</code>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"💡 <i>Mỗi đơn kích hoạt Locket/Spotify sẽ tự động trừ Coin tương ứng. Nếu Coin sắp hết hãy nạp thêm trên Dashboard!</i>"
+        )
+        await msg.edit_text(text, parse_mode=ParseMode.HTML)
+    except Exception as e:
+        await msg.edit_text(f"❌ Không thể tra cứu số dư CTV: <code>{e}</code>", parse_mode=ParseMode.HTML)
+
+
+# ── /packages: Tra cứu danh sách gói từ máy chủ API ──────────────────────────
+
+async def packages_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Tra cứu bảng giá Coin và mã gói cước trực tiếp từ API (GET /api/packages)."""
+    if not is_admin(update.effective_user.id):
+        return
+
+    msg = await update.message.reply_text("⏳ Đang lấy bảng giá gói cước từ máy chủ API...", parse_mode=ParseMode.HTML)
+    try:
+        res = api.get_packages("all")
+        data = res.get("data", [])
+        lines = [
+            "📦 <b>DANH SÁCH GÓI CƯỚC & GIÁ COIN TRÊN MÁY CHỦ API</b>",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━"
+        ]
+        for p in data:
+            code = p.get("code")
+            name = p.get("name")
+            days = p.get("durationDays", 0)
+            coin = p.get("priceCoin", 0)
+            lines.append(f"• <b>{code}</b>: {name} ({days} ngày) ➔ <b>{coin} Coin</b>")
+        lines.append("\n💡 <i>Mã gói này tương ứng với cấu hình trong config.py.</i>")
+        await msg.edit_text("\n".join(lines), parse_mode=ParseMode.HTML)
+    except Exception as e:
+        await msg.edit_text(f"❌ Không thể lấy danh sách gói: <code>{e}</code>", parse_mode=ParseMode.HTML)
+
+
+
+# ── /duyet: Lệnh duyệt đơn hàng bằng tay cho Admin ───────────────────────────
+
+async def duyet_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin duyệt đơn bằng lệnh: /duyet <order_id>"""
+    if not is_admin(update.effective_user.id):
+        return
+    if not ctx.args:
+        await update.message.reply_text("⚠️ Vui lòng nhập mã đơn hàng.\nVí dụ: <code>/duyet ORDER_VIP1234</code>", parse_mode=ParseMode.HTML)
+        return
+
+    raw_id = ctx.args[0].upper().replace("ORDER_", "").strip()
+    order = db.get_order(raw_id)
+    if not order:
+        await update.message.reply_text(f"❌ Không tìm thấy đơn hàng <code>ORDER_{raw_id}</code>.", parse_mode=ParseMode.HTML)
+        return
+
+    from order_service import execute_order_activation
+    msg = await update.message.reply_text(f"⏳ Đang kích hoạt đơn <code>ORDER_{raw_id}</code>...", parse_mode=ParseMode.HTML)
+    ok, res = await execute_order_activation(ctx.bot, raw_id)
+    if ok:
+        await msg.edit_text(f"✅ Đã duyệt thành công đơn <code>ORDER_{raw_id}</code> cho @{order['username']}!", parse_mode=ParseMode.HTML)
+    else:
+        await msg.edit_text(f"❌ Kích hoạt thất bại: <code>{res}</code>", parse_mode=ParseMode.HTML)
