@@ -28,10 +28,10 @@ SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME", "HeyLocket")
 # ============================================================
 BANK_ID = os.getenv("BANK_CODE", "TPB")
 BANK_CODE = BANK_ID
-BANK_NAME = os.getenv("BANK_NAME", "TPBank")
+BANK_NAME = "TPBank" if BANK_ID == "TPB" else os.getenv("BANK_NAME", "TPBank")
 ACCOUNT_NO = os.getenv("BANK_ACCOUNT", "34528022007")
 BANK_ACCOUNT = ACCOUNT_NO
-ACCOUNT_NAME = os.getenv("ACCOUNT_HOLDER", "NGUYEN NHU QUYNH")
+ACCOUNT_NAME = "NGUYEN NHU QUYNH" if ACCOUNT_NO == "34528022007" else os.getenv("ACCOUNT_HOLDER", "NGUYEN NHU QUYNH")
 ACCOUNT_HOLDER = ACCOUNT_NAME
 PRICE_VND = int(os.getenv("PRICE_VND", "200000"))
 AUTO_APPROVE = os.getenv("AUTO_APPROVE", "False").lower() in ("true", "1", "yes")
