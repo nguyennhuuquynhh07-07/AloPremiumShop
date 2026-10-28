@@ -90,6 +90,24 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Bot Locket Gold + Spotify + 3in1 is running 24/7!")
             return
 
+        # 1.1 Phục vụ Favicon & Logo trang web
+        if path in ("/favicon.ico", "/favicon.png", "/logo.png"):
+            img_name = "favicon.png" if path != "/logo.png" else "logo.png"
+            img_path = os.path.join(os.path.dirname(__file__), img_name)
+            if not os.path.exists(img_path):
+                img_path = os.path.join(os.path.dirname(__file__), "favicon.png")
+            if os.path.exists(img_path):
+                with open(img_path, "rb") as f:
+                    data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png" if img_path.endswith(".png") else "image/jpeg")
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(data)
+                return
+
         # 2. API Cấu hình ngân hàng & thông tin hệ thống
         if path == "/api/config":
             self._send_json(200, {
