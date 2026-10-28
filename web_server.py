@@ -461,3 +461,4 @@ def start_web_server(bot=None, loop=None, port=None):
     t.start()
     logger.info(f"🌐 Web App & API Server đã khởi động thành công trên cổng {port}!")
     return server
+
