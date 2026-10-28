@@ -53,27 +53,7 @@ from handlers.admin_handlers import (
     handle_admin_text_input,
 )
 
-# ── Health-check HTTP server giữ bot sống 24/7 trên Render ───────────────────
-class HealthCheckHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header("Content-Type", "text/plain; charset=utf-8")
-        self.end_headers()
-        self.wfile.write(b"Bot Locket Gold + Spotify + 3in1 is running 24/7!")
-
-    def do_HEAD(self):
-        self.send_response(200)
-        self.end_headers()
-
-    def log_message(self, format, *args):
-        pass
-
-def start_health_server():
-    port = int(os.environ.get("PORT", 8080))
-    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
-    t = threading.Thread(target=server.serve_forever, daemon=True)
-    t.start()
-    logger.info(f"🌐 Health-check HTTP server da khoi dong tren cong {port}")
+import web_server
 
 
 logging.basicConfig(
@@ -316,12 +296,13 @@ def main():
         handle_admin_text_input
     ))
 
-    # Khởi động web server ngầm để Render ping 24/7
-    start_health_server()
-    print("✅ Bot đã sẵn sàng nhận tin nhắn trên Telegram 24/7!")
-
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+
+    # Khởi động Web App Storefront & API Server trên cổng 8080 (hoặc $PORT trên Render)
+    web_server.start_web_server(bot=app.bot, loop=loop)
+    print("✅ Web App Storefront & Bot Telegram đã sẵn sàng hoạt động 24/7!")
+
     try:
         app.run_polling(drop_pending_updates=True)
     finally:
