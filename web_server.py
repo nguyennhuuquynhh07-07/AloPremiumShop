@@ -235,6 +235,59 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {"ok": True, "orders": results[:10]})
             return
 
+        # Phục vụ Trang Quản Trị Web App (admin.html)
+        if path in ("/admin", "/admin.html"):
+            admin_path = os.path.join(os.path.dirname(__file__), "admin.html")
+            if os.path.exists(admin_path):
+                with open(admin_path, "rb") as f:
+                    html_bytes = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(html_bytes)))
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(html_bytes)
+                return
+            else:
+                self._send_json(404, {"ok": False, "error": "admin.html not found"})
+                return
+
+        # API Admin: Lấy thông tin đồng bộ API CTV & Gói cước
+        if path == "/api/admin/api_info":
+            pin = params.get("pin", [""])[0].strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            try:
+                acc = api.get_account_info().get("data", {})
+            except Exception as e:
+                acc = {"error": str(e), "balanceCoin": 0}
+
+            try:
+                pkgs = api.get_packages("all").get("data", [])
+            except Exception as e:
+                pkgs = []
+
+            codes = list(db.get_codes().values())
+            self._send_json(200, {
+                "ok": True,
+                "account": acc,
+                "packages": pkgs,
+                "codes": codes,
+                "api_base_url": config.API_BASE_URL,
+            })
+            return
+
+        # API Admin: Lấy danh sách mã giảm giá
+        if path == "/api/admin/codes":
+            pin = params.get("pin", [""])[0].strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            codes = list(db.get_codes().values())
+            self._send_json(200, {"ok": True, "codes": codes})
+            return
+
         # 7. Phục vụ Trang chủ Web App (index.html)
         if path in ("/", "/index.html"):
             index_path = os.path.join(os.path.dirname(__file__), "index.html")
@@ -262,6 +315,67 @@ class WebAppHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         body = self._read_json_body()
+
+        # API Admin: Đăng nhập mã PIN
+        if path == "/api/admin/login":
+            pin = str(body.get("pin", "")).strip()
+            admin_pin = getattr(config, "ADMIN_PIN", "2802")
+            if pin == admin_pin:
+                self._send_json(200, {"ok": True})
+            else:
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            return
+
+        # API Admin: Tạo mã giảm giá mới
+        if path == "/api/admin/add_code":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            code = str(body.get("code", "")).strip().upper()
+            try:
+                discount_pct = int(body.get("discount_pct", 0))
+                if not (1 <= discount_pct <= 100):
+                    raise ValueError()
+            except Exception:
+                self._send_json(400, {"ok": False, "error": "Phần trăm giảm giá phải từ 1 đến 100"})
+                return
+            max_uses = int(body.get("max_uses", 0) or 0)
+            item = db.add_code(code, discount_pct, max_uses)
+            self._send_json(200, {"ok": True, "item": item})
+            return
+
+        # API Admin: Xóa mã giảm giá
+        if path == "/api/admin/del_code":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            code = str(body.get("code", "")).strip().upper()
+            success = db.del_code(code)
+            if success:
+                self._send_json(200, {"ok": True})
+            else:
+                self._send_json(404, {"ok": False, "error": f"Không tìm thấy mã {code}"})
+            return
+
+        # API Admin: Tra cứu UID qua API CTV
+        if path == "/api/admin/check_uid":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            identifier = str(body.get("identifier", "")).strip()
+            service = str(body.get("service", "locket")).strip()
+            try:
+                if service == "spotify":
+                    res = api.spotify_check(identifier)
+                else:
+                    res = api.check_uid_details(identifier, "locket")
+                self._send_json(200, {"ok": True, "data": res})
+            except Exception as e:
+                self._send_json(400, {"ok": False, "error": str(e)})
+            return
 
         # 1. API Kiểm tra tài khoản Locket / Spotify trước khi mua
         if path == "/api/check_account":

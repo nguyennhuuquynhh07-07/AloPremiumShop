@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Trị Viên VIP - Đồng Bộ API & Mã Giảm Giá</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #030712;
+        }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-border-glow {
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.2);
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- TOP HEADER -->
+    <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl overflow-hidden p-0.5 bg-gradient-to-tr from-amber-500 to-amber-300">
+                    <img src="/logo.png" alt="Logo" class="w-full h-full rounded-[10px] object-cover">
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-base tracking-tight text-white">PremiumStore VIP</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-black border border-red-500/30">ADMIN</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Bảng điều khiển quản trị viên</p>
+                </div>
+            </div>
+
+            <div id="headerActions" class="flex items-center gap-3 hidden">
+                <a href="/" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+                    🌐 Xem trang bán hàng
+                </a>
+                <button onclick="logoutAdmin()" class="px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-xs font-semibold text-red-400 transition-all cursor-pointer">
+                    🚪 Đăng xuất
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- LOGIN SCREEN (NẾU CHƯA NHẬP MÃ PIN) -->
+    <div id="loginSection" class="flex-1 flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl gold-border-glow">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-3xl">
+                    🔐
+                </div>
+                <h2 class="text-xl font-black text-white">Xác Thực Quản Trị Viên</h2>
+                <p class="text-xs text-slate-400 mt-1">Vui lòng nhập mã PIN quản trị để truy cập trang này</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-2">Mã PIN Quản Trị Viên:</label>
+                    <input type="password" id="pinInput" placeholder="Nhập mã PIN..." required autofocus
+                           class="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-700 text-center text-xl tracking-widest text-white font-mono font-bold focus:outline-none focus:border-amber-400 transition-all">
+                </div>
+                <div id="loginError" class="hidden text-xs text-red-400 font-semibold text-center p-2 rounded-xl bg-red-500/10 border border-red-500/20"></div>
+                <button type="submit" id="btnLogin"
+                        class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
+                    Xác Nhận Đăng Nhập ➔
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN ADMIN DASHBOARD -->
+    <main id="dashboardSection" class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 hidden">
+        
+        <!-- NAVIGATION TABS -->
+        <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 w-fit">
+            <button onclick="switchTab('api')" id="tabBtn_api"
+                    class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md">
+                🔗 Đồng Bộ API CTV (locket.2707226.xyz)
+            </button>
+            <button onclick="switchTab('codes')" id="tabBtn_codes"
+                    class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:text-white transition-all cursor-pointer">
+                🎟 Quản Lý Mã Giảm Giá
+            </button>
+        </div>
+
+        <!-- TAB 1: ĐỒNG BỘ API CTV -->
+        <div id="tabContent_api" class="space-y-6">
+            
+            <!-- OVERVIEW STATS CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                
+                <!-- CARD SỐ DƯ COIN -->
+                <div class="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/40 rounded-3xl p-6 shadow-xl relative overflow-hidden gold-border-glow">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Số Dư Coin Hiện Tại</span>
+                        <span class="text-2xl">🪙</span>
+                    </div>
+                    <div class="text-4xl font-black text-white" id="statBalanceCoin">---</div>
+                    <p class="text-xs text-slate-400 mt-2">Dùng để mua và gia hạn gói cho khách</p>
+                </div>
+
+                <!-- CARD TÀI KHOẢN CTV -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tài Khoản CTV</span>
+                        <span class="text-2xl">👤</span>
+                    </div>
+                    <div class="text-xl font-black text-white" id="statUsername">---</div>
+                    <p class="text-xs text-slate-400 mt-1" id="statEmail">---</p>
+                    <div class="mt-3 flex items-center gap-2">
+                        <span id="statRoleBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">CTV</span>
+                        <span id="statActiveBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Đã kích hoạt</span>
+                    </div>
+                </div>
+
+                <!-- CARD MÁY CHỦ API -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Máy Chủ API</span>
+                        <span class="text-2xl">🌐</span>
+                    </div>
+                    <div class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>Đã kết nối trực tiếp</span>
+                    </div>
+                    <p class="text-xs font-mono text-slate-400 mt-2 truncate" id="statApiUrl">https://locket.2707226.xyz</p>
+                    <button onclick="syncApiData()" id="btnSyncApi"
+                            class="mt-3 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                        🔄 Đồng Bộ Lại Dữ Liệu
+                    </button>
+                </div>
+            </div>
+
+            <!-- CÔNG CỤ TRA CỨU & KIỂM TRA UID QUA API -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <span>🔍 Tra Cứu & Kiểm Tra Tài Khoản Trên Máy Chủ API</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Kiểm tra thông tin chi tiết gói, UID hoặc giải mã link Locket/Spotify qua API CTV</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div class="sm:col-span-1">
+                        <select id="checkServiceSelect" class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs font-bold focus:outline-none focus:border-amber-400">
+                            <option value="locket">💛 Locket Gold</option>
+                            <option value="spotify">🎵 Spotify Premium</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <input type="text" id="checkIdentifierInput" placeholder="Nhập Username, Link Profile hoặc UID..."
+                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <button onclick="performCheckUid()" id="btnPerformCheck"
+                                class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs shadow-md transition-all cursor-pointer">
+                            Kiểm Tra API ➔
+                        </button>
+                    </div>
+                </div>
+
+                <div id="checkUidResult" class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs font-mono space-y-2"></div>
+            </div>
+
+            <!-- BẢNG DANH SÁCH GÓI CƯỚC TỪ API (PACKAGES) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <span>📦 Bảng Giá & Mã Gói Cước API (locket.2707226.xyz)</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Dữ liệu thời gian thực được đồng bộ trực tiếp từ máy chủ CTV</p>
+                    </div>
+                    <span id="packageCountBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300">0 gói</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 font-bold">
+                                <th class="py-3 px-4">Dịch Vụ</th>
+                                <th class="py-3 px-4">Mã Gói (packageCode)</th>
+                                <th class="py-3 px-4">Tên Gói Cước</th>
+                                <th class="py-3 px-4 text-right">Giá Coin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="packagesTableBody" class="divide-y divide-slate-800/60 font-medium">
+                            <tr>
+                                <td colspan="4" class="py-8 text-center text-slate-500">Đang tải danh sách gói cước từ API...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB 2: QUẢN LÝ MÃ GIẢM GIÁ -->
+        <div id="tabContent_codes" class="space-y-6 hidden">
+            
+            <!-- FORM TẠO MÃ MỚI -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+                <div class="mb-5">
+                    <h3 class="text-lg font-black text-white flex items-center gap-2">
+                        <span>🏷 Tạo Mã Giảm Giá Mới</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Mã giảm giá sẽ được khách hàng nhập khi thanh toán trên website hoặc bot</p>
+                </div>
+
+                <form onsubmit="handleCreateCode(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-bold text-slate-300 mb-2">Mã Khuyến Mãi (Code):</label>
+                        <input type="text" id="newCodeInput" placeholder="VD: TET2026, QUYNH20" required
+                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-black uppercase tracking-wider focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-bold text-slate-300 mb-2">Phần Trăm Giảm (%):</label>
+                        <input type="number" id="newDiscountInput" min="1" max="100" placeholder="VD: 20" required
+                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-bold focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-bold text-slate-300 mb-2">Số Lượt Dùng Tối Đa:</label>
+                        <input type="number" id="newLimitInput" min="0" placeholder="0 = Không giới hạn" value="0"
+                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-semibold focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <button type="submit" id="btnCreateCode"
+                                class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
+                            ➕ Tạo Mã Ngay
+                        </button>
+                    </div>
+                </form>
+                <div id="codeActionMsg" class="hidden mt-4 p-3 rounded-xl text-xs font-semibold"></div>
+            </div>
+
+            <!-- BẢNG DANH SÁCH MÃ GIẢM GIÁ HIỆN CÓ -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <span>📋 Danh Sách Mã Giảm Giá Đang Hoạt Động</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Các mã có thể xóa hoặc kiểm tra lượt sử dụng bất cứ lúc nào</p>
+                    </div>
+                    <button onclick="loadCodes()" class="text-xs text-amber-400 hover:underline font-bold">Làm mới danh sách</button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 font-bold">
+                                <th class="py-3 px-4">Mã Code</th>
+                                <th class="py-3 px-4">Mức Giảm</th>
+                                <th class="py-3 px-4">Lượt Đã Dùng / Giới Hạn</th>
+                                <th class="py-3 px-4">Ngày Tạo</th>
+                                <th class="py-3 px-4 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="codesTableBody" class="divide-y divide-slate-800/60 font-medium">
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-500">Chưa có mã giảm giá nào. Hãy tạo mã đầu tiên ở phía trên!</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto border-t border-slate-800/60 py-6 text-center text-xs text-slate-500">
+        PremiumStore VIP Admin Dashboard • Tự Động Kết Nối API & Điều Hành 24/7
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let currentPin = sessionStorage.getItem('admin_pin') || '';
+
+        // Tự động kiểm tra đăng nhập khi mở trang
+        document.addEventListener('DOMContentLoaded', () => {
+            if (currentPin) {
+                verifyAndLoad(currentPin);
+            }
+        });
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const pin = document.getElementById('pinInput').value.trim();
+            const errBox = document.getElementById('loginError');
+            errBox.classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    currentPin = pin;
+                    sessionStorage.setItem('admin_pin', pin);
+                    showDashboard();
+                    loadAdminData();
+                } else {
+                    errBox.textContent = data.error || 'Mã PIN không đúng!';
+                    errBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                errBox.textContent = 'Lỗi kết nối máy chủ: ' + err.message;
+                errBox.classList.remove('hidden');
+            }
+        }
+
+        async function verifyAndLoad(pin) {
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showDashboard();
+                    loadAdminData();
+                } else {
+                    sessionStorage.removeItem('admin_pin');
+                    currentPin = '';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('headerActions').classList.remove('hidden');
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('admin_pin');
+            currentPin = '';
+            location.reload();
+        }
+
+        function switchTab(tab) {
+            const btnApi = document.getElementById('tabBtn_api');
+            const btnCodes = document.getElementById('tabBtn_codes');
+            const contentApi = document.getElementById('tabContent_api');
+            const contentCodes = document.getElementById('tabContent_codes');
+
+            if (tab === 'api') {
+                btnApi.className = 'px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md';
+                btnCodes.className = 'px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:text-white transition-all cursor-pointer';
+                contentApi.classList.remove('hidden');
+                contentCodes.classList.add('hidden');
+            } else {
+                btnCodes.className = 'px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md';
+                btnApi.className = 'px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:text-white transition-all cursor-pointer';
+                contentCodes.classList.remove('hidden');
+                contentApi.classList.add('hidden');
+                loadCodes();
+            }
+        }
+
+        async function loadAdminData() {
+            syncApiData();
+            loadCodes();
+        }
+
+        async function syncApiData() {
+            const btn = document.getElementById('btnSyncApi');
+            btn.innerHTML = '⏳ Đang đồng bộ...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/admin/api_info?pin=${encodeURIComponent(currentPin)}`);
+                const data = await res.json();
+                if (!data.ok) {
+                    alert('Lỗi: ' + (data.error || 'Không thể lấy thông tin'));
+                    return;
+                }
+
+                // Render account stats
+                const acc = data.account || {};
+                document.getElementById('statBalanceCoin').textContent = (acc.balanceCoin !== undefined ? acc.balanceCoin : '0') + ' Coin';
+                document.getElementById('statUsername').textContent = acc.username ? `@${acc.username}` : 'quynh28';
+                document.getElementById('statEmail').textContent = acc.email || 'nguyennhuuquynhh07@gmail.com';
+                document.getElementById('statRoleBadge').textContent = acc.role || 'CTV';
+
+                // Render Packages
+                renderPackagesTable(data.packages || []);
+            } catch (err) {
+                alert('Lỗi kết nối API: ' + err.message);
+            } finally {
+                btn.innerHTML = '🔄 Đồng Bộ Lại Dữ Liệu';
+                btn.disabled = false;
+            }
+        }
+
+        function renderPackagesTable(packages) {
+            const tbody = document.getElementById('packagesTableBody');
+            const badge = document.getElementById('packageCountBadge');
+            badge.textContent = `${packages.length} gói`;
+
+            if (!packages || packages.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-500">Chưa có dữ liệu gói cước từ API.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = packages.map(pkg => {
+                const code = pkg.code || pkg.packageCode || '---';
+                const name = pkg.name || '---';
+                const price = pkg.priceCoin !== undefined ? pkg.priceCoin : '---';
+                let svcEmoji = '📦';
+                let svcName = 'Dịch vụ';
+                if (code.startsWith('LK') || name.toLowerCase().includes('locket')) {
+                    svcEmoji = '💛';
+                    svcName = 'Locket';
+                } else if (code.startsWith('SP') || name.toLowerCase().includes('spotify')) {
+                    svcEmoji = '🎵';
+                    svcName = 'Spotify';
+                } else if (name.toLowerCase().includes('filter')) {
+                    svcEmoji = '✨';
+                    svcName = 'Filter AI';
+                }
+
+                return `
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="py-3 px-4 flex items-center gap-2">
+                            <span>${svcEmoji}</span>
+                            <span class="font-bold text-white">${svcName}</span>
+                        </td>
+                        <td class="py-3 px-4 font-mono font-bold text-amber-400">${code}</td>
+                        <td class="py-3 px-4 text-slate-200 font-semibold">${name}</td>
+                        <td class="py-3 px-4 text-right font-black text-amber-400">${price} Coin</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function performCheckUid() {
+            const svc = document.getElementById('checkServiceSelect').value;
+            const ident = document.getElementById('checkIdentifierInput').value.trim();
+            const resBox = document.getElementById('checkUidResult');
+            const btn = document.getElementById('btnPerformCheck');
+
+            if (!ident) {
+                alert('Vui lòng nhập Username, Link hoặc UID!');
+                return;
+            }
+
+            btn.innerHTML = '⏳ Đang kiểm tra...';
+            btn.disabled = true;
+            resBox.classList.remove('hidden');
+            resBox.innerHTML = '<span class="text-slate-400">Đang truy vấn máy chủ API locket.2707226.xyz...</span>';
+
+            try {
+                const res = await fetch('/api/admin/check_uid', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin: currentPin, identifier: ident, service: svc })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    resBox.innerHTML = `<pre class="text-emerald-400 whitespace-pre-wrap">${JSON.stringify(data.data, null, 2)}</pre>`;
+                } else {
+                    resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi: ${data.error}</span>`;
+                }
+            } catch (err) {
+                resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi kết nối: ${err.message}</span>`;
+            } finally {
+                btn.innerHTML = 'Kiểm Tra API ➔';
+                btn.disabled = false;
+            }
+        }
+
+        // --- QUẢN LÝ MÃ GIẢM GIÁ ---
+        async function loadCodes() {
+            const tbody = document.getElementById('codesTableBody');
+            try {
+                const res = await fetch(`/api/admin/codes?pin=${encodeURIComponent(currentPin)}`);
+                const data = await res.json();
+                if (!data.ok) return;
+
+                const codes = data.codes || [];
+                if (codes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-500">Chưa có mã giảm giá nào. Hãy tạo mã đầu tiên ở phía trên!</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = codes.map(c => {
+                    const limitText = c.max_uses === 0 ? '<span class="text-emerald-400">Không giới hạn</span>' : `${c.used_count || 0} / ${c.max_uses}`;
+                    return `
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="py-3 px-4 font-mono font-black text-amber-400 text-sm">${c.code}</td>
+                            <td class="py-3 px-4 font-bold text-emerald-400">-${c.discount_pct}%</td>
+                            <td class="py-3 px-4 text-slate-300 font-semibold">${limitText}</td>
+                            <td class="py-3 px-4 text-slate-400 text-[11px]">${c.created_at || '---'}</td>
+                            <td class="py-3 px-4 text-right">
+                                <button onclick="deleteCode('${c.code}')" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold transition-all cursor-pointer">
+                                    🗑 Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function handleCreateCode(e) {
+            e.preventDefault();
+            const code = document.getElementById('newCodeInput').value.trim().toUpperCase();
+            const discount = parseInt(document.getElementById('newDiscountInput').value);
+            const limit = parseInt(document.getElementById('newLimitInput').value) || 0;
+            const msgBox = document.getElementById('codeActionMsg');
+            const btn = document.getElementById('btnCreateCode');
+
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Đang tạo...';
+
+            try {
+                const res = await fetch('/api/admin/add_code', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin: currentPin, code, discount_pct: discount, max_uses: limit })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    msgBox.className = 'mt-4 p-3 rounded-xl text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400';
+                    msgBox.textContent = `✅ Đã tạo thành công mã giảm giá ${code} (Giảm ${discount}%)!`;
+                    msgBox.classList.remove('hidden');
+                    document.getElementById('newCodeInput').value = '';
+                    loadCodes();
+                } else {
+                    msgBox.className = 'mt-4 p-3 rounded-xl text-xs font-semibold bg-red-500/10 border border-red-500/20 text-red-400';
+                    msgBox.textContent = `❌ Lỗi: ${data.error}`;
+                    msgBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                msgBox.className = 'mt-4 p-3 rounded-xl text-xs font-semibold bg-red-500/10 border border-red-500/20 text-red-400';
+                msgBox.textContent = `❌ Lỗi kết nối: ${err.message}`;
+                msgBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '➕ Tạo Mã Ngay';
+            }
+        }
+
+        async function deleteCode(code) {
+            if (!confirm(`Bạn có chắc chắn muốn xóa mã giảm giá "${code}" không?`)) return;
+
+            try {
+                const res = await fetch('/api/admin/del_code', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin: currentPin, code })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    loadCodes();
+                } else {
+                    alert('Lỗi: ' + data.error);
+                }
+            } catch (err) {
+                alert('Lỗi kết nối: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

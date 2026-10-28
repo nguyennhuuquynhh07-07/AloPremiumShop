@@ -24,6 +24,7 @@ ADMIN_IDS = [int(x.strip()) for x in os.getenv("ADMIN_IDS", os.getenv("ADMIN_ID"
 SUPPORT_PHONE = os.getenv("SUPPORT_PHONE", "0345222802")
 SUPPORT_TELEGRAM = os.getenv("SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28")
 SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME", "nguyennhuquynh28")
+ADMIN_PIN = os.getenv("ADMIN_PIN", "2802")
 
 # ============================================================
 #  2. CẤU HÌNH THANH TOÁN (VIETQR)

@@ -651,6 +651,30 @@ async def delcode_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Không tìm thấy mã giảm giá <code>{code}</code>.", parse_mode=ParseMode.HTML)
 
 
+# ── /codes (Danh sách mã giảm giá) ───────────────────────────────────────────
+
+async def codes_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Xem danh sách mã giảm giá."""
+    if not is_admin(update.effective_user.id):
+        return
+
+    codes = db.get_codes()
+    if not codes:
+        await update.message.reply_text(
+            "🏷 Hiện chưa có mã giảm giá nào được tạo.\n\n"
+            "Dùng lệnh: <code>/addcode &lt;MÃ&gt; &lt;%_GIẢM&gt; [LƯỢT]</code> để tạo.",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    lines = ["🏷 <b>DANH SÁCH MÃ GIẢM GIÁ ĐANG HOẠT ĐỘNG:</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"]
+    for code, item in codes.items():
+        limit_text = "Không giới hạn" if item.get("max_uses", 0) == 0 else f"{item.get('used_count', 0)}/{item.get('max_uses')}"
+        lines.append(f"• Mã: <code>{code}</code> — Giảm: <b>{item.get('discount_pct', 0)}%</b> (Đã dùng: <b>{limit_text}</b>)")
+    lines.append("\n💡 <i>Tạo mã: /addcode | Xoá mã: /delcode &lt;MÃ&gt;</i>")
+    await update.message.reply_text("\n".join(lines), parse_mode=ParseMode.HTML)
+
+
 # ── /noti & /notistop (Broadcast) ─────────────────────────────────────────────
 
 async def noti_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):

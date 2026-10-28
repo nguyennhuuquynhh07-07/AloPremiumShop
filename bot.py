@@ -49,7 +49,7 @@ from handlers.admin_handlers import (
     noti_cmd, notistop_cmd,
     rs_cmd, stats_cmd, users_cmd, find_cmd,
     ban_cmd, unban_cmd, orders_cmd, tokens_cmd,
-    checkbank_cmd, addcode_cmd, delcode_cmd, coin_cmd, packages_cmd, duyet_cmd,
+    checkbank_cmd, addcode_cmd, delcode_cmd, codes_cmd, coin_cmd, packages_cmd, duyet_cmd,
     handle_admin_text_input,
 )
 
@@ -268,6 +268,7 @@ def main():
     app.add_handler(CommandHandler("checkbank", checkbank_cmd))
     app.add_handler(CommandHandler("addcode",   addcode_cmd))
     app.add_handler(CommandHandler("delcode",   delcode_cmd))
+    app.add_handler(CommandHandler("codes",     codes_cmd))
 
     # ── Luồng mua hàng ───────────────────────────────────────────────────────
     app.add_handler(buy_conv)
