@@ -159,22 +159,21 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 5. API Tải file .mobileconfig trực tiếp vào Cài đặt iOS Safari
+        # 5. API Tải file .mobileconfig trực tiếp vào Cài đặt iOS Safari (CHỈ CHO ĐƠN ĐÃ THANH TOÁN)
         if path == "/api/download_profile" or path.endswith(".mobileconfig"):
             order_id = params.get("order_id", [""])[0].strip()
-            token = params.get("token", [""])[0].strip()
-            username = params.get("username", [""])[0].strip()
-
-            order = db.get_order(order_id) if order_id else None
-            is_preview = params.get("preview", ["0"])[0] == "1"
-
-            if order and order.get("status") != "done" and not is_preview:
-                self._send_json(403, {"ok": False, "error": "Đơn hàng chưa thanh toán hoặc chưa được kích hoạt."})
+            if not order_id:
+                self._send_json(400, {"ok": False, "error": "Vui lòng cung cấp mã đơn hàng order_id"})
                 return
 
-            product_key = order.get("product", "combo3in1") if order else "combo3in1"
-            safe_name = (order.get("display_name") if order else username) or "VIP"
-            clean_token = (order.get("token") or order.get("uid") if order else token) or "vip"
+            order = db.get_order(order_id)
+            if not order or order.get("status") != "done":
+                self._send_json(403, {"ok": False, "error": "Đơn hàng chưa thanh toán hoặc chưa được kích hoạt thành công."})
+                return
+
+            product_key = order.get("product", "combo3in1")
+            safe_name = order.get("display_name") or order.get("uid") or "VIP"
+            clean_token = order.get("token") or order.get("uid") or "vip"
 
             if product_key == "combo3in1":
                 xml_str = locket_service.build_mobileconfig_xml(
@@ -185,7 +184,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             else:
                 pv = config.PRODUCTS.get(product_key, {})
                 svc_name = pv.get("name", "Locket Gold VIP")
-                dns_link = (order.get("dns_link") if order else None) or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+                dns_link = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
                 bio = utils.generate_mobileconfig(
                     service_name=svc_name,
                     display_name=safe_name,
@@ -197,7 +196,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
             file_name = f"{product_key.capitalize()}_{safe_name}.mobileconfig"
 
             self.send_response(200)
-            # MIME type đặc biệt để Safari iPhone tự động bung popup Cài đặt Profile
             self.send_header("Content-Type", "application/x-apple-aspen-config; charset=utf-8")
             self.send_header("Content-Disposition", f'attachment; filename="{file_name}"')
             self.send_header("Content-Length", str(len(payload_bytes)))

@@ -17,7 +17,7 @@ from config import PRODUCTS, SUPPORT_USERNAME, DNS_BASE_URL, DNS_SLUG
 from keyboards import (
     main_menu_kb, plan_kb, confirm_buy_kb, back_main_kb,
     payment_kb, admin_approval_kb, back_to_plan_kb,
-    success_kb, orders_kb, support_kb, account_kb, language_kb,
+    success_kb, pending_approval_kb, orders_kb, support_kb, account_kb, language_kb,
     apidocs_kb, apierrors_kb
 )
 
@@ -398,37 +398,53 @@ async def cb_lang(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def cb_get_mobileconfig(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Callback gửi trực tiếp file .mobileconfig cho người dùng."""
+    """Callback gửi trực tiếp file .mobileconfig cho người dùng ĐÃ THANH TOÁN."""
     query = update.callback_query
-    await query.answer("Đang xuất file cấu hình...")
     user = query.from_user
 
     orders = db.get_user_orders(user.id)
     done_orders = [o for o in orders if o.get("status") == "done"]
 
-    dns_link = f"{DNS_BASE_URL}/{DNS_SLUG}"
-    if done_orders:
-        latest = sorted(done_orders, key=lambda x: x["created_at"], reverse=True)[0]
-        prod_name = PRODUCTS.get(latest.get("product"), {}).get("name", "Locket & Spotify")
-        uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
-    else:
-        prod_name = "Locket & Spotify Premium"
-        uid_name = user.username or user.first_name or "VIP"
+    if not done_orders:
+        await query.answer(
+            "⚠️ Bạn chưa có đơn hàng nào được duyệt thanh toán thành công!\nVui lòng thanh toán và đợi hệ thống duyệt để nhận file DNS.",
+            show_alert=True
+        )
+        return
 
-    profile_file = utils.generate_mobileconfig(
-        service_name=prod_name,
-        display_name=uid_name,
-        dns_link=dns_link
-    )
-    safe_uid = str(uid_name).replace(" ", "_")
-    file_name = f"DNS_{safe_uid}.mobileconfig"
+    await query.answer("Đang xuất file cấu hình...")
+    latest = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
+    prod_key = latest.get("product", "locket")
+    pv = PRODUCTS.get(prod_key, {})
+    prod_name = pv.get("name", "Locket & Spotify Premium")
+    uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
+
+    if prod_key == "combo3in1":
+        from locket_service import build_mobileconfig_xml
+        token = latest.get("token") or latest.get("uid") or "vip"
+        xml_str = build_mobileconfig_xml(
+            username=uid_name,
+            token=token,
+            cf_url=config.SERVER_BASE_URL
+        )
+        import io
+        bio = io.BytesIO(xml_str.encode("utf-8"))
+        bio.name = f"VipPro3in1_{latest.get('uid', 'vip')}.mobileconfig"
+    else:
+        dns_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
+        bio = utils.generate_mobileconfig(
+            service_name=prod_name,
+            display_name=uid_name,
+            dns_link=dns_link
+        )
+        safe_uid = str(uid_name).replace(" ", "_")
+        bio.name = f"{prod_key.capitalize()}_{safe_uid}.mobileconfig"
 
     caption = (
         f"📥 <b>HỒ SƠ CẤU HÌNH DNS PROFILE (.mobileconfig)</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"👤 Tài khoản: <b>@{uid_name}</b>\n"
-        f"📦 Dịch vụ: <b>{prod_name}</b>\n"
-        f"🌐 DNS Server: <code>{dns_link}</code>\n\n"
+        f"📦 Dịch vụ: <b>{prod_name}</b>\n\n"
         f"⚡ <b>HƯỚNG DẪN CÀI ĐẶT 1 CHẠM TRÊN IPHONE:</b>\n"
         f"1️⃣ Bấm trực tiếp vào file đính kèm phía trên để tải về máy.\n"
         f"2️⃣ Bấm <b>\"Cho phép\" (Allow)</b> khi có thông báo hiện lên.\n"
@@ -439,12 +455,11 @@ async def cb_get_mobileconfig(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     await ctx.bot.send_document(
         chat_id=user.id,
-        document=profile_file,
-        filename=file_name,
+        document=bio,
+        filename=bio.name,
         caption=caption,
         parse_mode=ParseMode.HTML
     )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  BƯỚC 1: Chọn sản phẩm & Gói (Callback)
@@ -739,9 +754,9 @@ async def cb_paid(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"🚀 <i>Link cấu hình DNS Profile sẽ tự động gửi tới đây ngay sau khi duyệt!</i>"
     )
     try:
-        await query.edit_message_caption(customer_msg, parse_mode=ParseMode.HTML, reply_markup=success_kb())
+        await query.edit_message_caption(customer_msg, parse_mode=ParseMode.HTML, reply_markup=pending_approval_kb())
     except Exception:
-        await query.edit_message_text(customer_msg, parse_mode=ParseMode.HTML, reply_markup=success_kb())
+        await query.edit_message_text(customer_msg, parse_mode=ParseMode.HTML, reply_markup=pending_approval_kb())
 
     # Gửi thông báo đến Admin
     from config import ADMIN_IDS

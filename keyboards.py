@@ -78,6 +78,17 @@ def confirm_buy_kb(order_id: str) -> InlineKeyboardMarkup:
 
 # ── SAU KHI GỬI XÁC NHẬN HOẶC HOÀN THÀNH ─────────────────────────────────────
 
+def pending_approval_kb() -> InlineKeyboardMarkup:
+    """Bàn phím hiển thị khi khách bấm 'Tôi đã chuyển khoản' và đang chờ Admin duyệt.
+    TUYỆT ĐỐI KHÔNG CÓ NÚT TẢI FILE / NHẬN DNS Ở ĐÂY."""
+    rows = [
+        [InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide")],
+        [InlineKeyboardButton("💬 Hỗ trợ kỹ thuật", callback_data="support")],
+        [InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")],
+    ]
+    return InlineKeyboardMarkup(rows)
+
+
 def success_kb(dns_link: str = None) -> InlineKeyboardMarkup:
     rows = []
     if dns_link:
@@ -129,12 +140,14 @@ def account_kb(dns_link: str = None) -> InlineKeyboardMarkup:
         rows.append([
             InlineKeyboardButton("📋 Copy Link DNS Profile", api_kwargs={"copy_text": {"text": dns_link}})
         ])
+        rows.append([
+            InlineKeyboardButton("📥 Tải lại file .mobileconfig", callback_data="get_mobileconfig"),
+        ])
     rows.append([
-        InlineKeyboardButton("📥 Tải file .mobileconfig", callback_data="get_mobileconfig"),
         InlineKeyboardButton("📦 Đơn hàng đã mua",        callback_data="my_orders"),
+        InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS",  callback_data="show_guide"),
     ])
     rows.append([
-        InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS",  callback_data="show_guide"),
         InlineKeyboardButton("🏠 Về menu chính",          callback_data="back_main"),
     ])
     return InlineKeyboardMarkup(rows)
