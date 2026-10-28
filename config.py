@@ -104,7 +104,7 @@ CA_DER_B64 = (
 PRODUCTS = {
     "locket": {
         "name": "Locket Gold VIP",
-        "emoji": "🪄",
+        "emoji": "💛",
         "service": "locket",
         "description": "Mở khoá toàn bộ tính năng Locket Gold – Widget ảnh live trên màn hình chính.",
         "plans": {

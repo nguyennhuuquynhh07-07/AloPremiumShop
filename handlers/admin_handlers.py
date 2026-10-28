@@ -240,7 +240,7 @@ async def packages_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"  └ 🚫 Đã huỷ/thất bại: <b>{len(rejected_orders)}</b> đơn\n"
         f"💰 <b>Tổng doanh thu:</b> <b>{utils.fmt_price(total_revenue)}</b>\n\n"
         "━━━━━ Phân loại dịch vụ ━━━━━\n"
-        f"🪄 <b>Locket Gold:</b> {len(locket_done)} đơn | {utils.fmt_price(locket_rev)}\n"
+        f"💛 <b>Locket Gold:</b> {len(locket_done)} đơn | {utils.fmt_price(locket_rev)}\n"
         f"🎵 <b>Spotify Premium:</b> {len(spotify_done)} đơn | {utils.fmt_price(spotify_rev)}\n\n"
         "━━━━━ Số dư CTV API ━━━━━\n"
         f"🪙 <b>Ví Coin CTV:</b> <b>{coin_text}</b>\n"
