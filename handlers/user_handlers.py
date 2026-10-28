@@ -522,7 +522,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"  • Mở app Locket → Bấm Avatar góc trên → Xem <b>@username</b>\n"
             f"  • Hoặc chọn <i>'Mời bạn bè'</i> → <i>Sao chép liên kết</i> (<code>locket.cam/...</code>)\n\n"
             f"👑 <i>Gói này sẽ tự động tích hợp:</i>\n"
-            f"• 💛 <b>Locket Gold Pro (Vĩnh viễn 2099)</b>\n"
+            f"• 💛 <b>Locket Gold Pro (Vĩnh viễn)</b>\n"
             f"• 🎵 <b>Spotify Premium</b>\n"
             f"• ▶️ <b>YouTube Premium (Chặn QC + PiP nền)</b>\n\n"
             f"👇 <b>Gửi Username hoặc Link Locket của bạn vào ô chat bên dưới:</b>"

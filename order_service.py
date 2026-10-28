@@ -29,7 +29,7 @@ def build_guide_3in1_text(order: dict, download_url: str) -> str:
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"👤 <b>Tài khoản:</b> {order.get('display_name')} (<code>@{order.get('uid')}</code>)\n"
         f"👑 <b>Gói dịch vụ đã mở:</b>\n"
-        f"  • 💛 <b>Locket Gold Pro</b> (Vĩnh viễn 2099)\n"
+        f"  • 💛 <b>Locket Gold Pro</b> (Vĩnh viễn)\n"
         f"  • 🎵 <b>Spotify Premium</b>\n"
         f"  • ▶️ <b>YouTube Premium</b> (Chặn QC + PiP nền)\n"
         f"🛡️ <b>Trạng thái:</b> ✅ <i>Đã thanh toán {utils.fmt_price(order['price'])}</i>\n\n"

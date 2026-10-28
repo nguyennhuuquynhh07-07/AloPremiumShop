@@ -131,7 +131,7 @@ PRODUCTS = {
         "name": "Siêu VIP 3-in-1",
         "emoji": "👑",
         "service": "combo3in1",
-        "description": "Gói cao cấp nhất: Kích hoạt Locket Gold 2099 + Spotify Premium + YouTube Premium (Chặn quảng cáo & PiP nền).",
+        "description": "Gói cao cấp nhất: Kích hoạt Locket Gold + Spotify Premium + YouTube Premium (Chặn quảng cáo & PiP nền).",
         "plans": {
             "ltm":  {"label": "Trọn Gói Vĩnh Viễn", "packageCode": "VIP3IN1", "price": 200000},
         },
