@@ -4,7 +4,8 @@ Tích hợp copy 1 chạm, hướng dẫn iOS trực quan và điều khiển đ
 """
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from config import PRODUCTS, SUPPORT_USERNAME
+import config
+from config import PRODUCTS, SUPPORT_USERNAME, SUPPORT_TELEGRAM, SUPPORT_PHONE
 
 
 # ── MENU CHÍNH ────────────────────────────────────────────────────────────────
