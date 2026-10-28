@@ -1,0 +1,17 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Cấu hình bảo mật & token (KHÔNG ĐƯỢC PUSH LÊN GITHUB)
+.env
+.env.local
+
+# Dữ liệu giao dịch và đơn hàng khách hàng
+orders.json
+
+# Log & file tạm hệ thống
+*.log
+.DS_Store
+Thumbs.db
