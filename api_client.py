@@ -8,69 +8,51 @@ import httpx
 from config import API_KEY, API_BASE_URL
 
 
-# ─── BẢNG TRA CỨU MÃ LỖI HTTP TỪ HỆ THỐNG ────────────────────────────────────
+# ─── BẢNG TRA CỨU MÃ LỖI THEO TÀI LIỆU API CTV ─────────────────────────────
 
 API_ERROR_CODES = {
-    400: {
-        "title": "HTTP 400",
-        "sample": "Thiếu username hoặc uid",
-        "cause": "Body hoặc Query gửi lên thiếu trường bắt buộc hoặc sai định dạng.",
-        "solution": "Kiểm tra lại tên key trong JSON body và chắc chắn có Content-Type: application/json.",
-    },
-    401: {
-        "title": "HTTP 401",
-        "sample": "Unauthorized",
-        "cause": "Secret Key sai, đã bị rotate đổi mới hoặc thiếu header Bearer.",
-        "solution": "Lấy lại Secret Token trong tab Mã API. Gửi header Authorization: Bearer sk_....",
-    },
-    402: {
-        "title": "HTTP 402",
-        "sample": "Không đủ coin. Cần 15, bạn có 8",
-        "cause": "Số dư tài khoản CTV không đủ để thanh toán gói này.",
-        "solution": "Nạp thêm coin trong tab Nạp Coin của Dashboard.",
-    },
-    403: {
-        "title": "HTTP 403",
-        "sample": "Tài khoản chưa kích hoạt",
-        "cause": "Tài khoản CTV mới tạo chưa nạp đủ 150.000đ kích hoạt ban đầu.",
-        "solution": "Nạp tối thiểu 150.000đ để kích hoạt tài khoản.",
-    },
-    404: {
-        "title": "HTTP 404",
-        "sample": "Gói không tồn tại hoặc đã ẩn",
-        "cause": "Mã gói packageCode viết sai (Ví dụ nhầm SPOTIFY_1Y).",
-        "solution": "Gọi GET /api/packages để lấy đúng mã gói (SPT, SP6M, SPOTIFY1Y, SPVV).",
-    },
-    409: {
-        "title": "HTTP 409",
-        "sample": "UID thuộc về người khác",
-        "cause": "UID này đã được mua bởi CTV khác và vẫn đang còn hạn dùng.",
-        "solution": "Khách phải chờ hết hạn cũ hoặc dùng đúng tài khoản CTV ban đầu gia hạn.",
-    },
-    429: {
-        "title": "HTTP 429",
-        "sample": "Tra cứu quá nhiều – thử lại sau",
-        "cause": "Vượt quá tần suất rate limit cho phép trong 1 giờ.",
-        "solution": "Thêm cache ở bot (ví dụ cache 30 giây cho cùng một khách) để giảm tải request.",
-    },
+    # Mã lỗi trả về dạng chuỗi (String Error Codes)
+    "UNAUTHORIZED": "Secret Key bị sai, thiếu hoặc tài khoản CTV chưa được kích hoạt.",
+    "INVALID_IDENTIFIER": "Link Spotify hoặc Username Locket không hợp lệ / không tìm thấy.",
+    "INSUFFICIENT_BALANCE": "Số dư Coin không đủ để thanh toán gói cước. Cần nạp thêm Coin trên Dashboard.",
+    "PACKAGE_NOT_FOUND": "Mã gói cước (packageCode) không tồn tại hoặc đã ngừng bán.",
+    "UID_NOT_FOUND": "Không tìm thấy UID trên hệ thống khi gọi kiểm tra hoặc reset.",
+    "RATE_LIMIT_EXCEEDED": "Bot gửi request quá nhanh. Cần giãn cách request (1-2s).",
+    "INTERNAL_SERVER_ERROR": "Lỗi máy chủ API xử lý. Liên hệ Admin hệ thống để được hỗ trợ.",
+
+    # Mã lỗi HTTP Status Code
+    400: "Dữ liệu gửi lên không hợp lệ, UID/Username không tồn tại hoặc không đủ Coin.",
+    401: "Secret Key sai, hết hạn hoặc chưa kích hoạt tài khoản CTV.",
+    402: "Số dư tài khoản CTV không đủ để thanh toán gói này.",
+    403: "Tài khoản CTV mới tạo chưa nạp đủ 150.000đ kích hoạt ban đầu.",
+    404: "Gói cước hoặc UID không tồn tại trên hệ thống.",
+    409: "UID này đã được mua bởi CTV khác và vẫn đang còn hạn dùng.",
+    429: "Thao tác quá nhanh, vượt quá tần suất cho phép trong 1 giờ. Vui lòng thử lại sau.",
+    500: "Lỗi máy chủ API. Vui lòng liên hệ Admin để được hỗ trợ.",
 }
 
 
 def parse_api_error(resp: httpx.Response) -> str:
     """Chuyển đổi lỗi HTTP trả về từ API thành thông báo chuẩn theo bảng tra cứu."""
     status = resp.status_code
+    err_code = ""
     msg = ""
     try:
         data = resp.json()
-        msg = data.get("message") or data.get("error") or ""
+        err_code = data.get("error") or ""
+        msg = data.get("message") or ""
     except Exception:
         msg = resp.text
 
-    info = API_ERROR_CODES.get(status)
-    if info:
-        detail = f"[{info['title']}] {msg or info['sample']}\n"
-        detail += f"• Nguyên nhân: {info['cause']}\n"
-        detail += f"• Cách xử lý: {info['solution']}"
+    # Ưu tiên bắt theo mã lỗi chuỗi từ hệ thống
+    if err_code and err_code in API_ERROR_CODES:
+        return f"[{err_code}] {API_ERROR_CODES[err_code]}"
+
+    # Bắt theo mã HTTP Status
+    if status in API_ERROR_CODES:
+        detail = f"[HTTP {status}] {API_ERROR_CODES[status]}"
+        if msg:
+            detail += f"\n• Chi tiết: {msg}"
         return detail
 
     return f"Lỗi máy chủ API (Mã {status}): {msg or resp.text}"

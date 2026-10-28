@@ -39,7 +39,7 @@ from handlers.user_handlers import (
     cb_my_orders, cb_support, cb_my_account,
     cb_cmd_setlang, cb_lang, cb_apidocs, cb_get_mobileconfig,
     cb_back_main, cb_back_products,
-    receive_identifier, cancel_conv,
+    receive_identifier, cancel_conv, resetspotify_user_cmd,
     WAITING_IDENTIFIER,
 )
 from handlers.admin_handlers import (
@@ -48,7 +48,7 @@ from handlers.admin_handlers import (
     noti_cmd, notistop_cmd,
     rs_cmd, stats_cmd, users_cmd, find_cmd,
     ban_cmd, unban_cmd, orders_cmd, tokens_cmd,
-    checkbank_cmd, addcode_cmd, delcode_cmd,
+    checkbank_cmd, addcode_cmd, delcode_cmd, coin_cmd, packages_cmd,
     handle_admin_text_input,
 )
 
@@ -88,6 +88,7 @@ async def post_init(application):
         BotCommand("start", "Menu chính & Mua gói"),
         BotCommand("account", "Tài khoản của tôi"),
         BotCommand("myorders", "Đơn hàng đã mua"),
+        BotCommand("resetspotify", "Reset thiết bị Spotify"),
         BotCommand("support", "Hỗ trợ CSKH"),
         BotCommand("help", "Hướng dẫn sử dụng"),
     ]
@@ -95,10 +96,13 @@ async def post_init(application):
     admin_commands = [
         BotCommand("start", "Menu chính"),
         BotCommand("admin", "Bảng điều khiển Admin"),
+        BotCommand("coin", "Số dư Coin CTV API"),
+        BotCommand("packages", "Bảng giá gói cước API"),
         BotCommand("orders", "Danh sách đơn hàng"),
         BotCommand("stats", "Thống kê doanh thu"),
         BotCommand("users", "Quản lý người dùng"),
         BotCommand("find", "Tìm kiếm đơn / user"),
+        BotCommand("rs", "Reset thiết bị Spotify"),
         BotCommand("addcode", "Tạo mã giảm giá"),
         BotCommand("noti", "Gửi thông báo toàn hệ thống"),
         BotCommand("cancel", "Hủy thao tác đang làm"),
@@ -164,10 +168,14 @@ def main():
     app.add_handler(CommandHandler("menu",      menu_cmd))
     app.add_handler(CommandHandler("myorders",  myorders_cmd))
     app.add_handler(CommandHandler("support",   support_cmd))
+    app.add_handler(CommandHandler("resetspotify", resetspotify_user_cmd))
     app.add_handler(CommandHandler("cancel",    cancel_conv))
 
     # ── Lệnh Admin ───────────────────────────────────────────────────────────
     app.add_handler(CommandHandler("admin",     admin_cmd))
+    app.add_handler(CommandHandler("coin",      coin_cmd))
+    app.add_handler(CommandHandler("balance",   coin_cmd))
+    app.add_handler(CommandHandler("packages",  packages_cmd))
     app.add_handler(CommandHandler("noti",      noti_cmd))
     app.add_handler(CommandHandler("notistop",  notistop_cmd))
     app.add_handler(CommandHandler("rs",        rs_cmd))

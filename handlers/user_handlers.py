@@ -574,6 +574,10 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 f"🏷 <b>Gói hiện tại:</b> <code>{current_plan}</code>\n"
                 f"📶 <b>Phiên IP:</b> <i>{bound_text}</i>\n"
             )
+            extra_order_fields = {
+                "account_target": uid or raw_identifier,
+                "avatar": avatar_url,
+            }
         elif product_key == "combo3in1":
             from locket_service import resolve_locket_profile, clean_input
             cleaned = clean_input(raw_identifier)
@@ -587,14 +591,21 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 "token": res_3in1.get("token"),
                 "download_url": res_3in1.get("download_url"),
                 "avatar": avatar_url,
-                "locket_username": res_3in1.get("username") or cleaned
+                "locket_username": res_3in1.get("username") or cleaned,
+                "account_target": res_3in1.get("username") or cleaned,
             }
         else:
-            res = api.locket_resolve(raw_identifier)
+            from locket_service import clean_input
+            cleaned_username = clean_input(raw_identifier)
+            res = api.locket_resolve(cleaned_username)
             data = res.get("data") if isinstance(res.get("data"), dict) else res
-            uid  = data.get("uid") or data.get("id") or raw_identifier
-            display = data.get("displayName") or data.get("username") or data.get("name") or raw_identifier
+            uid  = data.get("uid") or data.get("id") or cleaned_username
+            display = data.get("displayName") or data.get("username") or data.get("name") or cleaned_username
             avatar_url = data.get("avatar") or data.get("avatarUrl")
+            extra_order_fields = {
+                "account_target": display or cleaned_username,
+                "avatar": avatar_url,
+            }
 
         # Tạo đơn hàng vào cơ sở dữ liệu
         order_id = utils.gen_order_id()
@@ -1028,3 +1039,44 @@ async def cancel_conv(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         reply_markup=main_menu_kb()
     )
     return ConversationHandler.END
+
+
+
+# ── /resetspotify: Khách tự giải phóng phiên thiết bị Spotify ─────────────────
+
+async def resetspotify_user_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Khách hàng tự reset thiết bị Spotify khi đổi điện thoại / cài lại app (POST /api/spotify/reset)."""
+    if not ctx.args:
+        await update.message.reply_text(
+            "🔄 <b>TỰ ĐỘNG RESET THIẾT BỊ SPOTIFY</b>\n\n"
+            "Nếu bạn đổi điện thoại hoặc cài lại app Spotify, hãy gửi kèm Link hoặc UID Spotify theo cú pháp:\n"
+            "👉 <code>/resetspotify &lt;link_hoặc_uid_spotify&gt;</code>\n\n"
+            "<i>Ví dụ:</i>\n"
+            "<code>/resetspotify 31t3tcqtl7dugzvuubw2ydhqy6km</code>",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    raw_target = ctx.args[0].strip()
+    msg = await update.message.reply_text("⏳ Đang kết nối API để giải phóng phiên thiết bị Spotify...", parse_mode=ParseMode.HTML)
+    try:
+        import re
+        m = re.search(r"user/([a-zA-Z0-9]+)", raw_target)
+        uid = m.group(1) if m else raw_target
+
+        res = api.spotify_reset(uid)
+        resp_msg = res.get("message", "Đã giải phóng phiên thiết bị thành công!")
+        await msg.edit_text(
+            f"✅ <b>ĐÃ RESET THIẾT BỊ SPOTIFY THÀNH CÔNG!</b>\n\n"
+            f"🆔 <b>UID:</b> <code>{uid}</code>\n"
+            f"💬 <b>Kết quả:</b> {resp_msg}\n\n"
+            f"👉 Bây giờ bạn có thể mở ứng dụng Spotify trên thiết bị mới để kết nối nghe nhạc bình thường!",
+            parse_mode=ParseMode.HTML
+        )
+    except Exception as e:
+        await msg.edit_text(
+            f"❌ <b>Reset thiết bị thất bại!</b>\n"
+            f"Chi tiết: <code>{e}</code>\n\n"
+            f"💡 <i>Vui lòng kiểm tra lại UID hoặc liên hệ hỗ trợ /support để được giúp đỡ.</i>",
+            parse_mode=ParseMode.HTML
+        )
