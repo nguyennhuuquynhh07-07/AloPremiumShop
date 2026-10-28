@@ -90,17 +90,19 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Bot Locket Gold + Spotify + 3in1 is running 24/7!")
             return
 
-        # 1.1 Phục vụ Favicon & Logo trang web
-        if path in ("/favicon.ico", "/favicon.png", "/logo.png"):
-            img_name = "favicon.png" if path != "/logo.png" else "logo.png"
-            img_path = os.path.join(os.path.dirname(__file__), img_name)
-            if not os.path.exists(img_path):
-                img_path = os.path.join(os.path.dirname(__file__), "favicon.png")
-            if os.path.exists(img_path):
-                with open(img_path, "rb") as f:
+        # 1.1 Phục vụ Static Images & Logo trang web
+        if path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp")) and ".." not in path:
+            file_name = os.path.basename(path)
+            if file_name == "favicon.ico":
+                file_name = "favicon.png"
+            file_path = os.path.join(os.path.dirname(__file__), file_name)
+            if os.path.exists(file_path):
+                ext = file_name.rsplit(".", 1)[-1].lower()
+                mime = "image/x-icon" if ext == "ico" else f"image/{ext}" if ext != "svg" else "image/svg+xml"
+                with open(file_path, "rb") as f:
                     data = f.read()
                 self.send_response(200)
-                self.send_header("Content-Type", "image/png" if img_path.endswith(".png") else "image/jpeg")
+                self.send_header("Content-Type", mime)
                 self.send_header("Content-Length", str(len(data)))
                 self.send_header("Cache-Control", "public, max-age=86400")
                 self._send_cors_headers()
