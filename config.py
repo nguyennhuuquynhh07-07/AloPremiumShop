@@ -26,10 +26,10 @@ SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME", "HeyLocket")
 # ============================================================
 #  2. CẤU HÌNH THANH TOÁN (VIETQR)
 # ============================================================
-BANK_ID = os.getenv("BANK_CODE", "TCB")
+BANK_ID = os.getenv("BANK_CODE", "TPB")
 BANK_CODE = BANK_ID
-BANK_NAME = os.getenv("BANK_NAME", "Techcombank")
-ACCOUNT_NO = os.getenv("BANK_ACCOUNT", "28022007888888")
+BANK_NAME = os.getenv("BANK_NAME", "TPBank")
+ACCOUNT_NO = os.getenv("BANK_ACCOUNT", "34528022007")
 BANK_ACCOUNT = ACCOUNT_NO
 ACCOUNT_NAME = os.getenv("ACCOUNT_HOLDER", "NGUYEN NHU QUYNH")
 ACCOUNT_HOLDER = ACCOUNT_NAME
