@@ -105,9 +105,6 @@
             <button onclick="switchMainTab('guide')" id="tabBtn_guide" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-all whitespace-nowrap cursor-pointer">
                 📖 Hướng Dẫn Cài Đặt
             </button>
-            <button onclick="switchMainTab('uploader')" id="tabBtn_uploader" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-all whitespace-nowrap cursor-pointer">
-                🎬 Đăng Locket Không Giới Hạn
-            </button>
         </div>
     </div>
 
@@ -396,67 +393,7 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- TAB 5: ĐĂNG LOCKET KHÔNG GIỚI HẠN (BYPASS UPLOADER)          -->
-        <!-- ============================================================ -->
-        <div id="section_uploader" class="hidden space-y-6">
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
-                <div class="flex items-center gap-3 mb-2">
-                    <span class="text-3xl">🎬</span>
-                    <h2 class="text-xl font-black text-white">Đăng Video Dài 90 Giây & Không Giới Hạn MB Lên Locket</h2>
-                </div>
-                <p class="text-xs sm:text-sm text-slate-400 mb-6">
-                    Bỏ qua giới hạn 10 giây và 15MB của ứng dụng gốc. Đăng tải video chất lượng cao từ Thư viện ảnh trực tiếp lên Locket Camera.
-                </p>
 
-                <!-- Login form for uploader -->
-                <div id="uploaderLoginCard" class="p-4 sm:p-5 rounded-2xl bg-slate-950 border border-slate-800 mb-6">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xs font-bold text-amber-400">🔐 Đăng nhập tài khoản Locket của bạn:</h3>
-                        <div id="uploaderBadge" class="hidden text-xs text-emerald-400 font-bold">● Đã kết nối</div>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                        <div class="sm:col-span-5">
-                            <input type="text" id="uploaderLoginEmail" placeholder="Email hoặc SĐT Locket..."
-                                   class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:border-amber-400">
-                        </div>
-                        <div class="sm:col-span-4">
-                            <input type="password" id="uploaderLoginPassword" placeholder="Mật khẩu..."
-                                   class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:border-amber-400">
-                        </div>
-                        <div class="sm:col-span-3">
-                            <button type="button" onclick="loginUploader()" id="btnUploaderLogin"
-                                    class="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs cursor-pointer">
-                                Kết Nối
-                            </button>
-                        </div>
-                    </div>
-                    <div id="uploaderLoginStatus" class="hidden mt-3 text-xs font-semibold"></div>
-                </div>
-
-                <!-- Video picker & upload button -->
-                <div class="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center">
-                    <input type="file" id="uploaderFileInput" accept="video/*,image/*" class="hidden" onchange="handleFileSelected(event)">
-                    <div onclick="document.getElementById('uploaderFileInput').click()" class="cursor-pointer py-8 flex flex-col items-center">
-                        <div class="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-3xl mb-3">
-                            📹
-                        </div>
-                        <p class="text-sm font-bold text-white mb-1" id="uploaderFileLabel">Bấm để chọn Video / Ảnh từ máy</p>
-                        <p class="text-xs text-slate-500">Hỗ trợ MP4, MOV, tối đa 90 giây</p>
-                    </div>
-
-                    <div class="mt-4 max-w-md mx-auto">
-                        <input type="text" id="uploaderCaptionInput" placeholder="Nhập Caption khoảnh khắc (tuỳ chọn)..."
-                               class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs mb-3 focus:outline-none focus:border-amber-400">
-                        <button type="button" onclick="startUploadMoment()" id="btnStartUpload" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-sm cursor-pointer shadow-lg">
-                            🚀 Đăng Khoảnh Khắc Lên Locket
-                        </button>
-                    </div>
-
-                    <div id="uploaderProgressBox" class="hidden mt-4 text-xs font-semibold"></div>
-                </div>
-            </div>
-        </div>
 
     </main>
 
@@ -575,7 +512,7 @@
 
         // Switch main tabs
         function switchMainTab(tabKey) {
-            ['store', 'lookup', 'spotify_reset', 'guide', 'uploader'].forEach(k => {
+            ['store', 'lookup', 'spotify_reset', 'guide'].forEach(k => {
                 const sec = document.getElementById('section_' + k);
                 const btn = document.getElementById('tabBtn_' + k);
                 if (sec) sec.classList.toggle('hidden', k !== tabKey);
@@ -950,62 +887,6 @@
                 btn.disabled = false;
                 btn.textContent = 'Reset Ngay';
             }
-        }
-
-        // ============================================================
-        // LOGIC ĐĂNG LOCKET (BYPASS 10S & 15MB)                         -->
-        // ============================================================
-        let uploaderSession = null;
-        let selectedFile = null;
-
-        function handleFileSelected(e) {
-            const f = e.target.files[0];
-            if (f) {
-                selectedFile = f;
-                document.getElementById('uploaderFileLabel').textContent = `✓ Đã chọn: ${f.name} (${(f.size/1024/1024).toFixed(1)} MB)`;
-            }
-        }
-
-        async function loginUploader() {
-            const email = document.getElementById('uploaderLoginEmail').value.trim();
-            const pass = document.getElementById('uploaderLoginPassword').value.trim();
-            const st = document.getElementById('uploaderLoginStatus');
-
-            if (!email || !pass) {
-                alert('Vui lòng nhập Email và Mật khẩu Locket!');
-                return;
-            }
-
-            st.className = 'mt-3 text-xs text-amber-400';
-            st.textContent = '⏳ Đang xác thực tài khoản Locket...';
-            st.classList.remove('hidden');
-
-            try {
-                // Giả lập xác thực hoặc kết nối qua session
-                uploaderSession = { email, logged_in: true };
-                document.getElementById('uploaderBadge').classList.remove('hidden');
-                st.className = 'mt-3 text-xs text-emerald-400';
-                st.textContent = '✅ Kết nối tài khoản Locket thành công!';
-            } catch (err) {
-                st.className = 'mt-3 text-xs text-rose-400';
-                st.textContent = '❌ Lỗi đăng nhập: ' + err.message;
-            }
-        }
-
-        async function startUploadMoment() {
-            if (!selectedFile) {
-                alert('Vui lòng chọn Video hoặc Ảnh muốn đăng!');
-                return;
-            }
-            const pbox = document.getElementById('uploaderProgressBox');
-            pbox.className = 'mt-4 text-xs text-amber-400';
-            pbox.textContent = '⏳ Đang tải file lên máy chủ Locket (bypass 10s)...';
-            pbox.classList.remove('hidden');
-
-            setTimeout(() => {
-                pbox.className = 'mt-4 text-xs text-emerald-400';
-                pbox.textContent = '🎉 Đăng khoảnh khắc lên Locket thành công!';
-            }, 3000);
         }
 
         // Khởi động
