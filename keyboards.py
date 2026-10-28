@@ -110,11 +110,11 @@ def orders_kb(has_done_order: bool = False, has_spotify: bool = False) -> Inline
 
 
 def support_kb() -> InlineKeyboardMarkup:
-    tele_url = getattr(config, "SUPPORT_TELEGRAM", "https://t.me/+84345222802")
+    tele_url = getattr(config, "SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28")
     phone = getattr(config, "SUPPORT_PHONE", "0345222802")
     rows = [
         [
-            InlineKeyboardButton("✈️ Chat Telegram hỗ trợ", url=tele_url),
+            InlineKeyboardButton("✈️ Chat Telegram (@nguyennhuquynh28)", url=tele_url),
             InlineKeyboardButton("💬 Chat Zalo", url=f"https://zalo.me/{phone}"),
         ],
         [InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide")],
