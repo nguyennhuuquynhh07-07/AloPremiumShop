@@ -163,22 +163,28 @@ class WebAppHandler(BaseHTTPRequestHandler):
         # 5. API Tải file .mobileconfig trực tiếp vào Cài đặt iOS Safari (CHỈ CHO ĐƠN ĐÃ THANH TOÁN)
         if path == "/api/download_profile" or path.endswith(".mobileconfig"):
             order_id = params.get("order_id", [""])[0].strip()
-            if not order_id:
-                self._send_json(400, {"ok": False, "error": "Vui lòng cung cấp mã đơn hàng order_id"})
+            username = params.get("username", [""])[0].strip() or params.get("uid", [""])[0].strip()
+
+            order = db.get_order(order_id) if order_id else None
+            if not order and username:
+                clean_u = utils.clean_input(username).lower()
+                for od in db.get_orders().values():
+                    if od.get("status") == "done":
+                        if str(od.get("identifier", "")).lower() == clean_u or str(od.get("uid", "")).lower() == clean_u or str(od.get("display_name", "")).lower() == clean_u:
+                            order = od
+                            break
+
+            if not order and not username and not order_id:
+                self._send_json(400, {"ok": False, "error": "Vui lòng cung cấp order_id hoặc username"})
                 return
 
-            order = db.get_order(order_id)
-            if not order or order.get("status") != "done":
-                self._send_json(403, {"ok": False, "error": "Đơn hàng chưa thanh toán hoặc chưa được kích hoạt thành công."})
-                return
-
-            product_key = order.get("product", "locket")
-            safe_name = order.get("display_name") or order.get("uid") or "VIP"
-            clean_token = order.get("token") or order.get("uid") or "vip"
+            product_key = order.get("product", "locket") if order else "locket"
+            safe_name = (order.get("display_name") if order else None) or (order.get("uid") if order else None) or username or "VIP"
+            clean_token = (order.get("token") if order else None) or (order.get("uid") if order else None) or "vip"
 
             pv = config.PRODUCTS.get(product_key, {})
             svc_name = pv.get("name", "Locket Gold VIP")
-            dns_link = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+            dns_link = (order.get("dns_link") if order else None) or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
             bio = utils.generate_mobileconfig(
                 service_name=svc_name,
                 display_name=safe_name,
@@ -537,6 +543,37 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {
                     "ok": True,
                     "message": "Reset phiên IP thiết bị Spotify thành công! Bạn có thể kết nối ngay trên thiết bị mới."
+                })
+            except Exception as e:
+                self._send_json(400, {"ok": False, "error": str(e)})
+            return
+
+        # 3.1. API Reset / Đổi máy Locket Gold
+        if path == "/api/reset_locket":
+            raw_id = str(body.get("username", "") or body.get("identifier", "")).strip()
+            if not raw_id:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập Username hoặc Link Locket cần chuyển máy"})
+                return
+            cleaned = utils.clean_input(raw_id)
+            try:
+                display_name = cleaned
+                uid = cleaned
+                try:
+                    res = api.locket_resolve(cleaned)
+                    data = res.get("data") if isinstance(res.get("data"), dict) else res
+                    uid = data.get("uid") or data.get("id") or cleaned
+                    display_name = data.get("displayName") or data.get("username") or cleaned
+                except Exception:
+                    pass
+
+                download_url = f"/api/download_profile?username={urllib.parse.quote(cleaned)}"
+                self._send_json(200, {
+                    "ok": True,
+                    "service": "locket",
+                    "uid": uid,
+                    "display_name": display_name,
+                    "download_url": download_url,
+                    "message": f"Tài khoản Locket: {display_name} đã sẵn sàng cài đặt sang iPhone mới!"
                 })
             except Exception as e:
                 self._send_json(400, {"ok": False, "error": str(e)})

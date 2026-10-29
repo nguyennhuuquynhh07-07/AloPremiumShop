@@ -220,7 +220,7 @@
                 🔍 Tra Cứu Đơn Hàng
             </button>
             <button onclick="switchMainTab('spotify_reset')" id="tabBtn_spotify_reset" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 whitespace-nowrap cursor-pointer">
-                🔄 Reset Spotify
+                🔄 Đổi Máy / Reset
             </button>
             <button onclick="switchMainTab('guide')" id="tabBtn_guide" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 whitespace-nowrap cursor-pointer">
                 📖 Hướng Dẫn Cài Đặt
@@ -486,27 +486,87 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- TAB 3: RESET SPOTIFY                                         -->
+        <!-- TAB 3: ĐỔI MÁY & RESET THIẾT BỊ (LOCKET & SPOTIFY)           -->
         <!-- ============================================================ -->
         <div id="section_spotify_reset" class="hidden space-y-6">
             <div class="bg-[#0c0d12]/95 border border-white/10 rounded-[32px] p-6 sm:p-8 shadow-2xl">
                 <div class="flex items-center gap-3 mb-2">
                     <span class="text-3xl">🔄</span>
-                    <h2 class="font-fredoka text-xl sm:text-2xl font-black text-white">Reset Thiết Bị Spotify (Gỡ Khoá IP)</h2>
+                    <h2 class="font-fredoka text-xl sm:text-2xl font-black text-white">Đổi Máy & Reset Thiết Bị (Locket Gold & Spotify)</h2>
                 </div>
                 <p class="text-xs sm:text-sm text-zinc-400 mb-6">
-                    Khi đổi điện thoại hoặc chuyển mạng Wi-Fi mà Spotify báo lỗi giới hạn thiết bị, bạn hãy nhập Spotify UID bên dưới để mở khoá ngay lập tức.
+                    Khi bạn đổi sang điện thoại iPhone mới hoặc đổi mạng Wi-Fi, hãy chọn dịch vụ bên dưới để cài lại Locket Gold hoặc gỡ khoá IP Spotify hoàn toàn tự động miễn phí.
                 </p>
 
-                <div class="flex flex-col sm:flex-row gap-2.5 max-w-xl">
-                    <input type="text" id="resetSpotifyUidInput" placeholder="Nhập UID Spotify của bạn..."
-                           class="flex-1 px-4 py-3 rounded-2xl bg-[#06070a] border border-white/15 text-white text-sm font-semibold focus:outline-none focus:border-[#FFB800]">
-                    <button type="button" onclick="performResetSpotify()" id="btnPerformReset" class="px-7 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-fredoka font-bold text-sm cursor-pointer shrink-0">
-                        Reset Ngay
+                <!-- SERVICE SWITCHER (LOCKET / SPOTIFY) -->
+                <div class="flex items-center gap-3 mb-6">
+                    <button type="button" onclick="switchResetTab('locket')" id="btnResetTab_locket"
+                            class="locket-pill-interactive px-5 py-2.5 rounded-2xl border-2 border-[#FFB800] bg-[#FFB800]/15 text-[#FFB800] font-fredoka font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow-lg">
+                        <span>💛</span> Locket Gold (Cài sang máy mới)
+                    </button>
+                    <button type="button" onclick="switchResetTab('spotify')" id="btnResetTab_spotify"
+                            class="locket-pill-interactive px-5 py-2.5 rounded-2xl border border-white/10 bg-[#06070a] text-zinc-400 hover:text-white font-fredoka font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer">
+                        <span>🎵</span> Spotify Premium (Gỡ khoá IP)
                     </button>
                 </div>
 
-                <div id="resetSpotifyStatus" class="hidden mt-4 p-4 rounded-2xl text-xs font-semibold"></div>
+                <!-- FORM INPUT -->
+                <div class="max-w-xl">
+                    <label id="resetInputLabel" class="block text-xs font-fredoka font-bold text-zinc-300 mb-2">
+                        Nhập Username Locket hoặc Link Profile:
+                    </label>
+                    <div class="flex flex-col sm:flex-row gap-2.5">
+                        <div class="relative flex-1">
+                            <input type="text" id="resetAccountInput" placeholder="VD: conlaigii hoặc https://locket.cam/conlaigii"
+                                   class="w-full px-4 py-3.5 rounded-2xl bg-[#06070a] border border-white/15 text-white text-sm font-semibold focus:outline-none focus:border-[#FFB800]">
+                            <button type="button" onclick="pasteResetInput()" class="absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-zinc-300 text-xs font-bold cursor-pointer">
+                                📋 Dán
+                            </button>
+                        </div>
+                        <button type="button" onclick="executeDeviceReset()" id="btnExecuteReset"
+                                class="px-7 py-3.5 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-black font-fredoka font-black text-sm locket-btn-glow locket-btn-interactive cursor-pointer shrink-0">
+                            <span id="btnExecuteResetText">⚡ Lấy Cấu Hình Máy Mới</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KẾT QUẢ THÀNH CÔNG CHO LOCKET GOLD -->
+                <div id="resetLocketResultCard" class="hidden mt-6 p-5 sm:p-6 rounded-[28px] bg-[#06070a] border-2 border-[#FFB800]/40 space-y-4 max-w-xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-[#FFB800] text-black flex items-center justify-center font-black text-xl shrink-0">
+                            ✓
+                        </div>
+                        <div>
+                            <h3 class="font-fredoka text-base sm:text-lg font-black text-white" id="resetLocketTitle">Đã Sẵn Sàng Cài Vào iPhone Mới!</h3>
+                            <p class="text-xs text-zinc-400 mt-0.5" id="resetLocketSub">Tài khoản: conlaigii</p>
+                        </div>
+                    </div>
+
+                    <!-- Nút cài đặt trực tiếp -->
+                    <a id="btnResetLocketDownload" href="#" class="w-full block py-4 px-6 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-black font-fredoka font-black text-center text-sm shadow-xl pulse-gold cursor-pointer">
+                        📲 CÀI ĐẶT TRỰC TIẾP VÀO IPHONE MỚI
+                    </a>
+
+                    <!-- Mã QR quét bằng máy mới -->
+                    <div class="p-4 rounded-2xl bg-[#0c0d12] border border-white/10 text-center">
+                        <p class="text-xs font-bold text-[#FFB800] mb-2">📷 Hoặc Dùng Camera iPhone Mới Quét Mã QR:</p>
+                        <div class="bg-white p-2.5 rounded-2xl inline-block border-2 border-[#FFB800]/40 shadow-xl">
+                            <img id="resetLocketQrImg" src="" alt="Mã QR Cài Đặt Máy Mới" class="w-40 h-40 object-contain mx-auto">
+                        </div>
+                        <p class="text-[11px] text-zinc-400 mt-2">Mở <strong>Camera</strong> trên iPhone mới quét mã để tự động tải cấu hình</p>
+                    </div>
+
+                    <!-- 3 bước hướng dẫn -->
+                    <div class="text-xs text-zinc-300 space-y-1.5 p-3 rounded-xl bg-white/5 border border-white/5">
+                        <p class="font-bold text-[#FFB800]">⚡ 3 Bước kích hoạt trên máy mới:</p>
+                        <p>1️⃣ Bấm nút vàng hoặc quét QR → Bấm <strong>"Cho phép"</strong></p>
+                        <p>2️⃣ Vào <strong>Cài đặt iPhone</strong> → <strong>Đã tải về hồ sơ</strong> → Bấm <strong>Cài đặt</strong></p>
+                        <p>3️⃣ Mở Locket lên là tự động kích hoạt Gold!</p>
+                    </div>
+                </div>
+
+                <!-- THÔNG BÁO CHO SPOTIFY HOẶC LỖI -->
+                <div id="resetGeneralStatus" class="hidden mt-4 p-4 rounded-2xl text-xs font-semibold max-w-xl"></div>
             </div>
         </div>
 
@@ -1070,41 +1130,103 @@
         }
 
         // ============================================================
-        // LOGIC RESET SPOTIFY                                         -->
+        // LOGIC ĐỔI MÁY & RESET THIẾT BỊ (LOCKET & SPOTIFY)           -->
         // ============================================================
-        async function performResetSpotify() {
-            const uid = document.getElementById('resetSpotifyUidInput').value.trim();
-            const statusBox = document.getElementById('resetSpotifyStatus');
-            const btn = document.getElementById('btnPerformReset');
+        let currentResetService = 'locket';
 
-            if (!uid) {
-                alert('Vui lòng nhập Spotify UID!');
+        function switchResetTab(serviceKey) {
+            currentResetService = serviceKey;
+            const btnLocket = document.getElementById('btnResetTab_locket');
+            const btnSpotify = document.getElementById('btnResetTab_spotify');
+            const label = document.getElementById('resetInputLabel');
+            const input = document.getElementById('resetAccountInput');
+            const btnText = document.getElementById('btnExecuteResetText');
+
+            // Hide previous results
+            document.getElementById('resetLocketResultCard').classList.add('hidden');
+            document.getElementById('resetGeneralStatus').classList.add('hidden');
+
+            if (serviceKey === 'locket') {
+                btnLocket.className = 'locket-pill-interactive px-5 py-2.5 rounded-2xl border-2 border-[#FFB800] bg-[#FFB800]/15 text-[#FFB800] font-fredoka font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow-lg';
+                btnSpotify.className = 'locket-pill-interactive px-5 py-2.5 rounded-2xl border border-white/10 bg-[#06070a] text-zinc-400 hover:text-white font-fredoka font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer';
+                label.textContent = 'Nhập Username Locket hoặc Link Profile:';
+                input.placeholder = 'VD: conlaigii hoặc https://locket.cam/conlaigii';
+                btnText.textContent = '⚡ Lấy Cấu Hình Máy Mới';
+            } else {
+                btnSpotify.className = 'locket-pill-interactive px-5 py-2.5 rounded-2xl border-2 border-emerald-400 bg-emerald-500/15 text-emerald-400 font-fredoka font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow-lg';
+                btnLocket.className = 'locket-pill-interactive px-5 py-2.5 rounded-2xl border border-white/10 bg-[#06070a] text-zinc-400 hover:text-white font-fredoka font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer';
+                label.textContent = 'Nhập UID Spotify của bạn:';
+                input.placeholder = 'VD: 31xxxxxxxxxx hoặc https://open.spotify.com/user/...';
+                btnText.textContent = '🔄 Reset Gỡ Khoá IP';
+            }
+        }
+
+        async function pasteResetInput() {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) document.getElementById('resetAccountInput').value = text.trim();
+            } catch (e) {
+                alert('Vui lòng dán thủ công bằng tay.');
+            }
+        }
+
+        async function executeDeviceReset() {
+            const raw = document.getElementById('resetAccountInput').value.trim();
+            const btn = document.getElementById('btnExecuteReset');
+            const btnText = document.getElementById('btnExecuteResetText');
+            const statusBox = document.getElementById('resetGeneralStatus');
+            const locketCard = document.getElementById('resetLocketResultCard');
+
+            if (!raw) {
+                alert('Vui lòng điền thông tin tài khoản cần đổi máy!');
                 return;
             }
 
             btn.disabled = true;
-            btn.textContent = '⏳ Đang reset...';
+            const originalText = btnText.textContent;
+            btnText.textContent = '⏳ Đang xử lý...';
             statusBox.classList.add('hidden');
+            locketCard.classList.add('hidden');
 
             try {
-                const res = await fetch('/api/reset_spotify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid })
-                });
-                const data = await res.json();
-                if (!res.ok || !data.ok) throw new Error(data.error || 'Lỗi khi reset thiết bị');
+                if (currentResetService === 'locket') {
+                    const res = await fetch('/api/reset_locket', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ identifier: raw })
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) throw new Error(data.error || 'Không tìm thấy tài khoản Locket');
 
-                statusBox.className = 'mt-4 p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold';
-                statusBox.textContent = '✅ ' + data.message;
-                statusBox.classList.remove('hidden');
+                    // Show Locket reinstall card
+                    document.getElementById('resetLocketTitle').textContent = `Đã Sẵn Sàng Cài Vào iPhone Mới!`;
+                    document.getElementById('resetLocketSub').textContent = `Tài khoản: ${data.display_name} (UID: ${data.uid})`;
+
+                    const fullDl = window.location.origin + data.download_url;
+                    document.getElementById('btnResetLocketDownload').href = fullDl;
+                    document.getElementById('resetLocketQrImg').src = `/api/qr?data=${encodeURIComponent(fullDl)}`;
+
+                    locketCard.classList.remove('hidden');
+                } else {
+                    const res = await fetch('/api/reset_spotify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: raw })
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) throw new Error(data.error || 'Lỗi khi reset Spotify');
+
+                    statusBox.className = 'mt-4 p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold max-w-xl';
+                    statusBox.textContent = '✅ ' + data.message;
+                    statusBox.classList.remove('hidden');
+                }
             } catch (err) {
-                statusBox.className = 'mt-4 p-4 rounded-2xl bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold';
+                statusBox.className = 'mt-4 p-4 rounded-2xl bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold max-w-xl';
                 statusBox.textContent = '❌ ' + err.message;
                 statusBox.classList.remove('hidden');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Reset Ngay';
+                btnText.textContent = originalText;
             }
         }
 
