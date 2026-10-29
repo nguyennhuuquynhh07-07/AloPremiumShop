@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title></title>
+    <title>Locket Gold VIP & Spotify Premium • PremiumStore</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="shortcut icon" href="/favicon.png">
     <link rel="apple-touch-icon" href="/favicon.png">
     
+    <!-- Google Fonts: Fredoka (Locket chunky branding) + Plus Jakarta Sans (Clean modern UI) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     
@@ -19,12 +21,23 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        fredoka: ['Fredoka', 'Plus Jakarta Sans', 'sans-serif']
+                    },
                     colors: {
-                        gold: {
-                            400: '#fbbf24',
-                            500: '#f59e0b',
-                            600: '#d97706',
+                        locket: {
+                            yellow: '#FFB800',
+                            yellowLight: '#FFCF40',
+                            yellowDark: '#E59B00',
+                            amber: '#FFA500',
+                            gold: '#F59E0B'
+                        },
+                        dark: {
+                            bg: '#050508',
+                            card: '#0c0d12',
+                            cardLight: '#14151c',
+                            border: 'rgba(255, 255, 255, 0.08)'
                         }
                     }
                 }
@@ -32,76 +45,120 @@
         }
     </script>
     <style>
+        :root {
+            --locket-yellow: #FFB800;
+            --locket-yellow-light: #FFD24C;
+            --locket-yellow-glow: rgba(255, 184, 0, 0.35);
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #090d16;
-            color: #f1f5f9;
+            background-color: #050508;
+            color: #f3f4f6;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255, 184, 0, 0.14) 0%, rgba(5, 5, 8, 0.8) 45%, #050508 100%),
+                radial-gradient(circle at 10% 30%, rgba(255, 165, 0, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 60%, rgba(255, 184, 0, 0.05) 0%, transparent 40%);
+            background-attachment: fixed;
         }
-        .gold-gradient-text {
-            background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%);
+        .font-fredoka {
+            font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif;
+        }
+        .locket-gradient-text {
+            background: linear-gradient(135deg, #FFE259 0%, #FFB800 60%, #FF8C00 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .gold-border-glow {
-            box-shadow: 0 0 25px rgba(245, 158, 11, 0.25);
+        .locket-gold-glow {
+            box-shadow: 0 0 35px rgba(255, 184, 0, 0.28);
+        }
+        .locket-btn-glow {
+            box-shadow: 0 4px 25px rgba(255, 184, 0, 0.35);
+        }
+        .locket-btn-glow:hover {
+            box-shadow: 0 6px 35px rgba(255, 184, 0, 0.55);
+            transform: translateY(-2px);
+        }
+        
+        /* Floating Sticker Animations echoing Locket.com */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(var(--rot, -4deg)); }
+            50% { transform: translateY(-10px) rotate(calc(var(--rot, -4deg) + 2deg)); }
+        }
+        @keyframes floatRev {
+            0%, 100% { transform: translateY(0px) rotate(var(--rot, 4deg)); }
+            50% { transform: translateY(8px) rotate(calc(var(--rot, 4deg) - 2deg)); }
         }
         @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); transform: scale(1); }
-            50% { box-shadow: 0 0 35px rgba(245, 158, 11, 0.8); transform: scale(1.02); }
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 184, 0, 0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 40px rgba(255, 184, 0, 0.8); transform: scale(1.02); }
         }
-        .pulse-gold {
-            animation: pulseGlow 2.5s infinite;
-        }
+        .sticker-float-1 { animation: floatSlow 4s ease-in-out infinite; }
+        .sticker-float-2 { animation: floatRev 5s ease-in-out infinite; }
+        .pulse-gold { animation: pulseGlow 2.5s infinite; }
+        
         .tab-btn.active {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: #090d16;
-            font-weight: 800;
+            background: #FFB800;
+            color: #050508;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            box-shadow: 0 4px 20px rgba(255, 184, 0, 0.35);
         }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #050508; }
+        ::-webkit-scrollbar-thumb { background: #1c1d24; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FFB800; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-amber-400 selection:text-slate-950">
+<body class="min-h-screen flex flex-col selection:bg-[#FFB800] selection:text-black">
 
     <!-- TOP HEADER -->
-    <header class="sticky top-0 z-50 bg-[#090d16]/90 backdrop-blur-xl border-b border-slate-800">
+    <header class="sticky top-0 z-50 bg-[#050508]/90 backdrop-blur-2xl border-b border-white/10">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <img src="/logo.png" alt="PremiumStore" class="w-10 h-10 rounded-2xl object-cover shadow-lg border border-amber-400/40">
+                <!-- Iconic Locket Yellow Squircle Logo -->
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#FFD24C] to-[#FF9B00] flex items-center justify-center text-black font-black text-xl shadow-lg shadow-amber-500/30 shrink-0 transform hover:rotate-6 transition-all">
+                    💛
+                </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="text-base sm:text-lg font-black tracking-tight text-white">PremiumStore <span class="gold-gradient-text">VIP</span></span>
-                        <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Online 24/7</span>
+                        <span class="font-fredoka text-lg sm:text-xl font-black tracking-tight text-white">Locket <span class="text-[#FFB800]">VIP</span></span>
+                        <span class="text-[10px] font-fredoka font-bold uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> ONLINE 24/7
+                        </span>
                     </div>
-                    <p class="text-[11px] text-slate-400 hidden sm:block">Locket Gold • Spotify Premium • YouTube No Ads</p>
+                    <p class="text-[11px] text-zinc-400 hidden sm:block">Locket Gold Chính Hãng • Spotify Premium • Kích hoạt tự động</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
-                <a href="https://t.me/nguyennhuquynh28" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition-all">
-                    <span>✈️ Telegram @nguyennhuquynh28</span>
+                <a href="https://t.me/nguyennhuquynh28" target="_blank" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white text-xs font-bold transition-all">
+                    <span>✈️ Telegram</span>
                 </a>
-                <a href="https://zalo.me/0345222802" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400 hover:bg-blue-600/30 text-xs font-bold transition-all">
+                <a href="https://zalo.me/0345222802" target="_blank" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#0068FF]/15 border border-[#0068FF]/30 text-blue-400 hover:bg-[#0068FF]/25 text-xs font-bold transition-all">
                     <span>💬 Zalo 0345.222.802</span>
                 </a>
-                <a href="https://t.me/PremiumStoreV2Bot" target="_blank" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 hover:bg-amber-500/25 text-xs font-bold transition-all">
-                    <span>🤖 Mở Bot Telegram</span>
+                <a href="https://t.me/PremiumStoreV2Bot" target="_blank" class="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#FFB800]/15 border border-[#FFB800]/30 text-[#FFB800] hover:bg-[#FFB800]/25 text-xs font-bold transition-all">
+                    <span>🤖 Bot Telegram</span>
                 </a>
             </div>
         </div>
     </header>
 
     <!-- NAVIGATION TABS -->
-    <div class="bg-slate-900/60 border-b border-slate-800/80 sticky top-16 z-40 backdrop-blur-md">
+    <div class="bg-[#090a0f]/80 border-b border-white/5 sticky top-16 z-40 backdrop-blur-md">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-2 overflow-x-auto py-2.5 no-scrollbar">
-            <button onclick="switchMainTab('store')" id="tabBtn_store" class="tab-btn active px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer">
+            <button onclick="switchMainTab('store')" id="tabBtn_store" class="tab-btn active px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer">
                 🛍️ Mua Gói VIP
             </button>
-            <button onclick="switchMainTab('lookup')" id="tabBtn_lookup" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-all whitespace-nowrap cursor-pointer">
+            <button onclick="switchMainTab('lookup')" id="tabBtn_lookup" class="tab-btn px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 transition-all whitespace-nowrap cursor-pointer">
                 🔍 Tra Cứu Đơn Hàng
             </button>
-            <button onclick="switchMainTab('spotify_reset')" id="tabBtn_spotify_reset" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-all whitespace-nowrap cursor-pointer">
+            <button onclick="switchMainTab('spotify_reset')" id="tabBtn_spotify_reset" class="tab-btn px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 transition-all whitespace-nowrap cursor-pointer">
                 🔄 Reset Spotify
             </button>
-            <button onclick="switchMainTab('guide')" id="tabBtn_guide" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-all whitespace-nowrap cursor-pointer">
+            <button onclick="switchMainTab('guide')" id="tabBtn_guide" class="tab-btn px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 transition-all whitespace-nowrap cursor-pointer">
                 📖 Hướng Dẫn Cài Đặt
             </button>
         </div>
@@ -115,77 +172,143 @@
         <!-- ============================================================ -->
         <div id="section_store" class="space-y-8">
             
-            <!-- Hero banner -->
-            <div class="text-center max-w-3xl mx-auto pt-2 pb-4">
-                <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-5 rounded-full p-1 bg-gradient-to-tr from-amber-500 via-purple-500 to-cyan-500 shadow-2xl gold-border-glow">
-                    <img src="/logo.png" alt="PremiumStore VIP" class="w-full h-full rounded-full object-cover">
+            <!-- HERO BANNER IN LOCKET.COM STYLE WITH FLOATING STICKERS -->
+            <div class="relative text-center max-w-4xl mx-auto pt-4 pb-8 px-2 overflow-hidden sm:overflow-visible">
+                
+                <!-- STICKER 1: "BEST FRIENDS FIRST" (Top Left) -->
+                <div class="hidden md:flex absolute -top-1 left-2 sticker-float-1 z-10 items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FFB800] text-black font-fredoka font-black text-xs uppercase shadow-xl border-2 border-white/20 select-none" style="--rot: -8deg;">
+                    <span>💛</span> BEST FRIENDS FIRST
                 </div>
-                <h1 class="text-lg sm:text-2xl md:text-3xl font-extrabold tracking-tight text-white leading-snug max-w-3xl mx-auto">
-                    Trọn bộ dịch vụ cao cấp: <span class="gold-gradient-text">Locket Gold</span> + <span class="gold-gradient-text">Spotify Premium</span> + <span class="gold-gradient-text">YouTube Premium Không Quảng Cáo</span>. Cài đặt 1 chạm trên iPhone bằng Safari!
+
+                <!-- STICKER 2: "GOLD" BADGE (Top Right) -->
+                <div class="hidden md:flex absolute top-2 right-4 sticker-float-2 z-10 items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#0c0d12] border-2 border-[#FFB800] text-[#FFB800] font-fredoka font-black text-xs uppercase shadow-xl select-none" style="--rot: 6deg;">
+                    <span>👑</span> GOLD VIP
+                </div>
+
+                <!-- STICKER 3: "I 💛 LOCKET" (Bottom Left) -->
+                <div class="hidden md:flex absolute bottom-2 left-6 sticker-float-2 z-10 items-center gap-1.5 px-3 py-1 rounded-2xl bg-white text-zinc-900 font-fredoka font-bold text-xs shadow-xl border border-zinc-200 select-none" style="--rot: 5deg;">
+                    <span>I</span> <span class="text-[#FFB800] text-sm">💛</span> <span>LOCKET</span>
+                </div>
+
+                <!-- STICKER 4: SCAN QR BADGE (Bottom Right) -->
+                <div class="hidden md:flex absolute bottom-0 right-8 sticker-float-1 z-10 items-center gap-2 px-3.5 py-2 rounded-2xl bg-[#12131a] border border-[#FFB800]/40 text-zinc-200 font-fredoka font-bold text-xs shadow-xl select-none" style="--rot: -6deg;">
+                    <div class="w-6 h-6 rounded-lg bg-white flex items-center justify-center text-black text-[11px] font-black">QR</div>
+                    <span class="text-[#FFB800]">Cài 1 Chạm iOS</span>
+                </div>
+
+                <!-- Main Locket Squircle Center Emblem -->
+                <div class="relative inline-block mb-4">
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-[32px] bg-gradient-to-br from-[#FFD24C] via-[#FFB800] to-[#FF8C00] p-1.5 shadow-[0_15px_45px_rgba(255,184,0,0.35)] flex items-center justify-center transform hover:scale-105 hover:rotate-3 transition-all cursor-pointer">
+                        <div class="w-full h-full rounded-[26px] bg-[#0c0d12] flex items-center justify-center relative overflow-hidden">
+                            <span class="text-4xl sm:text-5xl transform hover:scale-110 transition-transform">💛</span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#FFB800]/10 to-transparent pointer-events-none"></div>
+                        </div>
+                    </div>
+                    <!-- Mini Crown on emblem -->
+                    <div class="absolute -top-3 -right-2 text-2xl animate-bounce">👑</div>
+                </div>
+
+                <!-- Headline in Locket Chunky Font -->
+                <h1 class="font-fredoka text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-tight">
+                    Locket <span class="locket-gradient-text">Gold VIP</span>
                 </h1>
+
+                <!-- Subtitle -->
+                <p class="font-fredoka text-sm sm:text-lg text-zinc-300 mt-3 font-semibold max-w-2xl mx-auto leading-relaxed">
+                    Trọn bộ bản quyền <span class="text-[#FFB800] font-bold">Locket Gold</span> & <span class="text-emerald-400 font-bold">Spotify Premium</span> • Kích hoạt tự động, cài đặt 1 chạm trên iPhone bằng Safari!
+                </p>
+
+                <!-- Quick Highlights Badges -->
+                <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
+                    <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-xs font-semibold">✨ Không cần Máy Tính</span>
+                    <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-xs font-semibold">🔒 Không Jailbreak</span>
+                    <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-xs font-semibold">⚡ Nhận Ngay Sau 3 Giây</span>
+                    <span class="px-3 py-1 rounded-full bg-[#FFB800]/15 border border-[#FFB800]/30 text-[#FFB800] text-xs font-bold">🛡️ Bảo Hành Trọn Đời</span>
+                </div>
             </div>
 
             <!-- BƯỚC 1: CHỌN GÓI DỊCH VỤ -->
             <div>
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-black text-white flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs">1</span>
+                    <h2 class="font-fredoka text-lg sm:text-xl font-black text-white flex items-center gap-2.5">
+                        <span class="w-7 h-7 rounded-xl bg-[#FFB800] text-black flex items-center justify-center text-xs font-black shadow-md">1</span>
                         <span>Chọn gói dịch vụ muốn nâng cấp</span>
                     </h2>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     
                     <!-- CARD 1: LOCKET GOLD VIP -->
                     <div onclick="selectProduct('locket')" id="card_locket" 
-                         class="rounded-3xl p-6 bg-slate-900/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-all shadow-lg">
-                        <div class="flex items-center gap-3 mb-4">
-                            <img src="/locket-icon.png" alt="Locket Gold" class="w-8 h-8 rounded-xl object-cover shadow-md">
+                         class="relative rounded-[32px] p-6 sm:p-7 bg-gradient-to-b from-[#18160f] to-[#0c0d12] border-2 border-[#FFB800] cursor-pointer transition-all shadow-2xl locket-gold-glow">
+                        <div class="absolute -top-3 right-6 bg-[#FFB800] text-black text-[11px] font-fredoka font-black uppercase px-3.5 py-1 rounded-full shadow-lg">
+                            🌟 Bán chạy nhất • Khuyên Dùng
+                        </div>
+                        <div class="flex items-center gap-3.5 mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFD24C] to-[#FF9B00] flex items-center justify-center text-black text-2xl shadow-lg shadow-amber-500/20 shrink-0">
+                                💛
+                            </div>
                             <div>
-                                <h3 class="text-lg font-black text-white">Locket Gold VIP</h3>
-                                <p class="text-xs text-slate-400">Gói bản quyền Locket Camera</p>
+                                <h3 class="font-fredoka text-xl font-black text-white">Locket Gold VIP</h3>
+                                <p class="text-xs text-[#FFB800] font-bold">Bản quyền Locket Camera Chính Hãng</p>
                             </div>
                         </div>
-                        <div class="my-4 pb-4 border-b border-slate-800">
-                            <div class="text-3xl font-black text-white" id="price_display_locket">5.000đ - 149.000đ</div>
-                            <div class="text-xs text-slate-400 mt-1">Từ 1 ngày đến Vĩnh viễn</div>
+                        <div class="my-4 pb-4 border-b border-white/10">
+                            <div class="font-fredoka text-3xl font-black text-[#FFB800]" id="price_display_locket">5.000đ - 149.000đ</div>
+                            <div class="text-xs text-zinc-400 mt-1">Từ 1 ngày đến Vĩnh viễn • Cập nhật tức thì</div>
                         </div>
-                        <ul class="space-y-2 text-xs text-slate-300">
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> Huy hiệu Locket Gold vàng chính thức
+                        <ul class="space-y-2.5 text-xs text-zinc-300">
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-[#FFB800]/20 text-[#FFB800] flex items-center justify-center font-black text-[10px]">✓</span>
+                                <span>Huy hiệu <strong>Locket Gold vàng</strong> chính thức trên trang cá nhân</span>
                             </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> Đăng khoảnh khắc dài hơn, HD nét căng
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-[#FFB800]/20 text-[#FFB800] flex items-center justify-center font-black text-[10px]">✓</span>
+                                <span>Đăng khoảnh khắc video dài hơn, ảnh HD nét căng</span>
                             </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> Cập nhật tức thì trên tài khoản của bạn
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-[#FFB800]/20 text-[#FFB800] flex items-center justify-center font-black text-[10px]">✓</span>
+                                <span>Xem người thích ảnh, ghim ảnh không giới hạn</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-[#FFB800]/20 text-[#FFB800] flex items-center justify-center font-black text-[10px]">✓</span>
+                                <span>Cài đặt 1 chạm qua Safari hoặc Quét mã QR</span>
                             </li>
                         </ul>
                     </div>
 
-                    <!-- CARD 3: SPOTIFY PREMIUM -->
+                    <!-- CARD 2: SPOTIFY PREMIUM -->
                     <div onclick="selectProduct('spotify')" id="card_spotify" 
-                         class="rounded-3xl p-6 bg-slate-900/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-all shadow-lg">
-                        <div class="flex items-center gap-3 mb-4">
-                            <img src="/spotify-icon.png" alt="Spotify Premium" class="w-8 h-8 rounded-xl object-cover shadow-md">
+                         class="rounded-[32px] p-6 sm:p-7 bg-[#0c0d12]/90 border border-white/10 hover:border-emerald-500/50 cursor-pointer transition-all shadow-xl">
+                        <div class="flex items-center gap-3.5 mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1ed760] to-[#128a3c] flex items-center justify-center text-black text-2xl shadow-lg shadow-emerald-500/20 shrink-0">
+                                🎵
+                            </div>
                             <div>
-                                <h3 class="text-lg font-black text-white">Spotify Premium</h3>
-                                <p class="text-xs text-slate-400">Gói nghe nhạc cao cấp</p>
+                                <h3 class="font-fredoka text-xl font-black text-white">Spotify Premium</h3>
+                                <p class="text-xs text-emerald-400 font-bold">Gói nghe nhạc Lossless cao cấp</p>
                             </div>
                         </div>
-                        <div class="my-4 pb-4 border-b border-slate-800">
-                            <div class="text-3xl font-black text-white" id="price_display_spotify">5.000đ - 160.000đ</div>
-                            <div class="text-xs text-slate-400 mt-1">Từ 1 ngày đến Vĩnh viễn</div>
+                        <div class="my-4 pb-4 border-b border-white/10">
+                            <div class="font-fredoka text-3xl font-black text-emerald-400" id="price_display_spotify">5.000đ - 160.000đ</div>
+                            <div class="text-xs text-zinc-400 mt-1">Từ 1 ngày đến Vĩnh viễn • Đổi thiết bị thoải mái</div>
                         </div>
-                        <ul class="space-y-2 text-xs text-slate-300">
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> Nghe nhạc không giới hạn mọi bài hát
+                        <ul class="space-y-2.5 text-xs text-zinc-300">
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]">✓</span>
+                                <span>Nghe nhạc chất lượng cao Lossless không giới hạn</span>
                             </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> Chặn 100% âm thanh & banner quảng cáo
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]">✓</span>
+                                <span>Chặn 100% âm thanh & banner quảng cáo phiền toái</span>
                             </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> Hỗ trợ Reset IP đổi thiết bị không giới hạn
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]">✓</span>
+                                <span>Chuyển bài không giới hạn, phát theo thứ tự tùy thích</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]">✓</span>
+                                <span>Tích hợp công cụ Reset IP thiết bị miễn phí 24/7</span>
                             </li>
                         </ul>
                     </div>
@@ -194,60 +317,60 @@
             </div>
 
             <!-- BƯỚC 2: CHỌN THỜI HẠN & NHẬP THÔNG TIN TÀI KHOẢN -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            <div class="bg-[#0c0d12]/95 border border-white/10 rounded-[32px] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-black text-white flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs">2</span>
+                    <h2 class="font-fredoka text-lg sm:text-xl font-black text-white flex items-center gap-2.5">
+                        <span class="w-7 h-7 rounded-xl bg-[#FFB800] text-black flex items-center justify-center text-xs font-black shadow-md">2</span>
                         <span>Chọn thời hạn & Điền tài khoản</span>
                     </h2>
-                    <span id="activeProductBadge" class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold">
+                    <span id="activeProductBadge" class="px-3.5 py-1 rounded-full bg-[#FFB800]/15 border border-[#FFB800]/30 text-[#FFB800] text-xs font-fredoka font-bold">
                         Gói đang chọn: Locket Gold VIP
                     </span>
                 </div>
 
                 <!-- Bảng chọn thời hạn gói -->
                 <div id="planSelectionContainer" class="mb-6">
-                    <label class="block text-xs font-bold text-slate-400 mb-2">Chọn thời hạn gói:</label>
+                    <label class="block text-xs font-fredoka font-bold text-zinc-400 mb-2.5">Chọn thời hạn gói:</label>
                     <div id="planPills" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
                 </div>
 
                 <!-- Nhập Username / Link tài khoản -->
                 <div class="space-y-4">
                     <div>
-                        <label id="accountInputLabel" class="block text-xs font-bold text-slate-300 mb-2">
+                        <label id="accountInputLabel" class="block text-xs font-fredoka font-bold text-zinc-300 mb-2">
                             Nhập Username Locket hoặc Link locket.cam:
                         </label>
                         <div class="flex flex-col sm:flex-row gap-2.5">
                             <div class="relative flex-1">
                                 <input type="text" id="accountInput" 
                                        placeholder="VD: conlaigii hoặc https://locket.cam/conlaigii"
-                                       class="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-semibold focus:outline-none focus:border-amber-400 transition-all">
-                                <button type="button" onclick="pasteAccountInput()" class="absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer">
+                                       class="w-full px-4 py-3.5 rounded-2xl bg-[#06070a] border border-white/15 text-white text-sm font-semibold focus:outline-none focus:border-[#FFB800] focus:ring-1 focus:ring-[#FFB800] transition-all">
+                                <button type="button" onclick="pasteAccountInput()" class="absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-zinc-300 text-xs font-bold cursor-pointer">
                                     📋 Dán
                                 </button>
                             </div>
                             <button type="button" onclick="checkAccount()" id="btnCheckAccount"
-                                    class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer shrink-0">
+                                    class="px-7 py-3.5 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-black font-fredoka font-black text-sm locket-btn-glow transition-all cursor-pointer shrink-0">
                                 <span id="btnCheckAccountText">⚡ Kiểm Tra Tài Khoản</span>
                             </button>
                         </div>
                     </div>
 
                     <!-- KẾT QUẢ XÁC MINH PROFILE -->
-                    <div id="accountProfileCard" class="hidden p-4 rounded-2xl bg-slate-950/80 border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div id="accountProfileCard" class="hidden p-4 rounded-2xl bg-[#06070a] border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div class="flex items-center gap-3.5">
-                            <img id="profileAvatar" src="" class="w-12 h-12 rounded-full object-cover border-2 border-amber-400 shrink-0" alt="avatar">
+                            <img id="profileAvatar" src="" class="w-12 h-12 rounded-full object-cover border-2 border-[#FFB800] shrink-0" alt="avatar">
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <span id="profileDisplayName" class="font-extrabold text-white text-sm sm:text-base">User Name</span>
-                                    <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Hợp lệ</span>
+                                    <span id="profileDisplayName" class="font-fredoka font-bold text-white text-sm sm:text-base">User Name</span>
+                                    <span class="text-[10px] font-fredoka font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Hợp lệ</span>
                                 </div>
-                                <p id="profileDetailText" class="text-xs text-slate-400 mt-0.5">UID: ...</p>
+                                <p id="profileDetailText" class="text-xs text-zinc-400 mt-0.5">UID: ...</p>
                             </div>
                         </div>
                         <div class="w-full sm:w-auto">
                             <button type="button" onclick="openPaymentModal()" id="btnOpenPayment"
-                                    class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-black text-sm shadow-lg cursor-pointer">
+                                    class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-fredoka font-bold text-sm shadow-lg cursor-pointer">
                                 💳 Thanh Toán Ngay (<span id="btnPayAmount">200.000đ</span>)
                             </button>
                         </div>
@@ -265,16 +388,16 @@
         <!-- TAB 2: TRA CỨU ĐƠN HÀNG (LOOKUP)                             -->
         <!-- ============================================================ -->
         <div id="section_lookup" class="hidden space-y-6">
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
-                <h2 class="text-xl font-black text-white mb-2">🔍 Tra Cứu Đơn Hàng & Tải Lại Hồ Sơ DNS</h2>
-                <p class="text-xs sm:text-sm text-slate-400 mb-6">
+            <div class="bg-[#0c0d12]/95 border border-white/10 rounded-[32px] p-6 sm:p-8 shadow-2xl">
+                <h2 class="font-fredoka text-xl sm:text-2xl font-black text-white mb-2">🔍 Tra Cứu Đơn Hàng & Tải Lại Hồ Sơ DNS</h2>
+                <p class="text-xs sm:text-sm text-zinc-400 mb-6">
                     Nhập mã đơn hàng (VD: <code>ORDER_XXXX</code>) hoặc Username / UID để lấy lại file <code>.mobileconfig</code> cài đặt bất cứ lúc nào.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-2.5 max-w-xl">
                     <input type="text" id="lookupQueryInput" placeholder="Nhập mã đơn hoặc username..."
-                           class="flex-1 px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-semibold focus:outline-none focus:border-amber-400">
-                    <button type="button" onclick="performLookup()" class="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-sm cursor-pointer shrink-0">
+                           class="flex-1 px-4 py-3 rounded-2xl bg-[#06070a] border border-white/15 text-white text-sm font-semibold focus:outline-none focus:border-[#FFB800]">
+                    <button type="button" onclick="performLookup()" class="px-7 py-3 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-black font-fredoka font-black text-sm cursor-pointer shrink-0">
                         Tìm Kiếm
                     </button>
                 </div>
@@ -287,19 +410,19 @@
         <!-- TAB 3: RESET SPOTIFY                                         -->
         <!-- ============================================================ -->
         <div id="section_spotify_reset" class="hidden space-y-6">
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
+            <div class="bg-[#0c0d12]/95 border border-white/10 rounded-[32px] p-6 sm:p-8 shadow-2xl">
                 <div class="flex items-center gap-3 mb-2">
                     <span class="text-3xl">🔄</span>
-                    <h2 class="text-xl font-black text-white">Reset Thiết Bị Spotify (Gỡ Khoá IP)</h2>
+                    <h2 class="font-fredoka text-xl sm:text-2xl font-black text-white">Reset Thiết Bị Spotify (Gỡ Khoá IP)</h2>
                 </div>
-                <p class="text-xs sm:text-sm text-slate-400 mb-6">
+                <p class="text-xs sm:text-sm text-zinc-400 mb-6">
                     Khi đổi điện thoại hoặc chuyển mạng Wi-Fi mà Spotify báo lỗi giới hạn thiết bị, bạn hãy nhập Spotify UID bên dưới để mở khoá ngay lập tức.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-2.5 max-w-xl">
                     <input type="text" id="resetSpotifyUidInput" placeholder="Nhập UID Spotify của bạn..."
-                           class="flex-1 px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-semibold focus:outline-none focus:border-amber-400">
-                    <button type="button" onclick="performResetSpotify()" id="btnPerformReset" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black text-sm cursor-pointer shrink-0">
+                           class="flex-1 px-4 py-3 rounded-2xl bg-[#06070a] border border-white/15 text-white text-sm font-semibold focus:outline-none focus:border-[#FFB800]">
+                    <button type="button" onclick="performResetSpotify()" id="btnPerformReset" class="px-7 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-fredoka font-bold text-sm cursor-pointer shrink-0">
                         Reset Ngay
                     </button>
                 </div>
@@ -312,155 +435,153 @@
         <!-- TAB 4: HƯỚNG DẪN CÀI ĐẶT IOS                                 -->
         <!-- ============================================================ -->
         <div id="section_guide" class="hidden space-y-6">
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
-                <h2 class="text-xl font-black text-white mb-2">📖 Hướng Dẫn Cài Đặt Hồ Sơ DNS Trên iPhone</h2>
-                <p class="text-xs sm:text-sm text-slate-400 mb-6">
+            <div class="bg-[#0c0d12]/95 border border-white/10 rounded-[32px] p-6 sm:p-8 shadow-2xl">
+                <h2 class="font-fredoka text-xl sm:text-2xl font-black text-white mb-2">📖 Hướng Dẫn Cài Đặt Hồ Sơ DNS Trên iPhone</h2>
+                <p class="text-xs sm:text-sm text-zinc-400 mb-6">
                     Chỉ cần thao tác 4 bước đơn giản, không cần máy tính, không jailbreak, an toàn 100%.
                 </p>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                        <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-sm mb-3">1</div>
-                        <h3 class="font-extrabold text-white text-sm mb-1">Tải Hồ Sơ Cấu Hình</h3>
-                        <p class="text-xs text-slate-400">Bấm nút <strong>"Cài Đặt Trực Tiếp Vào iPhone"</strong> trên trình duyệt <strong>Safari</strong>. Khi Safari hiển thị thông báo, chọn <strong>"Cho phép" (Allow)</strong>.</p>
+                    <div class="p-5 rounded-2xl bg-[#06070a] border border-white/10">
+                        <div class="w-8 h-8 rounded-xl bg-[#FFB800] text-black flex items-center justify-center font-fredoka font-black text-sm mb-3">1</div>
+                        <h3 class="font-fredoka font-bold text-white text-sm mb-1">Tải Hồ Sơ Cấu Hình</h3>
+                        <p class="text-xs text-zinc-400">Bấm nút <strong>"Cài Đặt Trực Tiếp Vào iPhone"</strong> trên trình duyệt <strong>Safari</strong>. Khi Safari hiển thị thông báo, chọn <strong>"Cho phép" (Allow)</strong>.</p>
                     </div>
 
-                    <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                        <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-sm mb-3">2</div>
-                        <h3 class="font-extrabold text-white text-sm mb-1">Mở Cài Đặt iPhone</h3>
-                        <p class="text-xs text-slate-400">Vào ứng dụng <strong>Cài đặt (Settings)</strong> trên máy → Chọn mục <strong>"Đã tải về hồ sơ"</strong> xuất hiện ngay dòng đầu tiên dưới tên Apple ID.</p>
+                    <div class="p-5 rounded-2xl bg-[#06070a] border border-white/10">
+                        <div class="w-8 h-8 rounded-xl bg-[#FFB800] text-black flex items-center justify-center font-fredoka font-black text-sm mb-3">2</div>
+                        <h3 class="font-fredoka font-bold text-white text-sm mb-1">Mở Cài Đặt iPhone</h3>
+                        <p class="text-xs text-zinc-400">Vào ứng dụng <strong>Cài đặt (Settings)</strong> trên máy → Chọn mục <strong>"Đã tải về hồ sơ"</strong> xuất hiện ngay dòng đầu tiên dưới tên Apple ID.</p>
                     </div>
 
-                    <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                        <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-sm mb-3">3</div>
-                        <h3 class="font-extrabold text-white text-sm mb-1">Xác Nhận Cài Đặt</h3>
-                        <p class="text-xs text-slate-400">Bấm <strong>Cài đặt</strong> ở góc trên bên phải → Nhập mật khẩu mở khoá màn hình iPhone (nếu có) → Tiếp tục bấm <strong>Cài đặt</strong> để hoàn tất.</p>
+                    <div class="p-5 rounded-2xl bg-[#06070a] border border-white/10">
+                        <div class="w-8 h-8 rounded-xl bg-[#FFB800] text-black flex items-center justify-center font-fredoka font-black text-sm mb-3">3</div>
+                        <h3 class="font-fredoka font-bold text-white text-sm mb-1">Xác Nhận Cài Đặt</h3>
+                        <p class="text-xs text-zinc-400">Bấm <strong>Cài đặt</strong> ở góc trên bên phải → Nhập mật khẩu mở khoá màn hình iPhone (nếu có) → Tiếp tục bấm <strong>Cài đặt</strong> để hoàn tất.</p>
                     </div>
 
-                    <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                        <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-sm mb-3">4</div>
-                        <h3 class="font-extrabold text-white text-sm mb-1">Bật Tin Cậy Chứng Chỉ (Locket Gold)</h3>
-                        <p class="text-xs text-slate-400">Vào <strong>Cài đặt chung</strong> → <strong>Giới thiệu</strong> → <strong>Cài đặt tin cậy chứng nhận</strong> (dưới cùng) → Gạt <strong>XANH</strong> công tắc cho <strong>Locket Gold Root CA</strong>.</p>
+                    <div class="p-5 rounded-2xl bg-[#06070a] border border-white/10">
+                        <div class="w-8 h-8 rounded-xl bg-[#FFB800] text-black flex items-center justify-center font-fredoka font-black text-sm mb-3">4</div>
+                        <h3 class="font-fredoka font-bold text-white text-sm mb-1">Khởi Động Lại App & Trải Nghiệm</h3>
+                        <p class="text-xs text-zinc-400">Tắt hẳn Locket hoặc Spotify (vuốt tắt từ trình đa nhiệm), sau đó mở lại app để tận hưởng trọn bộ tính năng VIP vĩnh viễn!</p>
                     </div>
                 </div>
 
-                <div class="mt-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
+                <div class="mt-6 p-4 rounded-2xl bg-[#FFB800]/10 border border-[#FFB800]/30 text-[#FFB800] text-xs font-semibold">
                     ✨ <strong>Hoàn tất:</strong> Sau khi xong 4 bước trên, bạn chỉ cần mở Locket hoặc Spotify lên là tự động kích hoạt tính năng Premium vĩnh viễn!
                 </div>
             </div>
         </div>
-
-
 
     </main>
 
     <!-- ============================================================ -->
     <!-- MODAL THANH TOÁN VIETQR & TỰ ĐỘNG KÍCH HOẠT                  -->
     <!-- ============================================================ -->
-    <div id="paymentModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-7 relative shadow-2xl text-center">
+    <div id="paymentModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-[#0c0d12] border-2 border-[#FFB800]/40 rounded-[32px] max-w-md w-full p-6 sm:p-7 relative shadow-[0_20px_60px_rgba(0,0,0,0.9)] text-center">
             
-            <button onclick="closePaymentModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm cursor-pointer">
+            <button onclick="closePaymentModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-zinc-400 hover:text-white flex items-center justify-center text-sm cursor-pointer">
                 ✕
             </button>
 
             <!-- TRẠNG THÁI 1: ĐANG CHỜ THANH TOÁN -->
             <div id="modalWaitingPayment">
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 text-xs font-bold mb-3">
-                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FFB800]/15 text-[#FFB800] text-xs font-fredoka font-bold mb-3">
+                    <span class="w-2 h-2 rounded-full bg-[#FFB800] animate-ping"></span>
                     <span>Đang chờ chuyển khoản...</span>
                 </div>
-                <h3 class="text-xl font-black text-white" id="modalProductName">Locket Gold VIP</h3>
-                <p class="text-xs text-slate-400 mt-1">Quét mã VietQR bằng app ngân hàng bất kỳ</p>
+                <h3 class="font-fredoka text-xl sm:text-2xl font-black text-white" id="modalProductName">Locket Gold VIP</h3>
+                <p class="text-xs text-zinc-400 mt-1">Quét mã VietQR bằng app ngân hàng bất kỳ</p>
 
                 <!-- ẢNH VIETQR -->
-                <div class="my-5 p-3 rounded-2xl bg-white max-w-[240px] mx-auto shadow-xl">
+                <div class="my-5 p-3 rounded-2xl bg-white max-w-[240px] mx-auto shadow-2xl border-2 border-[#FFB800]/50">
                     <img id="modalQrImg" src="" alt="VietQR" class="w-full h-auto rounded-lg">
                 </div>
 
                 <!-- THÔNG TIN CHUYỂN KHOẢN -->
-                <div class="space-y-2 text-left text-xs bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+                <div class="space-y-2 text-left text-xs bg-[#06070a] p-3.5 rounded-2xl border border-white/10">
                     <div class="flex items-center justify-between">
-                        <span class="text-slate-400">Ngân hàng:</span>
-                        <span class="font-extrabold text-white" id="modalBankName">TPBank</span>
+                        <span class="text-zinc-400">Ngân hàng:</span>
+                        <span class="font-bold text-white" id="modalBankName">TPBank</span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-slate-400">Số tài khoản:</span>
+                        <span class="text-zinc-400">Số tài khoản:</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="font-mono font-black text-amber-400 text-sm" id="modalAccountNo">34528022007</span>
-                            <button onclick="copyToClipboard(currentOrderData.bank_account, this)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]">Chép</button>
+                            <span class="font-mono font-black text-[#FFB800] text-sm" id="modalAccountNo">34528022007</span>
+                            <button onclick="copyToClipboard(currentOrderData.bank_account, this)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-zinc-300 text-[10px]">Chép</button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-slate-400">Chủ tài khoản:</span>
+                        <span class="text-zinc-400">Chủ tài khoản:</span>
                         <span class="font-bold text-white" id="modalAccountHolder">NGUYEN NHU QUYNH</span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-slate-400">Số tiền:</span>
+                        <span class="text-zinc-400">Số tiền:</span>
                         <div class="flex items-center gap-1.5">
                             <span class="font-black text-emerald-400 text-sm" id="modalAmount">200.000đ</span>
-                            <button onclick="copyToClipboard(currentOrderData.price, this)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]">Chép</button>
+                            <button onclick="copyToClipboard(currentOrderData.price, this)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-zinc-300 text-[10px]">Chép</button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-slate-400">Nội dung (Bắt buộc):</span>
+                        <span class="text-zinc-400">Nội dung (Bắt buộc):</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="font-mono font-black text-amber-400 text-sm" id="modalMemo">ORDER_...</span>
-                            <button onclick="copyToClipboard(currentOrderData.memo, this)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]">Chép</button>
+                            <span class="font-mono font-black text-[#FFB800] text-sm" id="modalMemo">ORDER_...</span>
+                            <button onclick="copyToClipboard(currentOrderData.memo, this)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-zinc-300 text-[10px]">Chép</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-4 text-[11px] text-slate-400 flex items-center justify-center gap-2">
+                <div class="mt-4 text-[11px] text-zinc-400 flex items-center justify-center gap-2">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>Hệ thống tự động kích hoạt ngay khi nhận tiền (không cần gửi bill)</span>
                 </div>
             </div>
 
-            <!-- TRẠNG THÁI 2: THANH TOÁN THÀNH CÔNG (HIỂN THỊ NÚT CÀI ĐẶT 1 CHẠM) -->
+            <!-- TRẠNG THÁI 2: THANH TOÁN THÀNH CÔNG -->
             <div id="modalSuccessPayment" class="hidden">
                 <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 text-3xl flex items-center justify-center mx-auto mb-3">
                     ✓
                 </div>
-                <h3 class="text-2xl font-black text-white">Thanh Toán Thành Công!</h3>
-                <p class="text-xs text-slate-400 mt-1 mb-5">Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.</p>
+                <h3 class="font-fredoka text-2xl font-black text-white">Thanh Toán Thành Công!</h3>
+                <p class="text-xs text-zinc-400 mt-1 mb-5">Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.</p>
 
                 <!-- NÚT BẤM TẠO / XEM MÃ QR CODE CỦA LINK DNS -->
                 <button type="button" onclick="toggleQrCodeDisplay()" id="btnToggleQrCode"
-                        class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500/20 to-amber-600/20 hover:from-amber-500/30 hover:to-amber-600/30 border-2 border-amber-400/50 text-amber-300 text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-2 mb-3 shadow-lg">
+                        class="w-full py-3.5 px-4 rounded-2xl bg-[#FFB800]/15 hover:bg-[#FFB800]/25 border-2 border-[#FFB800]/40 text-[#FFB800] text-sm font-fredoka font-bold transition-all cursor-pointer flex items-center justify-center gap-2 mb-3 shadow-lg">
                     <span>📷</span> TẠO / XEM MÃ QR CODE CỦA LINK DNS NÀY
                 </button>
 
                 <!-- KHUNG MÃ QR QUÉT TẢI TRỰC TIẾP -->
-                <div id="qrCodeDisplayWrapper" class="my-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center justify-center">
-                    <div class="text-xs font-bold text-amber-400 mb-2 flex items-center gap-1.5">
+                <div id="qrCodeDisplayWrapper" class="my-4 p-4 rounded-2xl bg-[#06070a] border border-white/10 flex flex-col items-center justify-center">
+                    <div class="text-xs font-bold text-[#FFB800] mb-2 flex items-center gap-1.5">
                         <span>📷</span> Quét Mã QR Cài Đặt Bằng Camera iPhone
                     </div>
-                    <div class="bg-white p-2.5 rounded-2xl shadow-xl inline-block border-2 border-amber-400/40">
+                    <div class="bg-white p-2.5 rounded-2xl shadow-xl inline-block border-2 border-[#FFB800]/40">
                         <img id="qrSuccessImg" src="" alt="Mã QR Tải Cấu Hình" class="w-44 h-44 object-contain mx-auto" />
                     </div>
-                    <p class="text-[11px] text-slate-400 mt-2 text-center">
+                    <p class="text-[11px] text-zinc-400 mt-2 text-center">
                         Mở <strong>Camera iPhone</strong> quét mã để tự động mở Safari tải cấu hình
                     </p>
                 </div>
 
                 <!-- NÚT CÀI ĐẶT 1 CHẠM TRỰC TIẾP VÀO IPHONE -->
                 <a id="modalDownloadBtn" href="#" 
-                   class="w-full block py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black text-base shadow-2xl pulse-gold mb-3 transition-all cursor-pointer">
+                   class="w-full block py-4 px-6 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-black font-fredoka font-black text-base shadow-2xl pulse-gold mb-3 transition-all cursor-pointer">
                     📲 CÀI ĐẶT TRỰC TIẾP VÀO IPHONE
                 </a>
 
                 <button type="button" onclick="copyDownloadUrl()" id="btnCopyDownloadUrl"
-                        class="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer">
+                        class="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-zinc-300 text-xs font-bold transition-all cursor-pointer">
                     📋 Copy Link Tải Hồ Sơ Cấu Hình
                 </button>
 
                 <!-- Tóm tắt 3 bước -->
-                <div class="mt-6 text-left text-xs space-y-2 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                    <p class="font-bold text-amber-400">⚡ Hướng dẫn cài đặt 3 bước:</p>
-                    <p class="text-slate-300">1️⃣ Bấm nút vàng bên trên → Bấm <strong>"Cho phép"</strong></p>
-                    <p class="text-slate-300">2️⃣ Vào <strong>Cài đặt iPhone</strong> → <strong>Đã tải về hồ sơ</strong> → Bấm <strong>Cài đặt</strong></p>
-                    <p class="text-slate-300">3️⃣ Vào <strong>Cài đặt chung</strong> → <strong>Giới thiệu</strong> → <strong>Tin cậy chứng nhận</strong> → Gạt <strong>XANH</strong> Root CA</p>
+                <div class="mt-6 text-left text-xs space-y-2 bg-[#06070a] p-4 rounded-2xl border border-white/10">
+                    <p class="font-bold text-[#FFB800]">⚡ Hướng dẫn cài đặt nhanh:</p>
+                    <p class="text-zinc-300">1️⃣ Bấm nút vàng bên trên → Bấm <strong>"Cho phép"</strong></p>
+                    <p class="text-zinc-300">2️⃣ Vào <strong>Cài đặt iPhone</strong> → <strong>Đã tải về hồ sơ</strong> → Bấm <strong>Cài đặt</strong></p>
+                    <p class="text-zinc-300">3️⃣ Mở lại ứng dụng và trải nghiệm trọn bộ VIP!</p>
                 </div>
             </div>
 
@@ -468,9 +589,9 @@
     </div>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500">
-        <p>PremiumStore VIP • Hệ thống bản quyền tự động VietQR SePay • Bảo hành trọn đời</p>
-        <p class="mt-1">Hỗ trợ CSKH 24/7 qua Telegram: <a href="https://t.me/nguyennhuquynh28" target="_blank" class="text-amber-400 underline font-bold">@nguyennhuquynh28</a> • Hotline/Zalo: <a href="https://zalo.me/0345222802" target="_blank" class="text-amber-400 font-bold underline">0345.222.802</a></p>
+    <footer class="bg-[#050508] border-t border-white/10 py-7 text-center text-xs text-zinc-500">
+        <p class="font-fredoka text-sm text-zinc-400">Locket VIP & Spotify Premium • Hệ thống tự động VietQR SePay • Bảo hành trọn đời</p>
+        <p class="mt-1.5">Hỗ trợ CSKH 24/7 qua Telegram: <a href="https://t.me/nguyennhuquynh28" target="_blank" class="text-[#FFB800] underline font-bold">@nguyennhuquynh28</a> • Hotline/Zalo: <a href="https://zalo.me/0345222802" target="_blank" class="text-[#FFB800] font-bold underline">0345.222.802</a></p>
     </footer>
 
     <!-- ============================================================ -->
@@ -514,14 +635,14 @@
         function selectProduct(prodKey) {
             selectedProduct = prodKey;
             
-            // Highlight card
+            // Highlight card with Locket Black & Gold theme
             ['locket', 'spotify'].forEach(k => {
                 const card = document.getElementById('card_' + k);
                 if (card) {
                     if (k === prodKey) {
-                        card.className = 'relative rounded-3xl p-6 bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500 cursor-pointer transition-all shadow-xl gold-border-glow';
+                        card.className = 'relative rounded-[32px] p-6 sm:p-7 bg-gradient-to-b from-[#18160f] to-[#0c0d12] border-2 border-[#FFB800] cursor-pointer transition-all shadow-2xl locket-gold-glow';
                     } else {
-                        card.className = 'rounded-3xl p-6 bg-slate-900/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-all shadow-lg';
+                        card.className = 'rounded-[32px] p-6 sm:p-7 bg-[#0c0d12]/90 border border-white/10 hover:border-[#FFB800]/40 cursor-pointer transition-all shadow-xl';
                     }
                 }
             });
@@ -560,14 +681,14 @@
                     const pl = pv.plans[pk];
                     const btn = document.createElement('button');
                     btn.type = 'button';
-                    btn.className = `p-3 rounded-xl border text-center transition-all cursor-pointer ${
+                    btn.className = `p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
                         pk === selectedPlan 
-                        ? 'border-amber-400 bg-amber-500/20 text-white font-extrabold' 
-                        : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-white'
+                        ? 'border-2 border-[#FFB800] bg-[#FFB800]/15 text-[#FFB800] font-fredoka font-bold shadow-lg' 
+                        : 'border border-white/10 bg-[#06070a] text-zinc-400 hover:text-white'
                     }`;
                     btn.innerHTML = `
-                        <div class="text-xs">${pl.label}</div>
-                        <div class="text-sm font-black text-amber-400 mt-0.5">${pl.price.toLocaleString()}đ</div>
+                        <div class="text-xs font-semibold">${pl.label}</div>
+                        <div class="text-sm font-fredoka font-black text-[#FFB800] mt-0.5">${pl.price.toLocaleString()}đ</div>
                     `;
                     btn.onclick = () => {
                         selectedPlan = pk;
@@ -639,7 +760,7 @@
                 verifiedAccountData = data;
                 
                 // Show profile
-                document.getElementById('profileAvatar').src = data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.display_name || 'VIP')}&background=f59e0b&color=000`;
+                document.getElementById('profileAvatar').src = data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.display_name || 'VIP')}&background=FFB800&color=000`;
                 document.getElementById('profileDisplayName').textContent = data.display_name || data.uid;
                 
                 let detailTxt = `UID: ${data.uid}`;
@@ -735,8 +856,8 @@
             // Bắn pháo hoa Confetti chúc mừng
             try {
                 confetti({
-                    particleCount: 100,
-                    spread: 70,
+                    particleCount: 120,
+                    spread: 80,
                     origin: { y: 0.6 }
                 });
             } catch (e) {}
@@ -809,7 +930,7 @@
                 return;
             }
 
-            box.innerHTML = '<div class="text-xs text-slate-400">🔍 Đang tìm kiếm...</div>';
+            box.innerHTML = '<div class="text-xs text-zinc-400">🔍 Đang tìm kiếm...</div>';
 
             try {
                 const res = await fetch(`/api/lookup?q=${encodeURIComponent(q)}`);
@@ -817,19 +938,19 @@
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Lỗi tra cứu');
 
                 if (!data.orders || data.orders.length === 0) {
-                    box.innerHTML = '<div class="p-4 rounded-xl bg-slate-950 text-xs text-slate-400">Không tìm thấy đơn hàng nào phù hợp.</div>';
+                    box.innerHTML = '<div class="p-4 rounded-2xl bg-[#06070a] text-xs text-zinc-400">Không tìm thấy đơn hàng nào phù hợp.</div>';
                     return;
                 }
 
                 box.innerHTML = '';
                 data.orders.forEach(od => {
                     const card = document.createElement('div');
-                    card.className = 'p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3';
+                    card.className = 'p-4 rounded-2xl bg-[#06070a] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3';
                     
                     const isDone = od.status === 'done';
                     const statusBadge = isDone 
                         ? '<span class="text-emerald-400 font-bold">✅ Đã kích hoạt</span>'
-                        : '<span class="text-amber-400 font-bold">⏳ Chờ thanh toán</span>';
+                        : '<span class="text-[#FFB800] font-bold">⏳ Chờ thanh toán</span>';
 
                     card.innerHTML = `
                         <div>
@@ -837,28 +958,28 @@
                                 <span class="font-mono font-bold text-white text-xs">Mã: ORDER_${od.order_id}</span>
                                 ${statusBadge}
                             </div>
-                            <p class="text-xs text-slate-400 mt-1">Gói: <strong>${od.product}</strong> (${od.plan}) • Khách: <strong>${od.display_name || od.uid}</strong></p>
+                            <p class="text-xs text-zinc-400 mt-1">Gói: <strong>${od.product}</strong> (${od.plan}) • Khách: <strong>${od.display_name || od.uid}</strong></p>
                         </div>
                         <div class="shrink-0 w-full sm:w-auto">
                             ${isDone ? `
                                 <div class="flex flex-col sm:items-end gap-2">
                                     <div class="flex items-center gap-2">
-                                        <a href="${(od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + od.download_url)}" class="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs">
+                                        <a href="${(od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + od.download_url)}" class="px-3.5 py-2 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-black font-fredoka font-black text-xs">
                                             📥 Tải Cấu Hình
                                         </a>
-                                        <button type="button" onclick="toggleOrderQr('qr-box-${od.order_id}')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-amber-500/30 cursor-pointer">
+                                        <button type="button" onclick="toggleOrderQr('qr-box-${od.order_id}')" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-[#FFB800] font-bold text-xs border border-[#FFB800]/30 cursor-pointer">
                                             📷 Mã QR
                                         </button>
                                     </div>
-                                    <div id="qr-box-${od.order_id}" class="hidden mt-2 p-3 bg-slate-900 rounded-xl border border-slate-800 text-center">
+                                    <div id="qr-box-${od.order_id}" class="hidden mt-2 p-3 bg-[#0c0d12] rounded-xl border border-white/10 text-center">
                                         <div class="bg-white p-2 rounded-xl inline-block mx-auto mb-2">
                                             <img src="/api/qr?data=${encodeURIComponent((od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + od.download_url))}" alt="QR" class="w-36 h-36 object-contain" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent('${od.download_url}')" />
                                         </div>
-                                        <p class="text-[10px] text-slate-400">Mở Camera iPhone quét mã để tải</p>
+                                        <p class="text-[10px] text-zinc-400">Mở Camera iPhone quét mã để tải</p>
                                     </div>
                                 </div>
                             ` : `
-                                <span class="text-xs text-slate-500">Chưa thanh toán</span>
+                                <span class="text-xs text-zinc-500">Chưa thanh toán</span>
                             `}
                         </div>
                     `;
