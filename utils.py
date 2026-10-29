@@ -32,7 +32,7 @@ def fmt_price(price: int) -> str:
 
 def check_and_apply_coupon(code: str, original_price: int) -> dict:
     """
-    Kiểm tra mã giảm giá (từ DB do Admin tạo qua /addcode hoặc danh sách mẫu).
+    Kiểm tra mã giảm giá (từ DB do Admin tạo qua lệnh /addcode).
     Trả về dict: {"ok": bool, "code": str, "discount_amount": int, "final_price": int, "desc": str, "error": str}
     """
     code_clean = (code or "").strip().upper()
@@ -41,7 +41,6 @@ def check_and_apply_coupon(code: str, original_price: int) -> dict:
 
     try:
         import database as db
-        # 1. Kiểm tra DB (Admin tạo qua /addcode)
         db_item = db.get_code(code_clean)
         if db_item and db_item.get("active", True):
             max_uses = db_item.get("max_uses", 0)
@@ -62,37 +61,6 @@ def check_and_apply_coupon(code: str, original_price: int) -> dict:
             }
     except Exception:
         pass
-
-    # 2. Danh sách mã mặc định hệ thống
-    PRESET_COUPONS = {
-        "VIP10": (0.10, "Giảm 10% tổng đơn hàng"),
-        "SALE10": (0.10, "Giảm 10% tổng đơn hàng"),
-        "VIP20": (0.20, "Giảm 20% tổng đơn hàng"),
-        "SALE20": (0.20, "Giảm 20% tổng đơn hàng"),
-        "VIP50": (0.50, "Giảm 50% siêu ưu đãi"),
-        "SALE50": (0.50, "Giảm 50% siêu ưu đãi"),
-        "QUYNH2007": (0.20, "Mã độc quyền Quynh2007 - Giảm 20%"),
-        "QUYNHVIP": (0.20, "Mã độc quyền QuynhVIP - Giảm 20%"),
-        "LOCKETGOLD": (15000, "Giảm ngay 15.000đ vào đơn hàng"),
-        "PREMIUM": (20000, "Giảm ngay 20.000đ vào đơn hàng"),
-    }
-
-    if code_clean in PRESET_COUPONS:
-        rule, desc = PRESET_COUPONS[code_clean]
-        if isinstance(rule, float):
-            discount_amount = int(original_price * rule)
-        else:
-            discount_amount = int(rule)
-        discount_amount = min(discount_amount, original_price - 1000)
-        final_price = max(1000, original_price - discount_amount)
-        return {
-            "ok": True,
-            "code": code_clean,
-            "discount_amount": discount_amount,
-            "final_price": final_price,
-            "desc": desc,
-            "is_db": False
-        }
 
     return {"ok": False, "error": f"Mã giảm giá '{code_clean}' không tồn tại hoặc đã hết hạn."}
 

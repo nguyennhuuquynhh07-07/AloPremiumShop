@@ -571,7 +571,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"• Link URL: <code>https://open.spotify.com/user/31t3tcqt...</code>\n"
             f"• Hoặc UID trực tiếp: <code>31t3tcqt17dugzvuubw2ydhqy6km</code>\n\n"
             f"👇 <b>Gửi Link hoặc UID Spotify vào ô chat bên dưới:</b>\n"
-            f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>link VIP20</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
+            f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>link MÃ_GIẢM_GIÁ</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
         )
 
     else:  # locket
@@ -584,7 +584,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"  Mở app Locket → Bấm Avatar góc trên → Xem phần <b>@username</b>\n\n"
             f"<i>Ví dụ:</i> <code>conlaigii</code> hoặc <code>minhkim</code>\n\n"
             f"👇 <b>Gửi Username Locket của bạn vào ô chat bên dưới:</b>\n"
-            f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>username VIP20</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
+            f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>username MÃ_GIẢM_GIÁ</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
         )
 
     await query.edit_message_text(
@@ -1413,7 +1413,7 @@ async def coupon_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not ctx.args:
         await update.message.reply_text(
             "Cú pháp: <code>/coupon &lt;MÃ_GIẢM_GIÁ&gt;</code>\n"
-            "<i>Ví dụ:</i> <code>/coupon VIP20</code>",
+            "<i>Ví dụ:</i> <code>/coupon MÃ_GIẢM_GIÁ</code>",
             parse_mode=ParseMode.HTML
         )
         return
