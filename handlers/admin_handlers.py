@@ -43,65 +43,6 @@ def build_admin_menu_text() -> str:
     except Exception:
         pass
 
-
-# ── /coin & /balance: Tra cứu số dư Coin CTV ─────────────────────────────────
-
-async def coin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Tra cứu số dư Coin CTV và trạng thái tài khoản API (GET /api/keys/me)."""
-    if not is_admin(update.effective_user.id):
-        return
-
-    msg = await update.message.reply_text("⏳ Đang tra cứu số dư tài khoản CTV từ hệ thống API...", parse_mode=ParseMode.HTML)
-    try:
-        res = api.get_account_info()
-        data = res.get("data", res)
-        username = data.get("username", "CTV")
-        balance = data.get("balanceCoin", 0)
-        is_activated = data.get("isActivated", False)
-        status_text = "🟢 Đã kích hoạt" if is_activated else "🔴 Chưa kích hoạt"
-
-        text = (
-            f"🪙 <b>THÔNG TIN TÀI KHOẢN CTV (locket.2707226.xyz)</b>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"👤 <b>Tên CTV:</b> <code>{username}</code>\n"
-            f"💰 <b>Số dư Coin:</b> <b>{balance} Coin</b>\n"
-            f"🛡️ <b>Trạng thái:</b> {status_text}\n"
-            f"🌐 <b>API URL:</b> <code>{config.API_BASE_URL}</code>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"💡 <i>Mỗi đơn kích hoạt Locket/Spotify sẽ tự động trừ Coin tương ứng. Nếu Coin sắp hết hãy nạp thêm trên Dashboard!</i>"
-        )
-        await msg.edit_text(text, parse_mode=ParseMode.HTML)
-    except Exception as e:
-        await msg.edit_text(f"❌ Không thể tra cứu số dư CTV: <code>{e}</code>", parse_mode=ParseMode.HTML)
-
-
-# ── /packages: Tra cứu danh sách gói từ máy chủ API ──────────────────────────
-
-async def packages_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Tra cứu bảng giá Coin và mã gói cước trực tiếp từ API (GET /api/packages)."""
-    if not is_admin(update.effective_user.id):
-        return
-
-    msg = await update.message.reply_text("⏳ Đang lấy bảng giá gói cước từ máy chủ API...", parse_mode=ParseMode.HTML)
-    try:
-        res = api.get_packages("all")
-        data = res.get("data", [])
-        lines = [
-            "📦 <b>DANH SÁCH GÓI CƯỚC & GIÁ COIN TRÊN MÁY CHỦ API</b>",
-            "━━━━━━━━━━━━━━━━━━━━━━━━━"
-        ]
-        for p in data:
-            code = p.get("code")
-            name = p.get("name")
-            days = p.get("durationDays", 0)
-            coin = p.get("priceCoin", 0)
-            lines.append(f"• <b>{code}</b>: {name} ({days} ngày) ➔ <b>{coin} Coin</b>")
-        lines.append("\n💡 <i>Mã gói này tương ứng với cấu hình trong config.py.</i>")
-        await msg.edit_text("\n".join(lines), parse_mode=ParseMode.HTML)
-    except Exception as e:
-        await msg.edit_text(f"❌ Không thể lấy danh sách gói: <code>{e}</code>", parse_mode=ParseMode.HTML)
-
-
     admin_controls = (
         "<b>Admin control</b>\n"
         "<pre>\n"
@@ -170,65 +111,6 @@ async def stats_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         coin_text = f"{coin_val:,.0f} Coin ({utils.fmt_price(coin_val * 1000)})"
     except Exception:
         pass
-
-
-# ── /coin & /balance: Tra cứu số dư Coin CTV ─────────────────────────────────
-
-async def coin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Tra cứu số dư Coin CTV và trạng thái tài khoản API (GET /api/keys/me)."""
-    if not is_admin(update.effective_user.id):
-        return
-
-    msg = await update.message.reply_text("⏳ Đang tra cứu số dư tài khoản CTV từ hệ thống API...", parse_mode=ParseMode.HTML)
-    try:
-        res = api.get_account_info()
-        data = res.get("data", res)
-        username = data.get("username", "CTV")
-        balance = data.get("balanceCoin", 0)
-        is_activated = data.get("isActivated", False)
-        status_text = "🟢 Đã kích hoạt" if is_activated else "🔴 Chưa kích hoạt"
-
-        text = (
-            f"🪙 <b>THÔNG TIN TÀI KHOẢN CTV (locket.2707226.xyz)</b>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"👤 <b>Tên CTV:</b> <code>{username}</code>\n"
-            f"💰 <b>Số dư Coin:</b> <b>{balance} Coin</b>\n"
-            f"🛡️ <b>Trạng thái:</b> {status_text}\n"
-            f"🌐 <b>API URL:</b> <code>{config.API_BASE_URL}</code>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"💡 <i>Mỗi đơn kích hoạt Locket/Spotify sẽ tự động trừ Coin tương ứng. Nếu Coin sắp hết hãy nạp thêm trên Dashboard!</i>"
-        )
-        await msg.edit_text(text, parse_mode=ParseMode.HTML)
-    except Exception as e:
-        await msg.edit_text(f"❌ Không thể tra cứu số dư CTV: <code>{e}</code>", parse_mode=ParseMode.HTML)
-
-
-# ── /packages: Tra cứu danh sách gói từ máy chủ API ──────────────────────────
-
-async def packages_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Tra cứu bảng giá Coin và mã gói cước trực tiếp từ API (GET /api/packages)."""
-    if not is_admin(update.effective_user.id):
-        return
-
-    msg = await update.message.reply_text("⏳ Đang lấy bảng giá gói cước từ máy chủ API...", parse_mode=ParseMode.HTML)
-    try:
-        res = api.get_packages("all")
-        data = res.get("data", [])
-        lines = [
-            "📦 <b>DANH SÁCH GÓI CƯỚC & GIÁ COIN TRÊN MÁY CHỦ API</b>",
-            "━━━━━━━━━━━━━━━━━━━━━━━━━"
-        ]
-        for p in data:
-            code = p.get("code")
-            name = p.get("name")
-            days = p.get("durationDays", 0)
-            coin = p.get("priceCoin", 0)
-            lines.append(f"• <b>{code}</b>: {name} ({days} ngày) ➔ <b>{coin} Coin</b>")
-        lines.append("\n💡 <i>Mã gói này tương ứng với cấu hình trong config.py.</i>")
-        await msg.edit_text("\n".join(lines), parse_mode=ParseMode.HTML)
-    except Exception as e:
-        await msg.edit_text(f"❌ Không thể lấy danh sách gói: <code>{e}</code>", parse_mode=ParseMode.HTML)
-
 
     text = (
         "📊 <b>THỐNG KÊ TOÀN DIỆN HỆ THỐNG</b>\n"
@@ -1121,66 +1003,6 @@ async def packages_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await msg.edit_text("\n".join(lines), parse_mode=ParseMode.HTML)
     except Exception as e:
         await msg.edit_text(f"❌ Không thể lấy danh sách gói: <code>{e}</code>", parse_mode=ParseMode.HTML)
-
-
-# ── /coin & /balance: Tra cứu số dư Coin CTV ─────────────────────────────────
-
-async def coin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Tra cứu số dư Coin CTV và trạng thái tài khoản API (GET /api/keys/me)."""
-    if not is_admin(update.effective_user.id):
-        return
-
-    msg = await update.message.reply_text("⏳ Đang tra cứu số dư tài khoản CTV từ hệ thống API...", parse_mode=ParseMode.HTML)
-    try:
-        res = api.get_account_info()
-        data = res.get("data", res)
-        username = data.get("username", "CTV")
-        balance = data.get("balanceCoin", 0)
-        is_activated = data.get("isActivated", False)
-        status_text = "🟢 Đã kích hoạt" if is_activated else "🔴 Chưa kích hoạt"
-
-        text = (
-            f"🪙 <b>THÔNG TIN TÀI KHOẢN CTV (locket.2707226.xyz)</b>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"👤 <b>Tên CTV:</b> <code>{username}</code>\n"
-            f"💰 <b>Số dư Coin:</b> <b>{balance} Coin</b>\n"
-            f"🛡️ <b>Trạng thái:</b> {status_text}\n"
-            f"🌐 <b>API URL:</b> <code>{config.API_BASE_URL}</code>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"💡 <i>Mỗi đơn kích hoạt Locket/Spotify sẽ tự động trừ Coin tương ứng. Nếu Coin sắp hết hãy nạp thêm trên Dashboard!</i>"
-        )
-        await msg.edit_text(text, parse_mode=ParseMode.HTML)
-    except Exception as e:
-        await msg.edit_text(f"❌ Không thể tra cứu số dư CTV: <code>{e}</code>", parse_mode=ParseMode.HTML)
-
-
-# ── /packages: Tra cứu danh sách gói từ máy chủ API ──────────────────────────
-
-async def packages_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Tra cứu bảng giá Coin và mã gói cước trực tiếp từ API (GET /api/packages)."""
-    if not is_admin(update.effective_user.id):
-        return
-
-    msg = await update.message.reply_text("⏳ Đang lấy bảng giá gói cước từ máy chủ API...", parse_mode=ParseMode.HTML)
-    try:
-        res = api.get_packages("all")
-        data = res.get("data", [])
-        lines = [
-            "📦 <b>DANH SÁCH GÓI CƯỚC & GIÁ COIN TRÊN MÁY CHỦ API</b>",
-            "━━━━━━━━━━━━━━━━━━━━━━━━━"
-        ]
-        for p in data:
-            code = p.get("code")
-            name = p.get("name")
-            days = p.get("durationDays", 0)
-            coin = p.get("priceCoin", 0)
-            lines.append(f"• <b>{code}</b>: {name} ({days} ngày) ➔ <b>{coin} Coin</b>")
-        lines.append("\n💡 <i>Mã gói này tương ứng với cấu hình trong config.py.</i>")
-        await msg.edit_text("\n".join(lines), parse_mode=ParseMode.HTML)
-    except Exception as e:
-        await msg.edit_text(f"❌ Không thể lấy danh sách gói: <code>{e}</code>", parse_mode=ParseMode.HTML)
-
-
 
 # ── /duyet: Lệnh duyệt đơn hàng bằng tay cho Admin ───────────────────────────
 

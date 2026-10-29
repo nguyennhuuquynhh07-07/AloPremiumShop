@@ -301,6 +301,11 @@ def main():
         handle_admin_text_input
     ))
 
+    async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+        logger.error("Exception while handling an update:", exc_info=context.error)
+
+    app.add_error_handler(error_handler)
+
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
