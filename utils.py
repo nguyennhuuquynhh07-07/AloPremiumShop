@@ -101,6 +101,39 @@ def get_vietqr_url(amount: int, add_info: str) -> str:
     )
 
 
+def generate_qr_code(data: str) -> io.BytesIO:
+    """Tạo ảnh QR Code định dạng PNG từ một URL hoặc chuỗi dữ liệu bất kỳ"""
+    try:
+        import qrcode
+        qr = qrcode.QRCode(
+            version=None,
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
+            box_size=10,
+            border=2,
+        )
+        qr.add_data(data)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        bio = io.BytesIO()
+        img.save(bio, format="PNG")
+        bio.seek(0)
+        bio.name = "qrcode.png"
+        return bio
+    except Exception as e:
+        import requests
+        # Fallback qua API nếu có vấn đề thư viện
+        api_url = f"https://api.qrserver.com/v1/create-qr-code/?size=350x350&data={quote(data)}"
+        r = requests.get(api_url, timeout=10)
+        bio = io.BytesIO(r.content)
+        bio.name = "qrcode.png"
+        return bio
+
+
+def get_qr_image_url(data: str) -> str:
+    """Tạo URL ảnh QR code nhanh qua API (dùng cho web hoặc fallback)"""
+    return f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={quote(data)}"
+
+
 def generate_mobileconfig(service_name: str, display_name: str, dns_link: str) -> io.BytesIO:
     """
     Tạo nội dung file cấu hình DNS iOS chuẩn Apple .mobileconfig (PayloadType: Configuration & com.apple.dnsSettings.managed).

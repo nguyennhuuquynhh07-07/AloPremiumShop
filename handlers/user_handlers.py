@@ -440,6 +440,24 @@ async def cb_get_mobileconfig(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         safe_uid = str(uid_name).replace(" ", "_")
         bio.name = f"{prod_key.capitalize()}_{safe_uid}.mobileconfig"
 
+    target_link = latest.get("download_url") if prod_key == "combo3in1" else (latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}")
+    if target_link:
+        try:
+            qr_buf = utils.generate_qr_code(target_link)
+            await ctx.bot.send_photo(
+                chat_id=user.id,
+                photo=qr_buf,
+                caption=(
+                    f"📷 <b>MÃ QR TẢI HỒ SƠ ({prod_name})</b>\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"Mở <b>Camera iPhone</b> quét mã để mở Safari tải tự động!\n"
+                    f"Hoặc tải trực tiếp file đính kèm bên dưới:"
+                ),
+                parse_mode=ParseMode.HTML
+            )
+        except Exception:
+            pass
+
     caption = (
         f"📥 <b>HỒ SƠ CẤU HÌNH DNS PROFILE (.mobileconfig)</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"

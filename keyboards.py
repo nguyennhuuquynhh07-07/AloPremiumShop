@@ -94,7 +94,8 @@ def success_kb(dns_link: str = None) -> InlineKeyboardMarkup:
     rows = []
     if dns_link:
         rows.append([
-            InlineKeyboardButton("📋 Copy Link DNS (Chạm là chép)", api_kwargs={"copy_text": {"text": dns_link}})
+            InlineKeyboardButton("🌐 Mở Tải Trực Tiếp Safari", url=dns_link),
+            InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": dns_link}})
         ])
     rows.append([
         InlineKeyboardButton("📥 Tải file .mobileconfig", callback_data="get_mobileconfig"),

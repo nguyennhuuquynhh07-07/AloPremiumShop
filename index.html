@@ -461,6 +461,19 @@
                 <h3 class="text-2xl font-black text-white">Thanh Toán Thành Công!</h3>
                 <p class="text-xs text-slate-400 mt-1 mb-5">Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.</p>
 
+                <!-- KHUNG MÃ QR QUÉT TẢI TRỰC TIẾP -->
+                <div class="my-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center justify-center">
+                    <div class="text-xs font-bold text-amber-400 mb-2 flex items-center gap-1.5">
+                        <span>📷</span> Quét Mã QR Cài Đặt Bằng Camera iPhone
+                    </div>
+                    <div class="bg-white p-2.5 rounded-2xl shadow-xl inline-block border-2 border-amber-400/40">
+                        <img id="qrSuccessImg" src="" alt="Mã QR Tải Cấu Hình" class="w-44 h-44 object-contain mx-auto" />
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-2 text-center">
+                        Mở <strong>Camera iPhone</strong> quét mã để tự động mở Safari tải cấu hình
+                    </p>
+                </div>
+
                 <!-- NÚT CÀI ĐẶT 1 CHẠM TRỰC TIẾP VÀO IPHONE -->
                 <a id="modalDownloadBtn" href="#" 
                    class="w-full block py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black text-base shadow-2xl pulse-gold mb-3 transition-all cursor-pointer">
@@ -759,13 +772,29 @@
                 });
             } catch (e) {}
 
-            activeDownloadUrl = window.location.origin + (downloadUrl || `/api/download_profile?order_id=${orderId}`);
+            activeDownloadUrl = (downloadUrl && (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')))
+                ? downloadUrl
+                : (window.location.origin + (downloadUrl || `/api/download_profile?order_id=${orderId}`));
             
             const btnDl = document.getElementById('modalDownloadBtn');
             btnDl.href = activeDownloadUrl;
 
+            // Hiển thị mã QR tải cấu hình
+            const qrImg = document.getElementById('qrSuccessImg');
+            if (qrImg) {
+                qrImg.src = `/api/qr?data=${encodeURIComponent(activeDownloadUrl)}`;
+                qrImg.onerror = () => {
+                    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(activeDownloadUrl)}`;
+                };
+            }
+
             document.getElementById('modalWaitingPayment').classList.add('hidden');
             document.getElementById('modalSuccessPayment').classList.remove('hidden');
+        }
+
+        function toggleOrderQr(boxId) {
+            const el = document.getElementById(boxId);
+            if (el) el.classList.toggle('hidden');
         }
 
         function copyDownloadUrl() {
@@ -828,9 +857,22 @@
                         </div>
                         <div class="shrink-0 w-full sm:w-auto">
                             ${isDone ? `
-                                <a href="${od.download_url}" class="block text-center px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs">
-                                    📥 Tải Hồ Sơ Cấu Hình
-                                </a>
+                                <div class="flex flex-col sm:items-end gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <a href="${(od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + od.download_url)}" class="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs">
+                                            📥 Tải Cấu Hình
+                                        </a>
+                                        <button type="button" onclick="toggleOrderQr('qr-box-${od.order_id}')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-amber-500/30 cursor-pointer">
+                                            📷 Mã QR
+                                        </button>
+                                    </div>
+                                    <div id="qr-box-${od.order_id}" class="hidden mt-2 p-3 bg-slate-900 rounded-xl border border-slate-800 text-center">
+                                        <div class="bg-white p-2 rounded-xl inline-block mx-auto mb-2">
+                                            <img src="/api/qr?data=${encodeURIComponent((od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + od.download_url))}" alt="QR" class="w-36 h-36 object-contain" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent('${od.download_url}')" />
+                                        </div>
+                                        <p class="text-[10px] text-slate-400">Mở Camera iPhone quét mã để tải</p>
+                                    </div>
+                                </div>
                             ` : `
                                 <span class="text-xs text-slate-500">Chưa thanh toán</span>
                             `}

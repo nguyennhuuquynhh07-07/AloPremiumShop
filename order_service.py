@@ -35,6 +35,7 @@ def build_guide_3in1_text(order: dict, download_url: str) -> str:
         f"🛡️ <b>Trạng thái:</b> ✅ <i>Đã thanh toán {utils.fmt_price(order['price'])}</i>\n\n"
         f"📋 <b>Link Tải Hồ Sơ Cấu Hình (Chạm để sao chép):</b>\n"
         f"<code>{download_url}</code>\n\n"
+        f"📷 <b>Mã QR Tải Nhanh:</b> Đã đính kèm ảnh mã QR bên trên, mở Camera iPhone quét là tải được ngay!\n\n"
         f"📲 <b>HƯỚNG DẪN CÀI ĐẶT 3 BƯỚC TRÊN IPHONE:</b>\n"
         f"1️⃣ Copy link trên rồi mở <b>Safari</b> dán vào thanh địa chỉ để tải hồ sơ.\n"
         f"2️⃣ Bấm <b>Cho phép (Allow)</b> khi Safari hỏi.\n"
@@ -80,7 +81,10 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
 
             guide_text = build_guide_3in1_text(order, download_url)
             kb = InlineKeyboardMarkup([
-                [InlineKeyboardButton("📋 Copy Link Tải Hồ Sơ", api_kwargs={"copy_text": {"text": download_url}})],
+                [
+                    InlineKeyboardButton("🌐 Mở Tải Trực Tiếp Safari", url=download_url),
+                    InlineKeyboardButton("📋 Copy Link", api_kwargs={"copy_text": {"text": download_url}})
+                ],
                 [
                     InlineKeyboardButton("📖 Hướng Dẫn Cài Đặt Chi Tiết", callback_data="show_guide"),
                     InlineKeyboardButton("🏠 Menu Chính", callback_data="back_main")
@@ -92,6 +96,30 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             buf.seek(0)
 
             if bot and isinstance(order.get("user_id"), int) and order.get("user_id") > 0:
+                # 1. Gửi ảnh Mã QR cho khách quét bằng Camera iPhone
+                try:
+                    qr_buf = utils.generate_qr_code(download_url)
+                    qr_caption = (
+                        f"📷 <b>MÃ QR TẢI HỒ SƠ CẤU HÌNH ({pv['name']})</b>\n"
+                        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                        f"👤 Khách hàng: <b>{order.get('display_name') or order.get('uid')}</b>\n"
+                        f"📦 Gói: <b>{pv['name']} ({plnv['label']})</b>\n\n"
+                        f"⚡ <b>Cách cài đặt siêu tốc:</b>\n"
+                        f"1️⃣ Dùng <b>Camera iPhone</b> quét mã QR trên màn hình.\n"
+                        f"2️⃣ Chạm vào thông báo vàng <b>\"Mở trong Safari\"</b> để tải cấu hình vào máy!\n"
+                        f"<i>(Hoặc bấm nút mở Safari trực tiếp bên dưới)</i>"
+                    )
+                    await bot.send_photo(
+                        chat_id=order["user_id"],
+                        photo=qr_buf,
+                        caption=qr_caption,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=kb
+                    )
+                except Exception as e_qr:
+                    logger.warning(f"Could not send QR photo: {e_qr}")
+
+                # 2. Gửi file .mobileconfig kèm hướng dẫn chi tiết
                 try:
                     await bot.send_document(
                         chat_id=order["user_id"],
@@ -150,6 +178,29 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             success_text = _build_success_message(order, pv, plnv, dns_link)
 
             if bot and isinstance(order.get("user_id"), int) and order.get("user_id") > 0:
+                # 1. Gửi ảnh Mã QR DNS Profile cho khách quét bằng Camera iPhone
+                try:
+                    qr_buf = utils.generate_qr_code(dns_link)
+                    qr_caption = (
+                        f"📷 <b>MÃ QR CÀI ĐẶT DNS PROFILE ({pv['name']})</b>\n"
+                        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                        f"👤 Khách hàng: <b>{order.get('display_name') or order.get('uid')}</b>\n"
+                        f"📦 Gói: <b>{pv['name']} ({plnv['label']})</b>\n\n"
+                        f"⚡ <b>Cách cài đặt siêu tốc:</b>\n"
+                        f"1️⃣ Dùng <b>Camera iPhone</b> quét mã QR trên màn hình.\n"
+                        f"2️⃣ Chạm vào thông báo vàng <b>\"Mở trong Safari\"</b> để cài đặt hồ sơ DNS!\n"
+                        f"<i>(Hoặc bấm nút mở Safari trực tiếp bên dưới)</i>"
+                    )
+                    await bot.send_photo(
+                        chat_id=order["user_id"],
+                        photo=qr_buf,
+                        caption=qr_caption,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=success_kb(dns_link)
+                    )
+                except Exception as e_qr:
+                    logger.warning(f"Could not send QR photo: {e_qr}")
+
                 try:
                     await bot.send_message(
                         chat_id=order["user_id"],

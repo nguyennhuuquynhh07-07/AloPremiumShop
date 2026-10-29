@@ -235,6 +235,26 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {"ok": True, "orders": results[:10]})
             return
 
+        # API Tạo Mã QR Code động định dạng PNG từ link tải / dữ liệu bất kỳ
+        if path == "/api/qr":
+            raw_data = params.get("data", [""])[0].strip()
+            if not raw_data:
+                self._send_json(400, {"ok": False, "error": "Thiếu tham số data"})
+                return
+            try:
+                bio = utils.generate_qr_code(raw_data)
+                qr_bytes = bio.getvalue()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(qr_bytes)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(qr_bytes)
+            except Exception as e:
+                self._send_json(500, {"ok": False, "error": f"Lỗi tạo mã QR: {e}"})
+            return
+
         # Phục vụ Trang Quản Trị Web App (admin.html)
         if path in ("/admin", "/admin.html"):
             admin_path = os.path.join(os.path.dirname(__file__), "admin.html")
