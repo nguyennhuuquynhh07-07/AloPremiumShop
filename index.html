@@ -95,6 +95,72 @@
         .sticker-float-1 { animation: floatSlow 4s ease-in-out infinite; }
         .sticker-float-2 { animation: floatRev 5s ease-in-out infinite; }
         .pulse-gold { animation: pulseGlow 2.5s infinite; }
+        /* Locket.com Bouncy Lift on Hover & Press (Tactile Spring Effect) */
+        .locket-card-interactive {
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, border-color 0.3s ease !important;
+            will-change: transform;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media (hover: hover) {
+            .locket-card-interactive:hover {
+                transform: translateY(-8px) scale(1.018) !important;
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 184, 0, 0.35) !important;
+            }
+        }
+        .locket-card-interactive:active {
+            transform: translateY(2px) scale(0.97) !important;
+            transition: transform 0.1s ease !important;
+        }
+
+        .locket-sticker-interactive {
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, filter 0.3s ease !important;
+            will-change: transform;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media (hover: hover) {
+            .locket-sticker-interactive:hover {
+                transform: translateY(-12px) scale(1.12) rotate(calc(var(--rot, -4deg) * -0.5)) !important;
+                box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 184, 0, 0.5) !important;
+                filter: brightness(1.15) !important;
+                z-index: 35 !important;
+            }
+        }
+        .locket-sticker-interactive:active {
+            transform: translateY(2px) scale(0.93) rotate(0deg) !important;
+            transition: transform 0.1s ease !important;
+        }
+
+        .locket-btn-interactive {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, background-color 0.2s ease !important;
+            will-change: transform;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media (hover: hover) {
+            .locket-btn-interactive:hover {
+                transform: translateY(-4px) scale(1.025) !important;
+                box-shadow: 0 12px 30px rgba(255, 184, 0, 0.45) !important;
+            }
+        }
+        .locket-btn-interactive:active {
+            transform: translateY(2px) scale(0.95) !important;
+            transition: transform 0.1s ease !important;
+        }
+
+        .locket-pill-interactive {
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, border-color 0.2s ease !important;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media (hover: hover) {
+            .locket-pill-interactive:hover {
+                transform: translateY(-4px) scale(1.03) !important;
+                box-shadow: 0 10px 25px rgba(255, 184, 0, 0.3) !important;
+            }
+        }
+        .locket-pill-interactive:active {
+            transform: translateY(1px) scale(0.95) !important;
+        }
+
         
         .tab-btn.active {
             background: #FFB800;
@@ -149,16 +215,16 @@
     <!-- NAVIGATION TABS -->
     <div class="bg-[#090a0f]/80 border-b border-white/5 sticky top-16 z-40 backdrop-blur-md">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-2 overflow-x-auto py-2.5 no-scrollbar">
-            <button onclick="switchMainTab('store')" id="tabBtn_store" class="tab-btn active px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer">
+            <button onclick="switchMainTab('store')" id="tabBtn_store" class="tab-btn active locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold whitespace-nowrap cursor-pointer">
                 🛍️ Mua Gói VIP
             </button>
-            <button onclick="switchMainTab('lookup')" id="tabBtn_lookup" class="tab-btn px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 transition-all whitespace-nowrap cursor-pointer">
+            <button onclick="switchMainTab('lookup')" id="tabBtn_lookup" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 whitespace-nowrap cursor-pointer">
                 🔍 Tra Cứu Đơn Hàng
             </button>
-            <button onclick="switchMainTab('spotify_reset')" id="tabBtn_spotify_reset" class="tab-btn px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 transition-all whitespace-nowrap cursor-pointer">
+            <button onclick="switchMainTab('spotify_reset')" id="tabBtn_spotify_reset" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 whitespace-nowrap cursor-pointer">
                 🔄 Reset Spotify
             </button>
-            <button onclick="switchMainTab('guide')" id="tabBtn_guide" class="tab-btn px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 transition-all whitespace-nowrap cursor-pointer">
+            <button onclick="switchMainTab('guide')" id="tabBtn_guide" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 whitespace-nowrap cursor-pointer">
                 📖 Hướng Dẫn Cài Đặt
             </button>
         </div>
@@ -176,29 +242,29 @@
             <div class="relative text-center max-w-4xl mx-auto pt-4 pb-8 px-2 overflow-hidden sm:overflow-visible">
                 
                 <!-- STICKER 1: "BEST FRIENDS FIRST" (Top Left) -->
-                <div class="hidden md:flex absolute -top-1 left-2 sticker-float-1 z-10 items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FFB800] text-black font-fredoka font-black text-xs uppercase shadow-xl border-2 border-white/20 select-none" style="--rot: -8deg;">
+                <div class="hidden md:flex absolute -top-1 left-2 sticker-float-1 locket-sticker-interactive z-10 items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FFB800] text-black font-fredoka font-black text-xs uppercase shadow-xl border-2 border-white/20 select-none" style="--rot: -8deg;">
                     <span>💛</span> BEST FRIENDS FIRST
                 </div>
 
                 <!-- STICKER 2: "GOLD" BADGE (Top Right) -->
-                <div class="hidden md:flex absolute top-2 right-4 sticker-float-2 z-10 items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#0c0d12] border-2 border-[#FFB800] text-[#FFB800] font-fredoka font-black text-xs uppercase shadow-xl select-none" style="--rot: 6deg;">
+                <div class="hidden md:flex absolute top-2 right-4 sticker-float-2 locket-sticker-interactive z-10 items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#0c0d12] border-2 border-[#FFB800] text-[#FFB800] font-fredoka font-black text-xs uppercase shadow-xl select-none" style="--rot: 6deg;">
                     <span>👑</span> GOLD VIP
                 </div>
 
                 <!-- STICKER 3: "I 💛 LOCKET" (Bottom Left) -->
-                <div class="hidden md:flex absolute bottom-2 left-6 sticker-float-2 z-10 items-center gap-1.5 px-3 py-1 rounded-2xl bg-white text-zinc-900 font-fredoka font-bold text-xs shadow-xl border border-zinc-200 select-none" style="--rot: 5deg;">
+                <div class="hidden md:flex absolute bottom-2 left-6 sticker-float-2 locket-sticker-interactive z-10 items-center gap-1.5 px-3 py-1 rounded-2xl bg-white text-zinc-900 font-fredoka font-bold text-xs shadow-xl border border-zinc-200 select-none" style="--rot: 5deg;">
                     <span>I</span> <span class="text-[#FFB800] text-sm">💛</span> <span>LOCKET</span>
                 </div>
 
                 <!-- STICKER 4: SCAN QR BADGE (Bottom Right) -->
-                <div class="hidden md:flex absolute bottom-0 right-8 sticker-float-1 z-10 items-center gap-2 px-3.5 py-2 rounded-2xl bg-[#12131a] border border-[#FFB800]/40 text-zinc-200 font-fredoka font-bold text-xs shadow-xl select-none" style="--rot: -6deg;">
+                <div class="hidden md:flex absolute bottom-0 right-8 sticker-float-1 locket-sticker-interactive z-10 items-center gap-2 px-3.5 py-2 rounded-2xl bg-[#12131a] border border-[#FFB800]/40 text-zinc-200 font-fredoka font-bold text-xs shadow-xl select-none" style="--rot: -6deg;">
                     <div class="w-6 h-6 rounded-lg bg-white flex items-center justify-center text-black text-[11px] font-black">QR</div>
                     <span class="text-[#FFB800]">Cài 1 Chạm iOS</span>
                 </div>
 
                 <!-- Main Locket Squircle Center Emblem -->
                 <div class="relative inline-block mb-4">
-                    <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-[32px] bg-gradient-to-br from-[#FFD24C] via-[#FFB800] to-[#FF8C00] p-1.5 shadow-[0_15px_45px_rgba(255,184,0,0.35)] flex items-center justify-center transform hover:scale-105 hover:rotate-3 transition-all cursor-pointer">
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-[32px] bg-gradient-to-br from-[#FFD24C] via-[#FFB800] to-[#FF8C00] p-1.5 shadow-[0_15px_45px_rgba(255,184,0,0.35)] flex items-center justify-center locket-card-interactive cursor-pointer">
                         <div class="w-full h-full rounded-[26px] bg-[#0c0d12] flex items-center justify-center relative overflow-hidden">
                             <span class="text-4xl sm:text-5xl transform hover:scale-110 transition-transform">💛</span>
                             <div class="absolute inset-0 bg-gradient-to-t from-[#FFB800]/10 to-transparent pointer-events-none"></div>
@@ -240,7 +306,7 @@
                     
                     <!-- CARD 1: LOCKET GOLD VIP -->
                     <div onclick="selectProduct('locket')" id="card_locket" 
-                         class="relative rounded-[32px] p-6 sm:p-7 bg-gradient-to-b from-[#18160f] to-[#0c0d12] border-2 border-[#FFB800] cursor-pointer transition-all shadow-2xl locket-gold-glow">
+                         class="relative rounded-[32px] p-6 sm:p-7 bg-gradient-to-b from-[#18160f] to-[#0c0d12] border-2 border-[#FFB800] cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive">
                         <div class="absolute -top-3 right-6 bg-[#FFB800] text-black text-[11px] font-fredoka font-black uppercase px-3.5 py-1 rounded-full shadow-lg">
                             🌟 Bán chạy nhất • Khuyên Dùng
                         </div>
@@ -279,7 +345,7 @@
 
                     <!-- CARD 2: SPOTIFY PREMIUM -->
                     <div onclick="selectProduct('spotify')" id="card_spotify" 
-                         class="rounded-[32px] p-6 sm:p-7 bg-[#0c0d12]/90 border border-white/10 hover:border-emerald-500/50 cursor-pointer transition-all shadow-xl">
+                         class="rounded-[32px] p-6 sm:p-7 bg-[#0c0d12]/90 border border-white/10 hover:border-emerald-500/50 cursor-pointer shadow-xl locket-card-interactive">
                         <div class="flex items-center gap-3.5 mb-4">
                             <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1ed760] to-[#128a3c] flex items-center justify-center text-black text-2xl shadow-lg shadow-emerald-500/20 shrink-0">
                                 🎵
@@ -350,7 +416,7 @@
                                 </button>
                             </div>
                             <button type="button" onclick="checkAccount()" id="btnCheckAccount"
-                                    class="px-7 py-3.5 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-black font-fredoka font-black text-sm locket-btn-glow transition-all cursor-pointer shrink-0">
+                                    class="px-7 py-3.5 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-black font-fredoka font-black text-sm locket-btn-glow locket-btn-interactive cursor-pointer shrink-0">
                                 <span id="btnCheckAccountText">⚡ Kiểm Tra Tài Khoản</span>
                             </button>
                         </div>
@@ -370,7 +436,7 @@
                         </div>
                         <div class="w-full sm:w-auto">
                             <button type="button" onclick="openPaymentModal()" id="btnOpenPayment"
-                                    class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-fredoka font-bold text-sm shadow-lg cursor-pointer">
+                                    class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-fredoka font-bold text-sm shadow-lg locket-btn-interactive cursor-pointer">
                                 💳 Thanh Toán Ngay (<span id="btnPayAmount">200.000đ</span>)
                             </button>
                         </div>
@@ -548,7 +614,7 @@
 
                 <!-- NÚT BẤM TẠO / XEM MÃ QR CODE CỦA LINK DNS -->
                 <button type="button" onclick="toggleQrCodeDisplay()" id="btnToggleQrCode"
-                        class="w-full py-3.5 px-4 rounded-2xl bg-[#FFB800]/15 hover:bg-[#FFB800]/25 border-2 border-[#FFB800]/40 text-[#FFB800] text-sm font-fredoka font-bold transition-all cursor-pointer flex items-center justify-center gap-2 mb-3 shadow-lg">
+                        class="w-full py-3.5 px-4 rounded-2xl bg-[#FFB800]/15 hover:bg-[#FFB800]/25 border-2 border-[#FFB800]/40 text-[#FFB800] text-sm font-fredoka font-bold locket-btn-interactive cursor-pointer flex items-center justify-center gap-2 mb-3 shadow-lg">
                     <span>📷</span> TẠO / XEM MÃ QR CODE CỦA LINK DNS NÀY
                 </button>
 
@@ -567,7 +633,7 @@
 
                 <!-- NÚT CÀI ĐẶT 1 CHẠM TRỰC TIẾP VÀO IPHONE -->
                 <a id="modalDownloadBtn" href="#" 
-                   class="w-full block py-4 px-6 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-black font-fredoka font-black text-base shadow-2xl pulse-gold mb-3 transition-all cursor-pointer">
+                   class="w-full block py-4 px-6 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-black font-fredoka font-black text-base shadow-2xl pulse-gold locket-btn-interactive mb-3 cursor-pointer">
                     📲 CÀI ĐẶT TRỰC TIẾP VÀO IPHONE
                 </a>
 
@@ -640,9 +706,9 @@
                 const card = document.getElementById('card_' + k);
                 if (card) {
                     if (k === prodKey) {
-                        card.className = 'relative rounded-[32px] p-6 sm:p-7 bg-gradient-to-b from-[#18160f] to-[#0c0d12] border-2 border-[#FFB800] cursor-pointer transition-all shadow-2xl locket-gold-glow';
+                        card.className = 'relative rounded-[32px] p-6 sm:p-7 bg-gradient-to-b from-[#18160f] to-[#0c0d12] border-2 border-[#FFB800] cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive';
                     } else {
-                        card.className = 'rounded-[32px] p-6 sm:p-7 bg-[#0c0d12]/90 border border-white/10 hover:border-[#FFB800]/40 cursor-pointer transition-all shadow-xl';
+                        card.className = 'rounded-[32px] p-6 sm:p-7 bg-[#0c0d12]/90 border border-white/10 hover:border-[#FFB800]/40 cursor-pointer shadow-xl locket-card-interactive';
                     }
                 }
             });
@@ -681,7 +747,7 @@
                     const pl = pv.plans[pk];
                     const btn = document.createElement('button');
                     btn.type = 'button';
-                    btn.className = `p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
+                    btn.className = `p-3.5 rounded-2xl border text-center cursor-pointer locket-pill-interactive ${
                         pk === selectedPlan 
                         ? 'border-2 border-[#FFB800] bg-[#FFB800]/15 text-[#FFB800] font-fredoka font-bold shadow-lg' 
                         : 'border border-white/10 bg-[#06070a] text-zinc-400 hover:text-white'
