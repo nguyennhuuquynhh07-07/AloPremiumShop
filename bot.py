@@ -149,6 +149,20 @@ async def sepay_worker(bot):
             logger.warning(f"SePay worker loop error: {e}")
         await asyncio.sleep(8)
 
+async def keep_alive_worker():
+    """Tự động ping server Render mỗi 10 phút để giữ máy chủ và bot luôn thức 24/7"""
+    import urllib.request
+    url = "https://premiumstores.onrender.com/health"
+    while True:
+        await asyncio.sleep(600)
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "RenderKeepAlive/1.0"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                pass
+        except Exception:
+            pass
+
+
 async def post_init(application):
     """Thiết lập danh sách lệnh Menu Telegram cho Người dùng và Admin"""
     user_commands = [
@@ -191,6 +205,9 @@ async def post_init(application):
     if getattr(config, "SEPAY_API_TOKEN", ""):
         asyncio.create_task(sepay_worker(application.bot))
         logger.info("⚡ Đã kích hoạt quét giao dịch tự động SePay.")
+
+    asyncio.create_task(keep_alive_worker())
+    logger.info("⚡ Đã kích hoạt cơ chế giữ máy chủ Render hoạt động 24/7.")
 
 
 def main():
