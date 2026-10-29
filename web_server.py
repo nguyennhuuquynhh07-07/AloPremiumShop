@@ -39,11 +39,53 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
     allow_reuse_address = True
 
+import time
+from collections import defaultdict
+
+_IP_REQUESTS = defaultdict(list)
+_IP_BANNED = {}
+
+def check_ip_rate_limit(ip: str, max_requests: int = 60, window_secs: int = 60) -> tuple[bool, str]:
+    now = time.time()
+    if ip in _IP_BANNED:
+        remaining = int(_IP_BANNED[ip] - now)
+        if remaining > 0:
+            return False, f"IP bị tạm khóa do gửi yêu cầu quá nhanh. Vui lòng thử lại sau {remaining} giây."
+        else:
+            del _IP_BANNED[ip]
+
+    timestamps = [t for t in _IP_REQUESTS[ip] if now - t < window_secs]
+    timestamps.append(now)
+    _IP_REQUESTS[ip] = timestamps
+    if len(timestamps) > max_requests:
+        _IP_BANNED[ip] = now + 900
+        return False, "Tần suất yêu cầu bất thường. IP của bạn đã bị tạm khóa 15 phút để đảm bảo an toàn."
+
+    return True, ""
+
 class WebAppHandler(BaseHTTPRequestHandler):
+    server_version = "ProtectedServer/2.0"
+    sys_version = ""
+
+    def _get_client_ip(self) -> str:
+        forwarded = self.headers.get("X-Forwarded-For")
+        if forwarded:
+            return forwarded.split(",")[0].strip()
+        cf_ip = self.headers.get("CF-Connecting-IP")
+        if cf_ip:
+            return cf_ip.strip()
+        return self.client_address[0] if self.client_address else "127.0.0.1"
+
     def _send_cors_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, HEAD")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("X-XSS-Protection", "1; mode=block")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        self.send_header("Permissions-Policy", "geolocation=(), camera=(), microphone=(), payment=()")
 
     def do_OPTIONS(self):
         self.send_response(204)
