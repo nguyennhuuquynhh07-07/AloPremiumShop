@@ -62,15 +62,22 @@ def back_to_plan_kb(product_key: str) -> InlineKeyboardMarkup:
 
 # ── XÁC NHẬN THANH TOÁN (Khách) ──────────────────────────────────────────────
 
-def payment_kb(order_id: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([
+def payment_kb(order_id: str, applied_coupon: str = None) -> InlineKeyboardMarkup:
+    rows = [
         [InlineKeyboardButton("✅ Tôi đã chuyển khoản", callback_data=f"paid:{order_id}")],
+    ]
+    if applied_coupon:
+        rows.append([InlineKeyboardButton(f"🎟 Đã áp mã: {applied_coupon} ✓", callback_data=f"coupon_info:{order_id}")])
+    else:
+        rows.append([InlineKeyboardButton("🎟 Nhập mã giảm giá", callback_data=f"coupon:{order_id}")])
+    rows.extend([
         [
             InlineKeyboardButton("📖 Hướng dẫn cài đặt", callback_data="show_guide"),
             InlineKeyboardButton("❌ Huỷ đơn hàng",       callback_data=f"cancel:{order_id}")
         ],
         [InlineKeyboardButton("🏠 Về trang chủ",         callback_data="back_main")],
     ])
+    return InlineKeyboardMarkup(rows)
 
 
 def confirm_buy_kb(order_id: str) -> InlineKeyboardMarkup:

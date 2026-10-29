@@ -570,7 +570,8 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"<i>Hệ thống tự động lọc cả hai dạng:</i>\n"
             f"• Link URL: <code>https://open.spotify.com/user/31t3tcqt...</code>\n"
             f"• Hoặc UID trực tiếp: <code>31t3tcqt17dugzvuubw2ydhqy6km</code>\n\n"
-            f"👇 <b>Gửi Link hoặc UID Spotify vào ô chat bên dưới:</b>"
+            f"👇 <b>Gửi Link hoặc UID Spotify vào ô chat bên dưới:</b>\n"
+            f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>link VIP20</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
         )
 
     else:  # locket
@@ -582,7 +583,8 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"<b>Hướng dẫn:</b>\n"
             f"  Mở app Locket → Bấm Avatar góc trên → Xem phần <b>@username</b>\n\n"
             f"<i>Ví dụ:</i> <code>conlaigii</code> hoặc <code>minhkim</code>\n\n"
-            f"👇 <b>Gửi Username Locket của bạn vào ô chat bên dưới:</b>"
+            f"👇 <b>Gửi Username Locket của bạn vào ô chat bên dưới:</b>\n"
+            f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>username VIP20</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
         )
 
     await query.edit_message_text(
@@ -597,7 +599,25 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    raw_identifier = update.message.text.strip()
+    raw_text = update.message.text.strip()
+    tokens = raw_text.split()
+    coupon_candidate = None
+    product_key_pre = ctx.user_data.get("product")
+    plan_key_pre = ctx.user_data.get("plan")
+    base_price = 0
+    if product_key_pre and plan_key_pre:
+        base_price = PRODUCTS.get(product_key_pre, {}).get("plans", {}).get(plan_key_pre, {}).get("price", 0)
+
+    if len(tokens) >= 2 and base_price > 0:
+        potential = tokens[-1].strip().upper()
+        chk = utils.check_and_apply_coupon(potential, base_price)
+        if chk.get("ok"):
+            coupon_candidate = chk
+            raw_identifier = " ".join(tokens[:-1]).strip()
+        else:
+            raw_identifier = raw_text
+    else:
+        raw_identifier = raw_text
     product_key = ctx.user_data.get("product")
     plan_key    = ctx.user_data.get("plan")
 
@@ -651,6 +671,25 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 "avatar": avatar_url,
             }
 
+        # Tính toán giá sau giảm nếu khách gửi kèm mã giảm giá
+        orig_price = plnv["price"]
+        final_price = orig_price
+        discount_amount = 0
+        applied_coupon_code = ""
+        discount_desc = ""
+
+        if coupon_candidate and coupon_candidate.get("ok"):
+            final_price = coupon_candidate["final_price"]
+            discount_amount = coupon_candidate["discount_amount"]
+            applied_coupon_code = coupon_candidate["code"]
+            discount_desc = coupon_candidate.get("desc", "")
+            if coupon_candidate.get("is_db"):
+                db.use_code(applied_coupon_code)
+
+        extra_order_fields["discount_code"] = applied_coupon_code
+        extra_order_fields["discount_amount"] = discount_amount
+        extra_order_fields["original_price"] = orig_price
+
         # Tạo đơn hàng vào cơ sở dữ liệu
         order_id = utils.gen_order_id()
         user     = update.effective_user
@@ -660,7 +699,7 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             username=user.username or user.first_name,
             product=product_key,
             plan=plan_key,
-            price=plnv["price"],
+            price=final_price,
             uid=uid,
             display_name=display,
             **extra_order_fields
@@ -672,10 +711,19 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
         # Tạo ảnh QR VietQR chuẩn
         transfer_memo = f"ORDER_{order_id}"
-        qr_url = utils.get_vietqr_url(plnv['price'], transfer_memo)
+        qr_url = utils.get_vietqr_url(final_price, transfer_memo)
         bank_id = getattr(config, "BANK_ID", "TCB")
         account_no = getattr(config, "ACCOUNT_NO", "")
         account_name = getattr(config, "ACCOUNT_NAME", "")
+
+        if applied_coupon_code and discount_amount > 0:
+            price_line = (
+                f"💵 <b>Giá gốc:</b> <s>{utils.fmt_price(orig_price)}</s>\n"
+                f"🎟 <b>Mã giảm giá:</b> <code>{applied_coupon_code}</code> <i>({discount_desc})</i>\n"
+                f"🔥 <b>Cần thanh toán:</b> <b>{utils.fmt_price(final_price)}</b> (-{utils.fmt_price(discount_amount)})\n"
+            )
+        else:
+            price_line = f"💵 <b>Số tiền:</b> <b>{utils.fmt_price(final_price)}</b>\n"
 
         caption = (
             f"🧾 <b>HOÁ ĐƠN THANH TOÁN #{order_id}</b>\n"
@@ -684,7 +732,7 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"👤 <b>Tài khoản:</b> <b>{display}</b>\n"
             f"🆔 <b>UID:</b> <code>{uid}</code>\n"
             f"{spotify_extra_info}"
-            f"💵 <b>Số tiền:</b> <b>{utils.fmt_price(plnv['price'])}</b>\n"
+            f"{price_line}"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"🏦 <b>Ngân hàng:</b> <b>{bank_id}</b>\n"
             f"🔢 <b>Số tài khoản:</b> <code>{account_no}</code>\n"
@@ -701,14 +749,14 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 photo=qr_url,
                 caption=caption,
                 parse_mode=ParseMode.HTML,
-                reply_markup=payment_kb(order_id)
+                reply_markup=payment_kb(order_id, applied_coupon=applied_coupon_code)
             )
         except Exception as e:
             logger.error(f"Error sending QR photo: {e}")
             await update.message.reply_text(
                 caption,
                 parse_mode=ParseMode.HTML,
-                reply_markup=payment_kb(order_id)
+                reply_markup=payment_kb(order_id, applied_coupon=applied_coupon_code)
             )
 
         return ConversationHandler.END
@@ -1227,3 +1275,182 @@ async def cb_user_reset_spotify_menu(update: Update, ctx: ContextTypes.DEFAULT_T
         parse_mode=ParseMode.HTML,
         reply_markup=orders_kb(True, True)
     )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  QUẢN LÝ MÃ GIẢM GIÁ (COUPON) TRÊN BOT TELEGRAM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def _apply_and_respond_coupon(update: Update, ctx: ContextTypes.DEFAULT_TYPE, order_id: str, code: str):
+    order = db.get_order(order_id)
+    if not order:
+        await update.message.reply_text("❌ Không tìm thấy thông tin đơn hàng!")
+        return
+    if order.get("status") not in ("waiting_payment", "pending"):
+        await update.message.reply_text("⚠️ Đơn hàng này không ở trạng thái chờ thanh toán.")
+        return
+    if order.get("discount_code"):
+        await update.message.reply_text(
+            f"⚠️ Đơn hàng #{order_id} đã áp dụng mã <code>{order['discount_code']}</code> trước đó rồi.",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    pv = PRODUCTS.get(order["product"], {})
+    plnv = pv.get("plans", {}).get(order["plan"], {})
+    orig_price = order.get("original_price") or plnv.get("price") or order.get("price", 0)
+
+    chk = utils.check_and_apply_coupon(code, orig_price)
+    if not chk.get("ok"):
+        await update.message.reply_text(
+            f"❌ {chk.get('error', 'Mã giảm giá không hợp lệ hoặc đã hết hạn.')}\n"
+            f"Vui lòng kiểm tra lại mã hoặc thử mã khác.",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    final_price = chk["final_price"]
+    discount_amount = chk["discount_amount"]
+    applied_code = chk["code"]
+    desc = chk.get("desc", "")
+
+    if chk.get("is_db"):
+        db.use_code(applied_code)
+
+    db.update_order(
+        order_id,
+        price=final_price,
+        discount_code=applied_code,
+        discount_amount=discount_amount,
+        original_price=orig_price
+    )
+    ctx.user_data.pop("waiting_coupon_order", None)
+
+    transfer_memo = f"ORDER_{order_id}"
+    qr_url = utils.get_vietqr_url(final_price, transfer_memo)
+    bank_id = getattr(config, "BANK_ID", "TCB")
+    account_no = getattr(config, "ACCOUNT_NO", "")
+    account_name = getattr(config, "ACCOUNT_NAME", "")
+    display = order.get("display_name") or order.get("uid")
+
+    caption = (
+        f"🎉 <b>ÁP DỤNG MÃ GIẢM GIÁ THÀNH CÔNG!</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"🔖 <b>Mã ưu đãi:</b> <code>{applied_code}</code>\n"
+        f"🎁 <b>Chi tiết:</b> <i>{desc}</i>\n"
+        f"💵 <b>Giá gốc:</b> <s>{utils.fmt_price(orig_price)}</s>\n"
+        f"💰 <b>Tiết kiệm:</b> <b>-{utils.fmt_price(discount_amount)}</b>\n"
+        f"🔥 <b>CẦN THANH TOÁN:</b> <b>{utils.fmt_price(final_price)}</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📦 <b>Dịch vụ:</b> {pv.get('emoji', '💎')} {pv.get('name', '')} — {plnv.get('label', '')}\n"
+        f"👤 <b>Tài khoản:</b> <b>{display}</b>\n"
+        f"🏦 <b>Ngân hàng:</b> <b>{bank_id}</b>\n"
+        f"🔢 <b>Số tài khoản:</b> <code>{account_no}</code>\n"
+        f"👤 <b>Chủ tài khoản:</b> <b>{account_name}</b>\n"
+        f"📝 <b>Nội dung CK:</b> <code>{transfer_memo}</code>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"👇 <i>Mã VietQR đã cập nhật lại đúng số tiền sau giảm. Vui lòng quét mã bên dưới để thanh toán:</i>"
+    )
+
+    try:
+        await update.message.reply_photo(
+            photo=qr_url,
+            caption=caption,
+            parse_mode=ParseMode.HTML,
+            reply_markup=payment_kb(order_id, applied_coupon=applied_code)
+        )
+    except Exception as e:
+        logger.error(f"Error sending updated QR: {e}")
+        await update.message.reply_text(
+            caption,
+            parse_mode=ParseMode.HTML,
+            reply_markup=payment_kb(order_id, applied_coupon=applied_code)
+        )
+
+
+async def cb_coupon(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    order_id = query.data.split(":")[1]
+    order = db.get_order(order_id)
+    if not order:
+        await query.answer("❌ Đơn hàng không tồn tại!", show_alert=True)
+        return
+    if order.get("status") not in ("waiting_payment", "pending"):
+        await query.answer("Đơn hàng này không còn ở trạng thái chờ thanh toán.", show_alert=True)
+        return
+    if order.get("discount_code"):
+        await query.answer(f"Đơn hàng đã áp dụng mã: {order['discount_code']}", show_alert=True)
+        return
+
+    ctx.user_data["waiting_coupon_order"] = order_id
+    await query.message.reply_text(
+        f"🎟 <b>NHẬP MÃ GIẢM GIÁ CHO ĐƠN HÀNG #{order_id}</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"👇 Vui lòng <b>gửi mã giảm giá</b> vào ô chat bên dưới:\n"
+        f"<i>(Hoặc gõ lệnh: <code>/coupon MÃ_CỦA_BẠN</code>)</i>\n"
+        f"<i>Gõ /cancel nếu muốn huỷ bỏ.</i>",
+        parse_mode=ParseMode.HTML
+    )
+
+
+async def cb_coupon_info(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    order_id = query.data.split(":")[1]
+    order = db.get_order(order_id)
+    if order and order.get("discount_code"):
+        await query.answer(
+            f"Đã áp dụng mã {order['discount_code']}: Tiết kiệm {utils.fmt_price(order.get('discount_amount', 0))}",
+            show_alert=True
+        )
+    else:
+        await query.answer("Chưa áp dụng mã giảm giá.", show_alert=True)
+
+
+async def coupon_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Lệnh /coupon hoặc /magg <MÃ> để áp mã giảm giá vào đơn hàng chờ thanh toán."""
+    user = update.effective_user
+    if not ctx.args:
+        await update.message.reply_text(
+            "Cú pháp: <code>/coupon &lt;MÃ_GIẢM_GIÁ&gt;</code>\n"
+            "<i>Ví dụ:</i> <code>/coupon VIP20</code>",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    code = ctx.args[0].strip().upper()
+    order_id = ctx.user_data.get("waiting_coupon_order") or ctx.user_data.get("order_id")
+    if not order_id:
+        orders = db.get_orders()
+        user_pending = [o for o in orders.values() if o.get("user_id") == user.id and o.get("status") in ("waiting_payment", "pending")]
+        if user_pending:
+            user_pending.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+            order_id = user_pending[0]["order_id"]
+
+    if not order_id:
+        await update.message.reply_text(
+            "❌ Bạn hiện không có đơn hàng nào đang chờ thanh toán để áp dụng mã giảm giá.\n"
+            "Hãy chọn gói dịch vụ trước bằng lệnh /start.",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    await _apply_and_respond_coupon(update, ctx, order_id, code)
+
+
+async def handle_user_coupon_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> bool:
+    order_id = ctx.user_data.get("waiting_coupon_order")
+    if not order_id:
+        return False
+
+    text = update.message.text.strip() if update.message and update.message.text else ""
+    if not text:
+        return False
+
+    if text.startswith("/"):
+        ctx.user_data.pop("waiting_coupon_order", None)
+        return False
+
+    code = text.upper()
+    await _apply_and_respond_coupon(update, ctx, order_id, code)
+    return True

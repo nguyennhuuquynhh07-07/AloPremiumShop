@@ -19,7 +19,7 @@ if sys.stdout and hasattr(sys.stdout, "reconfigure"):
 if sys.stderr and hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-from telegram import BotCommand, BotCommandScopeDefault, BotCommandScopeChat
+from telegram import Update, BotCommand, BotCommandScopeDefault, BotCommandScopeChat
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -41,6 +41,7 @@ from handlers.user_handlers import (
     cb_cmd_setlang, cb_lang, cb_apidocs, cb_get_mobileconfig,
     cb_back_main, cb_back_products, cb_show_qr,
     receive_identifier, cancel_conv, resetspotify_user_cmd, guide_cmd, cb_show_guide, cb_user_reset_spotify_menu,
+    cb_coupon, cb_coupon_info, coupon_cmd, handle_user_coupon_text,
     WAITING_IDENTIFIER,
 )
 from handlers.admin_handlers import (
@@ -246,6 +247,8 @@ def main():
     app.add_handler(CommandHandler("support",   support_cmd))
     app.add_handler(CommandHandler("guide",      guide_cmd))
     app.add_handler(CommandHandler("resetspotify", resetspotify_user_cmd))
+    app.add_handler(CommandHandler("coupon",    coupon_cmd))
+    app.add_handler(CommandHandler("magg",      coupon_cmd))
     app.add_handler(CommandHandler("cancel",    cancel_conv))
 
     # ── Lệnh Admin ───────────────────────────────────────────────────────────
@@ -276,6 +279,8 @@ def main():
     # ── Callback người dùng ──────────────────────────────────────────────────
     app.add_handler(CallbackQueryHandler(cb_show_guide,   pattern=r"^show_guide$"))
     app.add_handler(CallbackQueryHandler(cb_user_reset_spotify_menu, pattern=r"^user_reset_spotify_menu$"))
+    app.add_handler(CallbackQueryHandler(cb_coupon,        pattern=r"^coupon:"))
+    app.add_handler(CallbackQueryHandler(cb_coupon_info,   pattern=r"^coupon_info:"))
     app.add_handler(CallbackQueryHandler(cb_product,       pattern=r"^product:"))
     app.add_handler(CallbackQueryHandler(cb_paid,          pattern=r"^paid:"))
     app.add_handler(CallbackQueryHandler(cb_buy,           pattern=r"^buy:"))
@@ -296,10 +301,15 @@ def main():
     app.add_handler(CallbackQueryHandler(cb_admin_reject,  pattern=r"^admin_reject:"))
     app.add_handler(CallbackQueryHandler(cb_admin,         pattern=r"^admin:"))
 
-    # ── Admin input handler ──────────────────────────────────────────────────
+    # ── Text input handler (User Coupon & Admin) ─────────────────────────────
+    async def unified_text_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        if await handle_user_coupon_text(update, ctx):
+            return
+        await handle_admin_text_input(update, ctx)
+
     app.add_handler(MessageHandler(
         (filters.ALL) & ~filters.COMMAND,
-        handle_admin_text_input
+        unified_text_handler
     ))
 
     async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:

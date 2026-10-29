@@ -462,39 +462,20 @@ class WebAppHandler(BaseHTTPRequestHandler):
             plnv = pv.get("plans", {}).get(plan, {})
             orig_price = plnv.get("price", 149000)
 
-            COUPONS = {
-                "VIP10": (0.10, "Giảm 10% tổng đơn hàng"),
-                "SALE10": (0.10, "Giảm 10% tổng đơn hàng"),
-                "VIP20": (0.20, "Giảm 20% tổng đơn hàng"),
-                "SALE20": (0.20, "Giảm 20% tổng đơn hàng"),
-                "VIP50": (0.50, "Giảm 50% siêu ưu đãi"),
-                "SALE50": (0.50, "Giảm 50% siêu ưu đãi"),
-                "QUYNH2007": (0.20, "Mã độc quyền Quynh2007 - Giảm 20%"),
-                "QUYNHVIP": (0.20, "Mã độc quyền QuynhVIP - Giảm 20%"),
-                "LOCKETGOLD": (15000, "Giảm ngay 15.000đ vào đơn hàng"),
-                "PREMIUM": (20000, "Giảm ngay 20.000đ vào đơn hàng"),
-            }
-
-            if code in COUPONS:
-                rule, desc = COUPONS[code]
-                if isinstance(rule, float):
-                    discount_val = int(orig_price * rule)
-                else:
-                    discount_val = int(rule)
-                discount_val = min(discount_val, orig_price - 1000)
-                final_price = max(1000, orig_price - discount_val)
+            chk = utils.check_and_apply_coupon(code, orig_price)
+            if chk.get("ok"):
                 self._send_json(200, {
                     "ok": True,
-                    "code": code,
-                    "description": desc,
-                    "discount_amount": discount_val,
+                    "code": chk["code"],
+                    "description": chk.get("desc", ""),
+                    "discount_amount": chk["discount_amount"],
                     "original_price": orig_price,
-                    "final_price": final_price
+                    "final_price": chk["final_price"]
                 })
             else:
                 self._send_json(400, {
                     "ok": False,
-                    "error": f"Mã giảm giá '{code}' không tồn tại hoặc đã hết hạn."
+                    "error": chk.get("error", f"Mã giảm giá '{code}' không tồn tại hoặc đã hết hạn.")
                 })
             return
 
@@ -525,28 +506,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
             discount_amount = 0
             applied_code = ""
 
-            COUPONS = {
-                "VIP10": 0.10,
-                "SALE10": 0.10,
-                "VIP20": 0.20,
-                "SALE20": 0.20,
-                "VIP50": 0.50,
-                "SALE50": 0.50,
-                "QUYNH2007": 0.20,
-                "QUYNHVIP": 0.20,
-                "LOCKETGOLD": 15000,
-                "PREMIUM": 20000,
-            }
-
-            if coupon and coupon in COUPONS:
-                rule = COUPONS[coupon]
-                if isinstance(rule, float):
-                    discount_amount = int(orig_price * rule)
-                else:
-                    discount_amount = int(rule)
-                discount_amount = min(discount_amount, orig_price - 1000)
-                price = max(1000, orig_price - discount_amount)
-                applied_code = coupon
+            if coupon:
+                chk = utils.check_and_apply_coupon(coupon, orig_price)
+                if chk.get("ok"):
+                    discount_amount = chk["discount_amount"]
+                    price = chk["final_price"]
+                    applied_code = chk["code"]
+                    if chk.get("is_db"):
+                        db.use_code(applied_code)
 
             # Lưu vào Database dùng chung với Bot Telegram
             extra_fields = {
