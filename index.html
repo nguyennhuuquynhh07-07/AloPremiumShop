@@ -134,45 +134,9 @@
                     </h2>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
-                    <!-- CARD 1: SIÊU VIP 3-IN-1 (BEST SELLER) -->
-                    <div onclick="selectProduct('combo3in1')" id="card_combo3in1" 
-                         class="relative rounded-3xl p-6 bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500 cursor-pointer transition-all shadow-xl hover:border-amber-400 gold-border-glow">
-                        <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md">
-                            🌟 Bán chạy nhất • Tiết kiệm 70%
-                        </div>
-                        <div class="flex items-center gap-3 mb-4">
-                            <span class="text-3xl">👑</span>
-                            <div>
-                                <h3 class="text-lg font-black text-white">Siêu VIP 3-in-1</h3>
-                                <p class="text-xs text-amber-400 font-bold">Locket + Spotify + YouTube</p>
-                            </div>
-                        </div>
-                        <div class="my-4 pb-4 border-b border-slate-800">
-                            <div class="text-3xl font-black text-white">200.000đ</div>
-                            <div class="text-xs text-slate-400 mt-1">Trọn gói Vĩnh Viễn • Không phí duy trì</div>
-                        </div>
-                        <ul class="space-y-2 text-xs text-slate-300">
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> Locket Gold (Full tính năng)
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> Spotify Premium (Nghe nhạc Lossless)
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> YouTube Premium (Chặn 100% Ads + PiP)
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> Cài đặt trực tiếp 1 chạm qua Safari
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">✓</span> Bảo hành 1 đổi 1 trọn đời
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- CARD 2: LOCKET GOLD VIP -->
+                    <!-- CARD 1: LOCKET GOLD VIP -->
                     <div onclick="selectProduct('locket')" id="card_locket" 
                          class="rounded-3xl p-6 bg-slate-900/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-all shadow-lg">
                         <div class="flex items-center gap-3 mb-4">
@@ -237,12 +201,12 @@
                         <span>Chọn thời hạn & Điền tài khoản</span>
                     </h2>
                     <span id="activeProductBadge" class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold">
-                        Gói đang chọn: Siêu VIP 3-in-1
+                        Gói đang chọn: Locket Gold VIP
                     </span>
                 </div>
 
-                <!-- Bảng chọn thời hạn (ẩn nếu là gói 3-in-1 chỉ có vĩnh viễn) -->
-                <div id="planSelectionContainer" class="hidden mb-6">
+                <!-- Bảng chọn thời hạn gói -->
+                <div id="planSelectionContainer" class="mb-6">
                     <label class="block text-xs font-bold text-slate-400 mb-2">Chọn thời hạn gói:</label>
                     <div id="planPills" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
                 </div>
@@ -406,7 +370,7 @@
                     <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
                     <span>Đang chờ chuyển khoản...</span>
                 </div>
-                <h3 class="text-xl font-black text-white" id="modalProductName">Siêu VIP 3-in-1</h3>
+                <h3 class="text-xl font-black text-white" id="modalProductName">Locket Gold VIP</h3>
                 <p class="text-xs text-slate-400 mt-1">Quét mã VietQR bằng app ngân hàng bất kỳ</p>
 
                 <!-- ẢNH VIETQR -->
@@ -505,7 +469,7 @@
 
     <!-- FOOTER -->
     <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500">
-        <p>PremiumStore 3-in-1 • Hệ thống bản quyền tự động VietQR SePay • Bảo hành trọn đời</p>
+        <p>PremiumStore VIP • Hệ thống bản quyền tự động VietQR SePay • Bảo hành trọn đời</p>
         <p class="mt-1">Hỗ trợ CSKH 24/7 qua Telegram: <a href="https://t.me/nguyennhuquynh28" target="_blank" class="text-amber-400 underline font-bold">@nguyennhuquynh28</a> • Hotline/Zalo: <a href="https://zalo.me/0345222802" target="_blank" class="text-amber-400 font-bold underline">0345.222.802</a></p>
     </footer>
 
@@ -515,7 +479,7 @@
     <script>
         // Global State
         let systemProducts = {};
-        let selectedProduct = 'combo3in1';
+        let selectedProduct = 'locket';
         let selectedPlan = 'ltm';
         let verifiedAccountData = null;
         let currentOrderData = null;
@@ -543,15 +507,15 @@
             } catch (e) {
                 console.warn('Failed to load packages:', e);
             }
-            selectProduct('combo3in1');
+            selectProduct('locket');
         }
 
-        // Chọn sản phẩm (combo3in1 / locket / spotify)
+        // Chọn sản phẩm (locket / spotify)
         function selectProduct(prodKey) {
             selectedProduct = prodKey;
             
             // Highlight card
-            ['combo3in1', 'locket', 'spotify'].forEach(k => {
+            ['locket', 'spotify'].forEach(k => {
                 const card = document.getElementById('card_' + k);
                 if (card) {
                     if (k === prodKey) {
@@ -569,7 +533,6 @@
             const planContainer = document.getElementById('planSelectionContainer');
 
             const prodNames = {
-                combo3in1: 'Siêu VIP 3-in-1',
                 locket: 'Locket Gold VIP',
                 spotify: 'Spotify Premium'
             };
@@ -627,7 +590,7 @@
 
         function updatePayAmount() {
             const pv = systemProducts[selectedProduct];
-            const price = pv?.plans?.[selectedPlan]?.price || (selectedProduct === 'combo3in1' ? 200000 : 0);
+            const price = pv?.plans?.[selectedPlan]?.price || 0;
             const btnPayAmount = document.getElementById('btnPayAmount');
             if (btnPayAmount) btnPayAmount.textContent = price.toLocaleString() + 'đ';
         }

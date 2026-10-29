@@ -10,6 +10,16 @@ from datetime import datetime
 from config import PRODUCTS
 
 
+def clean_input(raw: str) -> str:
+    """Tách username hoặc UID sạch từ chuỗi nhập vào (link locket.cam, @username hoặc text)"""
+    import re
+    s = raw.strip().lstrip("@")
+    m = re.search(r"locket\.cam/(?:u/)?([^/?#&\s]+)", s, re.I)
+    if m:
+        s = m.group(1).lstrip("@")
+    return s.strip()
+
+
 def gen_order_id() -> str:
     """Tạo mã đơn hàng ngẫu nhiên 8 ký tự chữ hoa + số."""
     chars = string.ascii_uppercase + string.digits

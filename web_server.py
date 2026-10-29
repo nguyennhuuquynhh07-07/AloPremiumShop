@@ -24,7 +24,6 @@ import config
 import database as db
 import api_client as api
 import utils
-import locket_service
 
 logger = logging.getLogger("web_server")
 
@@ -87,7 +86,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "text/plain; charset=utf-8")
             self._send_cors_headers()
             self.end_headers()
-            self.wfile.write(b"Bot Locket Gold + Spotify + 3in1 is running 24/7!")
+            self.wfile.write(b"Bot Locket Gold + Spotify is running 24/7!")
             return
 
         # 1.1 Phục vụ Static Images & Logo trang web
@@ -173,26 +172,19 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(403, {"ok": False, "error": "Đơn hàng chưa thanh toán hoặc chưa được kích hoạt thành công."})
                 return
 
-            product_key = order.get("product", "combo3in1")
+            product_key = order.get("product", "locket")
             safe_name = order.get("display_name") or order.get("uid") or "VIP"
             clean_token = order.get("token") or order.get("uid") or "vip"
 
-            if product_key == "combo3in1":
-                xml_str = locket_service.build_mobileconfig_xml(
-                    username=safe_name,
-                    token=clean_token,
-                    cf_url=config.SERVER_BASE_URL
-                )
-            else:
-                pv = config.PRODUCTS.get(product_key, {})
-                svc_name = pv.get("name", "Locket Gold VIP")
-                dns_link = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
-                bio = utils.generate_mobileconfig(
-                    service_name=svc_name,
-                    display_name=safe_name,
-                    dns_link=dns_link
-                )
-                xml_str = bio.getvalue().decode("utf-8")
+            pv = config.PRODUCTS.get(product_key, {})
+            svc_name = pv.get("name", "Locket Gold VIP")
+            dns_link = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+            bio = utils.generate_mobileconfig(
+                service_name=svc_name,
+                display_name=safe_name,
+                dns_link=dns_link
+            )
+            xml_str = bio.getvalue().decode("utf-8")
 
             payload_bytes = xml_str.encode("utf-8")
             file_name = f"{product_key.capitalize()}_{safe_name}.mobileconfig"
@@ -325,7 +317,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "text/plain; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(b"VipPro 3in1 Web Storefront is ready.")
+                self.wfile.write(b"PremiumStore VIP Web Storefront is ready.")
                 return
 
         # Mặc định 404
@@ -426,38 +418,20 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     })
                     return
 
-                elif service == "combo3in1":
-                    cleaned = locket_service.clean_input(raw_id)
-                    res_3in1 = locket_service.resolve_locket_profile(cleaned)
-                    if not res_3in1.get("ok"):
-                        self._send_json(400, {"ok": False, "error": res_3in1.get("error", "Không tìm thấy thông tin tài khoản Locket.")})
-                        return
-                    self._send_json(200, {
-                        "ok": True,
-                        "service": "combo3in1",
-                        "uid": res_3in1.get("uid") or cleaned,
-                        "display_name": res_3in1.get("full_name") or res_3in1.get("username") or cleaned,
-                        "avatar": res_3in1.get("avatar"),
-                        "token": res_3in1.get("token"),
-                        "download_url": res_3in1.get("download_url"),
-                    })
-                    return
-
                 else:
-                    # Gói Locket Gold thường
-                    cleaned = locket_service.clean_input(raw_id)
+                    # Gói Locket Gold
+                    cleaned = utils.clean_input(raw_id)
                     try:
                         res = api.locket_resolve(cleaned)
                         data = res.get("data") if isinstance(res.get("data"), dict) else res
                         uid = data.get("uid") or data.get("id") or cleaned
                         display = data.get("displayName") or data.get("username") or data.get("name") or cleaned
                         avatar = data.get("avatar") or data.get("avatarUrl")
-                    except Exception:
-                        # Fallback qua scraper
-                        res_fb = locket_service.resolve_locket_profile(cleaned)
-                        uid = res_fb.get("uid") or cleaned
-                        display = res_fb.get("full_name") or res_fb.get("username") or cleaned
-                        avatar = res_fb.get("avatar")
+                    except Exception as e:
+                        logger.warning(f"Locket resolve error: {e}")
+                        uid = cleaned
+                        display = cleaned
+                        avatar = None
 
                     self._send_json(200, {
                         "ok": True,
@@ -527,7 +501,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     f"• Khách: {display_name} (<code>@{identifier}</code>)\n"
                     f"• Số tiền: <b>{utils.fmt_price(price)}</b>\n"
                     f"• Đang chờ chuyển khoản VietQR..."
-                )
+            )
                 for aid in config.ADMIN_IDS:
                     try:
                         asyncio.run_coroutine_threadsafe(

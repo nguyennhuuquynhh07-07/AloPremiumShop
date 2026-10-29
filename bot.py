@@ -1,8 +1,7 @@
 """
-bot.py – Entry point của Bot Đa Năng 3-in-1:
+bot.py – Entry point của Bot VIP:
 1. Gói Locket Gold VIP (API CTV)
 2. Gói Spotify Premium (API CTV)
-3. Gói Siêu VIP 3-in-1 (Locket + Spotify + YouTube 2099 - Proxy & DoH)
 Tích hợp web server giữ kết nối 24/7 trên Render, bảng điều khiển Admin,
 quản lý đơn hàng VietQR tự động.
 """
@@ -198,7 +197,7 @@ def main():
         print("❌ LỖI: Chưa cấu hình TELEGRAM_BOT_TOKEN!")
         sys.exit(1)
 
-    print("🚀 Đang khởi động Bot VIP 3-in-1 (Locket + Spotify + 3-in-1 Combo)...")
+    print("🚀 Đang khởi động Bot VIP (Locket Gold & Spotify Premium)...")
 
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
 

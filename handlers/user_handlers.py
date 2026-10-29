@@ -419,28 +419,16 @@ async def cb_get_mobileconfig(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     prod_name = pv.get("name", "Locket & Spotify Premium")
     uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
 
-    if prod_key == "combo3in1":
-        from locket_service import build_mobileconfig_xml
-        token = latest.get("token") or latest.get("uid") or "vip"
-        xml_str = build_mobileconfig_xml(
-            username=uid_name,
-            token=token,
-            cf_url=config.SERVER_BASE_URL
-        )
-        import io
-        bio = io.BytesIO(xml_str.encode("utf-8"))
-        bio.name = f"VipPro3in1_{latest.get('uid', 'vip')}.mobileconfig"
-    else:
-        dns_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
-        bio = utils.generate_mobileconfig(
-            service_name=prod_name,
-            display_name=uid_name,
-            dns_link=dns_link
-        )
-        safe_uid = str(uid_name).replace(" ", "_")
-        bio.name = f"{prod_key.capitalize()}_{safe_uid}.mobileconfig"
+    dns_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
+    bio = utils.generate_mobileconfig(
+        service_name=prod_name,
+        display_name=uid_name,
+        dns_link=dns_link
+    )
+    safe_uid = str(uid_name).replace(" ", "_")
+    bio.name = f"{prod_key.capitalize()}_{safe_uid}.mobileconfig"
 
-    target_link = latest.get("download_url") if prod_key == "combo3in1" else (latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}")
+    target_link = dns_link
     if target_link:
         try:
             qr_buf = utils.generate_qr_code(target_link)
@@ -494,14 +482,12 @@ async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     latest = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
-    prod_key = latest.get("product", "combo3in1")
+    prod_key = latest.get("product", "locket")
     pv = PRODUCTS.get(prod_key, {})
     prod_name = pv.get("name", "Dịch vụ Premium")
     uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
 
-    target_link = latest.get("download_url") if prod_key == "combo3in1" else (latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}")
-    if not target_link:
-        target_link = f"{config.SERVER_BASE_URL}/d/{latest.get('token', 'vip')}"
+    target_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
 
     try:
         qr_buf = utils.generate_qr_code(target_link)
@@ -586,21 +572,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"• Hoặc UID trực tiếp: <code>31t3tcqt17dugzvuubw2ydhqy6km</code>\n\n"
             f"👇 <b>Gửi Link hoặc UID Spotify vào ô chat bên dưới:</b>"
         )
-    elif product_key == "combo3in1":
-        prompt = (
-            f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"
-            f"💰 <b>Giá trọn gói:</b> <code>{utils.fmt_price(plnv['price'])}</code>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"📌 <b>BƯỚC 1: GỬI USERNAME HOẶC LINK LOCKET</b>\n\n"
-            f"<b>Hướng dẫn lấy thông tin Locket:</b>\n"
-            f"  • Mở app Locket → Bấm Avatar góc trên → Xem <b>@username</b>\n"
-            f"  • Hoặc chọn <i>'Mời bạn bè'</i> → <i>Sao chép liên kết</i> (<code>locket.cam/...</code>)\n\n"
-            f"👑 <i>Gói này sẽ tự động tích hợp:</i>\n"
-            f"• 💛 <b>Locket Gold Pro (Vĩnh viễn)</b>\n"
-            f"• 🎵 <b>Spotify Premium</b>\n"
-            f"• ▶️ <b>YouTube Premium (Chặn QC + PiP nền)</b>\n\n"
-            f"👇 <b>Gửi Username hoặc Link Locket của bạn vào ô chat bên dưới:</b>"
-        )
+
     else:  # locket
         prompt = (
             f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"
@@ -667,25 +639,8 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 "account_target": uid or raw_identifier,
                 "avatar": avatar_url,
             }
-        elif product_key == "combo3in1":
-            from locket_service import resolve_locket_profile, clean_input
-            cleaned = clean_input(raw_identifier)
-            res_3in1 = resolve_locket_profile(cleaned)
-            if not res_3in1.get("ok"):
-                raise Exception(res_3in1.get("error", "Không tìm thấy tài khoản Locket."))
-            uid = res_3in1.get("uid") or cleaned
-            display = res_3in1.get("full_name") or res_3in1.get("username") or cleaned
-            avatar_url = res_3in1.get("avatar")
-            extra_order_fields = {
-                "token": res_3in1.get("token"),
-                "download_url": res_3in1.get("download_url"),
-                "avatar": avatar_url,
-                "locket_username": res_3in1.get("username") or cleaned,
-                "account_target": res_3in1.get("username") or cleaned,
-            }
         else:
-            from locket_service import clean_input
-            cleaned_username = clean_input(raw_identifier)
+            cleaned_username = utils.clean_input(raw_identifier)
             res = api.locket_resolve(cleaned_username)
             data = res.get("data") if isinstance(res.get("data"), dict) else res
             uid  = data.get("uid") or data.get("id") or cleaned_username
@@ -1213,13 +1168,13 @@ GUIDE_TEXT = """
 • Ở ngay dòng đầu tiên (dưới tên iCloud của bạn), nhấn vào <b>Đã tải về hồ sơ (Profile Downloaded)</b>.
 • Nhấn <b>Cài đặt (Install)</b> ở góc trên bên phải → Nhập mật mã mở khóa màn hình iPhone → Tiếp tục nhấn <b>Cài đặt</b> xác nhận.
 
-🔹 <b>BƯỚC 3: Bật tin cậy chứng chỉ (Dành cho gói Siêu VIP 3-in-1)</b>
+🔹 <b>BƯỚC 3: Bật tin cậy chứng chỉ (Nếu có)</b>
 • Vào <b>Cài đặt (Settings)</b> → <b>Cài đặt chung (General)</b> → <b>Giới thiệu (About)</b>.
 • Kéo xuống dưới cùng, chọn <b>Cài đặt tin cậy chứng nhận (Certificate Trust Settings)</b>.
 • Tại mục <i>"Bật tin cậy hoàn toàn cho các chứng nhận gốc"</i>, tìm dòng <b>Locket Gold Root CA</b> và <b>BẬT XANH CÔNG TẮC (ON)</b>.
 • Chọn <b>Tiếp tục (Continue)</b> để xác nhận.
 
-🎉 <b>Hoàn tất!</b> Mở Locket, Spotify hoặc YouTube lên để tận hưởng trọn vẹn các tính năng VIP!
+🎉 <b>Hoàn tất!</b> Mở Locket hoặc Spotify lên để tận hưởng trọn vẹn các tính năng VIP!
 """
 
 async def guide_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
