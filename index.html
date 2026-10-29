@@ -47,6 +47,19 @@
             --locket-dark: #1E1B18;
             --locket-muted: #6E6659;
         }
+        html, body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        input, textarea {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #FFF9ED;
@@ -1358,5 +1371,84 @@
         // Khởi động
         document.addEventListener('DOMContentLoaded', initSystem);
     </script>
+
+    <!-- ============================================================ -->
+    <!-- BẢO VỆ MÃ NGUỒN, CHỐNG F12, CHỐNG DEVTOOLS & XÓA COOKIE        -->
+    <!-- ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // 1. Vô hiệu hoá console log / info / warn / error để bảo vệ dữ liệu
+            try {
+                const noop = function() {};
+                const methods = ['log', 'debug', 'info', 'warn', 'error', 'table', 'trace', 'dir', 'dirxml'];
+                for (let i = 0; i < methods.length; i++) {
+                    window.console[methods[i]] = noop;
+                }
+            } catch (e) {}
+
+            // 2. Tự động xóa sạch toàn bộ cookie và chặn cookie theo dõi
+            function purgeAllCookies() {
+                try {
+                    const cookies = document.cookie.split(";");
+                    for (let i = 0; i < cookies.length; i++) {
+                        const eqPos = cookies[i].indexOf("=");
+                        const name = eqPos > -1 ? cookies[i].substr(0, eqPos).trim() : cookies[i].trim();
+                        if (name) {
+                            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Strict;Secure";
+                            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=;domain=" + window.location.hostname;
+                        }
+                    }
+                } catch (e) {}
+            }
+            purgeAllCookies();
+            setInterval(purgeAllCookies, 3000);
+
+            // 3. Chặn chuột phải (Context Menu)
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            }, { capture: true });
+
+            // 4. Chặn phím tắt mở DevTools, View Source, Lưu trang
+            document.addEventListener('keydown', function(e) {
+                // F12
+                if (e.keyCode === 123 || e.key === 'F12') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+                // Ctrl+Shift+I / J / C (Inspect Element)
+                if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67 || ['i', 'j', 'c'].includes(e.key.toLowerCase()))) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+                // Ctrl+U (Xem mã nguồn)
+                if (e.ctrlKey && (e.keyCode === 85 || e.key.toLowerCase() === 'u')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+                // Ctrl+S (Lưu trang web)
+                if (e.ctrlKey && (e.keyCode === 83 || e.key.toLowerCase() === 's')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }, { capture: true });
+
+            // 5. Bẫy Anti-Debugger: Tự động đóng băng nếu phát hiện mở Developer Tools
+            setInterval(function() {
+                const start = performance.now();
+                (function() { return false; }["constructor"]("debugger")());
+                if (performance.now() - start > 100) {
+                    window.location.reload();
+                }
+            }, 1200);
+        })();
+    </script>
+
 </body>
 </html>

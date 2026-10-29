@@ -79,6 +79,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         params = parse_qs(parsed.query)
+        client_ip = self._get_client_ip()
+
+        # Kiểm tra Rate Limit (ngoại trừ ping keep-alive và ảnh)
+        if not path.startswith(("/health", "/ping")) and not path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg")):
+            allowed, reason = check_ip_rate_limit(client_ip, max_requests=60, window_secs=60)
+            if not allowed:
+                self._send_json(429, {"ok": False, "error": reason})
+                return
 
         # 1. Health check & Render keep-alive
         if path in ("/health", "/ping"):
@@ -204,20 +212,19 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(payload_bytes)
             return
 
-        # 6. API Tra cứu đơn hàng theo User / UID / OrderID
+        # 6. API Tra cứu đơn hàng bảo mật (Khớp chính xác Order ID hoặc UID >= 6 ký tự)
         if path == "/api/lookup":
-            q = params.get("q", [""])[0].strip().lower()
-            if not q:
-                self._send_json(400, {"ok": False, "error": "Vui lòng nhập từ khóa tìm kiếm"})
+            q = params.get("q", [""])[0].strip()
+            if len(q) < 6:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập chính xác Mã đơn hàng hoặc UID (tối thiểu 6 ký tự)"})
                 return
 
             orders = db.get_orders()
             results = []
+            q_lower = q.lower()
             for oid, od in orders.items():
-                if (q in oid.lower() or 
-                    q in str(od.get("uid", "")).lower() or 
-                    q in str(od.get("display_name", "")).lower() or 
-                    q in str(od.get("username", "")).lower()):
+                # Chỉ cho phép khớp chính xác Mã đơn hàng hoặc UID, không quét bừa
+                if oid.lower() == q_lower or str(od.get("uid", "")).lower() == q_lower:
                     results.append({
                         "order_id": oid,
                         "product": od.get("product"),
@@ -230,7 +237,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "download_url": f"/api/download_profile?order_id={oid}" if od.get("status") == "done" else None
                     })
             results.sort(key=lambda x: x.get("created_at", ""), reverse=True)
-            self._send_json(200, {"ok": True, "orders": results[:10]})
+            self._send_json(200, {"ok": True, "orders": results[:5]})
             return
 
         # API Tạo Mã QR Code động định dạng PNG từ link tải / dữ liệu bất kỳ
@@ -333,6 +340,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         body = self._read_json_body()
+        client_ip = self._get_client_ip()
+
+        # Kiểm tra Rate Limit cho các API POST
+        allowed, reason = check_ip_rate_limit(client_ip, max_requests=40, window_secs=60)
+        if not allowed:
+            self._send_json(429, {"ok": False, "error": reason})
+            return
 
         # API Admin: Đăng nhập mã PIN
         if path == "/api/admin/login":

@@ -584,6 +584,24 @@
             }
         }
     </script>
+
+    <!-- BẢO VỆ ADMIN: CHỐNG F12 & BẢO VỆ MÃ NGUỒN -->
+    <script>
+        (function() {
+            'use strict';
+            try {
+                const noop = function() {};
+                ['log', 'debug', 'info', 'warn', 'error', 'table'].forEach(m => window.console[m] = noop);
+            } catch(e) {}
+            document.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
+            document.addEventListener('keydown', e => {
+                if (e.keyCode === 123 || e.key === 'F12') { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase())) { e.preventDefault(); return false; }
+                if (e.ctrlKey && ['u', 's'].includes(e.key.toLowerCase())) { e.preventDefault(); return false; }
+            });
+        })();
+    </script>
+
 </body>
 </html>
 
