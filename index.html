@@ -183,10 +183,8 @@
     <header class="sticky top-0 z-50 bg-[#050508]/90 backdrop-blur-2xl border-b border-white/10">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <!-- Iconic Locket Yellow Squircle Logo -->
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#FFD24C] to-[#FF9B00] flex items-center justify-center text-black font-black text-xl shadow-lg shadow-amber-500/30 shrink-0 transform hover:rotate-6 transition-all">
-                    💛
-                </div>
+                <!-- Logo Locket VIP -->
+                <img src="/logo.png" alt="Locket VIP" class="w-10 h-10 rounded-2xl object-cover shadow-lg shadow-amber-500/30 border border-[#FFB800]/40 shrink-0 transform hover:scale-110 hover:rotate-6 transition-all">
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="font-fredoka text-lg sm:text-xl font-black tracking-tight text-white">Locket <span class="text-[#FFB800]">VIP</span></span>
@@ -202,8 +200,8 @@
                 <a href="https://t.me/nguyennhuquynh28" target="_blank" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white text-xs font-bold transition-all">
                     <span>✈️ Telegram</span>
                 </a>
-                <a href="https://zalo.me/0345222802" target="_blank" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#0068FF]/15 border border-[#0068FF]/30 text-blue-400 hover:bg-[#0068FF]/25 text-xs font-bold transition-all">
-                    <span>💬 Zalo 0345.222.802</span>
+                <a id="headerZaloBtn" href="https://zalo.me/0345222802" target="_blank" onclick="revealZaloNumber(event, this)" class="locket-btn-interactive flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#0068FF]/15 border border-[#0068FF]/30 text-blue-400 hover:bg-[#0068FF]/25 text-xs font-bold transition-all cursor-pointer">
+                    <span id="headerZaloText">💬 Zalo</span>
                 </a>
                 <a href="https://t.me/PremiumStoreV2Bot" target="_blank" class="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#FFB800]/15 border border-[#FFB800]/30 text-[#FFB800] hover:bg-[#FFB800]/25 text-xs font-bold transition-all">
                     <span>🤖 Bot Telegram</span>
@@ -262,13 +260,10 @@
                     <span class="text-[#FFB800]">Cài 1 Chạm iOS</span>
                 </div>
 
-                <!-- Main Locket Squircle Center Emblem -->
+                <!-- Main Locket Center Emblem -->
                 <div class="relative inline-block mb-4">
-                    <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-[32px] bg-gradient-to-br from-[#FFD24C] via-[#FFB800] to-[#FF8C00] p-1.5 shadow-[0_15px_45px_rgba(255,184,0,0.35)] flex items-center justify-center locket-card-interactive cursor-pointer">
-                        <div class="w-full h-full rounded-[26px] bg-[#0c0d12] flex items-center justify-center relative overflow-hidden">
-                            <span class="text-4xl sm:text-5xl transform hover:scale-110 transition-transform">💛</span>
-                            <div class="absolute inset-0 bg-gradient-to-t from-[#FFB800]/10 to-transparent pointer-events-none"></div>
-                        </div>
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-full p-1 bg-gradient-to-tr from-[#FFD24C] via-[#FFB800] to-purple-500 shadow-[0_15px_45px_rgba(255,184,0,0.4)] flex items-center justify-center locket-card-interactive cursor-pointer">
+                        <img src="/logo.png" alt="Locket VIP Logo" class="w-full h-full rounded-full object-cover">
                     </div>
                     <!-- Mini Crown on emblem -->
                     <div class="absolute -top-3 -right-2 text-2xl animate-bounce">👑</div>
@@ -311,9 +306,7 @@
                             🌟 Bán chạy nhất • Khuyên Dùng
                         </div>
                         <div class="flex items-center gap-3.5 mb-4">
-                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFD24C] to-[#FF9B00] flex items-center justify-center text-black text-2xl shadow-lg shadow-amber-500/20 shrink-0">
-                                💛
-                            </div>
+                            <img src="/logo.png" alt="Locket Gold" class="w-12 h-12 rounded-2xl object-cover shadow-lg shadow-amber-500/20 border border-[#FFB800]/40 shrink-0">
                             <div>
                                 <h3 class="font-fredoka text-xl font-black text-white">Locket Gold VIP</h3>
                                 <p class="text-xs text-[#FFB800] font-bold">Bản quyền Locket Camera Chính Hãng</p>
@@ -677,7 +670,7 @@
     <!-- FOOTER -->
     <footer class="bg-[#050508] border-t border-white/10 py-7 text-center text-xs text-zinc-500">
         <p class="font-fredoka text-sm text-zinc-400">Locket VIP & Spotify Premium • Hệ thống tự động VietQR SePay • Bảo hành trọn đời</p>
-        <p class="mt-1.5">Hỗ trợ CSKH 24/7 qua Telegram: <a href="https://t.me/nguyennhuquynh28" target="_blank" class="text-[#FFB800] underline font-bold">@nguyennhuquynh28</a> • Hotline/Zalo: <a href="https://zalo.me/0345222802" target="_blank" class="text-[#FFB800] font-bold underline">0345.222.802</a></p>
+        <p class="mt-1.5">Hỗ trợ CSKH 24/7 qua Telegram: <a href="https://t.me/nguyennhuquynh28" target="_blank" class="text-[#FFB800] underline font-bold">@nguyennhuquynh28</a> • <a href="https://zalo.me/0345222802" target="_blank" onclick="revealFooterZalo(event, this)" class="text-[#FFB800] hover:underline font-bold cursor-pointer"><span id="footerZaloText">💬 Zalo Hỗ Trợ (Bấm xem số)</span></a></p>
     </footer>
 
     <!-- ============================================================ -->
@@ -1112,6 +1105,36 @@
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Reset Ngay';
+            }
+        }
+
+        
+        // Reveal Zalo phone number on click
+        function revealZaloNumber(e, btn) {
+            const textEl = document.getElementById('headerZaloText') || btn;
+            const isRevealed = btn.getAttribute('data-revealed') === 'true';
+            if (!isRevealed) {
+                e.preventDefault(); // Don't navigate on first click so user sees the phone number!
+                btn.setAttribute('data-revealed', 'true');
+                textEl.textContent = '💬 Zalo: 0345.222.802';
+                btn.classList.add('border-emerald-400', 'text-emerald-400', 'bg-emerald-500/15');
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText('0345222802');
+                }
+                btn.title = 'Bấm lần nữa để mở Zalo';
+            }
+        }
+
+        function revealFooterZalo(e, el) {
+            const textEl = document.getElementById('footerZaloText') || el;
+            const isRevealed = el.getAttribute('data-revealed') === 'true';
+            if (!isRevealed) {
+                e.preventDefault();
+                el.setAttribute('data-revealed', 'true');
+                textEl.textContent = '💬 Zalo / Hotline: 0345.222.802';
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText('0345222802');
+                }
             }
         }
 
