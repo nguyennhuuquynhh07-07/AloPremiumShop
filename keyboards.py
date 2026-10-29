@@ -98,7 +98,10 @@ def success_kb(dns_link: str = None) -> InlineKeyboardMarkup:
             InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": dns_link}})
         ])
     rows.append([
+        InlineKeyboardButton("📷 Tạo Mã QR Code", callback_data="show_qr"),
         InlineKeyboardButton("📥 Tải file .mobileconfig", callback_data="get_mobileconfig"),
+    ])
+    rows.append([
         InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
     ])
     rows.append([
@@ -111,7 +114,10 @@ def success_kb(dns_link: str = None) -> InlineKeyboardMarkup:
 def orders_kb(has_done_order: bool = False, has_spotify: bool = False) -> InlineKeyboardMarkup:
     rows = []
     if has_done_order:
-        rows.append([InlineKeyboardButton("📥 Tải lại file cấu hình DNS", callback_data="get_mobileconfig")])
+        rows.append([
+            InlineKeyboardButton("📥 Tải file cấu hình DNS", callback_data="get_mobileconfig"),
+            InlineKeyboardButton("📷 Tạo Mã QR DNS", callback_data="show_qr")
+        ])
     if has_spotify:
         rows.append([InlineKeyboardButton("🔄 Reset thiết bị Spotify", callback_data="user_reset_spotify_menu")])
     rows.append([

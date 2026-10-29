@@ -479,6 +479,62 @@ async def cb_get_mobileconfig(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.HTML
     )
 
+
+async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Callback bấm nút '📷 Tạo Mã QR Code' từ link DNS cấu hình của khách."""
+    query = update.callback_query
+    await query.answer("Đang tạo mã QR cho link DNS của bạn...")
+    user = query.from_user
+
+    orders = db.get_user_orders(user.id)
+    done_orders = [o for o in orders if o.get("status") == "done"]
+
+    if not done_orders:
+        await query.answer("⚠️ Bạn chưa có đơn hàng nào được kích hoạt để tạo mã QR DNS!", show_alert=True)
+        return
+
+    latest = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
+    prod_key = latest.get("product", "combo3in1")
+    pv = PRODUCTS.get(prod_key, {})
+    prod_name = pv.get("name", "Dịch vụ Premium")
+    uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
+
+    target_link = latest.get("download_url") if prod_key == "combo3in1" else (latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}")
+    if not target_link:
+        target_link = f"{config.SERVER_BASE_URL}/d/{latest.get('token', 'vip')}"
+
+    try:
+        qr_buf = utils.generate_qr_code(target_link)
+        caption = (
+            f"📷 <b>MÃ QR CODE TẢI DNS PROFILE ({prod_name})</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"👤 Tài khoản: <b>@{uid_name}</b>\n"
+            f"🌐 Link DNS: <code>{target_link}</code>\n\n"
+            f"⚡ <b>Cách quét mã cài đặt:</b>\n"
+            f"1️⃣ Dùng <b>Camera iPhone</b> quét mã QR trên màn hình.\n"
+            f"2️⃣ Bấm thông báo màu vàng <b>\"Mở trong Safari\"</b> để tải hồ sơ cấu hình vào máy!"
+        )
+        kb = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("🌐 Mở Tải Trực Tiếp Safari", url=target_link),
+                InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": target_link}})
+            ],
+            [
+                InlineKeyboardButton("📥 Tải file .mobileconfig", callback_data="get_mobileconfig"),
+                InlineKeyboardButton("🏠 Menu Chính", callback_data="back_main")
+            ]
+        ])
+        await ctx.bot.send_photo(
+            chat_id=user.id,
+            photo=qr_buf,
+            caption=caption,
+            parse_mode=ParseMode.HTML,
+            reply_markup=kb
+        )
+    except Exception as e:
+        logger.error(f"Error in cb_show_qr: {e}")
+        await query.message.reply_text(f"❌ Không thể tạo mã QR: {e}")
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  BƯỚC 1: Chọn sản phẩm & Gói (Callback)
 # ═══════════════════════════════════════════════════════════════════════════════

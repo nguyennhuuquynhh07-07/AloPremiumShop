@@ -461,8 +461,14 @@
                 <h3 class="text-2xl font-black text-white">Thanh Toán Thành Công!</h3>
                 <p class="text-xs text-slate-400 mt-1 mb-5">Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.</p>
 
+                <!-- NÚT BẤM TẠO / XEM MÃ QR CODE CỦA LINK DNS -->
+                <button type="button" onclick="toggleQrCodeDisplay()" id="btnToggleQrCode"
+                        class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500/20 to-amber-600/20 hover:from-amber-500/30 hover:to-amber-600/30 border-2 border-amber-400/50 text-amber-300 text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-2 mb-3 shadow-lg">
+                    <span>📷</span> TẠO / XEM MÃ QR CODE CỦA LINK DNS NÀY
+                </button>
+
                 <!-- KHUNG MÃ QR QUÉT TẢI TRỰC TIẾP -->
-                <div class="my-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center justify-center">
+                <div id="qrCodeDisplayWrapper" class="my-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center justify-center">
                     <div class="text-xs font-bold text-amber-400 mb-2 flex items-center gap-1.5">
                         <span>📷</span> Quét Mã QR Cài Đặt Bằng Camera iPhone
                     </div>
@@ -790,6 +796,21 @@
 
             document.getElementById('modalWaitingPayment').classList.add('hidden');
             document.getElementById('modalSuccessPayment').classList.remove('hidden');
+        }
+
+        function toggleQrCodeDisplay() {
+            const wrapper = document.getElementById('qrCodeDisplayWrapper');
+            const btn = document.getElementById('btnToggleQrCode');
+            if (wrapper) {
+                const isHidden = wrapper.classList.contains('hidden');
+                if (isHidden) {
+                    wrapper.classList.remove('hidden');
+                    if (btn) btn.innerHTML = '<span>✕</span> Ẩn Mã QR Code';
+                } else {
+                    wrapper.classList.add('hidden');
+                    if (btn) btn.innerHTML = '<span>📷</span> TẠO / XEM MÃ QR CODE CỦA LINK DNS NÀY';
+                }
+            }
         }
 
         function toggleOrderQr(boxId) {

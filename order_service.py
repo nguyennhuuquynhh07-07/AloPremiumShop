@@ -86,7 +86,10 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     InlineKeyboardButton("📋 Copy Link", api_kwargs={"copy_text": {"text": download_url}})
                 ],
                 [
+                    InlineKeyboardButton("📷 Tạo Mã QR Code", callback_data="show_qr"),
                     InlineKeyboardButton("📖 Hướng Dẫn Cài Đặt Chi Tiết", callback_data="show_guide"),
+                ],
+                [
                     InlineKeyboardButton("🏠 Menu Chính", callback_data="back_main")
                 ]
             ])

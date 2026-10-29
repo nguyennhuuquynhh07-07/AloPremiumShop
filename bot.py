@@ -40,7 +40,7 @@ from handlers.user_handlers import (
     cb_paid, cb_buy, cb_cancel,
     cb_my_orders, cb_support, cb_my_account,
     cb_cmd_setlang, cb_lang, cb_apidocs, cb_get_mobileconfig,
-    cb_back_main, cb_back_products,
+    cb_back_main, cb_back_products, cb_show_qr,
     receive_identifier, cancel_conv, resetspotify_user_cmd, guide_cmd, cb_show_guide, cb_user_reset_spotify_menu,
     WAITING_IDENTIFIER,
 )
@@ -287,6 +287,7 @@ def main():
     app.add_handler(CallbackQueryHandler(cb_lang,          pattern=r"^lang:"))
     app.add_handler(CallbackQueryHandler(cb_apidocs,       pattern=r"^apidocs:"))
     app.add_handler(CallbackQueryHandler(cb_get_mobileconfig, pattern=r"^get_mobileconfig$"))
+    app.add_handler(CallbackQueryHandler(cb_show_qr,          pattern=r"^show_qr$"))
     app.add_handler(CallbackQueryHandler(cb_support,       pattern=r"^support$"))
     app.add_handler(CallbackQueryHandler(cb_back_products, pattern=r"^back_products$"))
     app.add_handler(CallbackQueryHandler(cb_back_main,     pattern=r"^back_main$"))
