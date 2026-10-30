@@ -299,3 +299,27 @@ def find_all(query: str) -> dict:
         "users": matched_users,
         "orders": matched_orders,
     }
+
+
+# ── TRANSACTIONS (CHỐNG REPLAY ATTACK & GIAN LẬN THANH TOÁN) ──────────────────
+
+DB_TX = "data/used_transactions.json"
+
+def get_used_tx_ids() -> dict:
+    return _load(DB_TX, {})
+
+def is_tx_used(tx_id: str) -> bool:
+    if not tx_id:
+        return False
+    return str(tx_id) in get_used_tx_ids()
+
+def mark_tx_used(tx_id: str, order_id: str):
+    if not tx_id:
+        return
+    txs = get_used_tx_ids()
+    txs[str(tx_id)] = {
+        "order_id": order_id,
+        "used_at": datetime.now().isoformat()
+    }
+    _save(DB_TX, txs)
+

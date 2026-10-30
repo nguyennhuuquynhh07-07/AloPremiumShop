@@ -210,12 +210,17 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 5. API Tải file .mobileconfig trực tiếp vào Cài đặt iOS Safari (CHỈ CHO ĐƠN ĐÃ THANH TOÁN)
+        # 5. API Tải file .mobileconfig (BẢO VỆ CHẶT CHẼ: CHỈ CHO ĐƠN ĐÃ THANH TOÁN THẬT)
         if path == "/api/download_profile" or path.endswith(".mobileconfig"):
             order_id = params.get("order_id", [""])[0].strip()
             username = params.get("username", [""])[0].strip() or params.get("uid", [""])[0].strip()
 
-            order = db.get_order(order_id) if order_id else None
+            order = None
+            if order_id:
+                o_check = db.get_order(order_id)
+                if o_check and o_check.get("status") == "done":
+                    order = o_check
+
             if not order and username:
                 clean_u = utils.clean_input(username).lower()
                 for od in db.get_orders().values():
@@ -224,17 +229,21 @@ class WebAppHandler(BaseHTTPRequestHandler):
                             order = od
                             break
 
-            if not order and not username and not order_id:
-                self._send_json(400, {"ok": False, "error": "Vui lòng cung cấp order_id hoặc username"})
+            # Nếu không tìm thấy đơn hàng ĐÃ THANH TOÁN (status == done) -> TỪ CHỐI TẢI
+            if not order:
+                self._send_json(403, {
+                    "ok": False,
+                    "error": "⛔ Không thể tải cấu hình: Đơn hàng chưa thanh toán hoặc chưa kích hoạt thành công!"
+                })
                 return
 
-            product_key = order.get("product", "locket") if order else "locket"
-            safe_name = (order.get("display_name") if order else None) or (order.get("uid") if order else None) or username or "VIP"
-            clean_token = (order.get("token") if order else None) or (order.get("uid") if order else None) or "vip"
+            product_key = order.get("product", "locket")
+            safe_name = order.get("display_name") or order.get("uid") or "VIP"
+            clean_token = order.get("token") or order.get("uid") or "vip"
 
             pv = config.PRODUCTS.get(product_key, {})
             svc_name = pv.get("name", "Locket Gold VIP")
-            dns_link = (order.get("dns_link") if order else None) or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+            dns_link = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
             bio = utils.generate_mobileconfig(
                 service_name=svc_name,
                 display_name=safe_name,
@@ -677,7 +686,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": str(e)})
             return
 
-        # 3.1. API Reset / Đổi máy Locket Gold
+        # 3.1. API Reset / Đổi máy Locket Gold (BẢO MẬT: BẮT BUỘC ĐÃ TỪNG MUA GÓI BẢN QUYỀN)
         if path == "/api/reset_locket":
             raw_id = str(body.get("username", "") or body.get("identifier", "")).strip()
             if not raw_id:
@@ -685,6 +694,21 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 return
             cleaned = utils.clean_input(raw_id)
             try:
+                # Kiểm tra tài khoản này đã từng mua gói bản quyền Locket hợp lệ chưa
+                has_paid_order = False
+                for od in db.get_orders().values():
+                    if od.get("product") == "locket" and od.get("status") == "done":
+                        if str(od.get("identifier", "")).lower() == cleaned.lower() or str(od.get("uid", "")).lower() == cleaned.lower() or str(od.get("display_name", "")).lower() == cleaned.lower():
+                            has_paid_order = True
+                            break
+
+                if not has_paid_order:
+                    self._send_json(403, {
+                        "ok": False,
+                        "error": f"Tài khoản '{cleaned}' chưa từng mua gói Locket Gold VIP tại cửa hàng hoặc chưa thanh toán! Vui lòng đặt mua gói trước khi đổi máy."
+                    })
+                    return
+
                 display_name = cleaned
                 uid = cleaned
                 try:
@@ -708,14 +732,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": str(e)})
             return
 
-        # 4. Webhook SePay (Bảo mật 3 lớp - Chống gửi request giả mạo)
+        # 4. Webhook SePay (Bảo mật 5 lớp tuyệt đối: Xác thực 2 chiều với API Ngân hàng SePay)
         if path in ("/sepay/webhook", "/api/sepay/webhook"):
-            # Lớp 1: Bắt buộc xác thực bí mật SePay API Token trong Header Authorization
+            client_ip = self.client_address[0] if hasattr(self, 'client_address') else 'unknown'
             auth_header = self.headers.get("Authorization", "")
             expected_token = getattr(config, "SEPAY_API_TOKEN", "").strip()
 
+            # Lớp 1: Bắt buộc xác thực bí mật SePay API Token trong Header Authorization
             if expected_token and expected_token not in auth_header:
-                client_ip = self.client_address[0] if hasattr(self, 'client_address') else 'unknown'
                 logger.warning(f"🚨 [CẢNH BÁO BẢO MẬT] Phát hiện request giả mạo webhook SePay từ IP: {client_ip}!")
                 self._send_json(401, {"ok": False, "error": "Unauthorized: Invalid SePay authentication token"})
                 return
@@ -734,31 +758,81 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"success": True, "message": "Ignored outgoing transfer"})
                 return
 
-            logger.info(f"✅ Nhận webhook SePay hợp lệ: {body}")
+            # Lớp 4: Chống Replay Attack (Mỗi mã giao dịch tx_id của ngân hàng chỉ được dùng đúng 1 lần)
+            tx_id = str(body.get("id", "")).strip()
+            if tx_id and db.is_tx_used(tx_id):
+                logger.warning(f"🚨 Giao dịch SePay {tx_id} đã được sử dụng trước đó (Replay Attack). Bỏ qua!")
+                self._send_json(200, {"success": True, "message": "Transaction already processed"})
+                return
+
             tx_content = str(body.get("content", "")).upper()
             amount_in = float(body.get("transferAmount", 0) or 0)
 
+            # Khớp đơn hàng trong database
             orders = db.get_orders()
             matched_order_id = None
+            matched_order = None
             for oid, od in orders.items():
                 if (oid.upper() in tx_content or f"ORDER_{oid.upper()}" in tx_content) and od.get("status") != "done":
                     if amount_in >= float(od.get("price", 0)):
                         matched_order_id = oid
+                        matched_order = od
                         break
 
-            if matched_order_id:
-                from order_service import execute_order_activation
-                if BOT_LOOP:
-                    asyncio.run_coroutine_threadsafe(
-                        execute_order_activation(BOT_INSTANCE, matched_order_id),
-                        BOT_LOOP
-                    )
-                else:
-                    asyncio.run(execute_order_activation(BOT_INSTANCE, matched_order_id))
-                self._send_json(200, {"success": True, "message": f"Activated order {matched_order_id}"})
+            if not matched_order_id:
+                self._send_json(200, {"success": True, "message": "Ignored or no matching pending order"})
                 return
 
-            self._send_json(200, {"success": True, "message": "Ignored or no matching order"})
+            # Lớp 5: XÁC THỰC 2 CHIỀU ĐỘC LẬP VỚI SEPAY API SERVER
+            # Gọi trực tiếp SePay API để kiểm tra xem TPBank thực sự có tiền về hay không!
+            if tx_id and expected_token:
+                try:
+                    import urllib.request
+                    v_url = f"https://my.sepay.vn/userapi/transactions/details/{tx_id}"
+                    v_req = urllib.request.Request(
+                        v_url,
+                        headers={"Authorization": f"Bearer {expected_token}", "User-Agent": "Mozilla/5.0"}
+                    )
+                    with urllib.request.urlopen(v_req, timeout=8) as v_res:
+                        if v_res.status == 200:
+                            v_json = json.loads(v_res.read().decode("utf-8"))
+                            real_tx = v_json.get("transaction") or {}
+                            real_acc = str(real_tx.get("account_number", "")).strip()
+                            real_amount = float(real_tx.get("amount_in", 0) or 0)
+                            real_content = str(real_tx.get("transaction_content", "")).upper()
+
+                            # Kiểm tra chéo: Số tài khoản, số tiền và nội dung đơn phải trùng khớp
+                            if real_acc != shop_acc or real_amount < float(matched_order.get("price", 0)):
+                                logger.error(f"🚨 [GIAN LẬN PHÁT HIỆN] Dữ liệu SePay API không khớp! SePay: {real_acc}, {real_amount}")
+                                self._send_json(403, {"ok": False, "error": "Verification failed: Bank data mismatch"})
+                                return
+                            if matched_order_id.upper() not in real_content and f"ORDER_{matched_order_id.upper()}" not in real_content:
+                                logger.error(f"🚨 [GIAN LẬN PHÁT HIỆN] Nội dung SePay API không chứa mã đơn: {real_content}")
+                                self._send_json(403, {"ok": False, "error": "Verification failed: Order ID mismatch"})
+                                return
+                        else:
+                            logger.error(f"🚨 Giao dịch {tx_id} không tìm thấy trên SePay API (Status {v_res.status})")
+                            self._send_json(403, {"ok": False, "error": "Transaction not verified by SePay API"})
+                            return
+                except Exception as e_verify:
+                    logger.error(f"🚨 Lỗi gọi SePay API verify: {e_verify}. Chặn kích hoạt để bảo vệ shop!")
+                    self._send_json(403, {"ok": False, "error": f"Verification error: {e_verify}"})
+                    return
+
+            # Đánh dấu transaction đã sử dụng
+            if tx_id:
+                db.mark_tx_used(tx_id, matched_order_id)
+
+            logger.info(f"✅ Giao dịch hợp lệ 100% từ SePay! Tiến hành kích hoạt đơn ORDER_{matched_order_id}")
+            from order_service import execute_order_activation
+            if BOT_LOOP:
+                asyncio.run_coroutine_threadsafe(
+                    execute_order_activation(BOT_INSTANCE, matched_order_id),
+                    BOT_LOOP
+                )
+            else:
+                asyncio.run(execute_order_activation(BOT_INSTANCE, matched_order_id))
+            self._send_json(200, {"success": True, "message": f"Activated order {matched_order_id}"})
             return
 
         self._send_json(404, {"ok": False, "error": "Endpoint not found"})

@@ -99,14 +99,24 @@ async def check_sepay_auto_payments(bot):
                 req_amount = float(order.get("price", 0))
 
                 for tx in transactions:
+                    tx_id = str(tx.get("id", ""))
+                    if not tx_id or db.is_tx_used(tx_id):
+                        continue
+
+                    # Bắt buộc đúng tài khoản thụ hưởng
+                    tx_acc = str(tx.get("account_number", "")).strip()
+                    if tx_acc and tx_acc != str(config.ACCOUNT_NO).strip():
+                        continue
+
                     content = str(tx.get("transaction_content", "")).upper()
                     amount_in = float(tx.get("amount_in", 0) or 0)
 
                     # Khớp mã đơn ORDER_XXXX hoặc XXXX và số tiền >= giá gói
                     if (order_id in content or f"ORDER_{order_id}" in content) and amount_in >= req_amount:
-                        logger.info(f"✅ SePay tự động phát hiện thanh toán cho đơn ORDER_{order_id} ({amount_in}đ)!")
+                        logger.info(f"✅ SePay tự động phát hiện thanh toán cho đơn ORDER_{order_id} ({amount_in}đ, TX: {tx_id})!")
                         ok, msg = await execute_order_activation(bot, order["order_id"])
                         if ok:
+                            db.mark_tx_used(tx_id, order["order_id"])
                             try:
                                 await bot.send_message(
                                     chat_id=order["user_id"],
