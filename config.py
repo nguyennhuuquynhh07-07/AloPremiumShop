@@ -19,7 +19,7 @@ if os.path.exists(env_file):
 # ============================================================
 #  1. CẤU HÌNH BOT TELEGRAM & ADMIN
 # ============================================================
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "9067929792:AAFA3a7hUEemQhX73uqnACaAaxi6qguihFQ")
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "9170943429:AAF6Hlu5qwSzMFHQpZZgLClQf450zcP6CZE")
 ADMIN_IDS = [int(x.strip()) for x in os.getenv("ADMIN_IDS", os.getenv("ADMIN_ID", "8313153487")).split(",") if x.strip()]
 SUPPORT_PHONE = os.getenv("SUPPORT_PHONE", "0345222802")
 SUPPORT_TELEGRAM = os.getenv("SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28")
