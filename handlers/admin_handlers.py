@@ -489,12 +489,15 @@ async def addcode_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     code = ctx.args[0].strip().upper()
+    if not code or len(code) < 2:
+        await update.message.reply_text("❌ Mã giảm giá phải có tối thiểu 2 ký tự.")
+        return
     try:
         discount = int(ctx.args[1])
-        if not (1 <= discount <= 100):
+        if not (1 <= discount <= 90):
             raise ValueError()
     except ValueError:
-        await update.message.reply_text("❌ % giảm giá phải là số từ 1 đến 100.")
+        await update.message.reply_text("❌ % giảm giá phải là số từ 1 đến 90% (tránh giá bị ép về 1.000đ).")
         return
 
     limit = 0

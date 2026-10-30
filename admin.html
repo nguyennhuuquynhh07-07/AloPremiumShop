@@ -92,6 +92,10 @@
                     class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:text-white transition-all cursor-pointer">
                 🎟 Quản Lý Mã Giảm Giá
             </button>
+            <button onclick="switchTab('orders')" id="tabBtn_orders"
+                    class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:text-white transition-all cursor-pointer">
+                📦 Danh Sách Đơn Hàng
+            </button>
         </div>
 
         <!-- TAB 1: ĐỒNG BỘ API CTV -->
@@ -278,6 +282,43 @@
                 </div>
             </div>
 
+        </div>
+
+    
+        <!-- TAB 3: DANH SÁCH ĐƠN HÀNG KHÁCH MUA -->
+        <div id="tabContent_orders" class="space-y-6 hidden">
+            <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <span>📦</span> Danh Sách Đơn Hàng & Người Mua
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">Toàn bộ đơn hàng được tạo trên Web và Bot Telegram</p>
+                    </div>
+                    <button onclick="loadOrders()" class="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                        🔄 Làm Mới
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
+                                <th class="py-3 px-4">Mã Đơn</th>
+                                <th class="py-3 px-4">Khách Hàng</th>
+                                <th class="py-3 px-4">Dịch Vụ</th>
+                                <th class="py-3 px-4">Số Tiền</th>
+                                <th class="py-3 px-4">Mã Ưu Đãi</th>
+                                <th class="py-3 px-4">Trạng Thái</th>
+                                <th class="py-3 px-4 text-right">Thời Gian</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="divide-y divide-slate-800/60">
+                            <tr><td colspan="7" class="py-8 text-center text-slate-500">Đang tải danh sách đơn hàng...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
     </main>

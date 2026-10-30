@@ -224,8 +224,10 @@ def save_codes(codes: dict):
 
 
 def add_code(code: str, discount_pct: int, max_uses: int = 0) -> dict:
+    code_clean = (code or "").strip().upper()
+    if not code_clean:
+        return {}
     codes = get_codes()
-    code_clean = code.strip().upper()
     data = {
         "code": code_clean,
         "discount_pct": discount_pct,

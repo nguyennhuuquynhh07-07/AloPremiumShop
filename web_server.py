@@ -345,6 +345,17 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
+        # API Admin: Lấy danh sách đơn hàng
+        if path == "/api/admin/orders":
+            pin = params.get("pin", [""])[0].strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            all_orders = list(db.get_orders().values())
+            all_orders.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+            self._send_json(200, {"ok": True, "orders": all_orders[:50]})
+            return
+
         # API Admin: Lấy danh sách mã giảm giá
         if path == "/api/admin/codes":
             pin = params.get("pin", [""])[0].strip()
@@ -407,12 +418,15 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
                 return
             code = str(body.get("code", "")).strip().upper()
+            if not code or len(code) < 2:
+                self._send_json(400, {"ok": False, "error": "Mã giảm giá phải có tối thiểu 2 ký tự và không được để trống"})
+                return
             try:
                 discount_pct = int(body.get("discount_pct", 0))
-                if not (1 <= discount_pct <= 100):
+                if not (1 <= discount_pct <= 90):
                     raise ValueError()
             except Exception:
-                self._send_json(400, {"ok": False, "error": "Phần trăm giảm giá phải từ 1 đến 100"})
+                self._send_json(400, {"ok": False, "error": "Phần trăm giảm giá phải từ 1% đến 90% (tránh giá bị ép về 1.000đ)"})
                 return
             max_uses = int(body.get("max_uses", 0) or 0)
             item = db.add_code(code, discount_pct, max_uses)
@@ -599,15 +613,24 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             # Gửi thông báo đến Admin qua Telegram Bot (nếu đang chạy)
             if BOT_INSTANCE and BOT_LOOP:
+                if applied_code and discount_amount > 0:
+                    price_line = (
+                        f"• Giá niêm yết: <s>{utils.fmt_price(orig_price)}</s>\n"
+                        f"• Mã giảm giá: <code>{applied_code}</code> (-{utils.fmt_price(discount_amount)})\n"
+                        f"• Cần thanh toán: <b>{utils.fmt_price(price)}</b>"
+                    )
+                else:
+                    price_line = f"• Số tiền: <b>{utils.fmt_price(price)}</b>"
+
                 msg_admin = (
                     f"🛒 <b>[ĐƠN HÀNG WEB MỚI]</b>\n"
                     f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
                     f"• Mã đơn: <code>ORDER_{order_id}</code>\n"
                     f"• Dịch vụ: <b>{pv['name']} - {plnv['label']}</b>\n"
                     f"• Khách: {display_name} (<code>@{identifier}</code>)\n"
-                    f"• Số tiền: <b>{utils.fmt_price(price)}</b>\n"
+                    f"{price_line}\n"
                     f"• Đang chờ chuyển khoản VietQR..."
-            )
+                )
                 for aid in config.ADMIN_IDS:
                     try:
                         asyncio.run_coroutine_threadsafe(
