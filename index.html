@@ -979,7 +979,20 @@
         </button>
     </div>
 
-
+    <!-- LIVE RECENT ORDERS POPUP (SOCIAL PROOF TOAST) -->
+    <div id="liveOrderToast" class="fixed bottom-5 left-5 z-40 max-w-xs sm:max-w-sm bg-white/95 backdrop-blur-md border-2 border-[#FFE29A] rounded-2xl p-3.5 shadow-2xl transition-all duration-500 transform translate-y-32 opacity-0 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFD24C] to-[#FF9B00] flex items-center justify-center text-xl shrink-0 shadow-sm">
+            💛
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-[#D97706] font-bold uppercase tracking-wider flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Vừa kích hoạt thành công
+            </p>
+            <p class="text-xs font-bold text-[#1E1B18] truncate mt-0.5" id="toastCustomerText">Khách hàng conlai***</p>
+            <p class="text-[10px] text-[#A09685] mt-0.5" id="toastProductText">Locket Gold VIP • Cách đây 2 phút</p>
+        </div>
+        <button onclick="dismissLiveToast()" class="text-zinc-400 hover:text-zinc-600 text-xs p-1">✕</button>
+    </div>
 
     <!-- GLOBAL TOAST NOTIFICATION -->
     <div id="globalToast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#1E1B18] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl opacity-0 pointer-events-none transition-all duration-300">
@@ -1680,7 +1693,54 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', initSystem);
+        // Live recent orders social proof toast
+        const SAMPLE_RECENT_ORDERS = [
+            { user: "conlai***", pkg: "Locket Gold Vĩnh Viễn", time: "2 phút trước" },
+            { user: "huyquang***", pkg: "Spotify Premium 1 Năm", time: "4 phút trước" },
+            { user: "ngocmai***", pkg: "Locket Gold Vĩnh Viễn", time: "5 phút trước" },
+            { user: "minhduc***", pkg: "Spotify Premium Vĩnh Viễn", time: "7 phút trước" },
+            { user: "quynh***", pkg: "Locket Gold VIP 1 Năm", time: "9 phút trước" },
+            { user: "hoanganh***", pkg: "Locket Gold Vĩnh Viễn", time: "11 phút trước" }
+        ];
+        let toastIdx = 0;
+
+        function showLiveToast() {
+            const toast = document.getElementById('liveOrderToast');
+            if (!toast) return;
+            const item = SAMPLE_RECENT_ORDERS[toastIdx % SAMPLE_RECENT_ORDERS.length];
+            toastIdx++;
+
+            const custEl = document.getElementById('toastCustomerText');
+            const prodEl = document.getElementById('toastProductText');
+            if (custEl) custEl.textContent = `Khách hàng ${item.user}`;
+            if (prodEl) prodEl.textContent = `${item.pkg} • ${item.time}`;
+
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 6000);
+        }
+
+        function dismissLiveToast() {
+            const toast = document.getElementById('liveOrderToast');
+            if (toast) {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }
+        }
+
+        function initLiveOrderToasts() {
+            setTimeout(showLiveToast, 3500);
+            setInterval(showLiveToast, 18000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSystem();
+            initLiveOrderToasts();
+        });
     </script>
 
     <!-- ============================================================ -->
