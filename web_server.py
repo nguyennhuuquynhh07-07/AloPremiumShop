@@ -708,16 +708,40 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": str(e)})
             return
 
-        # 4. Webhook SePay (Nhận thông báo chuyển khoản tức thì 0.1s)
+        # 4. Webhook SePay (Bảo mật 3 lớp - Chống gửi request giả mạo)
         if path in ("/sepay/webhook", "/api/sepay/webhook"):
-            logger.info(f"Nhận webhook SePay: {body}")
-            content = str(body.get("content", "")).upper()
+            # Lớp 1: Bắt buộc xác thực bí mật SePay API Token trong Header Authorization
+            auth_header = self.headers.get("Authorization", "")
+            expected_token = getattr(config, "SEPAY_API_TOKEN", "").strip()
+
+            if expected_token and expected_token not in auth_header:
+                client_ip = self.client_address[0] if hasattr(self, 'client_address') else 'unknown'
+                logger.warning(f"🚨 [CẢNH BÁO BẢO MẬT] Phát hiện request giả mạo webhook SePay từ IP: {client_ip}!")
+                self._send_json(401, {"ok": False, "error": "Unauthorized: Invalid SePay authentication token"})
+                return
+
+            # Lớp 2: Kiểm tra số tài khoản nhận tiền phải là tài khoản chính chủ của shop
+            account_num = str(body.get("accountNumber", "")).strip()
+            shop_acc = str(getattr(config, "ACCOUNT_NO", "34528022007")).strip()
+            if account_num and shop_acc and account_num != shop_acc:
+                logger.warning(f"🚨 Webhook SePay sai tài khoản nhận tiền: {account_num} != {shop_acc}")
+                self._send_json(400, {"ok": False, "error": "Invalid recipient account"})
+                return
+
+            # Lớp 3: Chiều giao dịch phải là tiền vào ('in')
+            transfer_type = str(body.get("transferType", "in")).lower()
+            if transfer_type != "in":
+                self._send_json(200, {"success": True, "message": "Ignored outgoing transfer"})
+                return
+
+            logger.info(f"✅ Nhận webhook SePay hợp lệ: {body}")
+            tx_content = str(body.get("content", "")).upper()
             amount_in = float(body.get("transferAmount", 0) or 0)
 
             orders = db.get_orders()
             matched_order_id = None
             for oid, od in orders.items():
-                if (oid.upper() in content or f"ORDER_{oid.upper()}" in content) and od.get("status") != "done":
+                if (oid.upper() in tx_content or f"ORDER_{oid.upper()}" in tx_content) and od.get("status") != "done":
                     if amount_in >= float(od.get("price", 0)):
                         matched_order_id = oid
                         break
