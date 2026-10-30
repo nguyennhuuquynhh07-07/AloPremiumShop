@@ -18,7 +18,7 @@ import api_client as api
 import utils
 import config
 from config import PRODUCTS, ADMIN_IDS, BANK_ID, ACCOUNT_NO, ACCOUNT_NAME
-from keyboards import admin_kb, back_admin_kb
+from keyboards import admin_kb, back_admin_kb, admin_orders_kb
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ def build_admin_menu_text() -> str:
         "                uid/order)\n"
         "/ban [id] [rs]  Ban user\n"
         "/unban [id]     Unban user\n"
-        "/orders         Recent orders\n"
+        "/orders         Lịch sử mua hàng toàn hệ thống\n"
         "/tokens         Token pool status\n"
         "/checkbank      Test STC bank API\n"
         "/addcode        Tạo mã giảm giá\n"
@@ -141,42 +141,106 @@ async def stats_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # ── /orders ───────────────────────────────────────────────────────────────────
 
-async def orders_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Danh sách các đơn hàng gần nhất."""
-    if not is_admin(update.effective_user.id):
+async def orders_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE, filter_type: str = "all"):
+    """Lịch sử mua hàng toàn hệ thống dành cho Admin."""
+    user_id = update.effective_user.id if update.effective_user else 0
+    if not is_admin(user_id):
         return
+
+    if ctx.args and len(ctx.args) > 0:
+        arg = ctx.args[0].lower().strip()
+        if arg in ("done", "pending", "all"):
+            filter_type = arg
 
     all_orders = list(db.get_orders().values())
-    recent = sorted(all_orders, key=lambda x: x["created_at"], reverse=True)[:15]
+    total_count = len(all_orders)
+    done_count = sum(1 for o in all_orders if o.get("status") == "done")
+    pending_count = sum(1 for o in all_orders if o.get("status") in ("waiting_payment", "pending", "pending_approval"))
+
+    if filter_type == "done":
+        filtered = [o for o in all_orders if o.get("status") == "done"]
+        title_filter = "ĐÃ DUYỆT / HOÀN TẤT (✅)"
+    elif filter_type == "pending":
+        filtered = [o for o in all_orders if o.get("status") in ("waiting_payment", "pending", "pending_approval")]
+        title_filter = "CHỜ THANH TOÁN / DUYỆT (💳)"
+    else:
+        filtered = all_orders
+        title_filter = "TẤT CẢ"
+
+    recent = sorted(filtered, key=lambda x: x.get("created_at", 0), reverse=True)[:15]
+
+    kb = admin_orders_kb(filter_type)
 
     if not recent:
-        msg = "📋 Hiện tại chưa có đơn hàng nào."
+        msg = (
+            f"📦 <b>LỊCH SỬ MUA HÀNG — {title_filter}</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"📊 <i>Tổng: {total_count} đơn | Đã xong: {done_count} | Chờ TT: {pending_count}</i>\n\n"
+            f"<i>Chưa có đơn hàng nào trong danh mục này.</i>"
+        )
         if update.callback_query:
-            await update.callback_query.edit_message_text(msg, reply_markup=back_admin_kb())
+            await update.callback_query.answer()
+            try:
+                await update.callback_query.edit_message_text(msg, parse_mode=ParseMode.HTML, reply_markup=kb)
+            except Exception:
+                pass
         else:
-            await update.message.reply_text(msg)
+            await update.message.reply_text(msg, parse_mode=ParseMode.HTML, reply_markup=kb)
         return
 
-    lines = ["📋 <b>15 ĐƠN HÀNG GẦN NHẤT:</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━"]
+    lines = [
+        f"📦 <b>LỊCH SỬ MUA HÀNG — {title_filter}</b>",
+        f"📊 <i>Tổng: {total_count} đơn | Đã xong: {done_count} | Chờ TT: {pending_count}</i>",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━"
+    ]
     for o in recent:
-        prod = PRODUCTS.get(o["product"], {}).get("name", o["product"])
-        plan = PRODUCTS.get(o["product"], {}).get("plans", {}).get(o["plan"], {}).get("label", o["plan"])
-        lines.append(
-            f"{utils.status_emoji(o['status'])} <code>ORDER_{o['order_id']}</code> | @{o['username']}\n"
-            f"   └ {prod} ({plan}) — <b>{utils.fmt_price(o['price'])}</b>\n"
-            f"   └ UID: <code>{o.get('uid', 'N/A')}</code> | <i>{utils.fmt_datetime(o['created_at'])}</i>"
-        )
-    lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 <i>Dùng lệnh /find [mã_đơn] để xem chi tiết.</i>")
+        prod = PRODUCTS.get(o.get("product"), {}).get("name", o.get("product", "N/A"))
+        plan = PRODUCTS.get(o.get("product"), {}).get("plans", {}).get(o.get("plan"), {}).get("label", o.get("plan", "N/A"))
 
+        # Tên khách hàng & UID
+        cust_name = o.get("display_name") or o.get("username") or "Khách"
+        uid_str = o.get("uid") or o.get("username") or "N/A"
+
+        # Giá tiền & Coupon
+        orig_p = o.get("original_price")
+        curr_p = o.get("price", 0)
+        coupon = o.get("coupon_code")
+        if coupon and orig_p and orig_p > curr_p:
+            price_text = f"<s>{utils.fmt_price(orig_p)}</s> ➔ <b>{utils.fmt_price(curr_p)}</b> (🏷 <code>{coupon}</code>)"
+        else:
+            price_text = f"<b>{utils.fmt_price(curr_p)}</b>"
+
+        status_str = {
+            "done": "✅ Đã kích hoạt",
+            "waiting_payment": "💳 Chờ thanh toán",
+            "pending_approval": "⏳ Chờ duyệt",
+            "pending": "⏳ Đang xử lý",
+            "failed": "❌ Thất bại",
+            "cancelled": "🚫 Đã huỷ",
+            "rejected": "🚫 Từ chối"
+        }.get(o.get("status"), "❓ " + str(o.get("status")))
+
+        time_str = utils.fmt_datetime(o.get("created_at", 0))
+
+        lines.append(
+            f"🧾 <code>ORDER_{o['order_id']}</code> • {status_str}\n"
+            f"   👤 Khách: <b>{cust_name}</b> (<code>{uid_str}</code>)\n"
+            f"   🎁 Dịch vụ: {prod} - {plan}\n"
+            f"   💰 Số tiền: {price_text}\n"
+            f"   🕒 <i>{time_str}</i>"
+        )
+
+    lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 <i>Dùng lệnh /find [mã_đơn] để xem chi tiết hoặc duyệt thủ công.</i>")
     text = "\n".join(lines)
+
     if update.callback_query:
         await update.callback_query.answer()
         try:
-            await update.callback_query.edit_message_text(text, parse_mode=ParseMode.HTML, reply_markup=back_admin_kb())
+            await update.callback_query.edit_message_text(text, parse_mode=ParseMode.HTML, reply_markup=kb)
         except Exception:
-            await update.callback_query.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=back_admin_kb())
+            await update.callback_query.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=kb)
     else:
-        await update.message.reply_text(text, parse_mode=ParseMode.HTML)
+        await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=kb)
 
 
 # ── /tokens ───────────────────────────────────────────────────────────────────
@@ -781,7 +845,11 @@ async def cb_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await stats_cmd(update, ctx)
 
     elif action == "recent":
-        await orders_cmd(update, ctx)
+        await orders_cmd(update, ctx, filter_type="all")
+
+    elif action == "orders":
+        filter_type = parts[2] if len(parts) > 2 else "all"
+        await orders_cmd(update, ctx, filter_type=filter_type)
 
     elif action == "balance":
         await tokens_cmd(update, ctx)

@@ -218,7 +218,7 @@ def admin_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("📊 Thống kê doanh thu", callback_data="admin:stats"),
-            InlineKeyboardButton("📋 Đơn hàng gần đây",    callback_data="admin:recent"),
+            InlineKeyboardButton("📦 Lịch sử mua hàng",   callback_data="admin:orders:all"),
         ],
         [
             InlineKeyboardButton("🪙 Số dư Coin CTV",     callback_data="admin:balance"),
@@ -237,6 +237,23 @@ def admin_kb() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("🏠 Đóng bảng điều khiển", callback_data="admin:close"),
+        ]
+    ])
+
+
+def admin_orders_kb(filter_type: str = "all") -> InlineKeyboardMarkup:
+    all_btn = f"{'🔘' if filter_type == 'all' else '⚪'} Tất cả"
+    done_btn = f"{'🔘' if filter_type == 'done' else '⚪'} Đã duyệt"
+    pending_btn = f"{'🔘' if filter_type == 'pending' else '⚪'} Chờ TT"
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton(all_btn, callback_data="admin:orders:all"),
+            InlineKeyboardButton(done_btn, callback_data="admin:orders:done"),
+            InlineKeyboardButton(pending_btn, callback_data="admin:orders:pending"),
+        ],
+        [
+            InlineKeyboardButton("🔄 Làm mới", callback_data=f"admin:orders:{filter_type}"),
+            InlineKeyboardButton("🔙 Menu Admin", callback_data="admin:menu"),
         ]
     ])
 

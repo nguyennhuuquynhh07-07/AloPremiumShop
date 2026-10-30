@@ -631,10 +631,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     f"{price_line}\n"
                     f"• Đang chờ chuyển khoản VietQR..."
                 )
+                from keyboards import admin_approval_kb
                 for aid in config.ADMIN_IDS:
                     try:
                         asyncio.run_coroutine_threadsafe(
-                            BOT_INSTANCE.send_message(chat_id=aid, text=msg_admin, parse_mode="HTML"),
+                            BOT_INSTANCE.send_message(
+                                chat_id=aid,
+                                text=msg_admin,
+                                parse_mode="HTML",
+                                reply_markup=admin_approval_kb(order_id)
+                            ),
                             BOT_LOOP
                         )
                     except Exception:
