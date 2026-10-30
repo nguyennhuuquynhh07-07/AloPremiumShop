@@ -579,6 +579,50 @@ class WebAppHandler(BaseHTTPRequestHandler):
             plnv = pv["plans"][plan]
             price = plnv["price"]
             orig_price = price
+
+            # Chống Spam Đơn Hàng (Anti-Spam Order Creation)
+            clean_ident = utils.clean_input(identifier).lower()
+            existing_orders = db.get_orders()
+            pending_same_order = None
+            pending_count_user = 0
+
+            for od in existing_orders.values():
+                if od.get("status") in ("waiting_payment", "pending"):
+                    od_ident = str(od.get("uid", "")).lower()
+                    if od_ident == clean_ident or od_ident == identifier.lower():
+                        pending_count_user += 1
+                        if od.get("product") == product and od.get("plan") == plan:
+                            pending_same_order = od
+
+            # Nếu tài khoản này đã tạo từ 3 đơn trở lên mà chưa thanh toán đơn nào -> Chặn spam
+            if pending_count_user >= 3:
+                self._send_json(429, {
+                    "ok": False,
+                    "error": "Bạn đang có nhiều đơn hàng chưa thanh toán! Vui lòng hoàn tất chuyển khoản đơn hàng trước đó hoặc chờ 5 phút."
+                })
+                return
+
+            # Nếu khách vừa tạo đơn cho cùng gói này -> Tái sử dụng đơn cũ, KHÔNG spam thông báo cho Admin!
+            if pending_same_order:
+                p_id = pending_same_order["order_id"]
+                p_price = pending_same_order["price"]
+                qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
+                self._send_json(200, {
+                    "ok": True,
+                    "order_id": p_id,
+                    "memo": f"ORDER_{p_id}",
+                    "price": p_price,
+                    "qr_url": qr_url,
+                    "bank_id": getattr(config, "BANK_ID", "TPB"),
+                    "bank_name": getattr(config, "BANK_NAME", "TPBank"),
+                    "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
+                    "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
+                    "product_name": pv["name"],
+                    "plan_label": plnv["label"],
+                    "is_reused": True
+                })
+                return
+
             order_id = utils.gen_order_id()
 
             coupon = str(body.get("discount_code", "") or body.get("coupon", "")).strip().upper()
