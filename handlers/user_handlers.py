@@ -582,7 +582,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET</b>\n\n"
             f"<b>Hướng dẫn:</b>\n"
             f"  Mở app Locket → Bấm Avatar góc trên → Xem phần <b>@username</b>\n\n"
-            f"<i>Ví dụ:</i> <code>conlaigii</code> hoặc <code>minhkim</code>\n\n"
+            f"<i>Ví dụ:</i> <code>conlaigii</code>\n\n"
             f"👇 <b>Gửi Username Locket của bạn vào ô chat bên dưới:</b>\n"
             f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>username MÃ_GIẢM_GIÁ</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
         )
