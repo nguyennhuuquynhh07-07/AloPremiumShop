@@ -162,7 +162,7 @@ async def sepay_worker(bot):
 async def keep_alive_worker():
     """Tự động ping server Render mỗi 10 phút để giữ máy chủ và bot luôn thức 24/7"""
     import urllib.request
-    url = "https://premiumstores.onrender.com/health"
+    url = "https://alopremium.shop/health"
     while True:
         await asyncio.sleep(600)
         try:
