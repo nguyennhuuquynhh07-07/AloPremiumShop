@@ -182,6 +182,56 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
+        # 3.1 API Danh sách đơn hàng vừa kích hoạt thành công (dành cho Social Proof Toast)
+        if path == "/api/recent_purchases":
+            orders = list(db.get_orders().values())
+            done_orders = [o for o in orders if o.get("status") == "done"]
+            done_orders.sort(key=lambda x: x.get("done_at") or x.get("created_at") or "", reverse=True)
+
+            recent_list = []
+            for o in done_orders[:15]:
+                raw_name = str(o.get("display_name") or o.get("username") or o.get("uid") or "Khách").strip()
+                if raw_name.startswith("web_"):
+                    raw_name = raw_name[4:]
+                if len(raw_name) > 4:
+                    masked_name = raw_name[:4] + "***"
+                elif len(raw_name) > 2:
+                    masked_name = raw_name[:2] + "***"
+                else:
+                    masked_name = raw_name + "***"
+
+                prod = config.PRODUCTS.get(o.get("product"), {})
+                prod_name = prod.get("name", "Gói VIP")
+                plan = prod.get("plans", {}).get(o.get("plan"), {})
+                plan_label = plan.get("label", "")
+                full_pkg = f"{prod_name} {plan_label}".strip()
+
+                t_str = o.get("done_at") or o.get("created_at")
+                time_ago = "Vừa xong"
+                if t_str:
+                    try:
+                        from datetime import datetime
+                        dt = datetime.fromisoformat(t_str)
+                        mins = max(1, int((datetime.now() - dt).total_seconds() / 60))
+                        if mins < 60:
+                            time_ago = f"{mins} phút trước"
+                        elif mins < 1440:
+                            time_ago = f"{mins // 60} giờ trước"
+                        else:
+                            time_ago = f"{mins // 1440} ngày trước"
+                    except Exception:
+                        pass
+
+                recent_list.append({
+                    "user": masked_name,
+                    "pkg": full_pkg,
+                    "time": time_ago,
+                    "is_real": True
+                })
+
+            self._send_json(200, {"ok": True, "purchases": recent_list})
+            return
+
         # 4. API Tra cứu trạng thái đơn hàng (Polling từ Web)
         if path == "/api/order_status":
             order_id = params.get("order_id", [""])[0].strip()

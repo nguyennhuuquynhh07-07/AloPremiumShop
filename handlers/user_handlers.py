@@ -712,7 +712,7 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         # Tạo ảnh QR VietQR chuẩn
         transfer_memo = f"ORDER_{order_id}"
         qr_url = utils.get_vietqr_url(final_price, transfer_memo)
-        bank_id = getattr(config, "BANK_ID", "TCB")
+        bank_id = getattr(config, "BANK_ID", "TPB")
         account_no = getattr(config, "ACCOUNT_NO", "")
         account_name = getattr(config, "ACCOUNT_NAME", "")
 
@@ -848,7 +848,7 @@ async def cb_paid(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"💰 <b>Số tiền:</b> <b>{utils.fmt_price(order['price'])}</b>\n"
         f"📝 <b>Nội dung CK:</b> <code>ORDER_{order_id}</code>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"Kiểm tra tài khoản Techcombank và chọn hành động:"
+        f"Kiểm tra tài khoản {getattr(config, 'BANK_NAME', 'TPBank')} và chọn hành động:"
     )
     for admin_id in ADMIN_IDS:
         try:
@@ -1328,7 +1328,7 @@ async def _apply_and_respond_coupon(update: Update, ctx: ContextTypes.DEFAULT_TY
 
     transfer_memo = f"ORDER_{order_id}"
     qr_url = utils.get_vietqr_url(final_price, transfer_memo)
-    bank_id = getattr(config, "BANK_ID", "TCB")
+    bank_id = getattr(config, "BANK_ID", "TPB")
     account_no = getattr(config, "ACCOUNT_NO", "")
     account_name = getattr(config, "ACCOUNT_NAME", "")
     display = order.get("display_name") or order.get("uid")

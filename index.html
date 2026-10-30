@@ -1693,7 +1693,7 @@
             }
         }
 
-        // Live recent orders social proof toast
+        // Live recent orders social proof toast (Kết nối dữ liệu đơn THẬT từ Database)
         const SAMPLE_RECENT_ORDERS = [
             { user: "conlai***", pkg: "Locket Gold Vĩnh Viễn", time: "2 phút trước" },
             { user: "huyquang***", pkg: "Spotify Premium 1 Năm", time: "4 phút trước" },
@@ -1702,12 +1702,28 @@
             { user: "quynh***", pkg: "Locket Gold VIP 1 Năm", time: "9 phút trước" },
             { user: "hoanganh***", pkg: "Locket Gold Vĩnh Viễn", time: "11 phút trước" }
         ];
+        let liveToastOrders = [...SAMPLE_RECENT_ORDERS];
         let toastIdx = 0;
+
+        async function loadRealRecentPurchases() {
+            try {
+                const res = await fetch('/api/recent_purchases');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.ok && Array.isArray(data.purchases) && data.purchases.length > 0) {
+                        // Ưu tiên hiển thị danh sách người mua THẬT từ hệ thống
+                        liveToastOrders = [...data.purchases, ...SAMPLE_RECENT_ORDERS];
+                    }
+                }
+            } catch (e) {
+                console.warn('Cannot fetch recent purchases:', e);
+            }
+        }
 
         function showLiveToast() {
             const toast = document.getElementById('liveOrderToast');
             if (!toast) return;
-            const item = SAMPLE_RECENT_ORDERS[toastIdx % SAMPLE_RECENT_ORDERS.length];
+            const item = liveToastOrders[toastIdx % liveToastOrders.length];
             toastIdx++;
 
             const custEl = document.getElementById('toastCustomerText');
@@ -1733,8 +1749,10 @@
         }
 
         function initLiveOrderToasts() {
+            loadRealRecentPurchases();
             setTimeout(showLiveToast, 3500);
-            setInterval(showLiveToast, 18000);
+            setInterval(showLiveToast, 16000);
+            setInterval(loadRealRecentPurchases, 60000);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
