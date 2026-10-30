@@ -48,7 +48,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     text = (
         f"👋 Xin chào <b>{user.first_name}</b>!\n"
-        f"Chào mừng bạn đến với <b>Hệ Thống Dịch Vụ Premium Tự Động</b> 🌟\n\n"
+        f"Chào mừng bạn đến với <b>AloPremium.shop — Dịch Vụ Tự Động</b> 🌟\n\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"⚡ <b>Kích hoạt siêu tốc:</b> Cài đặt trực tiếp qua DNS Profile iOS\n"
         f"🔒 <b>Bảo mật 100%:</b> Không yêu cầu cung cấp mật khẩu tài khoản\n"
@@ -1121,7 +1121,7 @@ async def cb_back_main(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     ctx.user_data.clear()
     text = (
-        "🏠 <b>TRANG CHỦ DỊCH VỤ PREMIUM</b>\n"
+        "🏠 <b>TRANG CHỦ ALOPREMIUM.SHOP</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "Vui lòng chọn dịch vụ bạn quan tâm bên dưới:"
     )

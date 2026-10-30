@@ -150,8 +150,8 @@ async def check_sepay_auto_payments(bot):
 
 
 async def sepay_worker(bot):
-    """Vòng lặp chạy ngầm quét biến động số dư Techcombank mỗi 8 giây"""
-    logger.info("🚀 Luồng SePay worker đã khởi động (quét Techcombank tự động)...")
+    """Vòng lặp chạy ngầm quét biến động số dư TPBank mỗi 8 giây"""
+    logger.info("🚀 Luồng SePay worker đã khởi động (quét TPBank tự động)...")
     while True:
         try:
             await check_sepay_auto_payments(bot)
@@ -225,7 +225,7 @@ def main():
         print("❌ LỖI: Chưa cấu hình TELEGRAM_BOT_TOKEN!")
         sys.exit(1)
 
-    print("🚀 Đang khởi động Bot VIP (Locket Gold & Spotify Premium)...")
+    print("🚀 Đang khởi động Bot AloPremium.shop (Locket Gold & Spotify Premium)...")
 
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
 

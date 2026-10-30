@@ -442,7 +442,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "text/plain; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(b"PremiumStore VIP Web Storefront is ready.")
+                self.wfile.write(b"AloPremium.shop Web Storefront is ready.")
                 return
 
         # Mặc định 404

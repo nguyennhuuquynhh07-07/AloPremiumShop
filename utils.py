@@ -83,7 +83,7 @@ def plan_info(product_key: str, plan_key: str) -> dict:
 
 def build_product_menu_text() -> str:
     lines = [
-        "✨ <b>HỆ THỐNG DỊCH VỤ PREMIUM TỰ ĐỘNG</b> ✨",
+        "✨ <b>HỆ THỐNG ALOPREMIUM.SHOP TỰ ĐỘNG</b> ✨",
         "━━━━━━━━━━━━━━━━━━━━━━━━━",
         "⚡ <b>Kích hoạt siêu tốc qua DNS Profile</b>",
         "🛡 <b>Bảo hành trọn gói — Không cần mật khẩu</b>",
@@ -197,9 +197,9 @@ def generate_mobileconfig(service_name: str, display_name: str, dns_link: str) -
     <key>PayloadDescription</key>
     <string>Cau hinh DNS Profile {service_name} tu dong - @{clean_name}</string>
     <key>PayloadIdentifier</key>
-    <string>com.premiumdns.profile.{clean_name}</string>
+    <string>com.alopremium.profile.{clean_name}</string>
     <key>PayloadOrganization</key>
-    <string>Premium VIP Service</string>
+    <string>AloPremium.shop Service</string>
     <key>PayloadRemovalDisallowed</key>
     <false/>
     <key>PayloadType</key>
@@ -216,7 +216,7 @@ def generate_mobileconfig(service_name: str, display_name: str, dns_link: str) -
             <key>PayloadVersion</key>
             <integer>1</integer>
             <key>PayloadIdentifier</key>
-            <string>com.premiumdns.profile.dns</string>
+            <string>com.alopremium.profile.dns</string>
             <key>PayloadUUID</key>
             <string>{uuid2}</string>
             <key>PayloadDisplayName</key>
