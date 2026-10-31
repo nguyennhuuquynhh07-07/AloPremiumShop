@@ -124,7 +124,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
         client_ip = self._get_client_ip()
 
         # Kiểm tra Rate Limit (ngoại trừ ping keep-alive và ảnh)
-        if not path.startswith(("/health", "/ping")) and not path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg")):
+        if not path.startswith(("/health", "/ping")) and not path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4")):
             allowed, reason = check_ip_rate_limit(client_ip, max_requests=60, window_secs=60)
             if not allowed:
                 self._send_json(429, {"ok": False, "error": reason})
@@ -139,20 +139,53 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Bot Locket Gold + Spotify is running 24/7!")
             return
 
-        # 1.1 Phục vụ Static Images & Logo trang web
-        if path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp")) and ".." not in path:
+        # 1.1 Phục vụ Static Images, Videos & Logo trang web
+        if path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4")) and ".." not in path:
             file_name = os.path.basename(path)
             if file_name == "favicon.ico":
                 file_name = "favicon.png"
             file_path = os.path.join(os.path.dirname(__file__), file_name)
             if os.path.exists(file_path):
                 ext = file_name.rsplit(".", 1)[-1].lower()
-                mime = "image/x-icon" if ext == "ico" else f"image/{ext}" if ext != "svg" else "image/svg+xml"
+                if ext == "mp4":
+                    mime = "video/mp4"
+                elif ext == "ico":
+                    mime = "image/x-icon"
+                elif ext == "svg":
+                    mime = "image/svg+xml"
+                else:
+                    mime = f"image/{ext}"
+
+                file_size = os.path.getsize(file_path)
+                range_header = self.headers.get("Range")
+                if range_header and ext == "mp4":
+                    try:
+                        range_val = range_header.replace("bytes=", "").strip()
+                        parts = range_val.split("-")
+                        start = int(parts[0]) if parts[0] else 0
+                        end = int(parts[1]) if parts[1] else file_size - 1
+                        length = end - start + 1
+                        self.send_response(206)
+                        self.send_header("Content-Type", mime)
+                        self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
+                        self.send_header("Content-Length", str(length))
+                        self.send_header("Accept-Ranges", "bytes")
+                        self.send_header("Cache-Control", "public, max-age=86400")
+                        self._send_cors_headers()
+                        self.end_headers()
+                        with open(file_path, "rb") as f:
+                            f.seek(start)
+                            self.wfile.write(f.read(length))
+                        return
+                    except Exception:
+                        pass
+
                 with open(file_path, "rb") as f:
                     data = f.read()
                 self.send_response(200)
                 self.send_header("Content-Type", mime)
                 self.send_header("Content-Length", str(len(data)))
+                self.send_header("Accept-Ranges", "bytes")
                 self.send_header("Cache-Control", "public, max-age=86400")
                 self._send_cors_headers()
                 self.end_headers()
