@@ -64,7 +64,7 @@ PRODUCTS = {
             "test": {"label": "Test 1 Ngày", "packageCode": "LKGT3D",   "price": 5000},
             "6m":   {"label": "6 Tháng",     "packageCode": "LKG6M",    "price": 40000},
             "1y":   {"label": "1 Năm",       "packageCode": "LKG1Y",    "price": 60000},
-            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "LKGVV",    "price": 149000},
+            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "LKGVV",    "price": 160000},
         },
     },
     "spotify": {
@@ -76,7 +76,7 @@ PRODUCTS = {
             "test": {"label": "Test 1 Ngày", "packageCode": "SPT",      "price": 5000},
             "6m":   {"label": "6 Tháng",     "packageCode": "SP6M",     "price": 40000},
             "1y":   {"label": "1 Năm",       "packageCode": "SPOTIFY1Y", "price": 60000},
-            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "SPVV",      "price": 160000},
+            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "SPVV",      "price": 180000},
         },
     },
 }

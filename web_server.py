@@ -781,7 +781,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             
             pv = config.PRODUCTS.get(product, {})
             plnv = pv.get("plans", {}).get(plan, {})
-            orig_price = plnv.get("price", 149000)
+            orig_price = plnv.get("price", 160000)
 
             chk = utils.check_and_apply_coupon(code, orig_price)
             if chk.get("ok"):
