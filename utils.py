@@ -179,23 +179,105 @@ def get_qr_image_url(data: str) -> str:
     return f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={quote(data)}"
 
 
-def generate_mobileconfig(service_name: str, display_name: str, dns_link: str) -> io.BytesIO:
+ROOT_CA_CERT_B64 = (
+    "MIIDNTCCAh2gAwIBAgIUOQqYkU7yWPiIWMNdvcQ5vM1NKgQwDQYJKoZIhvcNAQEL"
+    "BQAwKjETMBEGA1UECgwKTG9ja2V0R29sZDETMBEGA1UEAwwKTG9ja2V0R29sZDAe"
+    "Fw0yNjA5MzAxNDI5MDhaFw0zNjA5MjcxNDI5MDhaMCoxEzARBgNVBAoMCkxvY2tl"
+    "dEdvbGQxEzARBgNVBAMMCkxvY2tldEdvbGQwggEiMA0GCSqGSIb3DQEBAQUAA4IB"
+    "DwAwggEKAoIBAQCSgDJzEKZDUijfA1HYVGAIc9e2LVUsDk82iubefLGBXp6Ia5/F"
+    "zGCn7RI4kkM6B4Gzdqcj52nZ2mQkh2hlftsE4SyKGlqnL/+50GnNRV8FkrIWb0UU"
+    "I8SK22evSa/SW70CXTtTsezAXT5wodUcOzDZvhI6pxKzySEujg7WxRzYsfq1vr8t"
+    "2yGJoV5NP0tqZShWq4RxZ7Tj4HyISHFE9+Upvy/8N2KQMKvMkSEphhxpk645dl+t"
+    "F0Q37VV6bqZGVNEO/MdGaPzqMld8V3qbrv5eebIrOZBfZU5hRiTHiqK19FPuvvGx"
+    "AjPsKGx27tx6+UoAGRlbQAyNBj7vKNMT6n0tAgMBAAGjUzBRMB0GA1UdDgQWBBT5"
+    "dQfm6Eu5mNz5Od9cch7UlizH+jAfBgNVHSMEGDAWgBT5dQfm6Eu5mNz5Od9cch7U"
+    "lizH+jAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAXwYJMRJ9n"
+    "PpRmS7IVWF0PcuLB9z5q3qanc/x+xOQOH4urgm8NAvHGkHNg7rE64wsMkA1O7GTU"
+    "T+NP2pdEDu2/zfocfflvsN1l3Gu3Z193bWhcpvr8q8YgLJ4rP6relyFLIxEQ5FkD"
+    "XsXqZFf5QOn6+KgdwdIwqos7knp5quBAKqHZbXXVWWxZgOILe4+8uRBAkG2ppZrZ"
+    "E9hocAQ8HlcQOX+FsDQZ74vKCPx+mS9szHJJigHNnJRXHD8Ys1oIOjvDUT2nfMGM"
+    "Kk5v1hO2IlF1wsGtaWn3ulMsmth4MVHtEtf5wJq48yc7UBXjaq/h9jnO81d9yyI2"
+    "RAYZ52CqMLYR"
+)
+
+
+def generate_mobileconfig(service_name: str, display_name: str, dns_link: str = "") -> io.BytesIO:
     """
-    Tạo nội dung file cấu hình DNS iOS chuẩn Apple .mobileconfig (PayloadType: Configuration & com.apple.dnsSettings.managed).
-    Người dùng chỉ cần bấm mở file trong Telegram trên iPhone là hệ thống tự bung cửa sổ cài đặt DNS Profile.
+    Tạo file cấu hình iOS chuẩn Apple .mobileconfig tích hợp đầy đủ 2 thành phần bắt buộc:
+    1. Chứng chỉ bảo mật ROOT CA (com.apple.security.root) để iOS tin cậy xác thực máy chủ.
+    2. Cấu hình DoH DNS (com.apple.dnsSettings.managed) định tuyến HTTPS qua máy chủ cấp quyền.
     """
     clean_name = (display_name or "VIP").replace(" ", "_")
-    uuid1 = str(uuid.uuid4())
-    uuid2 = str(uuid.uuid4())
+    uuid_top = str(uuid.uuid4())
+    uuid_ca = str(uuid.uuid4())
+    uuid_dns = str(uuid.uuid4())
 
     xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadCertificateFileName</key>
+            <string>LocketGold Root CA</string>
+            <key>PayloadContent</key>
+            <data>{ROOT_CA_CERT_B64}</data>
+            <key>PayloadDescription</key>
+            <string>Adds a CA root certificate</string>
+            <key>PayloadDisplayName</key>
+            <string>LocketGold CA</string>
+            <key>PayloadIdentifier</key>
+            <string>com.apple.security.root.{uuid_ca}</string>
+            <key>PayloadType</key>
+            <string>com.apple.security.root</string>
+            <key>PayloadUUID</key>
+            <string>{uuid_ca}</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+        </dict>
+        <dict>
+            <key>DNSSettings</key>
+            <dict>
+                <key>DNSProtocol</key>
+                <string>HTTPS</string>
+                <key>ServerURL</key>
+                <string>https://doh.2707226.xyz/dns-query/common</string>
+                <key>ServerAddresses</key>
+                <array>
+                    <string>103.211.207.247</string>
+                </array>
+                <key>SupplementalMatchDomains</key>
+                <array>
+                    <string>api.revenuecat.com</string>
+                    <string>firebaseremoteconfig.googleapis.com</string>
+                    <string>api.locketcamera.com</string>
+                    <string>us-central1-locket-4252a.cloudfunctions.net</string>
+                    <string>spclient.wg.spotify.com</string>
+                    <string>spclient.spotify.com</string>
+                    <string>dealer.spotify.com</string>
+                    <string>apresolve.spotify.com</string>
+                    <string>spotify.com</string>
+                </array>
+            </dict>
+            <key>PayloadDescription</key>
+            <string>DNS-over-HTTPS via LocketGold</string>
+            <key>PayloadDisplayName</key>
+            <string>{service_name} VIP DNS</string>
+            <key>PayloadIdentifier</key>
+            <string>com.apple.dnsSettings.managed.{uuid_dns}</string>
+            <key>PayloadType</key>
+            <string>com.apple.dnsSettings.managed</string>
+            <key>PayloadUUID</key>
+            <string>{uuid_dns}</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+        </dict>
+    </array>
+    <key>PayloadDescription</key>
+    <string>AloPremium.Shop - Cấu hình VIP kích hoạt {service_name} @{clean_name}</string>
     <key>PayloadDisplayName</key>
     <string>{service_name} ({clean_name})</string>
-    <key>PayloadDescription</key>
-    <string>Cau hinh DNS Profile {service_name} tu dong - @{clean_name}</string>
     <key>PayloadIdentifier</key>
     <string>com.alopremium.profile.{clean_name}</string>
     <key>PayloadOrganization</key>
@@ -205,33 +287,9 @@ def generate_mobileconfig(service_name: str, display_name: str, dns_link: str) -
     <key>PayloadType</key>
     <string>Configuration</string>
     <key>PayloadUUID</key>
-    <string>{uuid1}</string>
+    <string>{uuid_top}</string>
     <key>PayloadVersion</key>
     <integer>1</integer>
-    <key>PayloadContent</key>
-    <array>
-        <dict>
-            <key>PayloadType</key>
-            <string>com.apple.dnsSettings.managed</string>
-            <key>PayloadVersion</key>
-            <integer>1</integer>
-            <key>PayloadIdentifier</key>
-            <string>com.alopremium.profile.dns</string>
-            <key>PayloadUUID</key>
-            <string>{uuid2}</string>
-            <key>PayloadDisplayName</key>
-            <string>{service_name} VIP DNS</string>
-            <key>PayloadDescription</key>
-            <string>DNS-over-HTTPS {service_name}</string>
-            <key>DNSSettings</key>
-            <dict>
-                <key>DNSProtocol</key>
-                <string>HTTPS</string>
-                <key>ServerURL</key>
-                <string>{dns_link}</string>
-            </dict>
-        </dict>
-    </array>
 </dict>
 </plist>"""
     buf = io.BytesIO(xml_content.encode("utf-8"))
