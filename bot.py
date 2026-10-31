@@ -173,7 +173,13 @@ async def keep_alive_worker():
 
 
 async def post_init(application):
-    """Thiết lập danh sách lệnh Menu Telegram cho Người dùng và Admin"""
+    """Thiết lập danh sách lệnh Menu Telegram và đồng bộ Event Loop cho Web Server"""
+    try:
+        import web_server
+        web_server.BOT_INSTANCE = application.bot
+        web_server.BOT_LOOP = asyncio.get_running_loop()
+    except Exception as e:
+        logger.warning(f"Error binding bot loop: {e}")
     user_commands = [
         BotCommand("start", "Menu chính & Mua gói"),
         BotCommand("account", "Tài khoản của tôi"),
@@ -350,17 +356,10 @@ def main():
 
     app.add_error_handler(error_handler)
 
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
     # Khởi động Web App Storefront & API Server trên cổng 8080 (hoặc $PORT trên Render)
-    web_server.start_web_server(bot=app.bot, loop=loop)
+    web_server.start_web_server(bot=app.bot)
     print("✅ Web App Storefront & Bot Telegram đã sẵn sàng hoạt động 24/7!")
-
-    try:
-        app.run_polling(drop_pending_updates=True)
-    finally:
-        loop.close()
+    app.run_polling(drop_pending_updates=True)
 
 
 if __name__ == "__main__":
