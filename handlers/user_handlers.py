@@ -427,11 +427,26 @@ async def cb_get_mobileconfig(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
 
     dns_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
-    bio = utils.generate_mobileconfig(
-        service_name=prod_name,
-        display_name=uid_name,
-        dns_link=dns_link
-    )
+    profile_bytes = None
+    try:
+        import httpx
+        r_ctv = httpx.get(dns_link, timeout=5)
+        if r_ctv.is_success and b"PayloadContent" in r_ctv.content:
+            profile_bytes = r_ctv.content
+    except Exception:
+        pass
+
+    if profile_bytes:
+        import io
+        bio = io.BytesIO(profile_bytes)
+        bio.name = f"LocketGold_{uid_name}.mobileconfig"
+        bio.seek(0)
+    else:
+        bio = utils.generate_mobileconfig(
+            service_name=prod_name,
+            display_name=uid_name,
+            dns_link=dns_link
+        )
     safe_uid = str(uid_name).replace(" ", "_")
     bio.name = f"{prod_key.capitalize()}_{safe_uid}.mobileconfig"
 
