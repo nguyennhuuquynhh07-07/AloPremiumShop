@@ -400,24 +400,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 dns_link = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
                 file_name = f"{product_key.capitalize()}_{safe_name}.mobileconfig"
 
-            # Đồng bộ 100% chính xác từng byte với file gốc từ máy chủ https://doh.2707226.xyz/quynh28
-            server_profile_url = f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
-            payload_bytes = None
-            try:
-                import httpx
-                r_ctv = httpx.get(server_profile_url, timeout=5)
-                if r_ctv.is_success and b"PayloadContent" in r_ctv.content:
-                    payload_bytes = r_ctv.content
-            except Exception:
-                pass
-
-            if not payload_bytes:
-                bio = utils.generate_mobileconfig(
-                    service_name=svc_name,
-                    display_name=safe_name,
-                    dns_link=dns_link
-                )
-                payload_bytes = bio.getvalue()
+            # Tách biệt hoàn toàn cấu hình DNS:
+            # - Mua Locket: Profile chỉ chứa domain Locket (không ảnh hưởng Spotify)
+            # - Mua Spotify: Profile chỉ chứa domain Spotify (không ảnh hưởng Locket)
+            # - Mua Combo: Profile tích hợp đầy đủ cả 2 dịch vụ
+            bio = utils.generate_mobileconfig(
+                service_name=svc_name,
+                display_name=safe_name,
+                dns_link=dns_link
+            )
+            payload_bytes = bio.getvalue()
 
             self.send_response(200)
             self.send_header("Content-Type", "application/x-apple-aspen-config; charset=utf-8")

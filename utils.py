@@ -212,6 +212,31 @@ def generate_mobileconfig(service_name: str, display_name: str, dns_link: str = 
     uuid_ca = str(uuid.uuid4())
     uuid_dns = str(uuid.uuid4())
 
+    locket_domains = [
+        "api.revenuecat.com",
+        "firebaseremoteconfig.googleapis.com",
+        "api.locketcamera.com",
+        "us-central1-locket-4252a.cloudfunctions.net",
+    ]
+    spotify_domains = [
+        "spclient.wg.spotify.com",
+        "spclient.spotify.com",
+        "dealer.spotify.com",
+        "apresolve.spotify.com",
+        "spotify.com",
+    ]
+
+    s_lower = (service_name or "").lower()
+    if "spotify" in s_lower and "locket" not in s_lower and "combo" not in s_lower and "duo" not in s_lower:
+        match_domains = spotify_domains
+    elif "locket" in s_lower and "spotify" not in s_lower and "combo" not in s_lower and "duo" not in s_lower:
+        match_domains = locket_domains
+    else:
+        # Combo / Duo VIP: Kích hoạt đồng thời cả Locket & Spotify
+        match_domains = locket_domains + spotify_domains
+
+    domains_xml = "\n".join(f"                    <string>{d}</string>" for d in match_domains)
+
     xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -249,15 +274,7 @@ def generate_mobileconfig(service_name: str, display_name: str, dns_link: str = 
                 </array>
                 <key>SupplementalMatchDomains</key>
                 <array>
-                    <string>api.revenuecat.com</string>
-                    <string>firebaseremoteconfig.googleapis.com</string>
-                    <string>api.locketcamera.com</string>
-                    <string>us-central1-locket-4252a.cloudfunctions.net</string>
-                    <string>spclient.wg.spotify.com</string>
-                    <string>spclient.spotify.com</string>
-                    <string>dealer.spotify.com</string>
-                    <string>apresolve.spotify.com</string>
-                    <string>spotify.com</string>
+{domains_xml}
                 </array>
             </dict>
             <key>PayloadDescription</key>
