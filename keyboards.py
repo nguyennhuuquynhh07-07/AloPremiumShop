@@ -119,16 +119,21 @@ def combo_success_kb(dns_locket: str = None, dns_spotify: str = None) -> InlineK
     return InlineKeyboardMarkup(rows)
 
 
-def success_kb(dns_link: str = None) -> InlineKeyboardMarkup:
+def success_kb(dns_link: str = None, service: str = "locket") -> InlineKeyboardMarkup:
     rows = []
+    is_spotify = (service == "spotify")
+    svc_label = "Spotify" if is_spotify else "Locket"
+    qr_text = f"📷 Tạo Mã QR {svc_label}"
+    copy_text = f"📋 Copy Link DNS {svc_label}"
+
     if dns_link:
         rows.append([
-            InlineKeyboardButton("📷 Tạo Mã QR Code", callback_data="show_qr"),
-            InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": dns_link}})
+            InlineKeyboardButton(qr_text, callback_data=f"show_qr:{service}"),
+            InlineKeyboardButton(copy_text, api_kwargs={"copy_text": {"text": dns_link}})
         ])
     else:
         rows.append([
-            InlineKeyboardButton("📷 Tạo Mã QR Code", callback_data="show_qr")
+            InlineKeyboardButton(qr_text, callback_data=f"show_qr:{service}")
         ])
     rows.append([
         InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),

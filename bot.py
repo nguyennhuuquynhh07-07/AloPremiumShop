@@ -330,7 +330,7 @@ def main():
     app.add_handler(CallbackQueryHandler(cb_lang,          pattern=r"^lang:"))
     app.add_handler(CallbackQueryHandler(cb_apidocs,       pattern=r"^apidocs:"))
     app.add_handler(CallbackQueryHandler(cb_get_mobileconfig, pattern=r"^get_mobileconfig$"))
-    app.add_handler(CallbackQueryHandler(cb_show_qr,          pattern=r"^show_qr$"))
+    app.add_handler(CallbackQueryHandler(cb_show_qr,          pattern=r"^show_qr(:.*)?$"))
     app.add_handler(CallbackQueryHandler(cb_support,       pattern=r"^support$"))
     app.add_handler(CallbackQueryHandler(cb_back_products, pattern=r"^back_products$"))
     app.add_handler(CallbackQueryHandler(cb_back_main,     pattern=r"^back_main$"))

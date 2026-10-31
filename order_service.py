@@ -91,40 +91,111 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
         success_text = _build_success_message(order, pv, plnv, dns_link)
 
         if bot and isinstance(order.get("user_id"), int) and order.get("user_id") > 0:
-            # 1. Gửi ảnh Mã QR DNS Profile cho khách quét bằng Camera iPhone
-            try:
-                qr_buf = utils.generate_qr_code(dns_link)
-                qr_caption = (
-                    f"📷 <b>MÃ QR CÀI ĐẶT DNS PROFILE ({pv['name']})</b>\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                    f"👤 Khách hàng: <b>{order.get('display_name') or order.get('uid')}</b>\n"
-                    f"📦 Gói: <b>{pv['name']} ({plnv['label']})</b>\n\n"
-                    f"⚡ <b>Cách cài đặt siêu tốc:</b>\n"
-                    f"1️⃣ Dùng <b>Camera iPhone</b> quét mã QR trên màn hình.\n"
-                    f"2️⃣ Chạm vào thông báo vàng <b>\"Mở trong Safari\"</b> để cài đặt hồ sơ DNS!\n"
-                )
-                await bot.send_photo(
-                    chat_id=order["user_id"],
-                    photo=qr_buf,
-                    caption=qr_caption,
-                    parse_mode=ParseMode.HTML,
-                    # no duplicated buttons on photo
-                )
-            except Exception as e_qr:
-                logger.warning(f"Could not send QR photo: {e_qr}")
+            uid_display = order.get('display_name') or order.get('uid')
 
-            # 2. Gửi hướng dẫn và file .mobileconfig tách biệt
-            try:
-                reply_markup_used = combo_success_kb(dns_link_locket, dns_link_spotify) if product_key == "combo" else success_kb(dns_link)
-                await bot.send_message(
-                    chat_id=order["user_id"],
-                    text=success_text,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup_used
-                )
-            except Exception as e:
-                logger.error(f"Error sending customer delivery: {e}")
+            if product_key == "combo":
+                # CHỈ KHI MUA COMBO DUO MỚI GỬI CẢ 2 CẤU HÌNH LOCKET VÀ SPOTIFY
+                try:
+                    # Gửi QR 1: Locket Gold
+                    qr_lk = utils.generate_qr_code(dns_link_locket)
+                    await bot.send_photo(
+                        chat_id=order["user_id"],
+                        photo=qr_lk,
+                        caption=(
+                            f"💛 <b>MÃ QR 1: LOCKET GOLD VIP</b>\n"
+                            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                            f"👤 Tài khoản: <b>@{uid_display}</b>\n"
+                            f"⚡ Dùng <b>Camera iPhone</b> quét mã trên để cài đặt Locket Gold!"
+                        ),
+                        parse_mode=ParseMode.HTML
+                    )
+                    # Gửi QR 2: Spotify Premium
+                    qr_sp = utils.generate_qr_code(dns_link_spotify)
+                    await bot.send_photo(
+                        chat_id=order["user_id"],
+                        photo=qr_sp,
+                        caption=(
+                            f"🎵 <b>MÃ QR 2: SPOTIFY PREMIUM LOSSLESS</b>\n"
+                            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                            f"👤 Tài khoản: <b>@{uid_display}</b>\n"
+                            f"⚡ Dùng <b>Camera iPhone</b> quét mã trên để cài đặt Spotify Premium!"
+                        ),
+                        parse_mode=ParseMode.HTML
+                    )
+                except Exception as e_qr:
+                    logger.warning(f"Could not send Combo QR photos: {e_qr}")
 
+                try:
+                    await bot.send_message(
+                        chat_id=order["user_id"],
+                        text=success_text,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=combo_success_kb(dns_link_locket, dns_link_spotify)
+                    )
+                except Exception as e:
+                    logger.error(f"Error sending Combo delivery: {e}")
+
+            elif product_key == "spotify":
+                # GÓI ĐƠN LẺ: CHỈ KÍCH HOẠT VÀ GỬI DUY NHẤT SPOTIFY PREMIUM
+                try:
+                    qr_sp = utils.generate_qr_code(dns_link)
+                    await bot.send_photo(
+                        chat_id=order["user_id"],
+                        photo=qr_sp,
+                        caption=(
+                            f"🎵 <b>MÃ QR CÀI ĐẶT SPOTIFY PREMIUM</b>\n"
+                            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                            f"👤 Khách hàng: <b>@{uid_display}</b>\n"
+                            f"📦 Gói: <b>Spotify Premium ({plnv['label']})</b>\n\n"
+                            f"⚡ <b>Cách cài đặt:</b>\n"
+                            f"1️⃣ Dùng <b>Camera iPhone</b> quét mã QR trên màn hình.\n"
+                            f"2️⃣ Chạm vào thông báo vàng <b>\"Mở trong Safari\"</b> để tải hồ sơ cấu hình Spotify!"
+                        ),
+                        parse_mode=ParseMode.HTML
+                    )
+                except Exception as e_qr:
+                    logger.warning(f"Could not send Spotify QR photo: {e_qr}")
+
+                try:
+                    await bot.send_message(
+                        chat_id=order["user_id"],
+                        text=success_text,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=success_kb(dns_link, service="spotify")
+                    )
+                except Exception as e:
+                    logger.error(f"Error sending Spotify delivery: {e}")
+
+            else:
+                # GÓI ĐƠN LẺ: CHỈ KÍCH HOẠT VÀ GỬI DUY NHẤT LOCKET GOLD VIP
+                try:
+                    qr_lk = utils.generate_qr_code(dns_link)
+                    await bot.send_photo(
+                        chat_id=order["user_id"],
+                        photo=qr_lk,
+                        caption=(
+                            f"💛 <b>MÃ QR CÀI ĐẶT LOCKET GOLD VIP</b>\n"
+                            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                            f"👤 Khách hàng: <b>@{uid_display}</b>\n"
+                            f"📦 Gói: <b>Locket Gold VIP ({plnv['label']})</b>\n\n"
+                            f"⚡ <b>Cách cài đặt siêu tốc:</b>\n"
+                            f"1️⃣ Dùng <b>Camera iPhone</b> quét mã QR trên màn hình.\n"
+                            f"2️⃣ Chạm vào thông báo vàng <b>\"Mở trong Safari\"</b> để tải hồ sơ Locket Gold!"
+                        ),
+                        parse_mode=ParseMode.HTML
+                    )
+                except Exception as e_qr:
+                    logger.warning(f"Could not send Locket QR photo: {e_qr}")
+
+                try:
+                    await bot.send_message(
+                        chat_id=order["user_id"],
+                        text=success_text,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=success_kb(dns_link, service="locket")
+                    )
+                except Exception as e:
+                    logger.error(f"Error sending Locket delivery: {e}")
         if bot:
             for aid in config.ADMIN_IDS:
                 try:

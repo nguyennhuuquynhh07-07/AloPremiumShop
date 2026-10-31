@@ -503,11 +503,19 @@ async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await query.answer("⚠️ Bạn chưa có đơn hàng nào được kích hoạt để tạo mã QR DNS!", show_alert=True)
         return
 
-    latest = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
+    target_service = query.data.split(":")[1] if ":" in query.data else None
+    if target_service:
+        matching = [o for o in done_orders if o.get("product") == target_service]
+        latest = sorted(matching, key=lambda x: x.get("created_at") or "", reverse=True)[0] if matching else sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
+    else:
+        latest = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
+
     prod_key = latest.get("product", "locket")
     pv = PRODUCTS.get(prod_key, {})
     prod_name = pv.get("name", "Dịch vụ Premium")
     uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
+    is_spotify = (prod_key == "spotify")
+    svc_label = "Spotify" if is_spotify else "Locket"
 
     target_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
 
@@ -524,7 +532,7 @@ async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         kb = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": target_link}}),
+                InlineKeyboardButton(f"📋 Copy Link DNS {svc_label}", api_kwargs={"copy_text": {"text": target_link}}),
                 InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide")
             ],
             [
