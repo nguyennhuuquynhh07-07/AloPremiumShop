@@ -228,13 +228,17 @@ def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
 
-    # ── ConversationHandler: Luồng mua hàng ──────────────────────────────────
+    # ── ConversationHandler: Luồng mua hàng (allow_reentry=True, nhận click gói liên tục) ──
     buy_conv = ConversationHandler(
         entry_points=[
             CallbackQueryHandler(cb_plan, pattern=r"^plan:"),
         ],
         states={
             WAITING_IDENTIFIER: [
+                CallbackQueryHandler(cb_plan, pattern=r"^plan:"),
+                CallbackQueryHandler(cb_product, pattern=r"^product:"),
+                CallbackQueryHandler(cb_back_products, pattern=r"^back_products$"),
+                CallbackQueryHandler(cb_back_main, pattern=r"^back_main$"),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, receive_identifier),
             ],
         },
@@ -248,6 +252,7 @@ def main():
             CommandHandler("myorders", myorders_cmd),
             CommandHandler("support", support_cmd),
             CommandHandler("cancel", cancel_conv),
+            CallbackQueryHandler(cb_plan, pattern=r"^plan:"),
             CallbackQueryHandler(cb_back_main, pattern=r"^back_main$"),
             CallbackQueryHandler(cb_back_products, pattern=r"^back_products$"),
             CallbackQueryHandler(cb_product, pattern=r"^product:"),
@@ -256,6 +261,7 @@ def main():
             CallbackQueryHandler(cb_my_orders, pattern=r"^my_orders$"),
             CallbackQueryHandler(cb_my_account, pattern=r"^my_account$"),
         ],
+        allow_reentry=True,
         per_user=True,
         per_chat=True,
         per_message=False,
@@ -301,6 +307,7 @@ def main():
 
     # ── Luồng mua hàng ───────────────────────────────────────────────────────
     app.add_handler(buy_conv)
+    app.add_handler(CallbackQueryHandler(cb_plan, pattern=r"^plan:"))
 
     # ── Callback người dùng ──────────────────────────────────────────────────
     app.add_handler(CallbackQueryHandler(cb_show_guide,   pattern=r"^show_guide$"))

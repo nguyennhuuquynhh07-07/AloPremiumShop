@@ -604,10 +604,20 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>username MÃ_GIẢM_GIÁ</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
         )
 
-    await query.edit_message_text(
-        prompt, parse_mode=ParseMode.HTML,
-        reply_markup=back_to_plan_kb(product_key)
-    )
+    try:
+        await query.edit_message_text(
+            prompt, parse_mode=ParseMode.HTML,
+            reply_markup=back_to_plan_kb(product_key)
+        )
+    except Exception as e:
+        logger.warning(f"edit_message_text in cb_plan: {e}")
+        try:
+            await query.message.reply_text(
+                prompt, parse_mode=ParseMode.HTML,
+                reply_markup=back_to_plan_kb(product_key)
+            )
+        except Exception:
+            pass
     return WAITING_IDENTIFIER
 
 
