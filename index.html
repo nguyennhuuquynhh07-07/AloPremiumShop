@@ -1452,7 +1452,7 @@
                         const data = await res.json();
                         if (data.is_paid || data.status === 'done') {
                             clearInterval(pollTimer);
-                            showPaymentSuccess(orderId, data.download_url);
+                            showPaymentSuccess(orderId, data.download_url, data.product);
                         }
                     }
                 } catch (e) {
@@ -1462,7 +1462,7 @@
         }
 
         // Hiển thị màn hình Thanh Toán Thành Công
-        function showPaymentSuccess(orderId, downloadUrl) {
+        function showPaymentSuccess(orderId, downloadUrl, orderProduct) {
             // Bắn pháo hoa Confetti chúc mừng
             try {
                 confetti({
@@ -1476,11 +1476,17 @@
                 ? downloadUrl
                 : (window.location.origin + (downloadUrl || `/api/download_profile?order_id=${orderId}`));
             
-            const isCombo = currentOrderData && currentOrderData.product === 'combo';
+            const prod = orderProduct || (currentOrderData && currentOrderData.product) || selectedProduct || 'locket';
+            const isCombo = prod === 'combo';
+            const isSpotify = prod === 'spotify';
             const singleBox = document.getElementById('singleDownloadActions');
             const comboBox = document.getElementById('comboDownloadActions');
+            const guideTitle = document.getElementById('setupGuideTitle');
+            const guideList = document.getElementById('setupGuideList');
+            const safariBtn = document.getElementById('modalSafariBtn');
 
             if (isCombo) {
+                // CHỈ KHI MUA COMBO DUO MỚI HIỆN CẢ 2 CẤU HÌNH LOCKET & SPOTIFY
                 if (singleBox) singleBox.classList.add('hidden');
                 if (comboBox) comboBox.classList.remove('hidden');
 
@@ -1492,11 +1498,47 @@
                 const btnSp = document.getElementById('comboDownloadBtn_spotify');
                 if (btnLk) btnLk.href = linkLk;
                 if (btnSp) btnSp.href = linkSp;
+
+                if (guideTitle) guideTitle.innerHTML = '<span>💎</span> Hướng Dẫn Kích Hoạt Combo Duo VIP (Cả 2 Gói):';
+                if (guideList) {
+                    guideList.innerHTML = `
+                        <li><b>Bước 1 (Locket):</b> Bấm Cài Safari Locket Gold VIP ở khung trên → Cài đặt hồ sơ vào iPhone → Bật tin cậy chứng chỉ LocketGold.</li>
+                        <li><b>Bước 2 (Spotify):</b> Bấm Cài Safari Spotify Premium ở khung dưới → Cài đặt hồ sơ vào iPhone.</li>
+                        <li>Mở lần lượt 2 ứng dụng Locket và Spotify để tận hưởng trọn bộ tính năng VIP! 🎉</li>
+                    `;
+                }
             } else {
+                // GÓI ĐƠN LẺ: TÁCH RIÊNG HOÀN TOÀN
                 if (singleBox) singleBox.classList.remove('hidden');
                 if (comboBox) comboBox.classList.add('hidden');
                 const btnDl = document.getElementById('modalDownloadBtn');
                 if (btnDl) btnDl.href = activeDownloadUrl;
+
+                if (isSpotify) {
+                    if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI';
+                    if (guideTitle) guideTitle.innerHTML = '<span>🎵</span> 4 Bước Kích Hoạt Spotify Premium (30 giây):';
+                    if (guideList) {
+                        guideList.innerHTML = `
+                            <li>Bấm nút <b>CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI</b> (hoặc tải file .mobileconfig).</li>
+                            <li>Bấm <b>"Cho phép" (Allow)</b> khi màn hình hiện thông báo tải hồ sơ.</li>
+                            <li>Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
+                            <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật tin cậy chứng chỉ.</li>
+                            <li>Mở app Spotify và nghe nhạc Lossless không giới hạn! 🎉</li>
+                        `;
+                    }
+                } else {
+                    if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT LOCKET GOLD QUA SAFARI';
+                    if (guideTitle) guideTitle.innerHTML = '<span>💛</span> 4 Bước Kích Hoạt Locket Gold VIP (30 giây):';
+                    if (guideList) {
+                        guideList.innerHTML = `
+                            <li>Bấm nút <b>CÀI ĐẶT LOCKET GOLD QUA SAFARI</b> (hoặc tải file .mobileconfig).</li>
+                            <li>Bấm <b>"Cho phép" (Allow)</b> khi màn hình hiện thông báo tải hồ sơ.</li>
+                            <li>Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
+                            <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật xanh <b>LocketGold</b>.</li>
+                            <li>Mở app Locket lên và tận hưởng trọn bộ tính năng Gold VIP! 🎉</li>
+                        `;
+                    }
+                }
             }
 
             // Hiển thị mã QR tải cấu hình chuẩn Safari từ máy chủ CTV giống Bot

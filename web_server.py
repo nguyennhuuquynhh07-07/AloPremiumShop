@@ -1061,6 +1061,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     "bank_name": getattr(config, "BANK_NAME", "TPBank"),
                     "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
                     "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
+                    "product": product,
+                    "plan": plan,
                     "product_name": pv["name"],
                     "plan_label": plnv["label"],
                     "is_reused": True
@@ -1153,6 +1155,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "bank_name": getattr(config, "BANK_NAME", "TPBank"),
                 "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
                 "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
+                "product": product,
+                "plan": plan,
                 "product_name": pv["name"],
                 "plan_label": plnv["label"],
             })

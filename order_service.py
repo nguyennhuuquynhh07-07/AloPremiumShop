@@ -108,7 +108,7 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     photo=qr_buf,
                     caption=qr_caption,
                     parse_mode=ParseMode.HTML,
-                    reply_markup=success_kb(dns_link)
+                    # no duplicated buttons on photo
                 )
             except Exception as e_qr:
                 logger.warning(f"Could not send QR photo: {e_qr}")
