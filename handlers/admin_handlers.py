@@ -33,7 +33,7 @@ def is_admin(user_id: int) -> bool:
 
 # ── /admin ────────────────────────────────────────────────────────────────────
 
-def build_admin_menu_text() -> str:
+def build_admin_menu_text() -> tuple[str, int]:
     header = "⚙️ <b>BẢNG ĐIỀU KHIỂN QUẢN TRỊ VIÊN</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
     try:
         acc = api.get_account_info().get("data", {})
@@ -43,31 +43,33 @@ def build_admin_menu_text() -> str:
     except Exception:
         pass
 
+    all_orders = db.get_orders()
+    pending_orders = [o for o in all_orders.values() if o.get("status") in ("waiting_payment", "pending", "pending_approval")]
+    pending_count = len(pending_orders)
+    if pending_count > 0:
+        header += f"🔔 <b>Đang có {pending_count} đơn hàng chờ xử lý!</b> Bấm nút 'Duyệt đơn chờ' để kích hoạt ngay.\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+
     admin_controls = (
-        "<b>Admin control</b>\n"
+        "<b>Lệnh quản trị nhanh</b>\n"
         "<pre>\n"
-        "/admin          Full control panel\n"
-        "/noti           Broadcast đa phương tiện\n"
-        "                (premium emoji OK)\n"
-        "/notistop       Dừng broadcast đang chạy\n"
-        "/rs [id]        Reset usage\n"
-        "/stats          System stats\n"
-        "/users [id]     Danh sách / chi tiết user\n"
-        "/find [query]   Tìm user (id/username/\n"
-        "                uid/order)\n"
-        "/ban [id] [rs]  Ban user\n"
-        "/unban [id]     Unban user\n"
-        "/orders         Lịch sử mua hàng toàn hệ thống\n"
-        "/tokens         Token pool status\n"
-        "/checkbank      Test STC bank API\n"
-        "/addcode        Tạo mã giảm giá\n"
+        "/admin          Bảng điều khiển trực quan\n"
+        "/noti           Broadcast thông báo đa phương tiện\n"
+        "/notistop       Dừng broadcast đang gửi\n"
+        "/stats          Thống kê doanh thu & đơn hàng\n"
+        "/orders         Lịch sử & duyệt đơn hàng\n"
+        "/users [id]     Danh sách & quản lý khách\n"
+        "/find [query]   Tìm đơn/khách (mã/username/uid)\n"
+        "/ban [id] [rs]  Khóa khách hàng gian lận\n"
+        "/unban [id]     Mở khóa khách hàng\n"
+        "/tokens         Kiểm tra số dư Coin CTV API\n"
+        "/checkbank      Kiểm tra tài khoản VietQR\n"
+        "/addcode        Tạo mã giảm giá mới\n"
         "/delcode        Xoá mã giảm giá\n"
-        "/cancel         Huỷ thao tác hiện tại\n"
         "</pre>\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "👇 <i>Chọn chức năng bên dưới hoặc gõ trực tiếp lệnh:</i>"
+        "👇 <i>Chọn chức năng bên dưới hoặc bấm nút 'Mở Web Admin' để quản lý trên web:</i>"
     )
-    return f"{header}{admin_controls}"
+    return f"{header}{admin_controls}", pending_count
 
 
 async def admin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -75,10 +77,11 @@ async def admin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⛔ Bạn không có quyền truy cập.")
         return
 
+    text, pending = build_admin_menu_text()
     await update.message.reply_text(
-        build_admin_menu_text(),
+        text,
         parse_mode=ParseMode.HTML,
-        reply_markup=admin_kb()
+        reply_markup=admin_kb(pending)
     )
 
 
@@ -169,7 +172,18 @@ async def orders_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE, filter_type
 
     recent = sorted(filtered, key=lambda x: x.get("created_at", 0), reverse=True)[:15]
 
-    kb = admin_orders_kb(filter_type)
+    from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+    kb_rows = []
+    if filter_type == "pending" and recent:
+        for o in recent[:3]:
+            oid = o.get("order_id")
+            kb_rows.append([
+                InlineKeyboardButton(f"⚡ Duyệt #{oid}", callback_data=f"adm_app:{oid}"),
+                InlineKeyboardButton(f"❌ Hủy #{oid}", callback_data=f"adm_rej:{oid}")
+            ])
+    for row in admin_orders_kb(filter_type).inline_keyboard:
+        kb_rows.append(row)
+    kb = InlineKeyboardMarkup(kb_rows)
 
     if not recent:
         msg = (
@@ -835,10 +849,11 @@ async def cb_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if action == "menu":
         await query.answer()
+        text, pending = build_admin_menu_text()
         await query.edit_message_text(
-            build_admin_menu_text(),
+            text,
             parse_mode=ParseMode.HTML,
-            reply_markup=admin_kb()
+            reply_markup=admin_kb(pending)
         )
 
     elif action == "stats":
@@ -922,6 +937,25 @@ async def cb_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             parse_mode=ParseMode.HTML,
             reply_markup=back_admin_kb()
         )
+
+    elif action == "codes_list":
+        await query.answer()
+        codes = list(db.get_codes().values())
+        if not codes:
+            msg = (
+                "🎟 <b>QUẢN LÝ MÃ GIẢM GIÁ (COUPONS)</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                "<i>Chưa có mã giảm giá nào đang hoạt động.</i>\n\n"
+                "💡 Dùng lệnh: <code>/addcode [MÃ] [%GIẢM] [GIỚI_HẠN]</code>\n"
+                "Ví dụ: <code>/addcode TET2026 20 50</code>"
+            )
+        else:
+            lines = ["🎟 <b>DANH SÁCH MÃ GIẢM GIÁ ĐANG HOẠT ĐỘNG</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━"]
+            for c in codes:
+                limit_str = "Không giới hạn" if c.get("max_uses") == 0 else f"{c.get('used_count', 0)}/{c.get('max_uses')}"
+                lines.append(f"🏷 <code>{c['code']}</code>: Giảm <b>{c['discount_pct']}%</b> (Đã dùng: {limit_str})")
+            lines.append("\n━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 Dùng lệnh: <code>/delcode [MÃ]</code> để xóa mã.\n💡 Hoặc quản lý trên Web: alopremium.shop/admin")
+            msg = "\n".join(lines)
+        await query.edit_message_text(msg, parse_mode=ParseMode.HTML, reply_markup=back_admin_kb())
 
     elif action == "broadcast":
         await query.answer()

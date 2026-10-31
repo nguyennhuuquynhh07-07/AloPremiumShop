@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Trị Viên VIP - Đồng Bộ API & Mã Giảm Giá</title>
-    <link rel="icon" type="image/png" href="/logo.png">
+    <title>AloPremium.Shop Admin Dashboard • Quản Trị Hệ Thống 24/7</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #030712;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
         }
         .gold-gradient-text {
             background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
@@ -20,32 +23,49 @@
             -webkit-text-fill-color: transparent;
         }
         .gold-border-glow {
-            box-shadow: 0 0 25px rgba(245, 158, 11, 0.2);
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(245, 158, 11, 0.3);
+            border-radius: 9999px;
         }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
 
     <!-- TOP HEADER -->
-    <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl overflow-hidden p-0.5 bg-gradient-to-tr from-amber-500 to-amber-300">
-                    <img src="/logo.png" alt="Logo" class="w-full h-full rounded-[10px] object-cover">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-xl shadow-lg border border-amber-400/40 shrink-0">
+                    👑
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="font-extrabold text-base tracking-tight text-white">AloPremium.Shop Admin</span>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-black border border-red-500/30">ADMIN</span>
+                        <span class="font-extrabold text-base tracking-tight text-white">AloPremium<span class="text-amber-400">.Shop</span></span>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-black border border-red-500/30">ADMIN MASTER</span>
                     </div>
-                    <p class="text-[11px] text-slate-400">Bảng điều khiển quản trị viên</p>
+                    <p class="text-[11px] text-slate-400">Trung Tâm Điều Hành Doanh Thu & Hệ Thống 24/7</p>
                 </div>
             </div>
 
-            <div id="headerActions" class="flex items-center gap-3 hidden">
+            <div id="headerActions" class="flex items-center gap-2.5 hidden">
                 <a href="/" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
-                    🌐 Xem trang bán hàng
+                    🌐 Xem Website
                 </a>
+                <a href="https://t.me/AloPremiumShop_Bot" target="_blank" class="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 text-xs font-bold transition-all flex items-center gap-1.5">
+                    🤖 Bot Telegram
+                </a>
+                <button onclick="refreshCurrentTab()" title="Làm mới dữ liệu" class="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer">
+                    🔄
+                </button>
                 <button onclick="logoutAdmin()" class="px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-xs font-semibold text-red-400 transition-all cursor-pointer">
                     🚪 Đăng xuất
                 </button>
@@ -53,7 +73,7 @@
         </div>
     </header>
 
-    <!-- LOGIN SCREEN (NẾU CHƯA NHẬP MÃ PIN) -->
+    <!-- LOGIN SCREEN (KHI CHƯA XÁC THỰC MÃ PIN) -->
     <div id="loginSection" class="flex-1 flex items-center justify-center p-4">
         <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl gold-border-glow">
             <div class="text-center mb-6">
@@ -61,16 +81,16 @@
                     🔐
                 </div>
                 <h2 class="text-xl font-black text-white">Xác Thực Quản Trị Viên</h2>
-                <p class="text-xs text-slate-400 mt-1">Vui lòng nhập mã PIN quản trị để truy cập trang này</p>
+                <p class="text-xs text-slate-400 mt-1">Vui lòng nhập mã PIN quản trị để mở bảng điều khiển AloPremium.Shop</p>
             </div>
 
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-2">Mã PIN Quản Trị Viên:</label>
-                    <input type="password" id="pinInput" placeholder="Nhập mã PIN..." required autofocus
-                           class="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-700 text-center text-xl tracking-widest text-white font-mono font-bold focus:outline-none focus:border-amber-400 transition-all">
+                    <input type="password" id="pinInput" placeholder="••••" required autofocus
+                           class="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-700 text-center text-2xl tracking-[0.3em] text-amber-400 font-mono font-bold focus:outline-none focus:border-amber-400 transition-all">
                 </div>
-                <div id="loginError" class="hidden text-xs text-red-400 font-semibold text-center p-2 rounded-xl bg-red-500/10 border border-red-500/20"></div>
+                <div id="loginError" class="hidden text-xs text-red-400 font-semibold text-center p-2.5 rounded-xl bg-red-500/10 border border-red-500/20"></div>
                 <button type="submit" id="btnLogin"
                         class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
                     Xác Nhận Đăng Nhập ➔
@@ -80,31 +100,338 @@
     </div>
 
     <!-- MAIN ADMIN DASHBOARD -->
-    <main id="dashboardSection" class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 hidden">
+    <main id="dashboardSection" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 hidden">
         
         <!-- NAVIGATION TABS -->
-        <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 w-fit">
-            <button onclick="switchTab('api')" id="tabBtn_api"
-                    class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md">
-                🔗 Đồng Bộ API CTV (locket.2707226.xyz)
-            </button>
-            <button onclick="switchTab('codes')" id="tabBtn_codes"
-                    class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:text-white transition-all cursor-pointer">
-                🎟 Quản Lý Mã Giảm Giá
+        <div class="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 overflow-x-auto custom-scrollbar">
+            <button onclick="switchTab('analytics')" id="tabBtn_analytics"
+                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md">
+                📊 Thống Kê & Doanh Thu
             </button>
             <button onclick="switchTab('orders')" id="tabBtn_orders"
-                    class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:text-white transition-all cursor-pointer">
-                📦 Danh Sách Đơn Hàng
+                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white flex items-center gap-1.5">
+                <span>📦 Quản Lý Đơn Hàng</span>
+                <span id="pendingBadgeHeader" class="hidden px-1.5 py-0.2 rounded-full bg-red-500 text-white text-[10px] font-black">0</span>
+            </button>
+            <button onclick="switchTab('users')" id="tabBtn_users"
+                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
+                👥 Khách Hàng (CRM)
+            </button>
+            <button onclick="switchTab('codes')" id="tabBtn_codes"
+                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
+                🎟 Mã Giảm Giá
+            </button>
+            <button onclick="switchTab('api')" id="tabBtn_api"
+                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
+                🔗 API CTV & Coin
+            </button>
+            <button onclick="switchTab('system')" id="tabBtn_system"
+                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
+                ⚙️ Cấu Hình Hệ Thống
             </button>
         </div>
 
-        <!-- TAB 1: ĐỒNG BỘ API CTV -->
-        <div id="tabContent_api" class="space-y-6">
-            
-            <!-- OVERVIEW STATS CARDS -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- ============================================================ -->
+        <!-- TAB 1: THỐNG KÊ & DOANH THU (ANALYTICS) -->
+        <!-- ============================================================ -->
+        <div id="tabContent_analytics" class="space-y-6">
+            <!-- 4 STAT CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Card 1: Tổng Doanh Thu -->
+                <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 rounded-3xl p-5 shadow-xl relative overflow-hidden gold-border-glow">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Tổng Doanh Thu</span>
+                        <span class="text-2xl">💰</span>
+                    </div>
+                    <div class="text-2xl sm:text-3xl font-black text-white" id="statTotalRevenue">0 đ</div>
+                    <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
+                        <span class="text-emerald-400 font-bold" id="statCompletedOrdersCount">0 đơn</span> thành công
+                    </p>
+                </div>
+
+                <!-- Card 2: Doanh Thu Hôm Nay -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Doanh Thu Hôm Nay</span>
+                        <span class="text-2xl">⚡</span>
+                    </div>
+                    <div class="text-2xl sm:text-3xl font-black text-emerald-400" id="statTodayRevenue">0 đ</div>
+                    <p class="text-xs text-slate-400 mt-2">Cập nhật tự động theo thời gian thực</p>
+                </div>
+
+                <!-- Card 3: Đơn Hàng Chờ Duyệt -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Đơn Chờ Xử Lý</span>
+                        <span class="text-2xl">⏳</span>
+                    </div>
+                    <div class="text-2xl sm:text-3xl font-black text-amber-400" id="statPendingOrdersCount">0</div>
+                    <p class="text-xs text-slate-400 mt-2">
+                        <button onclick="switchTab('orders', 'pending')" class="text-amber-400 underline font-semibold hover:text-amber-300">
+                            Xem & duyệt nhanh ➔
+                        </button>
+                    </p>
+                </div>
+
+                <!-- Card 4: Tổng Số Khách Hàng -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider">Tổng Khách Hàng</span>
+                        <span class="text-2xl">👥</span>
+                    </div>
+                    <div class="text-2xl sm:text-3xl font-black text-cyan-400" id="statTotalUsersCount">0</div>
+                    <p class="text-xs text-slate-400 mt-2">Người dùng qua Bot & Web</p>
+                </div>
+            </div>
+
+            <!-- PRODUCT BREAKDOWN & SYSTEM STATUS -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Locket Gold VIP -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">💛</span>
+                            <div>
+                                <h4 class="font-black text-white text-sm">Locket Gold VIP</h4>
+                                <p class="text-[11px] text-slate-400">DNS Profile iOS 1 Chạm</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20" id="statLocketCount">0 đơn</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Doanh thu thu về:</span>
+                            <span class="font-black text-white" id="statLocketRevenue">0 đ</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Các gói cung cấp:</span>
+                            <span class="text-slate-300 font-semibold">1 Ngày, 6 Tháng, 1 Năm, Vĩnh Viễn</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spotify Premium -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">🎵</span>
+                            <div>
+                                <h4 class="font-black text-white text-sm">Spotify Premium</h4>
+                                <p class="text-[11px] text-slate-400">Nâng Cấp Bản Quyền Chính Hãng</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" id="statSpotifyCount">0 đơn</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Doanh thu thu về:</span>
+                            <span class="font-black text-white" id="statSpotifyRevenue">0 đ</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Các gói cung cấp:</span>
+                            <span class="text-slate-300 font-semibold">1 Tháng, 3 Tháng, 6 Tháng, 1 Năm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trạng thái Hệ thống -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-3">
+                    <h4 class="font-black text-white text-sm flex items-center gap-2 border-b border-slate-800 pb-3">
+                        <span>🛡️</span> Trạng Thái Vận Hành
+                    </h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Website chính:</span>
+                            <span class="text-emerald-400 font-mono font-bold">alopremium.shop (HTTPS)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Bot Telegram:</span>
+                            <span class="text-amber-400 font-mono font-bold">@AloPremiumShop_Bot</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Cổng SePay:</span>
+                            <span class="text-emerald-400 font-bold">5 Lớp Bảo Vệ Active</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Số dư Coin CTV:</span>
+                            <span class="text-amber-400 font-mono font-black" id="statDashboardCoin">--- Coin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 2: QUẢN LÝ ĐƠN HÀNG (ORDERS) -->
+        <!-- ============================================================ -->
+        <div id="tabContent_orders" class="space-y-6 hidden">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
                 
-                <!-- CARD SỐ DƯ COIN -->
+                <!-- FILTER BAR & SEARCH -->
+                <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                    <div class="flex items-center gap-1.5 p-1 bg-slate-950 rounded-2xl border border-slate-800 overflow-x-auto custom-scrollbar">
+                        <button onclick="filterOrders('all')" id="orderFilter_all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950">Tất Cả</button>
+                        <button onclick="filterOrders('pending')" id="orderFilter_pending" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">⏳ Chờ Duyệt</button>
+                        <button onclick="filterOrders('done')" id="orderFilter_done" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">✅ Đã Kích Hoạt</button>
+                        <button onclick="filterOrders('rejected')" id="orderFilter_rejected" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">🚫 Đã Hủy</button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="orderSearchInput" oninput="searchOrders()" placeholder="🔍 Tìm theo mã đơn, khách, UID..."
+                               class="px-4 py-2 rounded-2xl bg-slate-950 border border-slate-700 text-xs font-semibold text-white focus:outline-none focus:border-amber-400 w-full md:w-64">
+                        <button onclick="loadOrders()" class="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-all cursor-pointer shrink-0">
+                            🔄 Làm Mới
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ORDERS TABLE -->
+                <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-800/80">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                                <th class="py-3.5 px-4">Mã Đơn</th>
+                                <th class="py-3.5 px-4">Khách Hàng & UID</th>
+                                <th class="py-3.5 px-4">Dịch Vụ & Gói</th>
+                                <th class="py-3.5 px-4">Số Tiền</th>
+                                <th class="py-3.5 px-4">Trạng Thái</th>
+                                <th class="py-3.5 px-4">Thời Gian</th>
+                                <th class="py-3.5 px-4 text-right">Thao Tác Quản Trị</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="divide-y divide-slate-800/60 font-medium">
+                            <tr>
+                                <td colspan="7" class="py-12 text-center text-slate-500">Đang tải danh sách đơn hàng...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 3: QUẢN LÝ KHÁCH HÀNG (USERS CRM) -->
+        <!-- ============================================================ -->
+        <div id="tabContent_users" class="space-y-6 hidden">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <span>👥</span> Danh Sách Khách Hàng (CRM)
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Khách hàng từng bấm /start trên Bot hoặc tạo đơn hàng</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="userSearchInput" oninput="searchUsers()" placeholder="🔍 Tìm theo ID, Username, Tên..."
+                               class="px-4 py-2 rounded-2xl bg-slate-950 border border-slate-700 text-xs font-semibold text-white focus:outline-none focus:border-amber-400 w-full sm:w-60">
+                        <button onclick="loadUsers()" class="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-all cursor-pointer shrink-0">
+                            🔄 Làm Mới
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-800/80">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                                <th class="py-3.5 px-4">User ID Telegram</th>
+                                <th class="py-3.5 px-4">Tên Hiển Thị</th>
+                                <th class="py-3.5 px-4">Username Telegram</th>
+                                <th class="py-3.5 px-4 text-center">Số Đơn Mua</th>
+                                <th class="py-3.5 px-4 text-right">Tổng Chi Tiêu</th>
+                                <th class="py-3.5 px-4 text-center">Trạng Thái</th>
+                                <th class="py-3.5 px-4 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="divide-y divide-slate-800/60 font-medium">
+                            <tr>
+                                <td colspan="7" class="py-12 text-center text-slate-500">Đang tải danh sách người dùng...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 4: QUẢN LÝ MÃ GIẢM GIÁ (CODES) -->
+        <!-- ============================================================ -->
+        <div id="tabContent_codes" class="space-y-6 hidden">
+            <!-- FORM TẠO MÃ MỚI -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+                <div class="mb-5">
+                    <h3 class="text-lg font-black text-white flex items-center gap-2">
+                        <span>🏷</span> Tạo Mã Giảm Giá Mới
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Mã giảm giá sẽ áp dụng tự động khi khách thanh toán qua Web hoặc Bot</p>
+                </div>
+
+                <form onsubmit="handleCreateCode(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-bold text-slate-300 mb-2">Mã Khuyến Mãi (Code):</label>
+                        <input type="text" id="newCodeInput" placeholder="VD: ALO2026, VIP10" required
+                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-black uppercase tracking-wider focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-bold text-slate-300 mb-2">Mức Giảm Giá (%):</label>
+                        <input type="number" id="newDiscountInput" min="1" max="90" placeholder="VD: 20" required
+                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-bold focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-bold text-slate-300 mb-2">Số Lượt Dùng Tối Đa:</label>
+                        <input type="number" id="newLimitInput" min="0" placeholder="0 = Không giới hạn" value="0"
+                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-semibold focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <button type="submit" id="btnCreateCode"
+                                class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
+                            ➕ Tạo Mã Ngay
+                        </button>
+                    </div>
+                </form>
+                <div id="codeActionMsg" class="hidden mt-4 p-3 rounded-xl text-xs font-semibold"></div>
+            </div>
+
+            <!-- BẢNG DANH SÁCH MÃ GIẢM GIÁ -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <span>📋</span> Danh Sách Mã Giảm Giá Đang Hoạt Động
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Quản lý và theo dõi số lượt sử dụng thực tế</p>
+                    </div>
+                    <button onclick="loadCodes()" class="text-xs text-amber-400 hover:underline font-bold">Làm mới</button>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-800/80">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                                <th class="py-3.5 px-4">Mã Code</th>
+                                <th class="py-3.5 px-4">Mức Giảm</th>
+                                <th class="py-3.5 px-4">Lượt Đã Dùng / Giới Hạn</th>
+                                <th class="py-3.5 px-4">Ngày Tạo</th>
+                                <th class="py-3.5 px-4 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="codesTableBody" class="divide-y divide-slate-800/60 font-medium">
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-500">Đang tải danh sách mã...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 5: ĐỒNG BỘ API CTV & COIN (API) -->
+        <!-- ============================================================ -->
+        <div id="tabContent_api" class="space-y-6 hidden">
+            <!-- 3 STAT CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/40 rounded-3xl p-6 shadow-xl relative overflow-hidden gold-border-glow">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Số Dư Coin Hiện Tại</span>
@@ -114,7 +441,6 @@
                     <p class="text-xs text-slate-400 mt-2">Dùng để mua và gia hạn gói cho khách</p>
                 </div>
 
-                <!-- CARD TÀI KHOẢN CTV -->
                 <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-lg">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tài Khoản CTV</span>
@@ -124,21 +450,20 @@
                     <p class="text-xs text-slate-400 mt-1" id="statEmail">---</p>
                     <div class="mt-3 flex items-center gap-2">
                         <span id="statRoleBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">CTV</span>
-                        <span id="statActiveBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Đã kích hoạt</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Đã kích hoạt</span>
                     </div>
                 </div>
 
-                <!-- CARD MÁY CHỦ API -->
                 <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-lg">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Máy Chủ API</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Máy Chủ API CTV</span>
                         <span class="text-2xl">🌐</span>
                     </div>
                     <div class="text-sm font-bold text-emerald-400 flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span>Đã kết nối trực tiếp</span>
                     </div>
-                    <p class="text-xs font-mono text-slate-400 mt-2 truncate" id="statApiUrl">https://locket.2707226.xyz</p>
+                    <p class="text-xs font-mono text-slate-400 mt-2 truncate">https://locket.2707226.xyz</p>
                     <button onclick="syncApiData()" id="btnSyncApi"
                             class="mt-3 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
                         🔄 Đồng Bộ Lại Dữ Liệu
@@ -148,13 +473,11 @@
 
             <!-- CÔNG CỤ TRA CỨU & KIỂM TRA UID QUA API -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-base font-black text-white flex items-center gap-2">
-                            <span>🔍 Tra Cứu & Kiểm Tra Tài Khoản Trên Máy Chủ API</span>
-                        </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Kiểm tra thông tin chi tiết gói, UID hoặc giải mã link Locket/Spotify qua API CTV</p>
-                    </div>
+                <div>
+                    <h3 class="text-base font-black text-white flex items-center gap-2">
+                        <span>🔍 Tra Cứu & Kiểm Tra Tài Khoản Trên Máy Chủ API</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Kiểm tra thông tin chi tiết gói, UID hoặc giải mã link Locket/Spotify qua API CTV</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -179,26 +502,26 @@
                 <div id="checkUidResult" class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs font-mono space-y-2"></div>
             </div>
 
-            <!-- BẢNG DANH SÁCH GÓI CƯỚC TỪ API (PACKAGES) -->
+            <!-- BẢNG DANH SÁCH GÓI CƯỚC TỪ API -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-base font-black text-white flex items-center gap-2">
-                            <span>📦 Bảng Giá & Mã Gói Cước API (locket.2707226.xyz)</span>
+                            <span>📦 Bảng Giá & Mã Gói Cước Nhập Sỉ API</span>
                         </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Dữ liệu thời gian thực được đồng bộ trực tiếp từ máy chủ CTV</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Giá gốc tính theo Coin trên máy chủ CTV</p>
                     </div>
                     <span id="packageCountBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300">0 gói</span>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-800/80">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr class="border-b border-slate-800 text-slate-400 font-bold">
+                            <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                                 <th class="py-3 px-4">Dịch Vụ</th>
                                 <th class="py-3 px-4">Mã Gói (packageCode)</th>
                                 <th class="py-3 px-4">Tên Gói Cước</th>
-                                <th class="py-3 px-4 text-right">Giá Coin</th>
+                                <th class="py-3 px-4 text-right">Giá Nhập Coin</th>
                             </tr>
                         </thead>
                         <tbody id="packagesTableBody" class="divide-y divide-slate-800/60 font-medium">
@@ -209,128 +532,99 @@
                     </table>
                 </div>
             </div>
-
         </div>
 
-        <!-- TAB 2: QUẢN LÝ MÃ GIẢM GIÁ -->
-        <div id="tabContent_codes" class="space-y-6 hidden">
-            
-            <!-- FORM TẠO MÃ MỚI -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
-                <div class="mb-5">
-                    <h3 class="text-lg font-black text-white flex items-center gap-2">
-                        <span>🏷 Tạo Mã Giảm Giá Mới</span>
+        <!-- ============================================================ -->
+        <!-- TAB 6: CẤU HÌNH HỆ THỐNG (SYSTEM) -->
+        <!-- ============================================================ -->
+        <div id="tabContent_system" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Thông tin ngân hàng & thanh toán -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                    <h3 class="text-base font-black text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+                        <span>💳</span> Tài Khoản Nhận Tiền VietQR
                     </h3>
-                    <p class="text-xs text-slate-400 mt-1">Mã giảm giá sẽ được khách hàng nhập khi thanh toán trên website hoặc bot</p>
+                    <div class="space-y-3 text-xs">
+                        <div class="flex justify-between py-2 border-b border-slate-800/50">
+                            <span class="text-slate-400">Ngân hàng:</span>
+                            <span class="font-bold text-white" id="sysBankName">TPBank</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-slate-800/50">
+                            <span class="text-slate-400">Số tài khoản:</span>
+                            <span class="font-mono font-bold text-amber-400 text-sm" id="sysBankAccount">34528022007</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-slate-800/50">
+                            <span class="text-slate-400">Chủ tài khoản:</span>
+                            <span class="font-bold text-white" id="sysAccountHolder">NGUYEN NHU QUYNH</span>
+                        </div>
+                        <div class="flex justify-between py-2">
+                            <span class="text-slate-400">Cổng thanh toán tự động:</span>
+                            <span class="text-emerald-400 font-bold">SePay Webhook (Bảo mật 5 lớp)</span>
+                        </div>
+                    </div>
                 </div>
 
-                <form onsubmit="handleCreateCode(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-                    <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-slate-300 mb-2">Mã Khuyến Mãi (Code):</label>
-                        <input type="text" id="newCodeInput" placeholder="VD: TET2026, QUYNH20" required
-                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-black uppercase tracking-wider focus:outline-none focus:border-amber-400">
+                <!-- Thông tin bot & kết nối -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                    <h3 class="text-base font-black text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+                        <span>🌐</span> Hạ Tầng & Kết Nối Kênh
+                    </h3>
+                    <div class="space-y-3 text-xs">
+                        <div class="flex justify-between py-2 border-b border-slate-800/50">
+                            <span class="text-slate-400">Tên miền chính:</span>
+                            <a href="https://alopremium.shop" target="_blank" class="text-amber-400 underline font-mono font-bold">https://alopremium.shop</a>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-slate-800/50">
+                            <span class="text-slate-400">Bot Telegram:</span>
+                            <a href="https://t.me/AloPremiumShop_Bot" target="_blank" class="text-amber-400 underline font-mono font-bold">@AloPremiumShop_Bot</a>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-slate-800/50">
+                            <span class="text-slate-400">Hỗ trợ CSKH:</span>
+                            <a href="https://t.me/nguyennhuquynh28" target="_blank" class="text-cyan-400 underline font-bold">@nguyennhuquynh28 (Zalo: 0345222802)</a>
+                        </div>
+                        <div class="flex justify-between py-2">
+                            <span class="text-slate-400">Mã PIN Admin Web:</span>
+                            <span class="font-mono text-slate-300 font-bold">•••• (Cài đặt trong file .env: ADMIN_PIN)</span>
+                        </div>
                     </div>
-                    <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-slate-300 mb-2">Phần Trăm Giảm (%):</label>
-                        <input type="number" id="newDiscountInput" min="1" max="100" placeholder="VD: 20" required
-                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-bold focus:outline-none focus:border-amber-400">
-                    </div>
-                    <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-slate-300 mb-2">Số Lượt Dùng Tối Đa:</label>
-                        <input type="number" id="newLimitInput" min="0" placeholder="0 = Không giới hạn" value="0"
-                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-semibold focus:outline-none focus:border-amber-400">
-                    </div>
-                    <div class="sm:col-span-1">
-                        <button type="submit" id="btnCreateCode"
-                                class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
-                            ➕ Tạo Mã Ngay
-                        </button>
-                    </div>
-                </form>
-                <div id="codeActionMsg" class="hidden mt-4 p-3 rounded-xl text-xs font-semibold"></div>
-            </div>
-
-            <!-- BẢNG DANH SÁCH MÃ GIẢM GIÁ HIỆN CÓ -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-base font-black text-white flex items-center gap-2">
-                            <span>📋 Danh Sách Mã Giảm Giá Đang Hoạt Động</span>
-                        </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Các mã có thể xóa hoặc kiểm tra lượt sử dụng bất cứ lúc nào</p>
-                    </div>
-                    <button onclick="loadCodes()" class="text-xs text-amber-400 hover:underline font-bold">Làm mới danh sách</button>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-800 text-slate-400 font-bold">
-                                <th class="py-3 px-4">Mã Code</th>
-                                <th class="py-3 px-4">Mức Giảm</th>
-                                <th class="py-3 px-4">Lượt Đã Dùng / Giới Hạn</th>
-                                <th class="py-3 px-4">Ngày Tạo</th>
-                                <th class="py-3 px-4 text-right">Thao Tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="codesTableBody" class="divide-y divide-slate-800/60 font-medium">
-                            <tr>
-                                <td colspan="5" class="py-8 text-center text-slate-500">Chưa có mã giảm giá nào. Hãy tạo mã đầu tiên ở phía trên!</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-
-    
-        <!-- TAB 3: DANH SÁCH ĐƠN HÀNG KHÁCH MUA -->
-        <div id="tabContent_orders" class="space-y-6 hidden">
-            <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                    <div>
-                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                            <span>📦</span> Danh Sách Đơn Hàng & Người Mua
-                        </h3>
-                        <p class="text-xs text-slate-400 mt-1">Toàn bộ đơn hàng được tạo trên Web và Bot Telegram</p>
-                    </div>
-                    <button onclick="loadOrders()" class="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
-                        🔄 Làm Mới
-                    </button>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-xs text-left">
-                        <thead>
-                            <tr class="border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
-                                <th class="py-3 px-4">Mã Đơn</th>
-                                <th class="py-3 px-4">Khách Hàng</th>
-                                <th class="py-3 px-4">Dịch Vụ</th>
-                                <th class="py-3 px-4">Số Tiền</th>
-                                <th class="py-3 px-4">Mã Ưu Đãi</th>
-                                <th class="py-3 px-4">Trạng Thái</th>
-                                <th class="py-3 px-4 text-right">Thời Gian</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ordersTableBody" class="divide-y divide-slate-800/60">
-                            <tr><td colspan="7" class="py-8 text-center text-slate-500">Đang tải danh sách đơn hàng...</td></tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
 
     </main>
 
+    <!-- MODAL CHI TIẾT ĐƠN HÀNG -->
+    <div id="orderDetailModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-black text-white text-base flex items-center gap-2">
+                    <span>🧾</span> Chi Tiết Đơn Hàng <span id="modalOrderId" class="text-amber-400 font-mono"></span>
+                </h3>
+                <button onclick="closeOrderModal()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
+            </div>
+            
+            <div id="modalOrderBody" class="space-y-3 text-xs">
+                <!-- Nội dung được điền động -->
+            </div>
+
+            <div id="modalOrderActions" class="flex items-center gap-2 pt-3 border-t border-slate-800">
+                <!-- Nút thao tác -->
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="mt-auto border-t border-slate-800/60 py-6 text-center text-xs text-slate-500">
-        AloPremium.shop Admin Dashboard • Tự Động Kết Nối API & Điều Hành 24/7
+        AloPremium.Shop Admin Dashboard • Tự Động Kết Nối API & Điều Hành 24/7
     </footer>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
         let currentPin = sessionStorage.getItem('admin_pin') || '';
+        let currentTab = 'analytics';
+        let cachedOrders = [];
+        let cachedUsers = [];
+        let currentOrderFilter = 'all';
 
         // Tự động kiểm tra đăng nhập khi mở trang
         document.addEventListener('DOMContentLoaded', () => {
@@ -338,6 +632,10 @@
                 verifyAndLoad(currentPin);
             }
         });
+
+        function formatVND(amount) {
+            return Number(amount || 0).toLocaleString('vi-VN') + ' đ';
+        }
 
         async function handleLogin(e) {
             e.preventDefault();
@@ -399,139 +697,418 @@
             location.reload();
         }
 
-        function switchTab(tab) {
-            const btnApi = document.getElementById('tabBtn_api');
-            const btnCodes = document.getElementById('tabBtn_codes');
-            const contentApi = document.getElementById('tabContent_api');
-            const contentCodes = document.getElementById('tabContent_codes');
+        function switchTab(tab, subFilter) {
+            currentTab = tab;
+            const tabs = ['analytics', 'orders', 'users', 'codes', 'api', 'system'];
+            
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tabBtn_${t}`);
+                const content = document.getElementById(`tabContent_${t}`);
+                if (t === tab) {
+                    btn.className = 'px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md flex items-center gap-1.5';
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = 'px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white flex items-center gap-1.5';
+                    content.classList.add('hidden');
+                }
+            });
 
-            if (tab === 'api') {
-                btnApi.className = 'px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md';
-                btnCodes.className = 'px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:text-white transition-all cursor-pointer';
-                contentApi.classList.remove('hidden');
-                contentCodes.classList.add('hidden');
-            } else {
-                btnCodes.className = 'px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md';
-                btnApi.className = 'px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-400 hover:text-white transition-all cursor-pointer';
-                contentCodes.classList.remove('hidden');
-                contentApi.classList.add('hidden');
-                loadCodes();
+            if (tab === 'analytics') loadStats();
+            if (tab === 'orders') {
+                if (subFilter) filterOrders(subFilter);
+                else loadOrders();
             }
+            if (tab === 'users') loadUsers();
+            if (tab === 'codes') loadCodes();
+            if (tab === 'api') syncApiData();
+            if (tab === 'system') loadSystemInfo();
+        }
+
+        function refreshCurrentTab() {
+            switchTab(currentTab);
         }
 
         async function loadAdminData() {
-            syncApiData();
+            loadStats();
+            loadOrders();
             loadCodes();
+            syncApiData();
         }
 
-        async function syncApiData() {
-            const btn = document.getElementById('btnSyncApi');
-            btn.innerHTML = '⏳ Đang đồng bộ...';
-            btn.disabled = true;
-
+        // ==========================================
+        // 1. STATS & ANALYTICS
+        // ==========================================
+        async function loadStats() {
             try {
-                const res = await fetch(`/api/admin/api_info?pin=${encodeURIComponent(currentPin)}`);
+                const res = await fetch(`/api/admin/stats?pin=${encodeURIComponent(currentPin)}`);
                 const data = await res.json();
-                if (!data.ok) {
-                    alert('Lỗi: ' + (data.error || 'Không thể lấy thông tin'));
-                    return;
+                if (!data.ok) return;
+
+                const st = data.stats || {};
+                document.getElementById('statTotalRevenue').textContent = formatVND(st.total_revenue);
+                document.getElementById('statTodayRevenue').textContent = formatVND(st.today_revenue);
+                document.getElementById('statCompletedOrdersCount').textContent = `${st.done_count || 0} đơn`;
+                document.getElementById('statPendingOrdersCount').textContent = st.pending_count || 0;
+                document.getElementById('statTotalUsersCount').textContent = st.total_users || 0;
+
+                // Pending badge in header
+                const badge = document.getElementById('pendingBadgeHeader');
+                if (st.pending_count > 0) {
+                    badge.textContent = st.pending_count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
                 }
 
-                // Render account stats
-                const acc = data.account || {};
-                document.getElementById('statBalanceCoin').textContent = (acc.balanceCoin !== undefined ? acc.balanceCoin : '0') + ' Coin';
-                document.getElementById('statUsername').textContent = acc.username ? `@${acc.username}` : 'quynh28';
-                document.getElementById('statEmail').textContent = acc.email || 'nguyennhuuquynhh07@gmail.com';
-                document.getElementById('statRoleBadge').textContent = acc.role || 'CTV';
+                // Locket stats
+                const locket = st.locket || {};
+                document.getElementById('statLocketCount').textContent = `${locket.count || 0} đơn`;
+                document.getElementById('statLocketRevenue').textContent = formatVND(locket.revenue);
 
-                // Render Packages
-                renderPackagesTable(data.packages || []);
+                // Spotify stats
+                const spotify = st.spotify || {};
+                document.getElementById('statSpotifyCount').textContent = `${spotify.count || 0} đơn`;
+                document.getElementById('statSpotifyRevenue').textContent = formatVND(spotify.revenue);
             } catch (err) {
-                alert('Lỗi kết nối API: ' + err.message);
-            } finally {
-                btn.innerHTML = '🔄 Đồng Bộ Lại Dữ Liệu';
-                btn.disabled = false;
+                console.error(err);
             }
         }
 
-        function renderPackagesTable(packages) {
-            const tbody = document.getElementById('packagesTableBody');
-            const badge = document.getElementById('packageCountBadge');
-            badge.textContent = `${packages.length} gói`;
+        // ==========================================
+        // 2. ORDERS MANAGEMENT
+        // ==========================================
+        async function loadOrders() {
+            const tbody = document.getElementById('ordersTableBody');
+            try {
+                const res = await fetch(`/api/admin/orders?pin=${encodeURIComponent(currentPin)}`);
+                const data = await res.json();
+                if (!data.ok) return;
 
-            if (!packages || packages.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-500">Chưa có dữ liệu gói cước từ API.</td></tr>';
+                cachedOrders = data.orders || [];
+                renderOrdersTable();
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-400">Lỗi tải đơn: ${err.message}</td></tr>`;
+            }
+        }
+
+        function filterOrders(filter) {
+            currentOrderFilter = filter;
+            const filters = ['all', 'pending', 'done', 'rejected'];
+            filters.forEach(f => {
+                const btn = document.getElementById(`orderFilter_${f}`);
+                if (f === filter) {
+                    btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950';
+                } else {
+                    btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white';
+                }
+            });
+            renderOrdersTable();
+        }
+
+        function searchOrders() {
+            renderOrdersTable();
+        }
+
+        function renderOrdersTable() {
+            const tbody = document.getElementById('ordersTableBody');
+            const search = (document.getElementById('orderSearchInput').value || '').toLowerCase().trim();
+
+            let filtered = cachedOrders.filter(o => {
+                if (currentOrderFilter === 'pending') {
+                    return ['pending', 'waiting_payment', 'pending_approval'].includes(o.status);
+                } else if (currentOrderFilter === 'done') {
+                    return o.status === 'done';
+                } else if (currentOrderFilter === 'rejected') {
+                    return ['cancelled', 'rejected', 'failed'].includes(o.status);
+                }
+                return true;
+            });
+
+            if (search) {
+                filtered = filtered.filter(o => {
+                    return String(o.order_id || '').toLowerCase().includes(search) ||
+                           String(o.username || '').toLowerCase().includes(search) ||
+                           String(o.display_name || '').toLowerCase().includes(search) ||
+                           String(o.uid || '').toLowerCase().includes(search);
+                });
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="py-12 text-center text-slate-500">Không tìm thấy đơn hàng nào phù hợp.</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = packages.map(pkg => {
-                const code = pkg.code || pkg.packageCode || '---';
-                const name = pkg.name || '---';
-                const price = pkg.priceCoin !== undefined ? pkg.priceCoin : '---';
-                let svcEmoji = '📦';
-                let svcName = 'Dịch vụ';
-                if (code.startsWith('LK') || name.toLowerCase().includes('locket')) {
-                    svcEmoji = '💛';
-                    svcName = 'Locket';
-                } else if (code.startsWith('SP') || name.toLowerCase().includes('spotify')) {
-                    svcEmoji = '🎵';
-                    svcName = 'Spotify';
-                } else if (name.toLowerCase().includes('filter')) {
-                    svcEmoji = '✨';
-                    svcName = 'Filter AI';
+            tbody.innerHTML = filtered.map(o => {
+                const isPending = ['pending', 'waiting_payment', 'pending_approval'].includes(o.status);
+                const isDone = o.status === 'done';
+                
+                let statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">Khác</span>';
+                if (isDone) {
+                    statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✅ Đã Kích Hoạt</span>';
+                } else if (isPending) {
+                    statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">⏳ Chờ Duyệt</span>';
+                } else {
+                    statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">🚫 Đã Hủy</span>';
+                }
+
+                const svcIcon = o.product === 'locket' ? '💛' : (o.product === 'spotify' ? '🎵' : '📦');
+                const svcName = o.product === 'locket' ? 'Locket Gold' : (o.product === 'spotify' ? 'Spotify VIP' : o.product);
+                const planName = o.plan || '';
+                const timeStr = (o.created_at || '').substring(0, 16).replace('T', ' ');
+
+                let actionBtns = `
+                    <button onclick="viewOrderDetail('${o.order_id}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition-all cursor-pointer">
+                        👁 Xem
+                    </button>
+                `;
+
+                if (isPending) {
+                    actionBtns = `
+                        <div class="flex items-center justify-end gap-1.5">
+                            <button onclick="approveOrder('${o.order_id}')" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1">
+                                ⚡ Duyệt
+                            </button>
+                            <button onclick="rejectOrder('${o.order_id}')" class="px-2 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">
+                                ✕
+                            </button>
+                            <button onclick="viewOrderDetail('${o.order_id}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all cursor-pointer">
+                                👁
+                            </button>
+                        </div>
+                    `;
                 }
 
                 return `
                     <tr class="hover:bg-slate-800/40 transition-colors">
-                        <td class="py-3 px-4 flex items-center gap-2">
-                            <span>${svcEmoji}</span>
-                            <span class="font-bold text-white">${svcName}</span>
+                        <td class="py-3 px-4 font-mono font-bold text-amber-400">ORDER_${o.order_id}</td>
+                        <td class="py-3 px-4">
+                            <div class="font-bold text-white">${o.display_name || o.username || 'Khách'}</div>
+                            <div class="text-[11px] text-slate-400 font-mono truncate max-w-[150px]">${o.uid || '@' + (o.username || '')}</div>
                         </td>
-                        <td class="py-3 px-4 font-mono font-bold text-amber-400">${code}</td>
-                        <td class="py-3 px-4 text-slate-200 font-semibold">${name}</td>
-                        <td class="py-3 px-4 text-right font-black text-amber-400">${price} Coin</td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-1.5 font-semibold text-slate-200">
+                                <span>${svcIcon}</span> <span>${svcName}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 uppercase font-mono">${planName}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono font-black text-amber-400">${formatVND(o.price)}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-slate-400 font-mono text-[11px]">${timeStr}</td>
+                        <td class="py-3 px-4 text-right">${actionBtns}</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        async function performCheckUid() {
-            const svc = document.getElementById('checkServiceSelect').value;
-            const ident = document.getElementById('checkIdentifierInput').value.trim();
-            const resBox = document.getElementById('checkUidResult');
-            const btn = document.getElementById('btnPerformCheck');
-
-            if (!ident) {
-                alert('Vui lòng nhập Username, Link hoặc UID!');
-                return;
-            }
-
-            btn.innerHTML = '⏳ Đang kiểm tra...';
-            btn.disabled = true;
-            resBox.classList.remove('hidden');
-            resBox.innerHTML = '<span class="text-slate-400">Đang truy vấn máy chủ API locket.2707226.xyz...</span>';
+        async function approveOrder(orderId) {
+            if (!confirm(`Xác nhận DUYỆT & KÍCH HOẠT tự động cho đơn ORDER_${orderId}?`)) return;
 
             try {
-                const res = await fetch('/api/admin/check_uid', {
+                const res = await fetch('/api/admin/approve_order', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ pin: currentPin, identifier: ident, service: svc })
+                    body: JSON.stringify({ pin: currentPin, order_id: orderId })
                 });
                 const data = await res.json();
                 if (data.ok) {
-                    resBox.innerHTML = `<pre class="text-emerald-400 whitespace-pre-wrap">${JSON.stringify(data.data, null, 2)}</pre>`;
+                    alert('🎉 ' + data.message);
+                    loadOrders();
+                    loadStats();
+                    closeOrderModal();
                 } else {
-                    resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi: ${data.error}</span>`;
+                    alert('❌ Lỗi: ' + (data.error || 'Không thể duyệt đơn'));
                 }
             } catch (err) {
-                resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi kết nối: ${err.message}</span>`;
-            } finally {
-                btn.innerHTML = 'Kiểm Tra API ➔';
-                btn.disabled = false;
+                alert('Lỗi kết nối: ' + err.message);
             }
         }
 
-        // --- QUẢN LÝ MÃ GIẢM GIÁ ---
+        async function rejectOrder(orderId) {
+            const reason = prompt('Nhập lý do từ chối/hủy đơn hàng:', 'Chưa nhận được thanh toán hợp lệ');
+            if (reason === null) return;
+
+            try {
+                const res = await fetch('/api/admin/reject_order', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin: currentPin, order_id: orderId, reason })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    alert('Đã hủy đơn hàng ORDER_' + orderId);
+                    loadOrders();
+                    loadStats();
+                    closeOrderModal();
+                } else {
+                    alert('❌ Lỗi: ' + data.error);
+                }
+            } catch (err) {
+                alert('Lỗi: ' + err.message);
+            }
+        }
+
+        function viewOrderDetail(orderId) {
+            const order = cachedOrders.find(o => String(o.order_id) === String(orderId));
+            if (!order) return;
+
+            document.getElementById('modalOrderId').textContent = `ORDER_${order.order_id}`;
+            const isPending = ['pending', 'waiting_payment', 'pending_approval'].includes(order.status);
+            
+            const body = document.getElementById('modalOrderBody');
+            body.innerHTML = `
+                <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+                    <div>
+                        <span class="text-slate-400">Khách hàng:</span>
+                        <div class="font-bold text-white">${order.display_name || order.username || 'Khách'}</div>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">User ID / Username:</span>
+                        <div class="font-mono text-amber-400 font-bold">${order.user_id ? order.user_id : ''} (@${order.username || 'web'})</div>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">Dịch vụ & Gói:</span>
+                        <div class="font-bold text-slate-200">${order.product} - ${order.plan}</div>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">Giá thanh toán:</span>
+                        <div class="font-mono font-black text-amber-400 text-sm">${formatVND(order.price)}</div>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+                    <div class="text-slate-400">Tài khoản đích / UID:</div>
+                    <div class="font-mono font-bold text-white break-all bg-slate-900 p-2 rounded-xl border border-slate-800">${order.uid || order.identifier || 'N/A'}</div>
+                </div>
+
+                ${order.dns_link ? `
+                    <div class="space-y-1.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+                        <div class="text-slate-400">DNS Profile Link iOS:</div>
+                        <div class="font-mono text-emerald-400 text-xs break-all bg-slate-900 p-2 rounded-xl border border-slate-800">${order.dns_link}</div>
+                        <a href="/api/download_profile?order_id=${order.order_id}" class="inline-block mt-2 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-xs hover:bg-amber-500/20">
+                            📥 Tải file .mobileconfig
+                        </a>
+                    </div>
+                ` : ''}
+
+                <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+                    <div>Ngày tạo: <span class="text-slate-300 font-mono">${order.created_at || '---'}</span></div>
+                    <div>Hoàn thành: <span class="text-slate-300 font-mono">${order.done_at || '---'}</span></div>
+                </div>
+            `;
+
+            const actions = document.getElementById('modalOrderActions');
+            if (isPending) {
+                actions.innerHTML = `
+                    <button onclick="approveOrder('${order.order_id}')" class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs transition-all cursor-pointer">
+                        ⚡ Duyệt & Kích Hoạt Tự Động
+                    </button>
+                    <button onclick="rejectOrder('${order.order_id}')" class="py-2.5 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">
+                        Hủy Đơn
+                    </button>
+                `;
+            } else {
+                actions.innerHTML = `
+                    <button onclick="closeOrderModal()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-all cursor-pointer">
+                        Đóng
+                    </button>
+                `;
+            }
+
+            document.getElementById('orderDetailModal').classList.remove('hidden');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderDetailModal').classList.add('hidden');
+        }
+
+        // ==========================================
+        // 3. USERS CRM
+        // ==========================================
+        async function loadUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            try {
+                const res = await fetch(`/api/admin/users?pin=${encodeURIComponent(currentPin)}`);
+                const data = await res.json();
+                if (!data.ok) return;
+
+                cachedUsers = data.users || [];
+                renderUsersTable();
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-400">Lỗi tải user: ${err.message}</td></tr>`;
+            }
+        }
+
+        function searchUsers() {
+            renderUsersTable();
+        }
+
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            const search = (document.getElementById('userSearchInput').value || '').toLowerCase().trim();
+
+            let filtered = cachedUsers;
+            if (search) {
+                filtered = filtered.filter(u => {
+                    return String(u.user_id || '').toLowerCase().includes(search) ||
+                           String(u.username || '').toLowerCase().includes(search) ||
+                           String(u.first_name || '').toLowerCase().includes(search);
+                });
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="py-12 text-center text-slate-500">Không tìm thấy khách hàng nào.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(u => {
+                const isBanned = u.is_banned;
+                const statusBadge = isBanned 
+                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">Bị Khóa</span>'
+                    : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Bình Thường</span>';
+
+                const toggleBtn = isBanned
+                    ? `<button onclick="toggleBanUser('${u.user_id}', false)" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs transition-all cursor-pointer">Mở Khóa</button>`
+                    : `<button onclick="toggleBanUser('${u.user_id}', true)" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">Chặn</button>`;
+
+                return `
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="py-3 px-4 font-mono font-bold text-slate-300">${u.user_id}</td>
+                        <td class="py-3 px-4 font-bold text-white">${u.first_name || 'Khách Hàng'}</td>
+                        <td class="py-3 px-4 font-mono text-amber-400 font-semibold">${u.username ? '@' + u.username : '---'}</td>
+                        <td class="py-3 px-4 text-center font-bold text-slate-200">${u.orders_count || 0}</td>
+                        <td class="py-3 px-4 text-right font-mono font-black text-amber-400">${formatVND(u.total_spent)}</td>
+                        <td class="py-3 px-4 text-center">${statusBadge}</td>
+                        <td class="py-3 px-4 text-right">${toggleBtn}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function toggleBanUser(userId, shouldBan) {
+            const actionText = shouldBan ? 'CHẶN' : 'MỞ KHÓA';
+            if (!confirm(`Bạn có chắc muốn ${actionText} người dùng ${userId}?`)) return;
+
+            try {
+                const res = await fetch('/api/admin/toggle_ban', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin: currentPin, user_id: userId, ban: shouldBan })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    alert(data.message);
+                    loadUsers();
+                } else {
+                    alert('Lỗi: ' + data.error);
+                }
+            } catch (err) {
+                alert('Lỗi kết nối: ' + err.message);
+            }
+        }
+
+        // ==========================================
+        // 4. COUPONS
+        // ==========================================
         async function loadCodes() {
             const tbody = document.getElementById('codesTableBody');
             try {
@@ -624,6 +1201,129 @@
                 alert('Lỗi kết nối: ' + err.message);
             }
         }
+
+        // ==========================================
+        // 5. CTV API & COIN
+        // ==========================================
+        async function syncApiData() {
+            const btn = document.getElementById('btnSyncApi');
+            if (btn) {
+                btn.innerHTML = '⏳ Đang đồng bộ...';
+                btn.disabled = true;
+            }
+
+            try {
+                const res = await fetch(`/api/admin/api_info?pin=${encodeURIComponent(currentPin)}`);
+                const data = await res.json();
+                if (!data.ok) return;
+
+                const acc = data.account || {};
+                const coinText = (acc.balanceCoin !== undefined ? acc.balanceCoin : '0') + ' Coin';
+                document.getElementById('statBalanceCoin').textContent = coinText;
+                document.getElementById('statDashboardCoin').textContent = coinText;
+                document.getElementById('statUsername').textContent = acc.username ? `@${acc.username}` : 'quynh28';
+                document.getElementById('statEmail').textContent = acc.email || 'nguyennhuuquynhh07@gmail.com';
+                document.getElementById('statRoleBadge').textContent = acc.role || 'CTV';
+
+                renderPackagesTable(data.packages || []);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '🔄 Đồng Bộ Lại Dữ Liệu';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        function renderPackagesTable(packages) {
+            const tbody = document.getElementById('packagesTableBody');
+            const badge = document.getElementById('packageCountBadge');
+            badge.textContent = `${packages.length} gói`;
+
+            if (!packages || packages.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-500">Chưa có dữ liệu gói cước từ API.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = packages.map(pkg => {
+                const code = pkg.code || pkg.packageCode || '---';
+                const name = pkg.name || '---';
+                const price = pkg.priceCoin !== undefined ? pkg.priceCoin : '---';
+                let svcEmoji = '💛';
+                let svcName = 'Locket';
+                if (code.startsWith('SP') || name.toLowerCase().includes('spotify')) {
+                    svcEmoji = '🎵';
+                    svcName = 'Spotify';
+                }
+
+                return `
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="py-3 px-4 flex items-center gap-2">
+                            <span>${svcEmoji}</span>
+                            <span class="font-bold text-white">${svcName}</span>
+                        </td>
+                        <td class="py-3 px-4 font-mono font-bold text-amber-400">${code}</td>
+                        <td class="py-3 px-4 text-slate-200 font-semibold">${name}</td>
+                        <td class="py-3 px-4 text-right font-black text-amber-400">${price} Coin</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function performCheckUid() {
+            const svc = document.getElementById('checkServiceSelect').value;
+            const ident = document.getElementById('checkIdentifierInput').value.trim();
+            const resBox = document.getElementById('checkUidResult');
+            const btn = document.getElementById('btnPerformCheck');
+
+            if (!ident) {
+                alert('Vui lòng nhập Username, Link hoặc UID!');
+                return;
+            }
+
+            btn.innerHTML = '⏳ Đang kiểm tra...';
+            btn.disabled = true;
+            resBox.classList.remove('hidden');
+            resBox.innerHTML = '<span class="text-slate-400">Đang truy vấn máy chủ API locket.2707226.xyz...</span>';
+
+            try {
+                const res = await fetch('/api/admin/check_uid', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin: currentPin, identifier: ident, service: svc })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    resBox.innerHTML = `<pre class="text-emerald-400 whitespace-pre-wrap">${JSON.stringify(data.data, null, 2)}</pre>`;
+                } else {
+                    resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi: ${data.error}</span>`;
+                }
+            } catch (err) {
+                resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi kết nối: ${err.message}</span>`;
+            } finally {
+                btn.innerHTML = 'Kiểm Tra API ➔';
+                btn.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // 6. SYSTEM CONFIG INFO
+        // ==========================================
+        async function loadSystemInfo() {
+            try {
+                const res = await fetch(`/api/admin/system_info?pin=${encodeURIComponent(currentPin)}`);
+                const data = await res.json();
+                if (!data.ok) return;
+
+                const inf = data.info || {};
+                document.getElementById('sysBankName').textContent = inf.bank_name || 'TPBank';
+                document.getElementById('sysBankAccount').textContent = inf.bank_account || '34528022007';
+                document.getElementById('sysAccountHolder').textContent = inf.account_holder || 'NGUYEN NHU QUYNH';
+            } catch (err) {
+                console.error(err);
+            }
+        }
     </script>
 
     <!-- BẢO VỆ ADMIN: CHỐNG F12 & BẢO VỆ MÃ NGUỒN -->
@@ -645,4 +1345,3 @@
 
 </body>
 </html>
-

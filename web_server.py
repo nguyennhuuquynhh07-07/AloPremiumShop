@@ -425,6 +425,116 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {"ok": True, "codes": codes})
             return
 
+        # API Admin: Thống kê doanh thu & tổng quan toàn diện
+        if path == "/api/admin/stats":
+            pin = params.get("pin", [""])[0].strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+
+            orders = list(db.get_orders().values())
+            users = db.get_users()
+            done_orders = [o for o in orders if o.get("status") == "done"]
+            pending_orders = [o for o in orders if o.get("status") in ("waiting_payment", "pending", "pending_approval")]
+            rejected_orders = [o for o in orders if o.get("status") in ("cancelled", "rejected", "failed")]
+            
+            total_revenue = sum(o.get("price", 0) for o in done_orders)
+
+            from datetime import datetime
+            now = datetime.now()
+            today_str = now.strftime("%Y-%m-%d")
+
+            today_orders = [o for o in done_orders if str(o.get("done_at", "")).startswith(today_str) or str(o.get("created_at", "")).startswith(today_str)]
+            today_revenue = sum(o.get("price", 0) for o in today_orders)
+
+            locket_done = [o for o in done_orders if o.get("product") == "locket"]
+            spotify_done = [o for o in done_orders if o.get("product") == "spotify"]
+
+            self._send_json(200, {
+                "ok": True,
+                "stats": {
+                    "total_revenue": total_revenue,
+                    "today_revenue": today_revenue,
+                    "total_orders": len(orders),
+                    "done_count": len(done_orders),
+                    "pending_count": len(pending_orders),
+                    "rejected_count": len(rejected_orders),
+                    "total_users": len(users),
+                    "locket": {
+                        "count": len(locket_done),
+                        "revenue": sum(o.get("price", 0) for o in locket_done)
+                    },
+                    "spotify": {
+                        "count": len(spotify_done),
+                        "revenue": sum(o.get("price", 0) for o in spotify_done)
+                    }
+                }
+            })
+            return
+
+        # API Admin: Danh sách khách hàng & chi tiêu
+        if path == "/api/admin/users":
+            pin = params.get("pin", [""])[0].strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+
+            raw_users = db.get_users()
+            orders = list(db.get_orders().values())
+
+            user_spending = {}
+            user_orders_count = {}
+            for o in orders:
+                uid = o.get("user_id")
+                if uid:
+                    user_orders_count[uid] = user_orders_count.get(uid, 0) + 1
+                    if o.get("status") == "done":
+                        user_spending[uid] = user_spending.get(uid, 0) + o.get("price", 0)
+
+            user_list = []
+            for uid_str, u in raw_users.items():
+                try:
+                    uid_int = int(uid_str)
+                except Exception:
+                    uid_int = uid_str
+                banned, b_reason = db.is_banned(uid_str)
+                user_list.append({
+                    "user_id": uid_str,
+                    "username": u.get("username", "") or "Ẩn danh",
+                    "first_name": u.get("first_name", "") or "",
+                    "joined_at": u.get("joined_at", ""),
+                    "orders_count": user_orders_count.get(uid_int, 0),
+                    "total_spent": user_spending.get(uid_int, 0),
+                    "is_banned": banned,
+                    "ban_reason": b_reason
+                })
+
+            user_list.sort(key=lambda x: x.get("total_spent", 0), reverse=True)
+            self._send_json(200, {"ok": True, "users": user_list[:100]})
+            return
+
+        # API Admin: Thông tin cấu hình hệ thống
+        if path == "/api/admin/system_info":
+            pin = params.get("pin", [""])[0].strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+
+            self._send_json(200, {
+                "ok": True,
+                "info": {
+                    "bank_name": getattr(config, "BANK_NAME", "TPBank"),
+                    "bank_account": getattr(config, "BANK_ACCOUNT", "34528022007"),
+                    "account_holder": getattr(config, "ACCOUNT_HOLDER", "NGUYEN NHU QUYNH"),
+                    "bot_username": "@AloPremiumShop_Bot",
+                    "domain": "https://alopremium.shop",
+                    "sepay_connected": bool(getattr(config, "SEPAY_API_TOKEN", "")),
+                    "api_base_url": getattr(config, "API_BASE_URL", "https://locket.2707226.xyz"),
+                    "server_status": "ONLINE 24/7"
+                }
+            })
+            return
+
         # 7. Phục vụ Trang chủ Web App (index.html)
         if path in ("/", "/index.html"):
             index_path = os.path.join(os.path.dirname(__file__), "index.html")
@@ -522,6 +632,88 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True, "data": res})
             except Exception as e:
                 self._send_json(400, {"ok": False, "error": str(e)})
+            return
+
+        # API Admin: Duyệt đơn và kích hoạt tự động 1-chạm
+        if path == "/api/admin/approve_order":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            order_id = str(body.get("order_id", "")).strip()
+            order = db.get_order(order_id)
+            if not order:
+                self._send_json(404, {"ok": False, "error": "Không tìm thấy đơn hàng trong hệ thống"})
+                return
+            if order.get("status") == "done":
+                self._send_json(400, {"ok": False, "error": "Đơn hàng này đã được duyệt trước đó rồi"})
+                return
+
+            from order_service import execute_order_activation
+            try:
+                if BOT_LOOP:
+                    future = asyncio.run_coroutine_threadsafe(
+                        execute_order_activation(BOT_INSTANCE, order_id),
+                        BOT_LOOP
+                    )
+                    ok, msg = future.result(timeout=20)
+                else:
+                    ok, msg = asyncio.run(execute_order_activation(BOT_INSTANCE, order_id))
+
+                if ok:
+                    self._send_json(200, {"ok": True, "message": f"Đã duyệt và kích hoạt thành công đơn ORDER_{order_id}!"})
+                else:
+                    self._send_json(400, {"ok": False, "error": f"Lỗi kích hoạt API: {msg}"})
+            except Exception as e:
+                self._send_json(500, {"ok": False, "error": f"Lỗi xử lý duyệt đơn: {e}"})
+            return
+
+        # API Admin: Từ chối / Hủy đơn hàng
+        if path == "/api/admin/reject_order":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            order_id = str(body.get("order_id", "")).strip()
+            reason = str(body.get("reason", "Admin hủy đơn thủ công")).strip()
+            order = db.get_order(order_id)
+            if not order:
+                self._send_json(404, {"ok": False, "error": "Không tìm thấy đơn hàng"})
+                return
+            
+            from datetime import datetime
+            db.update_order(order_id, status="rejected", rejected_reason=reason, rejected_at=datetime.now().isoformat())
+            try:
+                if BOT_INSTANCE and order.get("user_id"):
+                    coro = BOT_INSTANCE.send_message(
+                        chat_id=int(order["user_id"]),
+                        text=f"🚫 Đơn hàng <code>ORDER_{order_id}</code> đã bị từ chối/hủy bởi Quản trị viên.\nLý do: <i>{reason}</i>\nNếu bạn đã chuyển khoản, vui lòng liên hệ CSKH để được hỗ trợ.",
+                        parse_mode="HTML"
+                    )
+                    if BOT_LOOP:
+                        asyncio.run_coroutine_threadsafe(coro, BOT_LOOP)
+                    else:
+                        asyncio.run(coro)
+            except Exception:
+                pass
+            self._send_json(200, {"ok": True, "message": f"Đã từ chối đơn hàng ORDER_{order_id}!"})
+            return
+
+        # API Admin: Khóa / Mở khóa khách hàng
+        if path == "/api/admin/toggle_ban":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            user_id = str(body.get("user_id", "")).strip()
+            should_ban = bool(body.get("ban", True))
+            reason = str(body.get("reason", "Vi phạm quy định shop")).strip()
+            if should_ban:
+                db.ban_user(user_id, reason)
+                self._send_json(200, {"ok": True, "message": f"Đã khóa người dùng {user_id}"})
+            else:
+                db.unban_user(user_id)
+                self._send_json(200, {"ok": True, "message": f"Đã mở khóa người dùng {user_id}"})
             return
 
         # 1. API Kiểm tra tài khoản Locket / Spotify trước khi mua

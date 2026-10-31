@@ -214,26 +214,32 @@ def admin_approval_kb(order_id: str) -> InlineKeyboardMarkup:
     ])
 
 
-def admin_kb() -> InlineKeyboardMarkup:
+def admin_kb(pending_count: int = 0) -> InlineKeyboardMarkup:
+    pending_label = f"⚡ Duyệt đơn chờ ({pending_count})" if pending_count > 0 else "⚡ Đơn chờ duyệt"
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("📊 Thống kê doanh thu", callback_data="admin:stats"),
-            InlineKeyboardButton("📦 Lịch sử mua hàng",   callback_data="admin:orders:all"),
+            InlineKeyboardButton(pending_label,           callback_data="admin:orders:pending"),
+            InlineKeyboardButton("📊 Doanh thu & Thống kê", callback_data="admin:stats"),
+        ],
+        [
+            InlineKeyboardButton("📦 Tất cả đơn hàng",    callback_data="admin:orders:all"),
+            InlineKeyboardButton("👥 Quản lý khách hàng", callback_data="admin:users_list"),
         ],
         [
             InlineKeyboardButton("🪙 Số dư Coin CTV",     callback_data="admin:balance"),
-            InlineKeyboardButton("👥 Quản lý người dùng",  callback_data="admin:users_list"),
+            InlineKeyboardButton("🎟 Mã giảm giá",         callback_data="admin:codes_list"),
         ],
         [
             InlineKeyboardButton("💳 Kiểm tra VietQR",    callback_data="admin:checkbank"),
-            InlineKeyboardButton("🔍 Tìm kiếm đơn / user", callback_data="admin:find_menu"),
+            InlineKeyboardButton("🔍 Tìm kiếm đơn/user",   callback_data="admin:find_menu"),
         ],
         [
-            InlineKeyboardButton("🔎 Tra cứu thông tin UID", callback_data="admin:check_uid_menu"),
-            InlineKeyboardButton("🔄 Reset thiết bị Spotify", callback_data="admin:reset_menu"),
+            InlineKeyboardButton("🔎 Tra cứu UID API",    callback_data="admin:check_uid_menu"),
+            InlineKeyboardButton("🔄 Reset máy Spotify",  callback_data="admin:reset_menu"),
         ],
         [
-            InlineKeyboardButton("📢 Gửi thông báo toàn hệ thống", callback_data="admin:broadcast"),
+            InlineKeyboardButton("📢 Gửi thông báo toàn bot", callback_data="admin:broadcast"),
+            InlineKeyboardButton("🌐 Mở Web Admin",       url="https://alopremium.shop/admin"),
         ],
         [
             InlineKeyboardButton("🏠 Đóng bảng điều khiển", callback_data="admin:close"),
