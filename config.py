@@ -49,7 +49,7 @@ API_KEY = SECRET_KEY
 API_BASE_URL = os.getenv("API_BASE_URL", "https://locket.2707226.xyz")
 
 DNS_BASE_URL = os.getenv("DNS_BASE_URL", "https://doh.2707226.xyz")
-DNS_SLUG = os.getenv("DNS_SLUG", "quynh28")
+DNS_SLUG = os.getenv("DNS_SLUG", "alopremiumshop")
 
 # ============================================================
 #  4. DANH SÁCH DỊCH VỤ & BẢNG GIÁ (LOCKET & SPOTIFY)

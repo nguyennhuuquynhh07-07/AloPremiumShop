@@ -204,6 +204,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "support_phone": getattr(config, "SUPPORT_PHONE", "0345222802"),
                 "support_telegram": getattr(config, "SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28"),
                 "server_url": getattr(config, "SERVER_BASE_URL", ""),
+                "dns_slug": getattr(config, "DNS_SLUG", "alopremiumshop"),
+                "dns_url": f"{getattr(config, 'DNS_BASE_URL', 'https://doh.2707226.xyz')}/{getattr(config, 'DNS_SLUG', 'alopremiumshop')}",
             })
             return
 

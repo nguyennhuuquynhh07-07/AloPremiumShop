@@ -1010,7 +1010,7 @@
                 <!-- NÚT CÀI ĐẶT DÀNH CHO GÓI ĐƠN LẺ (CHUẨN 100% NHƯ BOT) -->
                 <div id="singleDownloadActions" class="space-y-2.5">
                     <!-- Nút 1: Cài đặt trực tiếp qua Safari (Khuyên dùng) -->
-                    <a id="modalSafariBtn" href="https://doh.2707226.xyz/quynh28" target="_blank" 
+                    <a id="modalSafariBtn" href="https://doh.2707226.xyz/alopremiumshop" target="_blank" 
                        class="w-full block py-4 px-6 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-center text-sm sm:text-base shadow-2xl pulse-gold transition-all cursor-pointer">
                         🌐 CÀI ĐẶT TRỰC TIẾP QUA SAFARI (Khuyên Dùng)
                     </a>
@@ -1035,7 +1035,7 @@
                             <span class="text-xs font-fredoka font-black text-[#1E1B18]">💛 1. Cấu Hình Locket Gold VIP:</span>
                             <span class="px-2 py-0.5 rounded-md bg-[#FFB800] text-[#1E1B18] text-[10px] font-bold">Locket</span>
                         </div>
-                        <a href="https://doh.2707226.xyz/quynh28" target="_blank"
+                        <a href="https://doh.2707226.xyz/alopremiumshop" target="_blank"
                            class="w-full block py-3 px-4 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-bold text-xs shadow-md text-center transition-all">
                             🌐 Cài Safari Locket Gold VIP
                         </a>
@@ -1055,7 +1055,7 @@
                             <span class="text-xs font-fredoka font-black text-emerald-900">🎵 2. Cấu Hình Spotify Premium:</span>
                             <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-bold">Spotify</span>
                         </div>
-                        <a href="https://doh.2707226.xyz/quynh28" target="_blank"
+                        <a href="https://doh.2707226.xyz/alopremiumshop" target="_blank"
                            class="w-full block py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-fredoka font-bold text-xs shadow-md text-center transition-all">
                             🌐 Cài Safari Spotify Premium
                         </a>
@@ -1500,7 +1500,7 @@
             }
 
             // Hiển thị mã QR tải cấu hình chuẩn Safari từ máy chủ CTV giống Bot
-            const safariDnsUrl = 'https://doh.2707226.xyz/quynh28';
+            const safariDnsUrl = 'https://doh.2707226.xyz/alopremiumshop';
             const qrImg = document.getElementById('qrSuccessImg');
             if (qrImg) {
                 qrImg.src = `/api/qr?data=${encodeURIComponent(safariDnsUrl)}`;
@@ -1542,7 +1542,7 @@
         }
 
         function copyDownloadUrl() {
-            const link = 'https://doh.2707226.xyz/quynh28';
+            const link = 'https://doh.2707226.xyz/alopremiumshop';
             navigator.clipboard.writeText(link).then(() => {
                 showToast('✅ Đã sao chép link cài đặt Safari: ' + link);
                 const btn = document.getElementById('btnCopyDownloadUrl');
@@ -1556,7 +1556,7 @@
         }
 
         function copyComboUrl(service) {
-            const link = 'https://doh.2707226.xyz/quynh28';
+            const link = 'https://doh.2707226.xyz/alopremiumshop';
             navigator.clipboard.writeText(link).then(() => {
                 showToast(`✅ Đã chép link DNS ${service === 'spotify' ? 'Spotify' : 'Locket'}: ` + link);
             }).catch(() => {
@@ -1688,7 +1688,7 @@
                     const prodName = od.product === 'spotify' ? 'Spotify Premium' : (od.product === 'combo' ? 'Combo Locket + Spotify' : 'Locket Gold VIP');
                     const prodEmoji = od.product === 'spotify' ? '🎵' : (od.product === 'combo' ? '💎' : '💛');
                     const dlUrl = (od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + od.download_url);
-                    const safariUrl = od.direct_safari_url || 'https://doh.2707226.xyz/quynh28';
+                    const safariUrl = od.direct_safari_url || 'https://doh.2707226.xyz/alopremiumshop';
                     const avatarUrl = od.avatar || 'logo.png';
 
                     card.innerHTML = `
