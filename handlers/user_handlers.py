@@ -4,6 +4,13 @@ Quy trình 4 bước bán Locket & Spotify theo API locket.2707226.xyz
 Giao diện chuyên nghiệp, hỗ trợ điều hướng quay lại và huỷ thao tác mượt mà.
 """
 
+import os
+import sys
+
+_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if _root not in sys.path:
+    sys.path.insert(0, _root)
+
 import logging
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
