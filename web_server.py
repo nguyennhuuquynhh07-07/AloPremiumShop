@@ -215,23 +215,20 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 3.1 API Danh sách đơn hàng vừa kích hoạt thành công (dành cho Social Proof Toast)
+        # 3.1 API Danh sách đơn hàng vừa kích hoạt thành công (Đồng bộ máy chủ CTV + Đơn nội bộ)
         if path == "/api/recent_purchases":
+            recent_list = []
+            
+            # 1. Đơn hàng nội bộ đã hoàn tất
             orders = list(db.get_orders().values())
             done_orders = [o for o in orders if o.get("status") == "done"]
             done_orders.sort(key=lambda x: x.get("done_at") or x.get("created_at") or "", reverse=True)
 
-            recent_list = []
-            for o in done_orders[:15]:
+            for o in done_orders[:10]:
                 raw_name = str(o.get("display_name") or o.get("username") or o.get("uid") or "Khách").strip()
                 if raw_name.startswith("web_"):
                     raw_name = raw_name[4:]
-                if len(raw_name) > 4:
-                    masked_name = raw_name[:4] + "***"
-                elif len(raw_name) > 2:
-                    masked_name = raw_name[:2] + "***"
-                else:
-                    masked_name = raw_name + "***"
+                masked_name = raw_name[:4] + "***" if len(raw_name) > 4 else raw_name + "***"
 
                 prod = config.PRODUCTS.get(o.get("product"), {})
                 prod_name = prod.get("name", "Gói VIP")
@@ -244,8 +241,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 if t_str:
                     try:
                         from datetime import datetime
-                        dt = datetime.fromisoformat(t_str)
-                        mins = max(1, int((datetime.now() - dt).total_seconds() / 60))
+                        dt = datetime.fromisoformat(t_str.replace("Z", "+00:00"))
+                        mins = max(1, int((datetime.now().astimezone() - dt).total_seconds() / 60))
                         if mins < 60:
                             time_ago = f"{mins} phút trước"
                         elif mins < 1440:
@@ -259,8 +256,47 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     "user": masked_name,
                     "pkg": full_pkg,
                     "time": time_ago,
+                    "avatar": o.get("avatar"),
                     "is_real": True
                 })
+
+            # 2. Đồng bộ TẤT CẢ người đã kích hoạt từ Máy chủ API CTV (/api/uid/list)
+            try:
+                server_uids = api.get_activated_uids()
+                for item in server_uids:
+                    u_name = str(item.get("username") or item.get("uidString") or "VIP").strip()
+                    masked_u = u_name[:4] + "***" if len(u_name) > 4 else u_name + "***"
+
+                    pkg_obj = item.get("package") or {}
+                    pkg_name = pkg_obj.get("name") or "Locket Gold VIP"
+                    if "test" in pkg_name.lower():
+                        pkg_name = "Locket Gold VIP"
+
+                    created_at = item.get("createdAt")
+                    time_ago = "Vừa xong"
+                    if created_at:
+                        try:
+                            from datetime import datetime
+                            dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+                            mins = max(1, int((datetime.now().astimezone() - dt).total_seconds() / 60))
+                            if mins < 60:
+                                time_ago = f"{mins} phút trước"
+                            elif mins < 1440:
+                                time_ago = f"{mins // 60} giờ trước"
+                            else:
+                                time_ago = f"{mins // 1440} ngày trước"
+                        except Exception:
+                            pass
+
+                    recent_list.append({
+                        "user": masked_u,
+                        "pkg": pkg_name,
+                        "time": time_ago,
+                        "avatar": item.get("avatarUrl"),
+                        "is_real": True
+                    })
+            except Exception as e_srv:
+                logger.warning(f"Error syncing server UIDs to recent purchases: {e_srv}")
 
             self._send_json(200, {"ok": True, "purchases": recent_list})
             return
@@ -439,11 +475,17 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 pkgs = []
 
             codes = list(db.get_codes().values())
+            try:
+                activated_uids = api.get_activated_uids()
+            except Exception:
+                activated_uids = []
+
             self._send_json(200, {
                 "ok": True,
                 "account": acc,
                 "packages": pkgs,
                 "codes": codes,
+                "activated_uids": activated_uids,
                 "api_base_url": config.API_BASE_URL,
             })
             return

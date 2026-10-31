@@ -172,3 +172,18 @@ def create_subscription(uid: str, package_code: str, service: str, note: str = "
     if resp.is_error:
         raise Exception(parse_api_error(resp))
     return resp.json()
+
+
+def get_activated_uids() -> list:
+    """
+    GET /api/uid/list
+    Lấy danh sách tất cả tài khoản đã được kích hoạt trên máy chủ API CTV.
+    """
+    url = f"{API_BASE_URL}/api/uid/list"
+    try:
+        resp = httpx.get(url, headers=_headers(), timeout=15)
+        if resp.is_success:
+            return resp.json().get("data", [])
+    except Exception:
+        pass
+    return []

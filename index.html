@@ -1854,6 +1854,19 @@
             if (custEl) custEl.textContent = `Khách hàng ${item.user}`;
             if (prodEl) prodEl.textContent = `${item.pkg} • ${item.time}`;
 
+            const imgEl = document.getElementById('toastAvatarImg');
+            const emojiEl = document.getElementById('toastAvatarEmoji');
+            if (imgEl && emojiEl) {
+                if (item.avatar) {
+                    imgEl.src = item.avatar;
+                    imgEl.classList.remove('hidden');
+                    emojiEl.classList.add('hidden');
+                } else {
+                    imgEl.classList.add('hidden');
+                    emojiEl.classList.remove('hidden');
+                }
+            }
+
             toast.classList.remove('translate-y-32', 'opacity-0');
             toast.classList.add('translate-y-0', 'opacity-100');
 

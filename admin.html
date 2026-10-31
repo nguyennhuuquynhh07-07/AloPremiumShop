@@ -469,10 +469,13 @@
                         <span>Đã kết nối trực tiếp</span>
                     </div>
                     <p class="text-xs font-mono text-slate-400 mt-2 truncate">https://locket.2707226.xyz</p>
-                    <button onclick="syncApiData()" id="btnSyncApi"
-                            class="mt-3 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
-                        🔄 Đồng Bộ Lại Dữ Liệu
-                    </button>
+                    <div class="flex items-center gap-2 mt-3 flex-wrap">
+                        <button onclick="syncApiData()" id="btnSyncApi"
+                                class="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                            🔄 Đồng Bộ Lại Dữ Liệu
+                        </button>
+                        <span id="serverSyncBadge" class="hidden px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold"></span>
+                    </div>
                 </div>
             </div>
 
@@ -1251,8 +1254,17 @@
                 document.getElementById('statRoleBadge').textContent = acc.role || 'CTV';
 
                 renderPackagesTable(data.packages || []);
+
+                const uids = data.activated_uids || [];
+                const badgeSync = document.getElementById('serverSyncBadge');
+                if (badgeSync) {
+                    badgeSync.textContent = `Đã đồng bộ ${uids.length} tài khoản từ máy chủ`;
+                    badgeSync.classList.remove('hidden');
+                }
+                showAdminToast(`✅ Đã đồng bộ thành công! Nhận ${uids.length} tài khoản từ máy chủ và nạp vào thông báo web.`);
             } catch (err) {
                 console.error(err);
+                showAdminToast(`❌ Lỗi đồng bộ: ${err.message}`);
             } finally {
                 if (btn) {
                     btn.innerHTML = '🔄 Đồng Bộ Lại Dữ Liệu';
