@@ -573,7 +573,17 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"👇 <b>Gửi Link hoặc UID Spotify vào ô chat bên dưới:</b>\n"
             f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>link MÃ_GIẢM_GIÁ</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
         )
-
+    elif product_key == "combo":
+        prompt = (
+            f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"
+            f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET HOẶC TÊN BẠN</b>\n\n"
+            f"🌟 <i>Hồ sơ Combo sẽ tự động kích hoạt đồng thời cả Locket Gold VIP và Spotify Premium Lossless!</i>\n"
+            f"<b>Hướng dẫn:</b> Nhập Username Locket hoặc Tên của bạn để tạo file cấu hình DNS cá nhân.\n"
+            f"<i>Ví dụ:</i> <code>conlaigii</code>\n\n"
+            f"👇 <b>Gửi Username hoặc Tên vào ô chat bên dưới:</b>"
+        )
     else:  # locket
         prompt = (
             f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"

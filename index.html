@@ -311,7 +311,7 @@
                     </h2>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
                     
                     <!-- CARD 1: LOCKET GOLD VIP -->
                     <div onclick="selectProduct('locket')" id="card_locket" 
@@ -405,6 +405,44 @@
                             </li>
                         </ul>
                     </div>
+
+                    <!-- CARD 3: COMBO ALL-IN-ONE (DUO VIP) -->
+                    <div onclick="selectProduct('combo')" id="card_combo" 
+                         class="relative rounded-[32px] p-6 sm:p-7 bg-white/90 border-2 border-[#E8D8B0] hover:border-amber-500 cursor-pointer shadow-lg locket-card-interactive">
+                        <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-[#FFB800] to-[#E11D48] text-white text-[11px] font-fredoka font-black uppercase px-4 py-1 rounded-full shadow-md">
+                            🔥 Tiết Kiệm Đến 81K
+                        </div>
+                        <div class="flex items-center gap-3.5 mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFB800] via-[#F59E0B] to-[#10B981] flex items-center justify-center text-2xl shadow-md border-2 border-amber-300 shrink-0">👑</div>
+                            <div>
+                                <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]">Combo Duo VIP</h3>
+                                <p class="text-xs text-[#D97706] font-bold">Locket Gold + Spotify Premium</p>
+                            </div>
+                        </div>
+                        <div class="my-4 pb-4 border-b border-[#F0E4C8]">
+                            <div class="font-fredoka text-3xl font-black text-[#D97706]" id="price_display_combo">65.000đ - 259.000đ</div>
+                            <div class="text-xs text-[#6E6659] font-medium mt-1">Từ 6 tháng đến Vĩnh viễn • Gói tiết kiệm nhất</div>
+                        </div>
+                        <ul class="space-y-2 text-xs text-[#1E1B18]">
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-[#FFB800] text-[#1E1B18] flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                <span class="font-semibold text-[#1E1B18]">Trọn bộ 9 tính năng <strong>Locket Gold VIP</strong></span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                <span class="font-semibold text-[#1E1B18]">Trọn bộ <strong>Spotify Lossless không quảng cáo</strong></span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                <span class="font-semibold text-[#1E1B18]">1 Cấu hình kích hoạt dùng song song cả 2</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-purple-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                <span class="font-semibold text-[#1E1B18]">Bảo hành 1-1 trọn đời cho cả 2 dịch vụ</span>
+                            </li>
+                        </ul>
+                    </div>
+
 
                 </div>
             </div>
@@ -1070,7 +1108,7 @@
             switchCompareTab(prodKey);
             
             // Highlight card with Locket Cream & Gold theme
-            ['locket', 'spotify'].forEach(k => {
+            ['locket', 'spotify', 'combo'].forEach(k => {
                 const card = document.getElementById('card_' + k);
                 if (card) {
                     if (k === prodKey) {
@@ -1089,13 +1127,17 @@
 
             const prodNames = {
                 locket: 'Locket Gold VIP',
-                spotify: 'Spotify Premium'
+                spotify: 'Spotify Premium',
+                combo: 'Combo Duo VIP (Locket + Spotify)'
             };
             if (badge) badge.textContent = `Gói đang chọn: ${prodNames[prodKey] || prodKey}`;
 
             if (prodKey === 'spotify') {
                 if (inputLabel) inputLabel.textContent = 'Nhập UID Spotify hoặc Link Profile:';
                 if (inputEl) inputEl.placeholder = 'VD: 31xxxxxxxxxx hoặc https://open.spotify.com/user/...';
+            } else if (prodKey === 'combo') {
+                if (inputLabel) inputLabel.textContent = 'Nhập Username Locket hoặc Tên bạn (để in trên Profile VIP):';
+                if (inputEl) inputEl.placeholder = 'VD: conlaigii hoặc Tên của bạn';
             } else {
                 if (inputLabel) inputLabel.textContent = 'Nhập Username Locket hoặc Link Profile:';
                 if (inputEl) inputEl.placeholder = 'VD: conlaigii hoặc https://locket.cam/conlaigii';
