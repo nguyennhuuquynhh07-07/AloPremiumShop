@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poster Chia Đôi Locket Gold & Spotify - AloPremium.Shop</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-fredoka { font-family: 'Fredoka', cursive, sans-serif; }
+  </style>
+</head>
+<body class="bg-[#0b0a10] text-white min-h-screen p-4 sm:p-8 flex flex-col items-center">
+
+  <div class="max-w-3xl w-full">
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-bold uppercase tracking-wider mb-2">
+        ✨ Thiết Kế Bố Cục Chia Đôi (Split-Screen Duo)
+      </div>
+      <h1 class="font-fredoka text-2xl sm:text-3xl font-black text-white">
+        Poster Locket Gold & Spotify Premium
+      </h1>
+      <p class="text-xs sm:text-sm text-gray-400 mt-1">
+        Chia đôi 2 dịch vụ riêng biệt với nửa trái Locket Gold, nửa phải Spotify Premium và thanh thông tin uy tín ở dưới.
+      </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-6">
+      <button onclick="downloadCanvas('png')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#FFB800] to-[#FF8A00] text-black font-fredoka font-black text-sm shadow-[0_4px_20px_rgba(255,184,0,0.4)] hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
+        <span>📥</span> Tải Ảnh Poster Nét Cao (PNG)
+      </button>
+      <a href="https://alopremium.shop" target="_blank" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-fredoka font-bold text-sm border border-white/20 transition-all flex items-center gap-2">
+        <span>🌐</span> Truy Cập AloPremium.Shop
+      </a>
+    </div>
+
+    <!-- Poster Container (Responsive Preview) -->
+    <div class="relative w-full max-w-xl mx-auto shadow-[0_20px_60px_rgba(0,0,0,0.8)] rounded-3xl overflow-hidden border border-gray-800">
+      <canvas id="posterCanvas" class="w-full h-auto block"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('posterCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Kích thước chuẩn tỉ lệ 4:5 (1080 x 1350) - tỉ lệ vàng đăng Facebook/Instagram/Threads
+    const W = 1080;
+    const H = 1350;
+    canvas.width = W;
+    canvas.height = H;
+
+    function renderPoster() {
+      // 1. NỀN TỔNG THỂ
+      ctx.fillStyle = '#0F0E17';
+      ctx.fillRect(0, 0, W, H);
+
+      // ==========================================
+      // PHẦN TRÊN: CHIA ĐÔI (Từ Y: 0 đến Y: 960)
+      // ==========================================
+      const splitY = 0;
+      const splitH = 960;
+      const midX = W / 2;
+
+      // --- NỬA TRÁI: LOCKET GOLD (Y: 0 -> 960, X: 0 -> midX) ---
+      const locketGrad = ctx.createLinearGradient(0, 0, midX, splitH);
+      locketGrad.addColorStop(0, '#2A1D05');
+      locketGrad.addColorStop(0.5, '#452E07');
+      locketGrad.addColorStop(1, '#1A1202');
+      ctx.fillStyle = locketGrad;
+      ctx.fillRect(0, 0, midX, splitH);
+
+      // Ánh sáng vàng toả ra góc trên bên trái
+      const glowL = ctx.createRadialGradient(midX * 0.4, 250, 20, midX * 0.4, 250, 350);
+      glowL.addColorStop(0, 'rgba(255, 184, 0, 0.35)');
+      glowL.addColorStop(1, 'rgba(255, 184, 0, 0)');
+      ctx.fillStyle = glowL;
+      ctx.fillRect(0, 0, midX, splitH);
+
+      // --- NỬA PHẢI: SPOTIFY PREMIUM (Y: 0 -> 960, X: midX -> W) ---
+      const spGrad = ctx.createLinearGradient(midX, 0, W, splitH);
+      spGrad.addColorStop(0, '#042211');
+      spGrad.addColorStop(0.5, '#07361C');
+      spGrad.addColorStop(1, '#021208');
+      ctx.fillStyle = spGrad;
+      ctx.fillRect(midX, 0, midX, splitH);
+
+      // Ánh sáng xanh toả ra góc trên bên phải
+      const glowR = ctx.createRadialGradient(midX + midX * 0.6, 250, 20, midX + midX * 0.6, 250, 350);
+      glowR.addColorStop(0, 'rgba(29, 185, 84, 0.35)');
+      glowR.addColorStop(1, 'rgba(29, 185, 84, 0)');
+      ctx.fillStyle = glowR;
+      ctx.fillRect(midX, 0, midX, splitH);
+
+      // --- ĐƯỜNG PHÂN CÁCH NGHỆ THUẬT Ở GIỮA ---
+      const dividerGrad = ctx.createLinearGradient(midX - 2, 0, midX + 2, splitH);
+      dividerGrad.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+      dividerGrad.addColorStop(0.5, 'rgba(255, 215, 0, 0.8)');
+      dividerGrad.addColorStop(1, 'rgba(29, 185, 84, 0.8)');
+      ctx.fillStyle = dividerGrad;
+      ctx.fillRect(midX - 2, 0, 4, splitH);
+
+      // ==========================================
+      // NỘI DUNG NỬA TRÁI: LOCKET GOLD
+      // ==========================================
+      // Tag sản phẩm
+      ctx.save();
+      roundRect(ctx, 40, 50, 200, 42, 21, 'rgba(255, 184, 0, 0.2)', '#FFB800', 2);
+      ctx.fillStyle = '#FFD54F';
+      ctx.font = 'bold 20px "Fredoka", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('💛 LOCKET GOLD VIP', 140, 78);
+      ctx.restore();
+
+      // Icon Trái Tim Vàng 3D
+      ctx.save();
+      ctx.shadowColor = '#FFB800';
+      ctx.shadowBlur = 35;
+      roundRect(ctx, midX / 2 - 70, 130, 140, 140, 35, 'linear-gradient', '#FFE082', 3, '#FFB800', '#FF8A00');
+      ctx.font = '75px "Segoe UI Emoji", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('💛', midX / 2, 235);
+      ctx.restore();
+
+      // Tiêu đề Locket
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '900 38px "Fredoka", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('LOCKET GOLD', midX / 2, 330);
+      
+      ctx.fillStyle = '#FFB800';
+      ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('BẢN QUYỀN TRỌN ĐỜI', midX / 2, 365);
+
+      // Khung giá Locket
+      roundRect(ctx, 40, 400, midX - 80, 85, 20, '#1E1504', '#FFB800', 2);
+      ctx.fillStyle = '#A09885';
+      ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('GIÁ TỪ 1 NGÀY ĐẾN VĨNH VIỄN', midX / 2, 430);
+      ctx.fillStyle = '#FFC107';
+      ctx.font = '900 32px "Fredoka", sans-serif';
+      ctx.fillText('5.000đ - 160.000đ', midX / 2, 468);
+
+      // Danh sách tính năng Locket
+      const locketFeatures = [
+        'Mở khoá toàn bộ tính năng VIP',
+        'Tải video dài & ảnh không nén',
+        'Icon Gold & Huy hiệu độc quyền',
+        'Gửi ảnh không giới hạn bạn bè',
+        'Không quảng cáo làm phiền'
+      ];
+      let startYL = 530;
+      locketFeatures.forEach(feat => {
+        // icon check
+        ctx.save();
+        ctx.fillStyle = '#FFB800';
+        ctx.beginPath();
+        ctx.arc(65, startYL - 6, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✓', 65, startYL - 2);
+        ctx.restore();
+
+        ctx.fillStyle = '#F3F4F6';
+        ctx.font = '600 18px "Plus Jakarta Sans", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(feat, 90, startYL);
+        startYL += 48;
+      });
+
+      // Phù hiệu bảo hành Locket
+      roundRect(ctx, 40, startYL + 20, midX - 80, 60, 16, 'rgba(255, 184, 0, 0.1)', '#FFB800', 1.5);
+      ctx.fillStyle = '#FFD54F';
+      ctx.font = 'bold 18px "Fredoka", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🛡️ Bảo Hành 1-1 Suốt Thời Gian Dùng', midX / 2, startYL + 57);
+
+
+      // ==========================================
+      // NỘI DUNG NỬA PHẢI: SPOTIFY PREMIUM
+      // ==========================================
+      // Tag sản phẩm
+      ctx.save();
+      roundRect(ctx, W - 240, 50, 200, 42, 21, 'rgba(29, 185, 84, 0.2)', '#1DB954', 2);
+      ctx.fillStyle = '#1ED760';
+      ctx.font = 'bold 20px "Fredoka", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎵 SPOTIFY PREMIUM', W - 140, 78);
+      ctx.restore();
+
+      // Icon Spotify 3D
+      ctx.save();
+      ctx.shadowColor = '#1DB954';
+      ctx.shadowBlur = 35;
+      roundRect(ctx, midX + midX / 2 - 70, 130, 140, 140, 35, 'linear-gradient', '#A7F3D0', 3, '#1DB954', '#0D7A39');
+      ctx.font = '75px "Segoe UI Emoji", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎵', midX + midX / 2, 235);
+      ctx.restore();
+
+      // Tiêu đề Spotify
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '900 38px "Fredoka", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('SPOTIFY PREMIUM', midX + midX / 2, 330);
+
+      ctx.fillStyle = '#1ED760';
+      ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('LOSSLESS AUDIO CAO CẤP', midX + midX / 2, 365);
+
+      // Khung giá Spotify
+      roundRect(ctx, midX + 40, 400, midX - 80, 85, 20, '#041F0E', '#1DB954', 2);
+      ctx.fillStyle = '#899E90';
+      ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('GIÁ TỪ 1 NGÀY ĐẾN VĨNH VIỄN', midX + midX / 2, 430);
+      ctx.fillStyle = '#1ED760';
+      ctx.font = '900 32px "Fredoka", sans-serif';
+      ctx.fillText('5.000đ - 180.000đ', midX + midX / 2, 468);
+
+      // Danh sách tính năng Spotify
+      const spFeatures = [
+        'Âm thanh Lossless chất lượng tối đa',
+        'Tải nhạc nghe Offline không giới hạn',
+        'Chuyển bài thỏa thích không ngắt quãng',
+        'Chặn 100% quảng cáo âm thanh/hình ảnh',
+        'Đổi thiết bị iPhone/iPad thoải mái'
+      ];
+      let startYR = 530;
+      spFeatures.forEach(feat => {
+        ctx.save();
+        ctx.fillStyle = '#1DB954';
+        ctx.beginPath();
+        ctx.arc(midX + 65, startYR - 6, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✓', midX + 65, startYR - 2);
+        ctx.restore();
+
+        ctx.fillStyle = '#F3F4F6';
+        ctx.font = '600 18px "Plus Jakarta Sans", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(feat, midX + 90, startYR);
+        startYR += 48;
+      });
+
+      // Phù hiệu bảo hành Spotify
+      roundRect(ctx, midX + 40, startYR + 20, midX - 80, 60, 16, 'rgba(29, 185, 84, 0.1)', '#1DB954', 1.5);
+      ctx.fillStyle = '#6EE7B7';
+      ctx.font = 'bold 18px "Fredoka", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎧 Cam Kết Chuẩn Gốc • Không Bay Gói', midX + midX / 2, startYR + 57);
+
+      // ==========================================
+      // PHẦN DƯỚI: KHUNG THÔNG TIN UY TÍN TOÀN DIỆN
+      // (Từ Y: 960 đến Y: 1350)
+      // ==========================================
+      const bottomGrad = ctx.createLinearGradient(0, splitH, 0, H);
+      bottomGrad.addColorStop(0, '#151320');
+      bottomGrad.addColorStop(1, '#0A0910');
+      ctx.fillStyle = bottomGrad;
+      ctx.fillRect(0, splitH, W, H - splitH);
+
+      // Viền phân tách sáng giữa phần trên và dưới
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.35)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, splitH);
+      ctx.lineTo(W, splitH);
+      ctx.stroke();
+
+      // Card thông tin ở đáy
+      roundRect(ctx, 35, splitH + 25, W - 70, 335, 28, '#1D1A2E', 'rgba(255, 184, 0, 0.4)', 2);
+
+      // Tiêu đề thương hiệu
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '900 36px "Fredoka", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('👑 AloPremium', 70, splitH + 80);
+      
+      ctx.fillStyle = '#FFB800';
+      ctx.fillText('.Shop', 285, splitH + 80);
+
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = '600 17px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('• Dịch Vụ Kích Hoạt Bản Quyền Tự Động 24/7', 375, splitH + 79);
+
+      // Badge Online
+      roundRect(ctx, W - 220, splitH + 52, 145, 34, 17, 'rgba(16, 185, 129, 0.2)', '#10B981', 1.5);
+      ctx.fillStyle = '#34D399';
+      ctx.font = 'bold 15px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('● ONLINE 24/7', W - 147, splitH + 75);
+
+      // 3 Cột điểm nhấn công nghệ
+      const boxW = (W - 70 - 60) / 3;
+      const boxY = splitH + 115;
+      const boxH = 95;
+
+      // Hộp 1: Safari 1 chạm
+      roundRect(ctx, 65, boxY, boxW, boxH, 18, '#131122', '#374151', 1);
+      ctx.font = '26px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('⚡', 65 + boxW / 2, boxY + 38);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 17px "Fredoka", sans-serif';
+      ctx.fillText('Cài Đặt 1 Chạm Safari', 65 + boxW / 2, boxY + 65);
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = '13px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Không cần máy tính', 65 + boxW / 2, boxY + 84);
+
+      // Hộp 2: Không Jailbreak
+      roundRect(ctx, 65 + boxW + 15, boxY, boxW, boxH, 18, '#131122', '#374151', 1);
+      ctx.fillText('🔒', 65 + boxW + 15 + boxW / 2, boxY + 38);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 17px "Fredoka", sans-serif';
+      ctx.fillText('Không Cần Mật Khẩu', 65 + boxW + 15 + boxW / 2, boxY + 65);
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = '13px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Không Jailbreak an toàn 100%', 65 + boxW + 15 + boxW / 2, boxY + 84);
+
+      // Hộp 3: Tự động VietQR
+      roundRect(ctx, 65 + (boxW + 15) * 2, boxY, boxW, boxH, 18, '#131122', '#374151', 1);
+      ctx.fillText('💳', 65 + (boxW + 15) * 2 + boxW / 2, boxY + 38);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 17px "Fredoka", sans-serif';
+      ctx.fillText('VietQR Tự Động 3s', 65 + (boxW + 15) * 2 + boxW / 2, boxY + 65);
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = '13px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Nhận link tải cấu hình ngay', 65 + (boxW + 15) * 2 + boxW / 2, boxY + 84);
+
+      // Dòng chân trang với Website & Bot
+      const footerY = splitH + 245;
+      roundRect(ctx, 65, footerY, W - 130, 85, 20, '#0E0C18', 'rgba(255, 184, 0, 0.3)', 1.5);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 20px "Fredoka", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('🌐 Website: ', 95, footerY + 38);
+      ctx.fillStyle = '#FFB800';
+      ctx.fillText('https://alopremium.shop', 205, footerY + 38);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText('🤖 Bot Telegram: ', 590, footerY + 38);
+      ctx.fillStyle = '#38BDF8';
+      ctx.fillText('@AloPremiumShop_Bot', 750, footerY + 38);
+
+      // Dòng 2 chân trang: Mã giảm giá + CSKH
+      ctx.fillStyle = '#E5E7EB';
+      ctx.font = '600 16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('🏷️ Mã giảm giá độc quyền: ', 95, footerY + 68);
+      ctx.fillStyle = '#F59E0B';
+      ctx.font = 'bold 18px "Fredoka", sans-serif';
+      ctx.fillText('VIPGENZ', 310, footerY + 68);
+
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = '600 15px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('💬 Zalo CSKH 24/7: ', 590, footerY + 68);
+      ctx.fillStyle = '#60A5FA';
+      ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('0345.222.802', 740, footerY + 68);
+    }
+
+    // Helper hàm vẽ hình chữ nhật bo góc
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke, strokeWidth, gradStart, gradEnd) {
+      if (typeof radius === 'number') {
+        radius = {tl: radius, tr: radius, br: radius, bl: radius};
+      }
+      ctx.beginPath();
+      ctx.moveTo(x + radius.tl, y);
+      ctx.lineTo(x + width - radius.tr, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+      ctx.lineTo(x + width, y + height - radius.br);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+      ctx.lineTo(x + radius.bl, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+      ctx.lineTo(x, y + radius.tl);
+      ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+      ctx.closePath();
+      if (fill) {
+        if (fill === 'linear-gradient' && gradStart && gradEnd) {
+          const g = ctx.createLinearGradient(x, y, x + width, y + height);
+          g.addColorStop(0, gradStart);
+          g.addColorStop(1, gradEnd);
+          ctx.fillStyle = g;
+        } else {
+          ctx.fillStyle = fill;
+        }
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.lineWidth = strokeWidth || 1;
+        ctx.strokeStyle = stroke;
+        ctx.stroke();
+      }
+    }
+
+    // Tải ảnh canvas về máy
+    function downloadCanvas(format) {
+      const link = document.createElement('a');
+      link.download = 'AloPremium_Poster_ChiaDoi_Locket_Spotify.' + format;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
+    }
+
+    // Load font rồi vẽ
+    document.fonts.ready.then(() => {
+      renderPoster();
+    });
+  </script>
+
+</body>
+</html>
