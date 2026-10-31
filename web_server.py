@@ -624,16 +624,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
             return
 
-        # API Admin: Tạo mã giảm giá mới
+        # API Admin: Tạo mã giảm giá mới (Hỗ trợ 1 mã hoặc nhiều mã cùng lúc cách nhau bằng dấu phẩy)
         if path == "/api/admin/add_code":
             pin = str(body.get("pin", "")).strip()
             if pin != getattr(config, "ADMIN_PIN", "2802"):
                 self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
                 return
-            code = str(body.get("code", "")).strip().upper()
-            if not code or len(code) < 2:
-                self._send_json(400, {"ok": False, "error": "Mã giảm giá phải có tối thiểu 2 ký tự và không được để trống"})
-                return
+
+            raw_code = str(body.get("code", "")).strip().upper()
             try:
                 discount_pct = int(body.get("discount_pct", 0))
                 if not (1 <= discount_pct <= 90):
@@ -641,9 +639,23 @@ class WebAppHandler(BaseHTTPRequestHandler):
             except Exception:
                 self._send_json(400, {"ok": False, "error": "Phần trăm giảm giá phải từ 1% đến 90% (tránh giá bị ép về 1.000đ)"})
                 return
+
             max_uses = int(body.get("max_uses", 0) or 0)
-            item = db.add_code(code, discount_pct, max_uses)
-            self._send_json(200, {"ok": True, "item": item})
+            
+            import re
+            code_list = [c.strip().upper() for c in re.split(r"[,;\s\n\r]+", raw_code) if len(c.strip()) >= 2]
+            
+            if not code_list:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập ít nhất 1 mã hợp lệ (tối thiểu 2 ký tự)"})
+                return
+
+            created_items = db.add_codes_batch(code_list, discount_pct, max_uses)
+            self._send_json(200, {
+                "ok": True, 
+                "count": len(created_items),
+                "codes": [it["code"] for it in created_items],
+                "item": created_items[0] if created_items else None
+            })
             return
 
         # API Admin: Xóa mã giảm giá

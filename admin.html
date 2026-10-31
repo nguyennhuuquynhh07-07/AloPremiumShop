@@ -367,27 +367,32 @@
                     <p class="text-xs text-slate-400 mt-1">Mã giảm giá sẽ áp dụng tự động khi khách thanh toán qua Web hoặc Bot</p>
                 </div>
 
-                <form onsubmit="handleCreateCode(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-                    <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-slate-300 mb-2">Mã Khuyến Mãi (Code):</label>
-                        <input type="text" id="newCodeInput" placeholder="VD: ALO2026, VIP10" required
-                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-black uppercase tracking-wider focus:outline-none focus:border-amber-400">
-                    </div>
-                    <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-slate-300 mb-2">Mức Giảm Giá (%):</label>
-                        <input type="number" id="newDiscountInput" min="1" max="90" placeholder="VD: 20" required
-                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-bold focus:outline-none focus:border-amber-400">
-                    </div>
-                    <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-slate-300 mb-2">Số Lượt Dùng Tối Đa:</label>
-                        <input type="number" id="newLimitInput" min="0" placeholder="0 = Không giới hạn" value="0"
-                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-semibold focus:outline-none focus:border-amber-400">
-                    </div>
-                    <div class="sm:col-span-1">
-                        <button type="submit" id="btnCreateCode"
-                                class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
-                            ➕ Tạo Mã Ngay
-                        </button>
+                <form onsubmit="handleCreateCode(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
+                        <div class="sm:col-span-5">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-xs font-bold text-slate-300">Mã Khuyến Mãi (Nhập nhiều mã cách nhau bằng dấu phẩy):</label>
+                                <button type="button" onclick="generateRandomCodes()" class="text-[11px] text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer">⚡ Tạo Tự Động 5 Mã</button>
+                            </div>
+                            <input type="text" id="newCodeInput" placeholder="VD: TET2026, QUYNH20, VIP15, SALE50" required
+                                   class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-black uppercase tracking-wider focus:outline-none focus:border-amber-400">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-300 mb-2">Mức Giảm (%):</label>
+                            <input type="number" id="newDiscountInput" min="1" max="90" placeholder="VD: 15" value="15" required
+                                   class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-bold focus:outline-none focus:border-amber-400">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-300 mb-2">Lượt Dùng Tối Đa:</label>
+                            <input type="number" id="newLimitInput" min="0" placeholder="0 = Vô hạn" value="10"
+                                   class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-semibold focus:outline-none focus:border-amber-400">
+                        </div>
+                        <div class="sm:col-span-3">
+                            <button type="submit" id="btnCreateCode"
+                                    class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
+                                ➕ Tạo Mã Ngay
+                            </button>
+                        </div>
                     </div>
                 </form>
                 <div id="codeActionMsg" class="hidden mt-4 p-3 rounded-xl text-xs font-semibold"></div>
@@ -1143,6 +1148,22 @@
             }
         }
 
+                function generateRandomCodes() {
+            const prefix = prompt('Nhập tiền tố cho mã (ví dụ: VIP, TET, QUYNH):', 'VIP');
+            if (prefix === null) return;
+            const count = parseInt(prompt('Bạn muốn tạo bao nhiêu mã ngẫu nhiên?', '5')) || 5;
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            const generated = [];
+            for (let i = 0; i < Math.min(count, 50); i++) {
+                let rnd = '';
+                for (let j = 0; j < 4; j++) {
+                    rnd += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                generated.push((prefix.trim().toUpperCase() || 'CODE') + '-' + rnd);
+            }
+            document.getElementById('newCodeInput').value = generated.join(', ');
+        }
+
         async function handleCreateCode(e) {
             e.preventDefault();
             const code = document.getElementById('newCodeInput').value.trim().toUpperCase();
@@ -1163,7 +1184,11 @@
                 const data = await res.json();
                 if (data.ok) {
                     msgBox.className = 'mt-4 p-3 rounded-xl text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400';
-                    msgBox.textContent = `✅ Đã tạo thành công mã giảm giá ${code} (Giảm ${discount}%)!`;
+                    if (data.count && data.count > 1) {
+                        msgBox.textContent = `✅ Đã tạo thành công ${data.count} mã giảm giá: ${data.codes.join(', ')} (Giảm ${discount}%)!`;
+                    } else {
+                        msgBox.textContent = `✅ Đã tạo thành công mã giảm giá ${data.codes ? data.codes[0] : code} (Giảm ${discount}%)!`;
+                    }
                     msgBox.classList.remove('hidden');
                     document.getElementById('newCodeInput').value = '';
                     loadCodes();

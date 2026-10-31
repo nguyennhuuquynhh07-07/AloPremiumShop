@@ -573,8 +573,9 @@ async def addcode_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    code = ctx.args[0].strip().upper()
-    if not code or len(code) < 2:
+    raw_code = ctx.args[0].strip().upper()
+    code_list = [c.strip() for c in raw_code.split(",") if len(c.strip()) >= 2]
+    if not code_list:
         await update.message.reply_text("❌ Mã giảm giá phải có tối thiểu 2 ký tự.")
         return
     try:
@@ -592,8 +593,21 @@ async def addcode_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except ValueError:
             pass
 
-    item = db.add_code(code, discount, limit)
+    created_items = db.add_codes_batch(code_list, discount, limit)
     limit_text = "Không giới hạn" if limit == 0 else f"{limit} lượt"
+    
+    if len(created_items) > 1:
+        codes_str = ", ".join([f"<code>{it['code']}</code>" for it in created_items])
+        await update.message.reply_text(
+            f"🏷 <b>ĐÃ TẠO THÀNH CÔNG {len(created_items)} MÃ GIẢM GIÁ!</b>\n\n"
+            f"🔖 Danh sách mã: {codes_str}\n"
+            f"🎁 Mức giảm: <b>{discount}%</b>\n"
+            f"🎯 Giới hạn: <b>{limit_text}</b>",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    code = created_items[0]["code"]
     await update.message.reply_text(
         f"🏷 <b>ĐÃ TẠO MÃ GIẢM GIÁ THÀNH CÔNG!</b>\n\n"
         f"🔖 Mã: <code>{code}</code>\n"

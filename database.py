@@ -223,6 +223,27 @@ def save_codes(codes: dict):
     _save(DB_CODES, codes)
 
 
+def add_codes_batch(code_list: list, discount_pct: int, max_uses: int = 0) -> list:
+    codes = get_codes()
+    created = []
+    now_iso = datetime.now().isoformat()
+    for code in code_list:
+        code_clean = (code or "").strip().upper()
+        if len(code_clean) >= 2:
+            data = {
+                "code": code_clean,
+                "discount_pct": discount_pct,
+                "max_uses": max_uses,
+                "used_count": 0,
+                "created_at": now_iso,
+                "active": True,
+            }
+            codes[code_clean] = data
+            created.append(data)
+    save_codes(codes)
+    return created
+
+
 def add_code(code: str, discount_pct: int, max_uses: int = 0) -> dict:
     code_clean = (code or "").strip().upper()
     if not code_clean:
