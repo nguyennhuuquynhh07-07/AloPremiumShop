@@ -174,16 +174,30 @@ def create_subscription(uid: str, package_code: str, service: str, note: str = "
     return resp.json()
 
 
-def get_activated_uids() -> list:
+import time
+
+_uids_cache = []
+_uids_cache_time = 0.0
+
+def get_activated_uids(force_refresh: bool = False) -> list:
     """
     GET /api/uid/list
-    Lấy danh sách tất cả tài khoản đã được kích hoạt trên máy chủ API CTV.
+    Lấy danh sách tài khoản đã kích hoạt trên máy chủ API CTV (có bộ nhớ đệm cache 2 phút tránh nghẽn server).
     """
+    global _uids_cache, _uids_cache_time
+    now = time.time()
+    if not force_refresh and _uids_cache and (now - _uids_cache_time < 120):
+        return _uids_cache
+
     url = f"{API_BASE_URL}/api/uid/list"
     try:
-        resp = httpx.get(url, headers=_headers(), timeout=15)
+        resp = httpx.get(url, headers=_headers(), timeout=5)
         if resp.is_success:
-            return resp.json().get("data", [])
+            data = resp.json().get("data", [])
+            if data:
+                _uids_cache = data
+                _uids_cache_time = now
+                return _uids_cache
     except Exception:
         pass
-    return []
+    return _uids_cache or []

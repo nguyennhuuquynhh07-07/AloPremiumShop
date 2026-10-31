@@ -160,15 +160,14 @@ async def sepay_worker(bot):
         await asyncio.sleep(8)
 
 async def keep_alive_worker():
-    """Tự động ping server Render mỗi 10 phút để giữ máy chủ và bot luôn thức 24/7"""
-    import urllib.request
+    """Tự động ping server Render mỗi 10 phút để giữ máy chủ và bot luôn thức 24/7 (Async, không nghẽn)"""
+    import httpx
     url = "https://alopremium.shop/health"
     while True:
         await asyncio.sleep(600)
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "RenderKeepAlive/1.0"})
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                pass
+            async with httpx.AsyncClient(timeout=5) as client:
+                await client.get(url, headers={"User-Agent": "RenderKeepAlive/1.0"})
         except Exception:
             pass
 
