@@ -886,7 +886,25 @@ def _build_success_message(order, pv, plnv, dns_link: str) -> str:
     else:
         duration_note = f"💡 <i>Chỉ cần cài 1 lần là dùng theo thời hạn gói. Nếu đổi thiết bị hãy nhắn Admin để reset.</i>"
 
-    if order["product"] == "spotify":
+    if order["product"] == "combo":
+        dns_lk = order.get("dns_link_locket") or dns_link
+        dns_sp = order.get("dns_link_spotify") or dns_link
+        step4 = (
+            f"📌 <b>HƯỚNG DẪN KÍCH HOẠT 2 GÓI (TÁCH BIỆT TRÁNH XUNG ĐỘT):</b>\n\n"
+            f"💛 <b>PHẦN 1: KÍCH HOẠT LOCKET GOLD VIP:</b>\n"
+            f"1️⃣ Link cấu hình Locket: <code>{dns_lk}</code>\n"
+            f"2️⃣ Bấm nút <b>'💛 1. Cài Locket Gold'</b> bên dưới hoặc quét mã QR Locket.\n"
+            f"3️⃣ Mở <b>Cài đặt iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.\n"
+            f"4️⃣ Bật xanh tin cậy chứng chỉ <b>LocketGold</b> trong <b>Cài đặt tin cậy chứng nhận</b>.\n"
+            f"5️⃣ Mở app Locket lên và tận hưởng trọn bộ VIP! 🎉\n\n"
+            f"🎵 <b>PHẦN 2: KÍCH HOẠT SPOTIFY PREMIUM LOSSLESS:</b>\n"
+            f"1️⃣ Link cấu hình Spotify: <code>{dns_sp}</code>\n"
+            f"2️⃣ Bấm nút <b>'🎵 2. Cài Spotify'</b> bên dưới hoặc quét mã QR Spotify.\n"
+            f"3️⃣ Cài đặt hồ sơ Spotify vào iPhone và nghe nhạc Lossless không quảng cáo! 🎉\n\n"
+            f"{duration_note}"
+        )
+
+    elif order["product"] == "spotify":
         step4 = (
             f"📌 <b>BƯỚC 4: CÀI ĐẶT CẤU HÌNH DNS SPOTIFY:</b>\n"
             f"1️⃣ Mở trình duyệt <b>Safari</b> trên iPhone và truy cập link DNS của bạn:\n"

@@ -992,16 +992,48 @@
                     </p>
                 </div>
 
-                <!-- NÚT CÀI ĐẶT 1 CHẠM TRỰC TIẾP VÀO IPHONE -->
-                <a id="modalDownloadBtn" href="#" 
-                   class="w-full block py-4 px-6 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-base shadow-2xl pulse-gold mb-3 transition-all cursor-pointer">
-                    📲 CÀI ĐẶT TRỰC TIẾP VÀO IPHONE
-                </a>
+                <!-- NÚT CÀI ĐẶT DÀNH CHO GÓI ĐƠN LẺ -->
+                <div id="singleDownloadActions">
+                    <a id="modalDownloadBtn" href="#" 
+                       class="w-full block py-4 px-6 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-base shadow-2xl pulse-gold mb-3 transition-all cursor-pointer">
+                        📲 CÀI ĐẶT TRỰC TIẾP VÀO IPHONE
+                    </a>
+                    <button type="button" onclick="copyDownloadUrl()" id="btnCopyDownloadUrl"
+                            class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-[#FFECC0] text-[#1E1B18] border border-[#E8D8B0] text-xs font-bold transition-all cursor-pointer">
+                        📋 Copy Link Tải Hồ Sơ Cấu Hình
+                    </button>
+                </div>
 
-                <button type="button" onclick="copyDownloadUrl()" id="btnCopyDownloadUrl"
-                        class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-[#FFECC0] text-[#1E1B18] border border-[#E8D8B0] text-xs font-bold transition-all cursor-pointer">
-                    📋 Copy Link Tải Hồ Sơ Cấu Hình
-                </button>
+                <!-- NÚT CÀI ĐẶT DÀNH CHO GÓI COMBO TÁCH BIỆT 2 DỊCH VỤ -->
+                <div id="comboDownloadActions" class="hidden space-y-3">
+                    <div class="p-3.5 rounded-2xl bg-[#FFF8E5] border border-[#FFB800]/50 text-left">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-fredoka font-black text-[#1E1B18]">💛 1. Cấu Hình Locket Gold VIP:</span>
+                            <span class="px-2 py-0.5 rounded-md bg-[#FFB800] text-[#1E1B18] text-[10px] font-bold">Tách riêng</span>
+                        </div>
+                        <a id="comboDownloadBtn_locket" href="#" 
+                           class="w-full block py-2.5 px-4 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-bold text-xs shadow-md text-center transition-all">
+                            📲 Cài Đặt Hồ Sơ Locket Gold
+                        </a>
+                        <button type="button" onclick="copyComboUrl('locket')" class="w-full mt-1.5 py-1.5 px-3 rounded-lg bg-white border border-[#E8D8B0] text-[11px] font-semibold text-[#6E6659] hover:text-[#1E1B18]">
+                            📋 Copy Link Locket
+                        </button>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-[#ECFDF5] border border-emerald-500/50 text-left">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-fredoka font-black text-emerald-900">🎵 2. Cấu Hình Spotify Premium:</span>
+                            <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-bold">Tách riêng</span>
+                        </div>
+                        <a id="comboDownloadBtn_spotify" href="#" 
+                           class="w-full block py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-fredoka font-bold text-xs shadow-md text-center transition-all">
+                            📲 Cài Đặt Hồ Sơ Spotify Premium
+                        </a>
+                        <button type="button" onclick="copyComboUrl('spotify')" class="w-full mt-1.5 py-1.5 px-3 rounded-lg bg-white border border-emerald-300 text-[11px] font-semibold text-emerald-800 hover:text-emerald-950">
+                            📋 Copy Link Spotify
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Tóm tắt 4 bước cài đặt nhanh -->
                 <div class="mt-6 text-left text-xs space-y-2 bg-[#FFF3D6] p-4 rounded-2xl border border-[#FFE29A]">
@@ -1406,8 +1438,28 @@
                 ? downloadUrl
                 : (window.location.origin + (downloadUrl || `/api/download_profile?order_id=${orderId}`));
             
-            const btnDl = document.getElementById('modalDownloadBtn');
-            btnDl.href = activeDownloadUrl;
+            const isCombo = currentOrderData && currentOrderData.product === 'combo';
+            const singleBox = document.getElementById('singleDownloadActions');
+            const comboBox = document.getElementById('comboDownloadActions');
+
+            if (isCombo) {
+                if (singleBox) singleBox.classList.add('hidden');
+                if (comboBox) comboBox.classList.remove('hidden');
+
+                const base = window.location.origin;
+                const linkLk = `${base}/api/download_profile?order_id=${orderId}&service=locket`;
+                const linkSp = `${base}/api/download_profile?order_id=${orderId}&service=spotify`;
+
+                const btnLk = document.getElementById('comboDownloadBtn_locket');
+                const btnSp = document.getElementById('comboDownloadBtn_spotify');
+                if (btnLk) btnLk.href = linkLk;
+                if (btnSp) btnSp.href = linkSp;
+            } else {
+                if (singleBox) singleBox.classList.remove('hidden');
+                if (comboBox) comboBox.classList.add('hidden');
+                const btnDl = document.getElementById('modalDownloadBtn');
+                if (btnDl) btnDl.href = activeDownloadUrl;
+            }
 
             // Hiển thị mã QR tải cấu hình
             const qrImg = document.getElementById('qrSuccessImg');
@@ -1440,6 +1492,14 @@
         function toggleOrderQr(boxId) {
             const el = document.getElementById(boxId);
             if (el) el.classList.toggle('hidden');
+        }
+
+                function copyComboUrl(svc) {
+            if (!currentOrderData) return;
+            const link = `${window.location.origin}/api/download_profile?order_id=${currentOrderData.order_id}&service=${svc}`;
+            navigator.clipboard.writeText(link).then(() => {
+                alert(`Đã sao chép liên kết hồ sơ ${svc === 'spotify' ? 'Spotify Premium' : 'Locket Gold VIP'}!`);
+            });
         }
 
         function copyDownloadUrl() {

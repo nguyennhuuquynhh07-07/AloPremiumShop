@@ -97,6 +97,29 @@ def pending_approval_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(rows)
 
 
+def combo_success_kb(dns_locket: str = None, dns_spotify: str = None) -> InlineKeyboardMarkup:
+    dns_locket = dns_locket or "https://alopremium.shop"
+    dns_spotify = dns_spotify or "https://alopremium.shop"
+    rows = [
+        [
+            InlineKeyboardButton("💛 1. Cài Locket Gold", url=dns_locket),
+            InlineKeyboardButton("🎵 2. Cài Spotify", url=dns_spotify)
+        ],
+        [
+            InlineKeyboardButton("📋 Copy Link Locket", api_kwargs={"copy_text": {"text": dns_locket}}),
+            InlineKeyboardButton("📋 Copy Link Spotify", api_kwargs={"copy_text": {"text": dns_spotify}}),
+        ],
+        [
+            InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
+            InlineKeyboardButton("💬 Hỗ trợ CSKH 24/7", callback_data="support"),
+        ],
+        [
+            InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")
+        ]
+    ]
+    return InlineKeyboardMarkup(rows)
+
+
 def success_kb(dns_link: str = None) -> InlineKeyboardMarkup:
     rows = []
     if dns_link:

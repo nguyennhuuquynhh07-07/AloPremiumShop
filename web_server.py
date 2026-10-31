@@ -324,18 +324,29 @@ class WebAppHandler(BaseHTTPRequestHandler):
             safe_name = order.get("display_name") or order.get("uid") or "VIP"
             clean_token = order.get("token") or order.get("uid") or "vip"
 
-            pv = config.PRODUCTS.get(product_key, {})
-            svc_name = pv.get("name", "Locket Gold VIP")
-            dns_link = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+            req_service = params.get("service", [""])[0].lower()
+            if product_key == "combo":
+                if req_service == "spotify":
+                    svc_name = "Spotify Premium"
+                    file_name = f"Spotify_{safe_name}.mobileconfig"
+                    dns_link = order.get("dns_link_spotify") or order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+                else:
+                    svc_name = "Locket Gold VIP"
+                    file_name = f"Locket_{safe_name}.mobileconfig"
+                    dns_link = order.get("dns_link_locket") or order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+            else:
+                pv = config.PRODUCTS.get(product_key, {})
+                svc_name = pv.get("name", "Locket Gold VIP")
+                dns_link = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+                file_name = f"{product_key.capitalize()}_{safe_name}.mobileconfig"
+
             bio = utils.generate_mobileconfig(
                 service_name=svc_name,
                 display_name=safe_name,
                 dns_link=dns_link
             )
             xml_str = bio.getvalue().decode("utf-8")
-
             payload_bytes = xml_str.encode("utf-8")
-            file_name = f"{product_key.capitalize()}_{safe_name}.mobileconfig"
 
             self.send_response(200)
             self.send_header("Content-Type", "application/x-apple-aspen-config; charset=utf-8")
