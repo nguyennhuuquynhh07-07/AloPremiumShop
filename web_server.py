@@ -1095,7 +1095,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "source": "web",
                 "avatar": avatar,
                 "token": token,
-                "account_target": display_name or identifier,
+                "account_target": identifier,  # Luôn lưu UID thực tế, không dùng display_name
                 "discount_code": applied_code,
                 "discount_amount": discount_amount,
                 "original_price": orig_price,

@@ -41,7 +41,10 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
         return False, f"Gói cước {plan_key} không tồn tại."
 
     try:
-        target_account = order.get("account_target") or order.get("display_name") or order["uid"]
+        # Luôn ưu tiên dùng UID hệ thống (bắt buộc với Spotify: UID dạng 31jtteb4... chứ không lấy nickname như 'nnq')
+        target_account = str(order.get("uid") or order.get("account_target") or "").strip()
+        if not target_account:
+            target_account = str(order.get("display_name") or "").strip()
         dns_link = f"{DNS_BASE_URL}/{DNS_SLUG}"
         dns_link_locket = dns_link
         dns_link_spotify = dns_link
