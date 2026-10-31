@@ -1007,59 +1007,82 @@
                     </p>
                 </div>
 
-                <!-- NÚT CÀI ĐẶT DÀNH CHO GÓI ĐƠN LẺ -->
-                <div id="singleDownloadActions">
-                    <a id="modalDownloadBtn" href="#" 
-                       class="w-full block py-4 px-6 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-base shadow-2xl pulse-gold mb-3 transition-all cursor-pointer">
-                        📲 CÀI ĐẶT TRỰC TIẾP VÀO IPHONE
+                <!-- NÚT CÀI ĐẶT DÀNH CHO GÓI ĐƠN LẺ (CHUẨN 100% NHƯ BOT) -->
+                <div id="singleDownloadActions" class="space-y-2.5">
+                    <!-- Nút 1: Cài đặt trực tiếp qua Safari (Khuyên dùng) -->
+                    <a id="modalSafariBtn" href="https://doh.2707226.xyz/quynh28" target="_blank" 
+                       class="w-full block py-4 px-6 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-center text-sm sm:text-base shadow-2xl pulse-gold transition-all cursor-pointer">
+                        🌐 CÀI ĐẶT TRỰC TIẾP QUA SAFARI (Khuyên Dùng)
                     </a>
-                    <button type="button" onclick="copyDownloadUrl()" id="btnCopyDownloadUrl"
-                            class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-[#FFECC0] text-[#1E1B18] border border-[#E8D8B0] text-xs font-bold transition-all cursor-pointer">
-                        📋 Copy Link Tải Hồ Sơ Cấu Hình
-                    </button>
+
+                    <!-- Nút 2: Tải file .mobileconfig & Copy link -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <a id="modalDownloadBtn" href="#" 
+                           class="py-3 px-3 rounded-xl bg-[#FFF8E5] hover:bg-[#FFECC0] text-[#1E1B18] border border-[#FFE29A] text-xs font-bold font-fredoka text-center transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>📥</span> Tải File .mobileconfig
+                        </a>
+                        <button type="button" onclick="copyDownloadUrl()" id="btnCopyDownloadUrl"
+                                class="py-3 px-3 rounded-xl bg-white hover:bg-[#FFECC0] text-[#1E1B18] border border-[#E8D8B0] text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>📋</span> Sao Chép Link Safari
+                        </button>
+                    </div>
                 </div>
 
                 <!-- NÚT CÀI ĐẶT DÀNH CHO GÓI COMBO TÁCH BIỆT 2 DỊCH VỤ -->
                 <div id="comboDownloadActions" class="hidden space-y-3">
-                    <div class="p-3.5 rounded-2xl bg-[#FFF8E5] border border-[#FFB800]/50 text-left">
-                        <div class="flex items-center justify-between mb-2">
+                    <div class="p-3.5 rounded-2xl bg-[#FFF8E5] border border-[#FFB800]/50 text-left space-y-2">
+                        <div class="flex items-center justify-between">
                             <span class="text-xs font-fredoka font-black text-[#1E1B18]">💛 1. Cấu Hình Locket Gold VIP:</span>
-                            <span class="px-2 py-0.5 rounded-md bg-[#FFB800] text-[#1E1B18] text-[10px] font-bold">Tách riêng</span>
+                            <span class="px-2 py-0.5 rounded-md bg-[#FFB800] text-[#1E1B18] text-[10px] font-bold">Locket</span>
                         </div>
-                        <a id="comboDownloadBtn_locket" href="#" 
-                           class="w-full block py-2.5 px-4 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-bold text-xs shadow-md text-center transition-all">
-                            📲 Cài Đặt Hồ Sơ Locket Gold
+                        <a href="https://doh.2707226.xyz/quynh28" target="_blank"
+                           class="w-full block py-3 px-4 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-bold text-xs shadow-md text-center transition-all">
+                            🌐 Cài Safari Locket Gold VIP
                         </a>
-                        <button type="button" onclick="copyComboUrl('locket')" class="w-full mt-1.5 py-1.5 px-3 rounded-lg bg-white border border-[#E8D8B0] text-[11px] font-semibold text-[#6E6659] hover:text-[#1E1B18]">
-                            📋 Copy Link Locket
-                        </button>
+                        <div class="grid grid-cols-2 gap-2">
+                            <a id="comboDownloadBtn_locket" href="#" 
+                               class="py-2 px-3 rounded-lg bg-white border border-[#E8D8B0] text-[11px] font-semibold text-[#6E6659] text-center hover:text-[#1E1B18]">
+                                📥 Tải File Cấu Hình
+                            </a>
+                            <button type="button" onclick="copyComboUrl('locket')" class="py-2 px-3 rounded-lg bg-white border border-[#E8D8B0] text-[11px] font-semibold text-[#6E6659] hover:text-[#1E1B18]">
+                                📋 Copy Link DNS
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="p-3.5 rounded-2xl bg-[#ECFDF5] border border-emerald-500/50 text-left">
-                        <div class="flex items-center justify-between mb-2">
+                    <div class="p-3.5 rounded-2xl bg-[#ECFDF5] border border-emerald-500/50 text-left space-y-2">
+                        <div class="flex items-center justify-between">
                             <span class="text-xs font-fredoka font-black text-emerald-900">🎵 2. Cấu Hình Spotify Premium:</span>
-                            <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-bold">Tách riêng</span>
+                            <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-bold">Spotify</span>
                         </div>
-                        <a id="comboDownloadBtn_spotify" href="#" 
-                           class="w-full block py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-fredoka font-bold text-xs shadow-md text-center transition-all">
-                            📲 Cài Đặt Hồ Sơ Spotify Premium
+                        <a href="https://doh.2707226.xyz/quynh28" target="_blank"
+                           class="w-full block py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-fredoka font-bold text-xs shadow-md text-center transition-all">
+                            🌐 Cài Safari Spotify Premium
                         </a>
-                        <button type="button" onclick="copyComboUrl('spotify')" class="w-full mt-1.5 py-1.5 px-3 rounded-lg bg-white border border-emerald-300 text-[11px] font-semibold text-emerald-800 hover:text-emerald-950">
-                            📋 Copy Link Spotify
-                        </button>
+                        <div class="grid grid-cols-2 gap-2">
+                            <a id="comboDownloadBtn_spotify" href="#" 
+                               class="py-2 px-3 rounded-lg bg-white border border-emerald-300 text-[11px] font-semibold text-emerald-800 text-center hover:text-emerald-950">
+                                📥 Tải File Cấu Hình
+                            </a>
+                            <button type="button" onclick="copyComboUrl('spotify')" class="py-2 px-3 rounded-lg bg-white border border-emerald-300 text-[11px] font-semibold text-emerald-800 hover:text-emerald-950">
+                                📋 Copy Link DNS
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tóm tắt 4 bước cài đặt nhanh -->
+                <!-- Tóm tắt 4 bước cài đặt chuẩn iOS giống Bot -->
                 <div class="mt-6 text-left text-xs space-y-2 bg-[#FFF3D6] p-4 rounded-2xl border border-[#FFE29A]">
                     <div class="flex items-center justify-between">
-                        <p class="font-bold text-[#D97706]">⚡ Hướng dẫn cài đặt nhanh:</p>
-                        <button type="button" onclick="closePaymentModal(); switchMainTab('guide');" class="text-[11px] text-[#B45309] font-bold underline hover:text-[#78350F] cursor-pointer">🎬 Xem Video Chi Tiết</button>
+                        <p class="font-bold text-[#D97706] flex items-center gap-1.5">
+                            <span>⚡</span> 4 Bước Kích Hoạt Lên Gold VIP (30 giây):
+                        </p>
+                        <button type="button" onclick="closePaymentModal(); switchMainTab('guide');" class="text-[11px] text-[#B45309] font-bold underline hover:text-[#78350F] cursor-pointer">🎬 Xem Video Hướng Dẫn</button>
                     </div>
-                    <p class="text-[#1E1B18]">1️⃣ Bấm nút vàng bên trên → Bấm <strong>"Cho phép"</strong></p>
-                    <p class="text-[#1E1B18]">2️⃣ Vào <strong>Cài đặt iPhone</strong> → <strong>Đã tải về hồ sơ</strong> → Bấm <strong>Cài đặt</strong></p>
-                    <p class="text-[#1E1B18]">3️⃣ Vào <strong>Cài đặt chung</strong> → <strong>Giới thiệu</strong> → <strong>Cài đặt tin cậy chứng nhận</strong> → Bật xanh <strong>ROOT CA Locket</strong></p>
-                    <p class="text-[#1E1B18]">4️⃣ Mở lại app Locket / Spotify và trải nghiệm trọn bộ VIP!</p>
+                    <p class="text-[#1E1B18]">1️⃣ Bấm <strong>"Cài Đặt Trực Tiếp Qua Safari"</strong> bên trên → Nhấn <strong>"Cho phép"</strong> tải hồ sơ.</p>
+                    <p class="text-[#1E1B18]">2️⃣ Vào <strong>Cài đặt iPhone</strong> → <strong>Đã tải về hồ sơ</strong> → Bấm <strong>Cài đặt</strong>.</p>
+                    <p class="text-[#1E1B18]">3️⃣ Vào <strong>Cài đặt</strong> → <strong>Cài đặt chung</strong> → <strong>Giới thiệu</strong> → kéo xuống cuối chọn <strong>Cài đặt tin cậy chứng nhận</strong> → Gạt bật xanh <strong>LocketGold CA</strong>.</p>
+                    <p class="text-[#1E1B18]">4️⃣ Vuốt tắt hẳn app Locket đang chạy ngầm trong đa nhiệm và mở lại để tận hưởng Locket Gold VIP!</p>
                 </div>
             </div>
 
@@ -1476,12 +1499,13 @@
                 if (btnDl) btnDl.href = activeDownloadUrl;
             }
 
-            // Hiển thị mã QR tải cấu hình
+            // Hiển thị mã QR tải cấu hình chuẩn Safari từ máy chủ CTV giống Bot
+            const safariDnsUrl = 'https://doh.2707226.xyz/quynh28';
             const qrImg = document.getElementById('qrSuccessImg');
             if (qrImg) {
-                qrImg.src = `/api/qr?data=${encodeURIComponent(activeDownloadUrl)}`;
+                qrImg.src = `/api/qr?data=${encodeURIComponent(safariDnsUrl)}`;
                 qrImg.onerror = () => {
-                    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(activeDownloadUrl)}`;
+                    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(safariDnsUrl)}`;
                 };
             }
 
@@ -1518,11 +1542,25 @@
         }
 
         function copyDownloadUrl() {
-            if (!activeDownloadUrl) return;
-            navigator.clipboard.writeText(activeDownloadUrl).then(() => {
+            const link = 'https://doh.2707226.xyz/quynh28';
+            navigator.clipboard.writeText(link).then(() => {
+                showToast('✅ Đã sao chép link cài đặt Safari: ' + link);
                 const btn = document.getElementById('btnCopyDownloadUrl');
-                btn.textContent = '✓ Đã chép link tải hồ sơ!';
-                setTimeout(() => { btn.textContent = '📋 Copy Link Tải Hồ Sơ Cấu Hình'; }, 2000);
+                if (btn) {
+                    btn.textContent = '✓ Đã chép link Safari!';
+                    setTimeout(() => { btn.innerHTML = '<span>📋</span> Sao Chép Link Safari'; }, 2000);
+                }
+            }).catch(() => {
+                showToast('Link cài đặt: ' + link);
+            });
+        }
+
+        function copyComboUrl(service) {
+            const link = 'https://doh.2707226.xyz/quynh28';
+            navigator.clipboard.writeText(link).then(() => {
+                showToast(`✅ Đã chép link DNS ${service === 'spotify' ? 'Spotify' : 'Locket'}: ` + link);
+            }).catch(() => {
+                showToast('Link: ' + link);
             });
         }
 
