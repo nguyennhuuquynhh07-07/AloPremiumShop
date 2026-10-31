@@ -1331,16 +1331,115 @@
                     body: JSON.stringify({ pin: currentPin, identifier: ident, service: svc })
                 });
                 const data = await res.json();
-                if (data.ok) {
-                    resBox.innerHTML = `<pre class="text-emerald-400 whitespace-pre-wrap">${JSON.stringify(data.data, null, 2)}</pre>`;
+                if (data.ok && data.data) {
+                    const info = data.data.data || data.data;
+                    const isActive = info.active === true || info.status === 'ACTIVE';
+                    const pkg = info.package || {};
+                    const avatar = info.avatarUrl || 'logo.png';
+                    const username = info.username || ident;
+
+                    let html = `
+                        <div class="bg-slate-900 border ${isActive ? 'border-emerald-500/40' : 'border-amber-500/40'} rounded-2xl p-4 space-y-4">
+                            <div class="flex items-center justify-between flex-wrap gap-3">
+                                <div class="flex items-center gap-3">
+                                    <img src="${avatar}" class="w-12 h-12 rounded-full border-2 ${isActive ? 'border-emerald-400' : 'border-amber-400'} object-cover" onerror="this.src='logo.png'">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-black text-white text-base">@${username}</span>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}">
+                                                ${isActive ? '● ĐÃ KÍCH HOẠT (ACTIVE)' : '○ CHƯA KÍCH HOẠT'}
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-400 font-mono mt-0.5">UID: ${info.uid || '---'}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xs font-bold text-amber-400">${pkg.name || (isActive ? 'Gói Gold' : 'Chưa có gói')}</div>
+                                    <div class="text-[11px] text-slate-400">Hạn: ${info.expiresAt ? new Date(info.expiresAt).toLocaleDateString('vi-VN') : '---'}</div>
+                                </div>
+                            </div>
+                    `;
+
+                    if (isActive) {
+                        html += `
+                            <div class="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl text-xs space-y-1.5">
+                                <p class="font-bold text-emerald-300">✅ Tài khoản này ĐÃ ĐƯỢC MÁY CHỦ CẤP QUYỀN GOLD!</p>
+                                <p class="text-slate-300 text-[11px]">👉 <b>Nếu máy khách chưa hiện Gold, hướng dẫn khách làm đúng 3 bước:</b></p>
+                                <ol class="list-decimal list-inside text-[11px] text-slate-300 space-y-0.5 pl-1">
+                                    <li><b>Bật tin cậy chứng chỉ:</b> Vào <i>Cài đặt > Cài đặt chung > Giới thiệu > Cài đặt tin cậy chứng nhận</i> > Gạt XANH công tắc ROOT CA.</li>
+                                    <li><b>Tắt hẳn app:</b> Vuốt tắt hoàn toàn app Locket (từ màn hình đa nhiệm) rồi mở lại.</li>
+                                    <li><b>Kiểm tra DNS:</b> Vào <i>Cài đặt > Quản lý VPN & Thiết bị > DNS</i> > Tích chọn cấu hình DNS.</li>
+                                </ol>
+                            </div>
+                        `;
+                    }
+
+                    // Công cụ kích hoạt / gia hạn nhanh trực tiếp
+                    html += `
+                        <div class="pt-2 border-t border-slate-800 flex items-center justify-between flex-wrap gap-2">
+                            <span class="text-xs text-slate-400 font-semibold">${isActive ? '🔄 Gia hạn / Nâng gói khác:' : '⚡ Kích hoạt lên Gold ngay:'}</span>
+                            <div class="flex items-center gap-2">
+                                <select id="manualPkgSelect_${username}" class="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-amber-400 text-xs font-bold focus:outline-none">
+                                    <option value="LKGVV">Locket Vĩnh Viễn (31 Coin)</option>
+                                    <option value="LKG1Y">Locket 1 Năm (15 Coin)</option>
+                                    <option value="LKG6M">Locket 6 Tháng (8 Coin)</option>
+                                    <option value="LKGT3D">Locket Test (1 Coin)</option>
+                                    <option value="SPVV">Spotify Vĩnh Viễn (31 Coin)</option>
+                                    <option value="SPOTIFY1Y">Spotify 1 Năm (15 Coin)</option>
+                                    <option value="SP6M">Spotify 6 Tháng (8 Coin)</option>
+                                    <option value="SPT">Spotify Test (1 Coin)</option>
+                                </select>
+                                <button onclick="manualActivateDirect('${username}', '${svc}')" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs transition-all cursor-pointer shadow-md">
+                                    ⚡ Kích Hoạt Ngay
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+
+                    resBox.innerHTML = html;
                 } else {
-                    resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi: ${data.error}</span>`;
+                    resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi: ${data.error || 'Không tìm thấy dữ liệu'}</span>`;
                 }
             } catch (err) {
                 resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi kết nối: ${err.message}</span>`;
             } finally {
                 btn.innerHTML = 'Kiểm Tra API ➔';
                 btn.disabled = false;
+            }
+        }
+
+        async function manualActivateDirect(username, defaultSvc) {
+            const select = document.getElementById(`manualPkgSelect_${username}`);
+            const pkgCode = select ? select.value : 'LKGVV';
+            let svc = defaultSvc || 'locket';
+            if (pkgCode.startsWith('SP')) svc = 'spotify';
+
+            if (!confirm(`Xác nhận kích hoạt gói [${pkgCode}] cho tài khoản @${username}? Coin sẽ được trừ tự động trên máy chủ CTV.`)) {
+                return;
+            }
+
+            try {
+                showAdminToast('⏳ Đang gửi yêu cầu kích hoạt lên máy chủ CTV...');
+                const res = await fetch('/api/admin/manual_activate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        pin: currentPin,
+                        username: username,
+                        package_code: pkgCode,
+                        service: svc
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showAdminToast(`🎉 ${data.message || 'Kích hoạt thành công!'}`);
+                    syncApiData();
+                    performCheckUid();
+                } else {
+                    alert(`❌ Kích hoạt thất bại: ${data.error}`);
+                }
+            } catch (err) {
+                alert(`❌ Lỗi kết nối: ${err.message}`);
             }
         }
 

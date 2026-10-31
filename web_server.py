@@ -732,6 +732,35 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": str(e)})
             return
 
+        # API Admin: Kích hoạt gói thủ công trực tiếp lên máy chủ API CTV
+        if path == "/api/admin/manual_activate":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            username = str(body.get("username", "")).strip()
+            package_code = str(body.get("package_code", "LKGVV")).strip()
+            service = str(body.get("service", "locket")).strip()
+            if not username:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập Username hoặc UID!"})
+                return
+            try:
+                clean_target = utils.clean_input(username)
+                res = api.create_subscription(
+                    uid=clean_target,
+                    package_code=package_code,
+                    service=service,
+                    note=f"Admin manual activation for {clean_target}"
+                )
+                self._send_json(200, {
+                    "ok": True, 
+                    "data": res, 
+                    "message": f"Kích hoạt thành công {clean_target} lên gói {package_code} trên máy chủ!"
+                })
+            except Exception as e:
+                self._send_json(400, {"ok": False, "error": str(e)})
+            return
+
         # API Admin: Duyệt đơn và kích hoạt tự động 1-chạm
         if path == "/api/admin/approve_order":
             pin = str(body.get("pin", "")).strip()
