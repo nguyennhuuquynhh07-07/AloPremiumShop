@@ -722,24 +722,39 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- TAB 2: TRA CỨU ĐƠN HÀNG (LOOKUP)                             -->
+        <!-- TAB 2: TRA CỨU ĐƠN HÀNG & LỊCH SỬ DNS (LOOKUP)               -->
         <!-- ============================================================ -->
         <div id="section_lookup" class="hidden space-y-6">
             <div class="bg-white rounded-[32px] p-6 sm:p-8 shadow-xl border-2 border-[#FFE29A]">
-                <h2 class="font-fredoka text-xl sm:text-2xl font-black text-[#1E1B18] mb-2">🔍 Tra Cứu Đơn Hàng & Tải Lại Hồ Sơ DNS</h2>
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="text-3xl">🔄</span>
+                    <h2 class="font-fredoka text-xl sm:text-2xl font-black text-[#1E1B18]">Tra Cứu Lịch Sử & Tải Lại Cấu Hình DNS</h2>
+                </div>
                 <p class="text-xs sm:text-sm text-[#6E6659] mb-6">
-                    Nhập mã đơn hàng (VD: <code>ORDER_XXXX</code>) hoặc Username / UID để lấy lại file <code>.mobileconfig</code> cài đặt bất cứ lúc nào.
+                    Dành cho khách hàng đã mua: Khi bạn đổi iPhone mới, lỡ tay xóa cấu hình hoặc app bị mất Gold, chỉ cần nhập <b>Username</b> hoặc <b>Mã đơn</b> để tải lại cấu hình DNS VIP trọn đời miễn phí!
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-2.5 max-w-xl">
-                    <input type="text" id="lookupQueryInput" placeholder="Nhập mã đơn hoặc username..."
+                    <input type="text" id="lookupQueryInput" placeholder="Nhập Username Locket, Spotify hoặc Mã đơn..."
+                           onkeydown="if(event.key === 'Enter') performLookup();"
                            class="flex-1 px-4 py-3 rounded-2xl bg-[#FFFDF8] border-2 border-[#E8D8B0] text-[#1E1B18] text-sm font-semibold focus:outline-none focus:border-[#FFB800] placeholder-[#A09685]">
                     <button type="button" onclick="performLookup()" class="px-7 py-3 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-sm locket-btn-glow locket-btn-interactive cursor-pointer shrink-0">
-                        Tìm Kiếm
+                        🔍 Tra Cứu Ngay
                     </button>
                 </div>
 
-                <div id="lookupResultsContainer" class="mt-6 space-y-3"></div>
+                <!-- Danh sách hồ sơ đã lưu trên máy này -->
+                <div id="savedProfilesSection" class="mt-6 hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-fredoka font-bold text-[#1E1B18] flex items-center gap-1.5">
+                            <span>📱</span> Hồ Sơ Đã Từng Mua Trên Thiết Bị Này:
+                        </span>
+                        <button type="button" onclick="clearSavedProfiles()" class="text-[11px] text-[#A09685] hover:text-red-500 underline cursor-pointer">Xóa lịch sử lưu</button>
+                    </div>
+                    <div id="savedProfilesList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+                </div>
+
+                <div id="lookupResultsContainer" class="mt-6 space-y-4"></div>
             </div>
         </div>
 
@@ -1536,17 +1551,78 @@
         }
 
         // ============================================================
-        // LOGIC TRA CỨU ĐƠN HÀNG                                       -->
+        // LOGIC TRA CỨU ĐƠN HÀNG & LỊCH SỬ MUA DNS                     -->
         // ============================================================
+        function getSavedProfiles() {
+            try {
+                return JSON.parse(localStorage.getItem('alopremium_saved_profiles') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveProfileLocally(od) {
+            try {
+                const list = getSavedProfiles();
+                const key = (od.display_name || od.username || od.order_id || '').toLowerCase();
+                const exists = list.some(item => (item.display_name || item.username || item.order_id || '').toLowerCase() === key);
+                if (!exists) {
+                    list.unshift({
+                        order_id: od.order_id,
+                        display_name: od.display_name || od.username || 'Khách VIP',
+                        product: od.product || 'locket',
+                        plan: od.plan || 'VIP',
+                        saved_at: new Date().toISOString()
+                    });
+                    localStorage.setItem('alopremium_saved_profiles', JSON.stringify(list.slice(0, 5)));
+                }
+                renderSavedProfiles();
+            } catch (e) {}
+        }
+
+        function clearSavedProfiles() {
+            localStorage.removeItem('alopremium_saved_profiles');
+            renderSavedProfiles();
+        }
+
+        function renderSavedProfiles() {
+            const container = document.getElementById('savedProfilesSection');
+            const listEl = document.getElementById('savedProfilesList');
+            if (!container || !listEl) return;
+
+            const list = getSavedProfiles();
+            if (list.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            listEl.innerHTML = list.map(item => `
+                <div class="p-3 rounded-2xl bg-[#FFFDF8] border-2 border-[#FFE29A] flex items-center justify-between gap-2 shadow-xs">
+                    <div>
+                        <div class="font-fredoka font-black text-xs text-[#1E1B18] flex items-center gap-1.5">
+                            <span>${item.product === 'spotify' ? '🎵' : '💛'}</span>
+                            <span>@${item.display_name}</span>
+                        </div>
+                        <p class="text-[10px] text-[#6E6659]">Gói: ${item.plan}</p>
+                    </div>
+                    <button type="button" onclick="document.getElementById('lookupQueryInput').value = '${item.display_name}'; performLookup();" 
+                            class="px-3 py-1.5 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs cursor-pointer shadow-xs">
+                        ⚡ Cài Lại
+                    </button>
+                </div>
+            `).join('');
+        }
+
         async function performLookup() {
             const q = document.getElementById('lookupQueryInput').value.trim();
             const box = document.getElementById('lookupResultsContainer');
             if (!q) {
-                alert('Vui lòng nhập mã đơn hoặc tên tài khoản!');
+                alert('Vui lòng nhập Username hoặc Mã đơn hàng!');
                 return;
             }
 
-            box.innerHTML = '<div class="text-xs text-[#6E6659]">🔍 Đang tìm kiếm...</div>';
+            box.innerHTML = '<div class="p-4 rounded-2xl bg-[#FFF9ED] text-xs text-[#6E6659] border border-[#E8D8B0] flex items-center gap-2"><span class="animate-spin text-base">⏳</span> Đang tra cứu tài khoản và lịch sử trên hệ thống...</div>';
 
             try {
                 const res = await fetch(`/api/lookup?q=${encodeURIComponent(q)}`);
@@ -1554,57 +1630,97 @@
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Lỗi tra cứu');
 
                 if (!data.orders || data.orders.length === 0) {
-                    box.innerHTML = '<div class="p-4 rounded-2xl bg-[#FFF9ED] text-xs text-[#6E6659] border border-[#E8D8B0]">Không tìm thấy đơn hàng nào phù hợp.</div>';
+                    box.innerHTML = `
+                        <div class="p-5 rounded-2xl bg-[#FFF9ED] text-xs text-[#6E6659] border-2 border-[#E8D8B0] space-y-2">
+                            <p class="font-fredoka font-bold text-sm text-[#1E1B18]">🔍 Không tìm thấy lịch sử cho: <i>"${q}"</i></p>
+                            <p>Bạn hãy kiểm tra lại xem có gõ đúng chính xác <b>Username</b> khi mua không nhé (hoặc liên hệ Admin qua Telegram để được hỗ trợ cấp lại ngay).</p>
+                        </div>
+                    `;
                     return;
                 }
 
                 box.innerHTML = '';
                 data.orders.forEach(od => {
-                    const card = document.createElement('div');
-                    card.className = 'p-4 rounded-2xl bg-white border-2 border-[#E8D8B0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm';
-                    
                     const isDone = od.status === 'done';
-                    const statusBadge = isDone 
-                        ? '<span class="text-emerald-700 font-bold">✅ Đã kích hoạt</span>'
-                        : '<span class="text-[#D97706] font-bold">⏳ Chờ thanh toán</span>';
+                    if (isDone) saveProfileLocally(od);
+
+                    const card = document.createElement('div');
+                    card.className = 'p-5 rounded-3xl bg-white border-2 border-[#E8D8B0] shadow-md space-y-4';
+
+                    const prodName = od.product === 'spotify' ? 'Spotify Premium' : (od.product === 'combo' ? 'Combo Locket + Spotify' : 'Locket Gold VIP');
+                    const prodEmoji = od.product === 'spotify' ? '🎵' : (od.product === 'combo' ? '💎' : '💛');
+                    const dlUrl = (od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + od.download_url);
+                    const safariUrl = od.direct_safari_url || 'https://doh.2707226.xyz/quynh28';
+                    const avatarUrl = od.avatar || 'logo.png';
 
                     card.innerHTML = `
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="font-mono font-bold text-[#1E1B18] text-xs">Mã: ORDER_${od.order_id}</span>
-                                ${statusBadge}
-                            </div>
-                            <p class="text-xs text-[#6E6659] mt-1">Gói: <strong>${od.product}</strong> (${od.plan}) • Khách: <strong>${od.display_name || od.uid}</strong></p>
-                        </div>
-                        <div class="shrink-0 w-full sm:w-auto">
-                            ${isDone ? `
-                                <div class="flex flex-col sm:items-end gap-2">
+                        <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-[#F0E4C8]">
+                            <div class="flex items-center gap-3">
+                                <img src="${avatarUrl}" class="w-12 h-12 rounded-full border-2 border-[#FFB800] object-cover" onerror="this.src='logo.png'">
+                                <div>
                                     <div class="flex items-center gap-2">
-                                        <a href="${(od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + od.download_url)}" class="px-3.5 py-2 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs shadow-sm">
-                                            📥 Tải Cấu Hình
-                                        </a>
-                                        <button type="button" onclick="toggleOrderQr('qr-box-${od.order_id}')" class="px-3 py-2 rounded-xl bg-white hover:bg-[#FFECC0] text-[#1E1B18] font-bold text-xs border border-[#E8D8B0] cursor-pointer">
-                                            📷 Mã QR
-                                        </button>
+                                        <span class="font-fredoka font-black text-base text-[#1E1B18]">@${od.display_name}</span>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${isDone ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
+                                            ${isDone ? '✅ ĐÃ KÍCH HOẠT GOLD' : '⏳ CHỜ THANH TOÁN'}
+                                        </span>
                                     </div>
-                                    <div id="qr-box-${od.order_id}" class="hidden mt-2 p-3 bg-[#FFF9ED] rounded-xl border border-[#E8D8B0] text-center shadow-sm">
-                                        <div class="bg-white p-2 rounded-xl inline-block mx-auto mb-2 border border-[#E8D8B0]">
-                                            <img src="/api/qr?data=${encodeURIComponent((od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + od.download_url))}" alt="QR" class="w-36 h-36 object-contain" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent('${od.download_url}')" />
-                                        </div>
-                                        <p class="text-[10px] text-[#6E6659]">Mở Camera iPhone quét mã để tải</p>
-                                    </div>
+                                    <p class="text-xs text-[#6E6659] mt-0.5">${prodEmoji} <b>${prodName}</b> (${od.plan}) • Mã: <span class="font-mono font-bold text-[#1E1B18]">${od.order_id}</span></p>
                                 </div>
-                            ` : `
-                                <span class="text-xs text-[#6E6659]">Chưa thanh toán</span>
-                            `}
+                            </div>
                         </div>
+
+                        ${isDone ? `
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                    <a href="${safariUrl}" target="_blank" class="px-4 py-3 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs text-center flex items-center justify-center gap-1.5 shadow-sm locket-btn-glow">
+                                        <span>⚡</span> Cài Lại Qua Safari
+                                    </a>
+                                    <a href="${dlUrl}" class="px-4 py-3 rounded-2xl bg-[#FFF8E5] hover:bg-[#FFECC0] text-[#1E1B18] font-fredoka font-black text-xs text-center border-2 border-[#FFE29A] flex items-center justify-center gap-1.5">
+                                        <span>📥</span> Tải File .mobileconfig
+                                    </a>
+                                    <button type="button" onclick="toggleOrderQr('qr-box-${od.order_id}')" class="px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-[#1E1B18] font-fredoka font-bold text-xs text-center border-2 border-[#E8D8B0] flex items-center justify-center gap-1.5 cursor-pointer">
+                                        <span>📷</span> Hiện Mã QR
+                                    </button>
+                                </div>
+
+                                <div id="qr-box-${od.order_id}" class="hidden p-4 bg-[#FFF9ED] rounded-2xl border-2 border-[#FFE29A] text-center shadow-inner">
+                                    <div class="bg-white p-3 rounded-2xl inline-block mx-auto mb-2 border border-[#E8D8B0] shadow-sm">
+                                        <img src="/api/qr?data=${encodeURIComponent(safariUrl)}" alt="QR Cài đặt" class="w-40 h-40 object-contain mx-auto" />
+                                    </div>
+                                    <p class="text-xs font-fredoka font-bold text-[#1E1B18]">Mở Camera iPhone quét mã để tải lại hồ sơ</p>
+                                    <p class="text-[11px] text-[#6E6659] mt-0.5">Sau khi quét, chạm thông báo "Mở trong Safari"</p>
+                                </div>
+
+                                <!-- Box hướng dẫn khi cài lại sau khi xóa -->
+                                <div class="p-3.5 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-xs text-[#1E1B18] space-y-1">
+                                    <p class="font-fredoka font-bold text-amber-900 flex items-center gap-1.5">
+                                        <span>💡</span> Hướng dẫn cài lại khi bị mất Gold hoặc xóa cấu hình:
+                                    </p>
+                                    <ol class="list-decimal list-inside text-[11px] text-[#6E6659] space-y-0.5 pl-1">
+                                        <li>Bấm nút vàng <b>"Cài Lại Qua Safari"</b> bên trên > Nhấn <b>"Cho phép"</b> tải về.</li>
+                                        <li>Vào <b>Cài đặt iPhone > Đã tải về hồ sơ</b> > Nhấn <b>"Cài đặt"</b>.</li>
+                                        <li>Vào <b>Cài đặt > Cài đặt chung > Giới thiệu > Cài đặt tin cậy chứng nhận</b> > Bật xanh công tắc <b>LocketGold CA</b>.</li>
+                                        <li>Vuốt tắt hẳn app Locket đang chạy ngầm và mở lại là Gold VIP kích hoạt ngay!</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-800">
+                                Đơn hàng đang chờ thanh toán. Vui lòng thanh toán theo mã đơn để hệ thống tự động kích hoạt gói VIP cho bạn.
+                            </div>
+                        `}
                     `;
                     box.appendChild(card);
                 });
             } catch (err) {
-                box.innerHTML = `<div class="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs border border-rose-200">❌ ${err.message}</div>`;
+                box.innerHTML = `<div class="p-4 rounded-2xl bg-rose-50 text-rose-700 text-xs border border-rose-200">❌ ${err.message}</div>`;
             }
         }
+
+        // Tự động tải danh sách hồ sơ đã lưu khi mở trang
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(renderSavedProfiles, 300);
+        });
 
         // ============================================================
         // LOGIC ĐỔI MÁY & RESET THIẾT BỊ (LOCKET & SPOTIFY)           -->

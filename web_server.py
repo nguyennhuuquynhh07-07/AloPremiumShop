@@ -341,12 +341,34 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     order = o_check
 
             if not order and username:
-                clean_u = utils.clean_input(username).lower()
+                clean_u = utils.clean_input(username).lower().lstrip("@")
                 for od in db.get_orders().values():
                     if od.get("status") == "done":
-                        if str(od.get("identifier", "")).lower() == clean_u or str(od.get("uid", "")).lower() == clean_u or str(od.get("display_name", "")).lower() == clean_u:
+                        u_list = [
+                            str(od.get("identifier", "")).lower().lstrip("@"),
+                            str(od.get("uid", "")).lower(),
+                            str(od.get("display_name", "")).lower().lstrip("@"),
+                            str(od.get("username", "")).lower().lstrip("@"),
+                            str(od.get("account_target", "")).lower().lstrip("@")
+                        ]
+                        if clean_u in u_list:
                             order = od
                             break
+                # Fallback: kiểm tra trực tiếp trên máy chủ API CTV
+                if not order and len(clean_u) >= 3:
+                    try:
+                        ctv_info = api.check_uid_details(clean_u, "locket")
+                        dt = ctv_info.get("data", {}) if isinstance(ctv_info, dict) else {}
+                        if dt.get("active") or dt.get("status") == "ACTIVE":
+                            order = {
+                                "order_id": f"CTV_{clean_u.upper()}",
+                                "product": dt.get("service") or "locket",
+                                "display_name": dt.get("username") or clean_u,
+                                "uid": dt.get("uid") or clean_u,
+                                "status": "done"
+                            }
+                    except Exception:
+                        pass
 
             # Nếu không tìm thấy đơn hàng ĐÃ THANH TOÁN (status == done) -> TỪ CHỐI TẢI
             if not order:
@@ -393,30 +415,78 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(payload_bytes)
             return
 
-        # 6. API Tra cứu đơn hàng bảo mật (Khớp chính xác Order ID hoặc UID >= 6 ký tự)
+        # 6. API Tra cứu đơn hàng & Lịch sử mua DNS (Khớp Order ID, Username Locket/Spotify hoặc UID)
         if path == "/api/lookup":
             q = params.get("q", [""])[0].strip()
-            if len(q) < 6:
-                self._send_json(400, {"ok": False, "error": "Vui lòng nhập chính xác Mã đơn hàng hoặc UID (tối thiểu 6 ký tự)"})
+            if len(q) < 3:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập tối thiểu 3 ký tự (Mã đơn hoặc Username)!"})
                 return
 
             orders = db.get_orders()
             results = []
-            q_lower = q.lower()
+            q_clean = utils.clean_input(q).lower().lstrip("@")
+            q_raw = q.lower().strip()
+            q_no_order = q_raw.replace("order_", "").strip()
+
             for oid, od in orders.items():
-                # Chỉ cho phép khớp chính xác Mã đơn hàng hoặc UID, không quét bừa
-                if oid.lower() == q_lower or str(od.get("uid", "")).lower() == q_lower:
+                oid_lower = oid.lower()
+                o_user = str(od.get("username", "")).lower().lstrip("@")
+                o_ident = str(od.get("identifier", "")).lower().lstrip("@")
+                o_disp = str(od.get("display_name", "")).lower().lstrip("@")
+                o_target = str(od.get("account_target", "")).lower().lstrip("@")
+                o_uid = str(od.get("uid", "")).lower()
+
+                match = (
+                    oid_lower == q_raw or
+                    oid_lower == q_no_order or
+                    o_user == q_clean or
+                    o_ident == q_clean or
+                    o_disp == q_clean or
+                    o_target == q_clean or
+                    o_uid == q_clean or
+                    (len(q_clean) >= 4 and (q_clean in o_user or q_clean in o_ident or q_clean in o_disp))
+                )
+
+                if match:
+                    is_done = od.get("status") == "done"
                     results.append({
                         "order_id": oid,
-                        "product": od.get("product"),
-                        "plan": od.get("plan"),
-                        "price": od.get("price"),
+                        "product": od.get("product") or "locket",
+                        "plan": od.get("plan") or "VIP",
+                        "price": od.get("price", 0),
                         "status": od.get("status"),
                         "uid": od.get("uid"),
-                        "display_name": od.get("display_name"),
+                        "display_name": od.get("display_name") or od.get("username") or od.get("identifier") or "Khách VIP",
+                        "avatar": od.get("avatar"),
                         "created_at": od.get("created_at"),
-                        "download_url": f"/api/download_profile?order_id={oid}" if od.get("status") == "done" else None
+                        "download_url": f"/api/download_profile?order_id={oid}" if is_done else None,
+                        "direct_safari_url": f"{config.DNS_BASE_URL}/{config.DNS_SLUG}" if is_done else None
                     })
+
+            # Nếu chưa thấy trong database local nhưng tài khoản đã kích hoạt trên máy chủ API CTV
+            if len(results) == 0 and len(q_clean) >= 3:
+                try:
+                    ctv_res = api.check_uid_details(q_clean, "locket")
+                    dt = ctv_res.get("data", {}) if isinstance(ctv_res, dict) else {}
+                    if dt.get("active") or dt.get("status") == "ACTIVE":
+                        pkg_info = dt.get("package") or {}
+                        results.append({
+                            "order_id": f"CTV_{q_clean.upper()}",
+                            "product": dt.get("service") or "locket",
+                            "plan": pkg_info.get("name") or "Locket Gold VIP",
+                            "price": 0,
+                            "status": "done",
+                            "uid": dt.get("uid"),
+                            "display_name": dt.get("username") or q_clean,
+                            "avatar": dt.get("avatarUrl"),
+                            "expires_at": dt.get("expiresAt"),
+                            "created_at": dt.get("createdAt") or datetime.now().isoformat(),
+                            "download_url": f"/api/download_profile?username={q_clean}&service=locket",
+                            "direct_safari_url": f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+                        })
+                except Exception:
+                    pass
+
             results.sort(key=lambda x: x.get("created_at", ""), reverse=True)
             self._send_json(200, {"ok": True, "orders": results[:5]})
             return

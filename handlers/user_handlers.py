@@ -1032,9 +1032,11 @@ async def myorders_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"   └ <i>Ngày đặt: {utils.fmt_datetime(o['created_at'])}</i>\n"
         )
     lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 <i>Ghi chú: ✅ Đã duyệt | ⏳ Chờ duyệt | 💳 Chờ thanh toán</i>")
+    has_done = any(o.get("status") == "done" for o in orders)
+    has_sp = any("spotify" in str(o.get("product", "")).lower() for o in orders)
     await update.message.reply_text(
         "\n".join(lines), parse_mode=ParseMode.HTML,
-        reply_markup=orders_kb()
+        reply_markup=orders_kb(has_done_order=has_done, has_spotify=has_sp)
     )
 
 
@@ -1049,7 +1051,7 @@ async def cb_my_orders(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             "Bạn chưa có đơn hàng nào trong hệ thống.\n\n"
             "Hãy khám phá các gói dịch vụ hấp dẫn của chúng tôi ngay hôm nay!",
             parse_mode=ParseMode.HTML,
-            reply_markup=orders_kb()
+            reply_markup=orders_kb(has_done_order=False, has_spotify=False)
         )
         return
 
@@ -1066,9 +1068,11 @@ async def cb_my_orders(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"   └ <i>Ngày đặt: {utils.fmt_datetime(o['created_at'])}</i>\n"
         )
     lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 <i>Ghi chú: ✅ Đã duyệt | ⏳ Chờ duyệt | 💳 Chờ thanh toán</i>")
+    has_done = any(o.get("status") == "done" for o in orders)
+    has_sp = any("spotify" in str(o.get("product", "")).lower() for o in orders)
     await query.edit_message_text(
         "\n".join(lines), parse_mode=ParseMode.HTML,
-        reply_markup=orders_kb()
+        reply_markup=orders_kb(has_done_order=has_done, has_spotify=has_sp)
     )
 
 
