@@ -99,7 +99,6 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     f"⚡ <b>Cách cài đặt siêu tốc:</b>\n"
                     f"1️⃣ Dùng <b>Camera iPhone</b> quét mã QR trên màn hình.\n"
                     f"2️⃣ Chạm vào thông báo vàng <b>\"Mở trong Safari\"</b> để cài đặt hồ sơ DNS!\n"
-                    f"<i>(Hoặc bấm nút mở Safari trực tiếp bên dưới)</i>"
                 )
                 await bot.send_photo(
                     chat_id=order["user_id"],
@@ -120,59 +119,6 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     parse_mode=ParseMode.HTML,
                     reply_markup=reply_markup_used
                 )
-
-                safe_uid = (order.get("uid") or "vip").replace(" ", "_")
-
-                if product_key == "combo":
-                    # Gửi riêng file 1: Locket Gold
-                    f_lk = utils.generate_mobileconfig(
-                        service_name="Locket Gold VIP",
-                        display_name=order.get("display_name") or order.get("uid"),
-                        dns_link=dns_link_locket
-                    )
-                    await bot.send_document(
-                        chat_id=order["user_id"],
-                        document=f_lk,
-                        filename=f"1_LocketGold_{safe_uid}.mobileconfig",
-                        caption="💛 <b>HỒ SƠ 1: LOCKET GOLD VIP</b>\nBấm vào file trên để cài đặt vào iPhone.",
-                        parse_mode=ParseMode.HTML
-                    )
-
-                    # Gửi riêng file 2: Spotify Premium
-                    f_sp = utils.generate_mobileconfig(
-                        service_name="Spotify Premium",
-                        display_name=order.get("display_name") or order.get("uid"),
-                        dns_link=dns_link_spotify
-                    )
-                    await bot.send_document(
-                        chat_id=order["user_id"],
-                        document=f_sp,
-                        filename=f"2_SpotifyPremium_{safe_uid}.mobileconfig",
-                        caption="🎵 <b>HỒ SƠ 2: SPOTIFY PREMIUM</b>\nBấm vào file trên để cài đặt vào iPhone.",
-                        parse_mode=ParseMode.HTML
-                    )
-                else:
-                    profile_file = utils.generate_mobileconfig(
-                        service_name=pv["name"],
-                        display_name=order.get("display_name") or order.get("uid"),
-                        dns_link=dns_link
-                    )
-                    file_name = f"{order['product'].capitalize()}_{safe_uid}.mobileconfig"
-                    await bot.send_document(
-                        chat_id=order["user_id"],
-                        document=profile_file,
-                        filename=file_name,
-                        caption=(
-                            f"📥 <b>HỒ SƠ CẤU HÌNH DNS ({pv['name']})</b>\n"
-                            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                            f"👤 Tài khoản: <b>@{order.get('display_name', order.get('uid'))}</b>\n\n"
-                            f"⚡ <b>Cài đặt 1 chạm trên iPhone:</b>\n"
-                            f"1️⃣ Bấm vào file đính kèm trên để tải về\n"
-                            f"2️⃣ Bấm <b>\"Cho phép\" (Allow)</b>\n"
-                            f"3️⃣ Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b> là xong!"
-                        ),
-                        parse_mode=ParseMode.HTML
-                    )
             except Exception as e:
                 logger.error(f"Error sending customer delivery: {e}")
 

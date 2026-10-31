@@ -102,12 +102,11 @@ def combo_success_kb(dns_locket: str = None, dns_spotify: str = None) -> InlineK
     dns_spotify = dns_spotify or "https://alopremium.shop"
     rows = [
         [
-            InlineKeyboardButton("💛 1. Cài Locket Gold", url=dns_locket),
-            InlineKeyboardButton("🎵 2. Cài Spotify", url=dns_spotify)
-        ],
-        [
             InlineKeyboardButton("📋 Copy Link Locket", api_kwargs={"copy_text": {"text": dns_locket}}),
             InlineKeyboardButton("📋 Copy Link Spotify", api_kwargs={"copy_text": {"text": dns_spotify}}),
+        ],
+        [
+            InlineKeyboardButton("📷 Tạo Mã QR DNS", callback_data="show_qr")
         ],
         [
             InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
@@ -124,18 +123,18 @@ def success_kb(dns_link: str = None) -> InlineKeyboardMarkup:
     rows = []
     if dns_link:
         rows.append([
-            InlineKeyboardButton("🌐 Mở Tải Trực Tiếp Safari", url=dns_link),
+            InlineKeyboardButton("📷 Tạo Mã QR Code", callback_data="show_qr"),
             InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": dns_link}})
         ])
-    rows.append([
-        InlineKeyboardButton("📷 Tạo Mã QR Code", callback_data="show_qr"),
-        InlineKeyboardButton("📥 Tải file .mobileconfig", callback_data="get_mobileconfig"),
-    ])
+    else:
+        rows.append([
+            InlineKeyboardButton("📷 Tạo Mã QR Code", callback_data="show_qr")
+        ])
     rows.append([
         InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
+        InlineKeyboardButton("💬 Hỗ trợ kỹ thuật", callback_data="support")
     ])
     rows.append([
-        InlineKeyboardButton("💬 Hỗ trợ kỹ thuật", callback_data="support"),
         InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")
     ])
     return InlineKeyboardMarkup(rows)
@@ -145,7 +144,6 @@ def orders_kb(has_done_order: bool = False, has_spotify: bool = False) -> Inline
     rows = []
     if has_done_order:
         rows.append([
-            InlineKeyboardButton("📥 Tải file cấu hình DNS", callback_data="get_mobileconfig"),
             InlineKeyboardButton("📷 Tạo Mã QR DNS", callback_data="show_qr")
         ])
     if has_spotify:
@@ -179,7 +177,7 @@ def account_kb(dns_link: str = None) -> InlineKeyboardMarkup:
             InlineKeyboardButton("📋 Copy Link DNS Profile", api_kwargs={"copy_text": {"text": dns_link}})
         ])
         rows.append([
-            InlineKeyboardButton("📥 Tải lại file .mobileconfig", callback_data="get_mobileconfig"),
+            InlineKeyboardButton("📷 Tạo Mã QR DNS", callback_data="show_qr"),
         ])
     rows.append([
         InlineKeyboardButton("📦 Đơn hàng đã mua",        callback_data="my_orders"),

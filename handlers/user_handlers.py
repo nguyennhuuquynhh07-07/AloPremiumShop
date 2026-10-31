@@ -524,11 +524,11 @@ async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         kb = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🌐 Mở Tải Trực Tiếp Safari", url=target_link),
-                InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": target_link}})
+                InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": target_link}}),
+                InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide")
             ],
             [
-                InlineKeyboardButton("📥 Tải file .mobileconfig", callback_data="get_mobileconfig"),
+                InlineKeyboardButton("💬 Hỗ trợ kỹ thuật", callback_data="support"),
                 InlineKeyboardButton("🏠 Menu Chính", callback_data="back_main")
             ]
         ])
