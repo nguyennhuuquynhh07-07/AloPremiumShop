@@ -187,7 +187,131 @@
         ::-webkit-scrollbar-track { background: #FFF9ED; }
         ::-webkit-scrollbar-thumb { background: #E5D6B8; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #FFB800; }
+    
+        /* ═══════════════════════════════════════════════════════════════
+           UPLOCKET & LOCKET.CAMERA SIGNATURE MOTION ENGINE
+           ═══════════════════════════════════════════════════════════════ */
+        
+        /* 1. Scroll Progress Bar */
+        .sprog {
+            z-index: 100;
+            pointer-events: none;
+            transform-origin: 0 50%;
+            width: 100%;
+            height: 3.5px;
+            transform: scaleX(var(--sp, 0));
+            background: linear-gradient(90deg, #FFB800 0%, #FFD24C 50%, #FF8A3D 100%);
+            box-shadow: 0 0 12px rgba(255, 184, 0, 0.7);
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: transform 0.08s linear;
+        }
+
+        /* 2. Organic Bobbing Animation */
+        @keyframes ibob {
+            0%, 100% { transform: translateY(0) rotate(var(--rot, -4deg)); }
+            50% { transform: translateY(-9px) rotate(calc(var(--rot, -4deg) + 2.5deg)); }
+        }
+        @keyframes ibobRev {
+            0%, 100% { transform: translateY(0) rotate(var(--rot, 4deg)); }
+            50% { transform: translateY(8px) rotate(calc(var(--rot, 4deg) - 2deg)); }
+        }
+        .anim-ibob {
+            animation: ibob 4.2s ease-in-out infinite;
+        }
+        .anim-ibob-rev {
+            animation: ibobRev 4.8s ease-in-out infinite;
+        }
+
+        /* 3. Metallic Gold Sheen / Shine Passing Effect */
+        @keyframes ishine {
+            0% { transform: translateX(-150%) rotate(25deg); }
+            40%, 100% { transform: translateX(250%) rotate(25deg); }
+        }
+        .gold-sheen {
+            position: relative;
+            overflow: hidden;
+        }
+        .gold-sheen::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(60deg, transparent 40%, rgba(255, 255, 255, 0.55) 50%, transparent 60%);
+            animation: ishine 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            pointer-events: none;
+        }
+
+        /* 4. Twinkle Sparkle Animation */
+        @keyframes itw {
+            0%, 100% { opacity: 0.95; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.35; transform: scale(0.65) rotate(20deg); }
+        }
+        .anim-twinkle {
+            animation: itw 2s ease-in-out infinite;
+        }
+
+        /* 5. Radar Pulse Waves on Online Status Dots */
+        @keyframes pvring {
+            0% { opacity: 0.9; transform: scale(0.9); }
+            100% { opacity: 0; transform: scale(2.4); }
+        }
+        .radar-pulse {
+            position: relative;
+        }
+        .radar-pulse::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 9999px;
+            background: inherit;
+            animation: pvring 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+        }
+
+        /* 6. Marquee Horizontal Ticker */
+        @keyframes tscroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: tscroll 28s linear infinite;
+        }
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+
+        /* 7. Scroll Reveal Smooth Glide */
+        .rv {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity, transform;
+        }
+        .rv.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 8. Bouncy Spring Micro-interactions */
+        .btn-bounce {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease !important;
+            will-change: transform;
+        }
+        .btn-bounce:hover {
+            transform: translateY(-3px) scale(1.02) !important;
+        }
+        .btn-bounce:active {
+            transform: translateY(2px) scale(0.96) !important;
+        }
+
     </style>
+    <!-- Lenis Smooth Scroll Engine (Official Locket Experience) -->
+    <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#FFB800] selection:text-black">
 
@@ -248,57 +372,118 @@
         <!-- ============================================================ -->
         <div id="section_store" class="space-y-8">
             
-            <!-- HERO BANNER IN LOCKET.COM WARM CREAM STYLE -->
-            <div class="relative text-center max-w-4xl mx-auto pt-4 pb-8 px-2 overflow-hidden sm:overflow-visible">
+            <!-- HERO BANNER WITH AUTHENTIC LOCKET.CAMERA & UPLOCKET MOTION -->
+            <div class="relative text-center max-w-5xl mx-auto pt-6 pb-6 px-2 overflow-hidden sm:overflow-visible rv">
                 
-                <!-- STICKER 1: "BEST FRIENDS FIRST" (Top Left) -->
-                <div class="hidden md:flex absolute -top-1 left-2 sticker-float-1 locket-sticker-interactive z-10 items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#FFB800] text-[#1E1B18] font-fredoka font-black text-xs uppercase shadow-xl border-2 border-white select-none" style="--rot: -8deg;">
-                    <span>💛</span> BEST FRIENDS FIRST
-                </div>
-
-                <!-- STICKER 2: "GOLD" BADGE (Top Right) -->
-                <div class="hidden md:flex absolute top-2 right-4 sticker-float-2 locket-sticker-interactive z-10 items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#1E1B18] border-2 border-[#FFB800] text-[#FFB800] font-fredoka font-black text-xs uppercase shadow-xl select-none" style="--rot: 6deg;">
-                    <span>👑</span> GOLD VIP
-                </div>
-
-                <!-- STICKER 3: "I 💛 LOCKET" (Bottom Left) -->
-                <div class="hidden md:flex absolute bottom-2 left-6 sticker-float-2 locket-sticker-interactive z-10 items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-white text-[#1E1B18] font-fredoka font-bold text-xs shadow-xl border border-[#F0E0B8] select-none" style="--rot: 5deg;">
-                    <span>I</span> <span class="text-[#FFB800] text-sm">💛</span> <span>LOCKET</span>
-                </div>
-
-                <!-- STICKER 4: SCAN QR BADGE (Bottom Right) -->
-                <div class="hidden md:flex absolute bottom-0 right-8 sticker-float-1 locket-sticker-interactive z-10 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white border border-[#E8D8B0] text-[#1E1B18] font-fredoka font-bold text-xs shadow-xl select-none" style="--rot: -6deg;">
-                    <div class="w-6 h-6 rounded-lg bg-[#FFB800] flex items-center justify-center text-[#1E1B18] text-[11px] font-black">QR</div>
-                    <span class="text-[#1E1B18]">Cài 1 Chạm iOS</span>
-                </div>
-
-                <!-- Main Locket Center Emblem -->
-                <div class="relative inline-block mb-4">
-                    <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-[32px] bg-gradient-to-tr from-[#FFD24C] via-[#FFB800] to-amber-500 p-1.5 shadow-[0_15px_40px_rgba(255,184,0,0.35)] flex items-center justify-center locket-card-interactive cursor-pointer">
-                        <div class="w-full h-full rounded-[26px] bg-[#FFA800] flex items-center justify-center relative overflow-hidden shadow-inner">
-                            <span class="text-4xl sm:text-5xl transform hover:scale-110 transition-transform">💛</span>
+                <!-- 1. LIVE FLOATING WIDGET BUBBLE (Left: Laurel & Weather) -->
+                <div class="hidden xl:flex absolute -left-10 top-12 z-20 anim-ibob flex-col items-center select-none" style="--rot: -8deg;">
+                    <div class="relative w-28 aspect-square rounded-[24px] overflow-hidden shadow-[0_20px_35px_rgba(0,0,0,0.12)] border-[3.5px] border-white bg-white locket-card-interactive cursor-pointer">
+                        <img src="/assets/index/bubbles/float-1.webp" alt="Locket Live Widget" class="w-full h-full object-cover">
+                        <div class="absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-gradient-to-t from-black/60 to-transparent p-2">
+                            <img src="/assets/index/bubbles/laurel.webp" class="w-4 h-4 rounded-full border border-white object-cover">
+                            <img src="/assets/index/captions/weather-62f.webp" class="h-3 w-auto object-contain">
                         </div>
                     </div>
-                    <!-- Mini Crown on emblem -->
-                    <div class="absolute -top-3 -right-2 text-2xl animate-bounce">👑</div>
+                </div>
+
+                <!-- 2. LIVE FLOATING WIDGET BUBBLE (Right: Preslee & Hiiiii) -->
+                <div class="hidden xl:flex absolute -right-10 top-20 z-20 anim-ibob-rev flex-col items-center select-none" style="--rot: 7deg;">
+                    <div class="relative w-28 aspect-square rounded-[24px] overflow-hidden shadow-[0_20px_35px_rgba(0,0,0,0.12)] border-[3.5px] border-white bg-white locket-card-interactive cursor-pointer">
+                        <img src="/assets/index/bubbles/float-2.webp" alt="Locket Live Widget" class="w-full h-full object-cover">
+                        <div class="absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-gradient-to-t from-black/60 to-transparent p-2">
+                            <img src="/assets/index/bubbles/preslee.webp" class="w-4 h-4 rounded-full border border-white object-cover">
+                            <img src="/assets/index/captions/hiiiiii.webp" class="h-3 w-auto object-contain">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. OFFICIAL 3D LOCKET STICKERS (Floating with physics) -->
+                <!-- Sticker Top Left: Best Friends First -->
+                <div class="hidden md:block absolute top-2 left-6 z-10 anim-ibob locket-sticker-interactive select-none" style="--rot: -10deg;">
+                    <img src="/assets/index/stickers/bff.webp" alt="Best Friends First" class="w-24 sm:w-28 filter drop-shadow-[0_12px_20px_rgba(180,120,20,0.35)]">
+                </div>
+
+                <!-- Sticker Top Right: Gold Pill Badge -->
+                <div class="hidden md:block absolute top-4 right-10 z-10 anim-ibob-rev locket-sticker-interactive select-none" style="--rot: 8deg;">
+                    <img src="/assets/index/stickers/gold-pill.webp" alt="Gold VIP" class="w-22 sm:w-26 filter drop-shadow-[0_12px_20px_rgba(180,120,20,0.35)]">
+                </div>
+
+                <!-- Sticker Bottom Left: I Heart Locket -->
+                <div class="hidden md:block absolute -bottom-2 left-16 z-10 anim-ibob-rev locket-sticker-interactive select-none" style="--rot: 6deg;">
+                    <img src="/assets/index/stickers/i-heart-locket.webp" alt="I Love Locket" class="w-20 sm:w-24 filter drop-shadow-[0_10px_18px_rgba(180,120,20,0.3)]">
+                </div>
+
+                <!-- Sticker Bottom Right: 3D Glossy Heart -->
+                <div class="hidden md:block absolute -bottom-1 right-20 z-10 anim-ibob locket-sticker-interactive select-none" style="--rot: -8deg;">
+                    <img src="/assets/index/stickers/heart-3d.webp" alt="3D Heart" class="w-16 sm:w-20 filter drop-shadow-[0_12px_22px_rgba(217,119,6,0.4)]">
+                </div>
+
+                <!-- Main Locket Center Emblem with Metallic Sheen -->
+                <div class="relative inline-block mb-3">
+                    <div class="w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-[36px] bg-gradient-to-tr from-[#FFD24C] via-[#FFB800] to-amber-500 p-2 shadow-[0_20px_50px_rgba(255,184,0,0.45)] flex items-center justify-center locket-card-interactive cursor-pointer gold-sheen">
+                        <div class="w-full h-full rounded-[28px] bg-[#FFA800] flex items-center justify-center relative overflow-hidden shadow-inner">
+                            <span class="text-4xl sm:text-6xl transform hover:scale-110 transition-transform">💛</span>
+                        </div>
+                    </div>
+                    <!-- Mini Crown on emblem with bounce -->
+                    <div class="absolute -top-3.5 -right-2 text-3xl anim-twinkle">👑</div>
                 </div>
 
                 <!-- Headline in Locket Chunky Bold Font -->
                 <h1 class="font-fredoka text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-[#1E1B18] leading-tight">
-                    Locket <span class="text-[#D97706] underline decoration-[#FFB800]/60">Gold VIP</span>
+                    Nâng Cấp <span class="text-[#D97706] underline decoration-[#FFB800]/70">Locket Gold</span> VIP
                 </h1>
 
-                <!-- Subtitle -->
+                <!-- Subtitle with verified badge -->
                 <p class="font-fredoka text-base sm:text-xl text-[#6E6659] mt-3 font-semibold max-w-2xl mx-auto leading-relaxed">
-                    Trọn bộ bản quyền <span class="text-[#D97706] font-black">Locket Gold</span> & <span class="text-emerald-700 font-black">Spotify Premium</span> • Kích hoạt tự động, cài đặt 1 chạm trên iPhone bằng Safari!
+                    Trọn bộ tính năng bản quyền <span class="text-[#D97706] font-black">Locket Gold</span> & <span class="text-emerald-700 font-black">Spotify Premium</span> • Kích hoạt tự động, cài đặt 1 chạm Safari siêu tốc!
                 </p>
 
-                <!-- Quick Highlights Badges -->
-                <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
-                    <span class="px-3.5 py-1.5 rounded-full bg-white/90 border border-[#E8D8B0] text-[#6E6659] text-xs font-bold shadow-sm">✨ Không cần Máy Tính</span>
-                    <span class="px-3.5 py-1.5 rounded-full bg-white/90 border border-[#E8D8B0] text-[#6E6659] text-xs font-bold shadow-sm">🔒 Không Jailbreak</span>
-                    <span class="px-3.5 py-1.5 rounded-full bg-white/90 border border-[#E8D8B0] text-[#6E6659] text-xs font-bold shadow-sm">⚡ Nhận Ngay Sau 3 Giây</span>
-                    <span class="px-3.5 py-1.5 rounded-full bg-[#FFB800]/20 border border-[#FFB800]/50 text-[#92400E] text-xs font-extrabold shadow-sm">🛡️ Bảo Hành Trọn Đời</span>
+                <!-- Quick Highlights Badges with radar pulse -->
+                <div class="flex flex-wrap items-center justify-center gap-2.5 mt-5">
+                    <span class="px-4 py-1.5 rounded-full bg-white/95 border border-[#E8D8B0] text-[#6E6659] text-xs font-bold shadow-xs flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 radar-pulse"></span>
+                        <span>Không Cần Mật Khẩu / iCloud</span>
+                    </span>
+                    <span class="px-4 py-1.5 rounded-full bg-white/95 border border-[#E8D8B0] text-[#6E6659] text-xs font-bold shadow-xs">✨ Không Cần Máy Tính / PC</span>
+                    <span class="px-4 py-1.5 rounded-full bg-white/95 border border-[#E8D8B0] text-[#6E6659] text-xs font-bold shadow-xs">🔒 Không Jailbreak Máy</span>
+                    <span class="px-4 py-1.5 rounded-full bg-[#FFB800]/25 border border-[#FFB800]/60 text-[#92400E] text-xs font-black shadow-xs flex items-center gap-1">
+                        <span>⚡</span> Kích Hoạt Trong 30 Giây
+                    </span>
+                </div>
+            </div>
+
+            <!-- 5. INFINITE MARQUEE TICKER (Authentic Locket.com / uplocket style) -->
+            <div class="w-full overflow-hidden py-3 bg-[#FFF3D6] border-y-2 border-[#FFE29A] my-4 select-none rounded-2xl shadow-xs">
+                <div class="marquee-track flex items-center gap-8 text-xs sm:text-sm font-fredoka font-black text-[#8A5B00]">
+                    <div class="flex items-center gap-8 whitespace-nowrap">
+                        <span>💛 LOCKET GOLD VIP TRỌN ĐỜI</span>
+                        <span>•</span>
+                        <span>🎵 SPOTIFY PREMIUM LOSSLESS KHÔNG QUẢNG CÁO</span>
+                        <span>•</span>
+                        <span>🔒 100% AN TOÀN KHÔNG CẦN TÀI KHOẢN / MẬT KHẨU</span>
+                        <span>•</span>
+                        <span>⚡ CÀI ĐẶT 1 CHẠM QUA SAFARI CHUẨN APPLE</span>
+                        <span>•</span>
+                        <span>🛡️ BẢO HÀNH 1 ĐỔI 1 TRONG SUỐT THỜI GIAN SỬ DỤNG</span>
+                        <span>•</span>
+                        <span>👑 HƠN 10.000+ KHÁCH HÀNG ĐÃ NÂNG CẤP THÀNH CÔNG</span>
+                        <span>•</span>
+                    </div>
+                    <div class="flex items-center gap-8 whitespace-nowrap">
+                        <span>💛 LOCKET GOLD VIP TRỌN ĐỜI</span>
+                        <span>•</span>
+                        <span>🎵 SPOTIFY PREMIUM LOSSLESS KHÔNG QUẢNG CÁO</span>
+                        <span>•</span>
+                        <span>🔒 100% AN TOÀN KHÔNG CẦN TÀI KHOẢN / MẬT KHẨU</span>
+                        <span>•</span>
+                        <span>⚡ CÀI ĐẶT 1 CHẠM QUA SAFARI CHUẨN APPLE</span>
+                        <span>•</span>
+                        <span>🛡️ BẢO HÀNH 1 ĐỔI 1 TRONG SUỐT THỜI GIAN SỬ DỤNG</span>
+                        <span>•</span>
+                        <span>👑 HƠN 10.000+ KHÁCH HÀNG ĐÃ NÂNG CẤP THÀNH CÔNG</span>
+                        <span>•</span>
+                    </div>
                 </div>
             </div>
 
@@ -2171,5 +2356,62 @@
         })();
     </script>
 
+
+    <!-- INITIALIZE LENIS SMOOTH SCROLL & SCROLL REVEAL OBSERVER -->
+    <script>
+        // 1. Lenis Smooth Scroll Engine
+        let lenisInstance = null;
+        try {
+            if (typeof Lenis !== 'undefined') {
+                lenisInstance = new Lenis({
+                    duration: 1.15,
+                    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                    smoothWheel: true,
+                    smoothTouch: false,
+                    wheelMultiplier: 1.05,
+                });
+
+                function raf(time) {
+                    lenisInstance.raf(time);
+                    requestAnimationFrame(raf);
+                }
+                requestAnimationFrame(raf);
+
+                // Update scroll progress bar on scroll
+                lenisInstance.on('scroll', (e) => {
+                    const scrollH = document.documentElement.scrollHeight - window.innerHeight;
+                    const progress = scrollH > 0 ? (e.scroll / scrollH) : 0;
+                    document.documentElement.style.setProperty('--sp', Math.min(1, Math.max(0, progress)));
+                });
+            }
+        } catch (e) {
+            console.warn('Lenis init error:', e);
+        }
+
+        // Fallback progress bar listener
+        window.addEventListener('scroll', () => {
+            const scrollH = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = scrollH > 0 ? (window.scrollY / scrollH) : 0;
+            document.documentElement.style.setProperty('--sp', Math.min(1, Math.max(0, progress)));
+        }, { passive: true });
+
+        // 2. IntersectionObserver for Scroll Reveal (.rv)
+        document.addEventListener('DOMContentLoaded', () => {
+            const rvEls = document.querySelectorAll('.rv, .locket-card-interactive, #section_compare, #featuresGrid');
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('in-view');
+                        }
+                    });
+                }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+                rvEls.forEach(el => observer.observe(el));
+            } else {
+                rvEls.forEach(el => el.classList.add('in-view'));
+            }
+        });
+    </script>
 </body>
 </html>

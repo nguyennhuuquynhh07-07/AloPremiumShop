@@ -139,13 +139,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Bot Locket Gold + Spotify is running 24/7!")
             return
 
-        # 1.1 Phục vụ Static Images, Videos & Logo trang web
-        if path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4")) and ".." not in path:
+        # 1.1 Phục vụ Static Images, Videos, Assets & Logo trang web
+        if path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4", ".js", ".css")) and ".." not in path:
             file_name = os.path.basename(path)
             if file_name == "favicon.ico":
                 file_name = "favicon.png"
-            file_path = os.path.join(os.path.dirname(__file__), file_name)
-            if os.path.exists(file_path):
+            clean_rel = path.lstrip("/")
+            file_path = os.path.join(os.path.dirname(__file__), clean_rel)
+            if not os.path.exists(file_path):
+                file_path = os.path.join(os.path.dirname(__file__), file_name)
+            if os.path.exists(file_path) and os.path.isfile(file_path):
                 ext = file_name.rsplit(".", 1)[-1].lower()
                 if ext == "mp4":
                     mime = "video/mp4"
@@ -153,6 +156,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     mime = "image/x-icon"
                 elif ext == "svg":
                     mime = "image/svg+xml"
+                elif ext == "js":
+                    mime = "application/javascript; charset=utf-8"
+                elif ext == "css":
+                    mime = "text/css; charset=utf-8"
                 else:
                     mime = f"image/{ext}"
 
