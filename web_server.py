@@ -583,6 +583,19 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {"ok": True, "orders": all_orders[:50]})
             return
 
+        # API Admin: Lấy danh sách bảng giá & mã gói
+        if path == "/api/admin/prices":
+            pin = params.get("pin", [""])[0].strip() or self.headers.get("X-Admin-PIN", "").strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            self._send_json(200, {
+                "ok": True,
+                "products": config.PRODUCTS,
+                "custom_prices": db.get_custom_prices()
+            })
+            return
+
         # API Admin: Lấy danh sách mã giảm giá
         if path == "/api/admin/codes":
             pin = params.get("pin", [""])[0].strip()
@@ -746,6 +759,71 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True})
             else:
                 self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            return
+
+        # API Admin: Cập nhật giá 1 gói cước (Đồng bộ Web & Bot)
+        if path == "/api/admin/update_price":
+            pin = str(body.get("pin", "")).strip() or self.headers.get("X-Admin-PIN", "").strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            product = str(body.get("product", "")).strip()
+            plan = str(body.get("plan", "")).strip()
+            price = body.get("price")
+            if not product or not plan or price is None:
+                self._send_json(400, {"ok": False, "error": "Thiếu product, plan hoặc price"})
+                return
+            try:
+                price = int(price)
+                if price < 0:
+                    raise ValueError()
+            except Exception:
+                self._send_json(400, {"ok": False, "error": "Giá tiền không hợp lệ"})
+                return
+
+            ok = db.update_plan_price(product, plan, price)
+            if not ok:
+                self._send_json(400, {"ok": False, "error": "Gói cước không tồn tại"})
+                return
+
+            self._send_json(200, {
+                "ok": True,
+                "message": f"Đã cập nhật giá gói thành công!",
+                "products": config.PRODUCTS
+            })
+            return
+
+        # API Admin: Cập nhật toàn bộ bảng giá cùng lúc
+        if path == "/api/admin/update_all_prices":
+            pin = str(body.get("pin", "")).strip() or self.headers.get("X-Admin-PIN", "").strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            prices = body.get("prices")
+            if not isinstance(prices, dict):
+                self._send_json(400, {"ok": False, "error": "Dữ liệu prices không hợp lệ"})
+                return
+
+            db.update_all_prices(prices)
+            self._send_json(200, {
+                "ok": True,
+                "message": "Đã lưu toàn bộ bảng giá mới thành công!",
+                "products": config.PRODUCTS
+            })
+            return
+
+        # API Admin: Khôi phục bảng giá về mặc định
+        if path == "/api/admin/reset_prices":
+            pin = str(body.get("pin", "")).strip() or self.headers.get("X-Admin-PIN", "").strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            db.reset_default_prices()
+            self._send_json(200, {
+                "ok": True,
+                "message": "Đã khôi phục bảng giá về mặc định thành công!",
+                "products": config.PRODUCTS
+            })
             return
 
         # API Admin: Tạo mã giảm giá mới (Hỗ trợ 1 mã hoặc nhiều mã cùng lúc cách nhau bằng dấu phẩy)

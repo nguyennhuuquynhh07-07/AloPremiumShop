@@ -252,19 +252,22 @@ def admin_kb(pending_count: int = 0) -> InlineKeyboardMarkup:
             InlineKeyboardButton("👥 Quản lý khách hàng", callback_data="admin:users_list"),
         ],
         [
-            InlineKeyboardButton("🪙 Số dư Coin CTV",     callback_data="admin:balance"),
+            InlineKeyboardButton("💰 Chỉnh sửa bảng giá", callback_data="admin:edit_prices"),
             InlineKeyboardButton("🎟 Mã giảm giá",         callback_data="admin:codes_list"),
         ],
         [
+            InlineKeyboardButton("🪙 Số dư Coin CTV",     callback_data="admin:balance"),
             InlineKeyboardButton("💳 Kiểm tra VietQR",    callback_data="admin:checkbank"),
+        ],
+        [
             InlineKeyboardButton("🔍 Tìm kiếm đơn/user",   callback_data="admin:find_menu"),
-        ],
-        [
             InlineKeyboardButton("🔎 Tra cứu UID API",    callback_data="admin:check_uid_menu"),
-            InlineKeyboardButton("🔄 Reset máy Spotify",  callback_data="admin:reset_menu"),
         ],
         [
+            InlineKeyboardButton("🔄 Reset máy Spotify",  callback_data="admin:reset_menu"),
             InlineKeyboardButton("📢 Gửi thông báo toàn bot", callback_data="admin:broadcast"),
+        ],
+        [
             InlineKeyboardButton("🌐 Mở Web Admin",       url="https://alopremium.shop/admin"),
         ],
         [
@@ -294,3 +297,39 @@ def back_admin_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🔙 Về bảng điều khiển", callback_data="admin:menu")]
     ])
+
+
+def admin_prices_overview_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("💛 Sửa giá Locket Gold", callback_data="admin:price_prod:locket"),
+            InlineKeyboardButton("🎵 Sửa giá Spotify",     callback_data="admin:price_prod:spotify"),
+        ],
+        [
+            InlineKeyboardButton("👑 Sửa giá Combo Duo VIP", callback_data="admin:price_prod:combo"),
+        ],
+        [
+            InlineKeyboardButton("🔄 Khôi phục giá mặc định", callback_data="admin:reset_prices_confirm"),
+        ],
+        [
+            InlineKeyboardButton("🔙 Menu Admin", callback_data="admin:menu"),
+        ]
+    ])
+
+
+def admin_prices_plans_kb(product_key: str) -> InlineKeyboardMarkup:
+    from config import PRODUCTS
+    prod = PRODUCTS.get(product_key, {})
+    plans = prod.get("plans", {})
+    rows = []
+    for plan_key, plan_data in plans.items():
+        lbl = plan_data.get("label", plan_key)
+        p = plan_data.get("price", 0)
+        p_str = f"{p:,}đ".replace(",", ".")
+        btn_text = f"✏️ {lbl} — {p_str}"
+        rows.append([InlineKeyboardButton(btn_text, callback_data=f"admin:setprice:{product_key}:{plan_key}")])
+    rows.append([
+        InlineKeyboardButton("🔙 Chọn dịch vụ khác", callback_data="admin:edit_prices"),
+        InlineKeyboardButton("🔙 Menu Admin", callback_data="admin:menu")
+    ])
+    return InlineKeyboardMarkup(rows)

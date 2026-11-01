@@ -25,7 +25,7 @@ import api_client as api
 import utils
 import config
 from config import PRODUCTS, ADMIN_IDS, BANK_ID, ACCOUNT_NO, ACCOUNT_NAME
-from keyboards import admin_kb, back_admin_kb, admin_orders_kb
+from keyboards import admin_kb, back_admin_kb, admin_orders_kb, admin_prices_overview_kb, admin_prices_plans_kb
 
 logger = logging.getLogger(__name__)
 
@@ -814,6 +814,36 @@ async def handle_admin_text_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE
     text_input = update.message.text.strip() if update.message.text else ""
     ctx.user_data.pop("admin_action", None)
 
+    # 1.1 Chờ nhập giá mới cho gói cước
+    if action == "waiting_new_price":
+        prod_key = ctx.user_data.pop("price_prod", None)
+        plan_key = ctx.user_data.pop("price_plan", None)
+        clean_str = text_input.replace(".", "").replace(",", "").replace("đ", "").replace("k", "000").replace("K", "000").strip()
+        try:
+            new_price = int(clean_str)
+            if new_price < 0:
+                raise ValueError()
+        except Exception:
+            await update.message.reply_text("❌ Giá tiền không hợp lệ. Vui lòng nhập số tiền (VD: 50000 hoặc gõ /cancel).")
+            return
+
+        ok = db.update_plan_price(prod_key, plan_key, new_price)
+        if ok:
+            prod_name = PRODUCTS.get(prod_key, {}).get("name", prod_key)
+            plan_label = PRODUCTS.get(prod_key, {}).get("plans", {}).get(plan_key, {}).get("label", plan_key)
+            await update.message.reply_text(
+                f"✅ <b>CẬP NHẬT GIÁ THÀNH CÔNG!</b>\n\n"
+                f"• Dịch vụ: <b>{prod_name}</b>\n"
+                f"• Gói cước: <b>{plan_label}</b>\n"
+                f"• Giá mới: <b>{new_price:,}đ</b>\n\n"
+                f"⚡ <i>Bảng giá mới đã được áp dụng đồng bộ ngay lập tức cho cả Web AloPremium.Shop và Bot Telegram!</i>",
+                parse_mode=ParseMode.HTML,
+                reply_markup=admin_prices_plans_kb(prod_key)
+            )
+        else:
+            await update.message.reply_text("❌ Không thể cập nhật giá. Vui lòng thử lại sau.")
+        return
+
     # 2. Chờ từ khoá tìm kiếm
     if action == "waiting_find_query":
         ctx.args = [text_input]
@@ -1153,3 +1183,48 @@ async def duyet_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await msg.edit_text(f"✅ Đã duyệt thành công đơn <code>ORDER_{raw_id}</code> cho @{order['username']}!", parse_mode=ParseMode.HTML)
     else:
         await msg.edit_text(f"❌ Kích hoạt thất bại: <code>{res}</code>", parse_mode=ParseMode.HTML)
+
+
+async def setprice_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Lệnh nhanh đổi giá gói cước: /setprice [dịch_vụ] [gói] [giá]"""
+    if not is_admin(update.effective_user.id):
+        return
+    args = ctx.args or []
+    if len(args) == 3:
+        prod_key, plan_key, price_raw = args[0].lower(), args[1].lower(), args[2]
+        clean_str = price_raw.replace(".", "").replace(",", "").replace("đ", "").replace("k", "000").replace("K", "000").strip()
+        try:
+            new_price = int(clean_str)
+            if new_price < 0:
+                raise ValueError()
+        except Exception:
+            await update.message.reply_text("❌ Số tiền không hợp lệ.")
+            return
+
+        ok = db.update_plan_price(prod_key, plan_key, new_price)
+        if ok:
+            await update.message.reply_text(
+                f"✅ Đã đổi giá <b>{prod_key.upper()} - {plan_key}</b> thành <b>{new_price:,}đ</b> (Đồng bộ Web & Bot)!",
+                parse_mode=ParseMode.HTML
+            )
+        else:
+            await update.message.reply_text(f"❌ Không tìm thấy dịch vụ hoặc gói cước: {prod_key} {plan_key}")
+        return
+
+    # Nếu không truyền tham số: Hiển thị bảng giá & menu chọn
+    text = (
+        "💰 <b>QUẢN LÝ BẢNG GIÁ DỊCH VỤ (WEB & BOT)</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "Bảng giá hiện tại đang áp dụng đồng bộ trên cả Web và Bot:\n\n"
+    )
+    for pk, pv in PRODUCTS.items():
+        text += f"<b>{pv.get('emoji', '')} {pv.get('name', pk)}:</b>\n"
+        for pl_k, pl_v in pv.get("plans", {}).items():
+            text += f" • <b>{pl_v.get('label', pl_k)}:</b> <code>{pl_v.get('price', 0):,}đ</code> ({pl_v.get('packageCode', '')})\n"
+        text += "\n"
+    text += (
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "👉 <i>Bấm nút bên dưới để chọn gói cần sửa giá, hoặc gõ nhanh:</i>\n"
+        "<code>/setprice locket test 10000</code>"
+    )
+    await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=admin_prices_overview_kb())

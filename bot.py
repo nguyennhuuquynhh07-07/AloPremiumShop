@@ -50,7 +50,7 @@ from handlers.admin_handlers import (
     noti_cmd, notistop_cmd,
     rs_cmd, stats_cmd, users_cmd, find_cmd,
     ban_cmd, unban_cmd, orders_cmd, tokens_cmd,
-    checkbank_cmd, addcode_cmd, delcode_cmd, codes_cmd, coin_cmd, packages_cmd, duyet_cmd,
+    checkbank_cmd, addcode_cmd, delcode_cmd, codes_cmd, coin_cmd, packages_cmd, duyet_cmd, setprice_cmd,
     handle_admin_text_input,
 )
 
@@ -291,6 +291,7 @@ def main():
 
     # ── Lệnh Admin ───────────────────────────────────────────────────────────
     app.add_handler(CommandHandler("admin",     admin_cmd))
+    app.add_handler(CommandHandler("setprice",  setprice_cmd))
     app.add_handler(CommandHandler("duyet",     duyet_cmd))
     app.add_handler(CommandHandler("coin",      coin_cmd))
     app.add_handler(CommandHandler("balance",   coin_cmd))

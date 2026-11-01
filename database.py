@@ -10,6 +10,7 @@ from config import DB_ORDERS, DB_STATS
 
 DB_USERS = "data/users.json"
 DB_CODES = "data/codes.json"
+DB_PRICES = "data/prices.json"
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -344,3 +345,87 @@ def mark_tx_used(tx_id: str, order_id: str):
     }
     _save(DB_TX, txs)
 
+
+
+# ── PRICING MANAGEMENT (ĐỒNG BỘ WEB & TELEGRAM BOT) ───────────────────────────
+
+DEFAULT_PRICES = {
+    "locket": {"test": 5000, "6m": 40000, "1y": 60000, "ltm": 160000},
+    "spotify": {"test": 5000, "6m": 40000, "1y": 60000, "ltm": 180000},
+    "combo": {"6m": 65000, "1y": 99000, "ltm": 259000},
+}
+
+def get_custom_prices() -> dict:
+    return _load(DB_PRICES, {})
+
+def save_custom_prices(prices: dict):
+    _save(DB_PRICES, prices)
+
+def apply_custom_prices():
+    prices = get_custom_prices()
+    from config import PRODUCTS
+    for prod_key, plans in prices.items():
+        if prod_key in PRODUCTS and isinstance(plans, dict):
+            for plan_key, price_val in plans.items():
+                if plan_key in PRODUCTS[prod_key].get("plans", {}):
+                    try:
+                        p_int = int(price_val.get("price") if isinstance(price_val, dict) else price_val)
+                        if p_int >= 0:
+                            PRODUCTS[prod_key]["plans"][plan_key]["price"] = p_int
+                    except (ValueError, TypeError):
+                        pass
+
+def update_plan_price(prod_key: str, plan_key: str, new_price: int) -> bool:
+    from config import PRODUCTS
+    if prod_key not in PRODUCTS or plan_key not in PRODUCTS[prod_key].get("plans", {}):
+        return False
+    try:
+        new_price = int(new_price)
+    except (ValueError, TypeError):
+        return False
+
+    prices = get_custom_prices()
+    if prod_key not in prices or not isinstance(prices[prod_key], dict):
+        prices[prod_key] = {}
+    prices[prod_key][plan_key] = new_price
+    save_custom_prices(prices)
+    apply_custom_prices()
+    return True
+
+def update_all_prices(price_map: dict) -> bool:
+    from config import PRODUCTS
+    prices = get_custom_prices()
+    for prod_key, plans in price_map.items():
+        if prod_key in PRODUCTS and isinstance(plans, dict):
+            if prod_key not in prices or not isinstance(prices[prod_key], dict):
+                prices[prod_key] = {}
+            for plan_key, price_val in plans.items():
+                if plan_key in PRODUCTS[prod_key].get("plans", {}):
+                    try:
+                        p_int = int(price_val.get("price") if isinstance(price_val, dict) else price_val)
+                        if p_int >= 0:
+                            prices[prod_key][plan_key] = p_int
+                    except (ValueError, TypeError):
+                        pass
+    save_custom_prices(prices)
+    apply_custom_prices()
+    return True
+
+def reset_default_prices() -> bool:
+    if os.path.exists(DB_PRICES):
+        try:
+            os.remove(DB_PRICES)
+        except Exception:
+            pass
+    from config import PRODUCTS
+    for pk, plans in DEFAULT_PRICES.items():
+        for pl, val in plans.items():
+            if pk in PRODUCTS and pl in PRODUCTS[pk]["plans"]:
+                PRODUCTS[pk]["plans"][pl]["price"] = val
+    return True
+
+# Tự động đồng bộ bảng giá tuỳ chỉnh ngay khi nạp module
+try:
+    apply_custom_prices()
+except Exception:
+    pass

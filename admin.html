@@ -121,6 +121,10 @@
                     class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
                 🎟 Mã Giảm Giá
             </button>
+            <button onclick="switchTab('prices')" id="tabBtn_prices"
+                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white flex items-center gap-1.5">
+                <span>💰</span> Bảng Giá (Web & Bot)
+            </button>
             <button onclick="switchTab('api')" id="tabBtn_api"
                     class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
                 🔗 API CTV & Coin
@@ -432,6 +436,36 @@
         </div>
 
         <!-- ============================================================ -->
+        <!-- TAB: QUẢN LÝ BẢNG GIÁ DỊCH VỤ (PRICES)                       -->
+        <!-- ============================================================ -->
+        <div id="tabContent_prices" class="space-y-6 hidden">
+            <!-- Header bar with Save All button & Reset button -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl">
+                <div>
+                    <h3 class="text-base font-black text-white flex items-center gap-2">
+                        <span>💰</span> Quản Lý Bảng Giá (Đồng Bộ Web & Bot Telegram)
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Sửa giá tại đây sẽ tự động cập nhật ngay lập tức lên toàn bộ giao diện Web Khách và Menu mua hàng của Bot Telegram!
+                    </p>
+                </div>
+                <div class="flex items-center gap-2.5">
+                    <button onclick="resetDefaultPrices()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all cursor-pointer">
+                        🔄 Giá Mặc Định
+                    </button>
+                    <button onclick="saveAllPrices()" id="btnSaveAllPrices" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs shadow-lg hover:shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-1.5">
+                        <span>💾</span> Lưu Toàn Bộ Bảng Giá
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3 PRODUCT PRICE CARDS (Locket, Spotify, Combo) -->
+            <div id="adminPricesGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="p-8 text-center text-slate-500 col-span-3">Đang tải danh sách bảng giá...</div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
         <!-- TAB 5: ĐỒNG BỘ API CTV & COIN (API) -->
         <!-- ============================================================ -->
         <div id="tabContent_api" class="space-y-6 hidden">
@@ -707,7 +741,7 @@
 
         function switchTab(tab, subFilter) {
             currentTab = tab;
-            const tabs = ['analytics', 'orders', 'users', 'codes', 'api', 'system'];
+            const tabs = ['analytics', 'orders', 'users', 'codes', 'prices', 'api', 'system'];
             
             tabs.forEach(t => {
                 const btn = document.getElementById(`tabBtn_${t}`);
@@ -728,6 +762,7 @@
             }
             if (tab === 'users') loadUsers();
             if (tab === 'codes') loadCodes();
+            if (tab === 'prices') loadAdminPrices();
             if (tab === 'api') syncApiData();
             if (tab === 'system') loadSystemInfo();
         }
