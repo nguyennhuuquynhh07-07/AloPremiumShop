@@ -775,6 +775,7 @@
             loadStats();
             loadOrders();
             loadCodes();
+            loadAdminPrices();
             syncApiData();
         }
 
@@ -1259,6 +1260,239 @@
                     loadCodes();
                 } else {
                     alert('Lỗi: ' + data.error);
+                }
+            } catch (err) {
+                alert('Lỗi kết nối: ' + err.message);
+            }
+        }
+
+        
+        // ==========================================
+        // 4.5. QUẢN LÝ BẢNG GIÁ (PRICES)
+        // ==========================================
+        let cachedAdminProducts = {};
+
+        function showAdminToast(msg) {
+            let container = document.getElementById('adminToastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'adminToastContainer';
+                container.className = 'fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto px-4 py-3 rounded-2xl bg-slate-900 border border-amber-500/40 text-white text-xs font-bold shadow-2xl flex items-center gap-2 transform transition-all duration-300 translate-y-4 opacity-0';
+            toast.innerHTML = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        async function loadAdminPrices() {
+            const grid = document.getElementById('adminPricesGrid');
+            if (!grid) return;
+
+            try {
+                const res = await fetch('/api/admin/prices?pin=' + encodeURIComponent(currentPin));
+                const data = await res.json();
+                if (!data.ok || !data.products) {
+                    grid.innerHTML = '<div class="p-8 text-center text-red-400 font-bold col-span-3">❌ Lỗi tải bảng giá: ' + (data.error || 'Không thể lấy dữ liệu') + '</div>';
+                    return;
+                }
+
+                cachedAdminProducts = data.products;
+                renderAdminPrices(data.products);
+            } catch (err) {
+                console.error(err);
+                grid.innerHTML = '<div class="p-8 text-center text-red-400 font-bold col-span-3">❌ Lỗi kết nối: ' + err.message + '</div>';
+            }
+        }
+
+        function renderAdminPrices(products) {
+            const grid = document.getElementById('adminPricesGrid');
+            if (!grid) return;
+
+            const productKeys = Object.keys(products);
+            if (productKeys.length === 0) {
+                grid.innerHTML = '<div class="p-8 text-center text-slate-500 col-span-3">Chưa có gói cước nào trong hệ thống.</div>';
+                return;
+            }
+
+            grid.innerHTML = productKeys.map(prodKey => {
+                const prod = products[prodKey];
+                const plans = prod.plans || {};
+                const planKeys = Object.keys(plans);
+
+                const planRows = planKeys.map(planKey => {
+                    const plan = plans[planKey];
+                    const priceVal = plan.price !== undefined ? plan.price : 0;
+                    const pkgCode = plan.packageCode || planKey;
+
+                    return `
+                        <div class="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-center justify-between flex-wrap gap-3 hover:border-slate-700 transition-colors">
+                            <div class="min-w-[120px]">
+                                <div class="font-bold text-white text-xs flex items-center gap-1.5">
+                                    <span>${plan.label || planKey}</span>
+                                    <span class="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700">${pkgCode}</span>
+                                </div>
+                                <div class="text-[11px] text-slate-500 mt-0.5">Mã gói: <code class="text-amber-400/80">${planKey}</code></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="relative">
+                                    <input type="number" 
+                                           id="priceInput_${prodKey}_${planKey}" 
+                                           value="${priceVal}" 
+                                           step="1000" 
+                                           min="0"
+                                           class="w-32 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-amber-400 font-mono font-black text-xs text-right pr-7 focus:border-amber-400 focus:outline-none" />
+                                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-xs pointer-events-none">đ</span>
+                                </div>
+                                <button onclick="saveSinglePrice('${prodKey}', '${planKey}')" 
+                                        id="btnSave_${prodKey}_${planKey}"
+                                        class="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-black text-xs border border-amber-500/30 transition-all cursor-pointer">
+                                    Lưu
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between pb-4 border-b border-slate-800/80 mb-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-3xl">${prod.emoji || '📦'}</span>
+                                    <div>
+                                        <h3 class="font-black text-white text-base">${prod.name || prodKey}</h3>
+                                        <p class="text-[11px] text-slate-400 mt-0.5">${prod.description || ''}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-2.5">
+                                ${planRows}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function saveSinglePrice(prodKey, planKey) {
+            const input = document.getElementById('priceInput_' + prodKey + '_' + planKey);
+            const btn = document.getElementById('btnSave_' + prodKey + '_' + planKey);
+            if (!input) return;
+
+            const newPrice = parseInt(input.value);
+            if (isNaN(newPrice) || newPrice < 0) {
+                alert('Vui lòng nhập giá tiền hợp lệ (lớn hơn hoặc bằng 0)!');
+                return;
+            }
+
+            if (btn) {
+                btn.innerHTML = '⏳';
+                btn.disabled = true;
+            }
+
+            try {
+                const res = await fetch('/api/admin/update_price', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        pin: currentPin,
+                        product: prodKey,
+                        plan: planKey,
+                        price: newPrice
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showAdminToast('✅ Đã lưu giá gói [' + prodKey + ' - ' + planKey + '] thành công: ' + formatVND(newPrice));
+                    if (data.products) cachedAdminProducts = data.products;
+                } else {
+                    alert('Lỗi: ' + (data.error || 'Không thể lưu giá'));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối: ' + err.message);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = 'Lưu';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        async function saveAllPrices() {
+            const btn = document.getElementById('btnSaveAllPrices');
+            if (btn) {
+                btn.innerHTML = '⏳ Đang lưu...';
+                btn.disabled = true;
+            }
+
+            const pricesMap = {};
+            for (const prodKey in cachedAdminProducts) {
+                pricesMap[prodKey] = {};
+                const plans = cachedAdminProducts[prodKey].plans || {};
+                for (const planKey in plans) {
+                    const input = document.getElementById('priceInput_' + prodKey + '_' + planKey);
+                    if (input) {
+                        const val = parseInt(input.value);
+                        if (!isNaN(val) && val >= 0) {
+                            pricesMap[prodKey][planKey] = val;
+                        }
+                    }
+                }
+            }
+
+            try {
+                const res = await fetch('/api/admin/update_all_prices', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        pin: currentPin,
+                        prices: pricesMap
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showAdminToast('🎉 Đã lưu toàn bộ bảng giá mới thành công! Đồng bộ tức thì với Web và Bot.');
+                    if (data.products) cachedAdminProducts = data.products;
+                } else {
+                    alert('Lỗi: ' + (data.error || 'Không thể lưu bảng giá'));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối: ' + err.message);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '💾 Lưu Toàn Bộ Bảng Giá';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        async function resetDefaultPrices() {
+            if (!confirm('Bạn có chắc chắn muốn khôi phục toàn bộ bảng giá về mặc định ban đầu không?')) {
+                return;
+            }
+
+            try {
+                showAdminToast('⏳ Đang khôi phục bảng giá mặc định...');
+                const res = await fetch('/api/admin/reset_prices', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin: currentPin })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showAdminToast('✅ Đã khôi phục bảng giá về mặc định thành công!');
+                    loadAdminPrices();
+                } else {
+                    alert('Lỗi: ' + (data.error || 'Không thể khôi phục bảng giá'));
                 }
             } catch (err) {
                 alert('Lỗi kết nối: ' + err.message);
