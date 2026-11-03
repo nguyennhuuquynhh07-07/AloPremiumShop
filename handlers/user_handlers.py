@@ -6,6 +6,7 @@ Giao diện chuyên nghiệp, hỗ trợ điều hướng quay lại và huỷ t
 
 import os
 import sys
+import asyncio
 
 _root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if _root not in sys.path:
@@ -692,7 +693,7 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
         extra_order_fields = {}
         if product_key == "spotify":
-            res = api.spotify_check(raw_identifier)
+            res = await asyncio.to_thread(api.spotify_check, raw_identifier)
             data = res.get("data") if isinstance(res.get("data"), dict) else res
             uid  = data.get("uid") or data.get("id") or raw_identifier
             display = data.get("displayName") or data.get("username") or data.get("name") or uid
@@ -711,7 +712,7 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             }
         else:
             cleaned_username = utils.clean_input(raw_identifier)
-            res = api.locket_resolve(cleaned_username)
+            res = await asyncio.to_thread(api.locket_resolve, cleaned_username)
             data = res.get("data") if isinstance(res.get("data"), dict) else res
             uid  = data.get("uid") or data.get("id") or cleaned_username
             display = data.get("displayName") or data.get("username") or data.get("name") or cleaned_username
@@ -1252,7 +1253,7 @@ async def resetspotify_user_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         m = re.search(r"user/([a-zA-Z0-9]+)", raw_target)
         uid = m.group(1) if m else raw_target
 
-        res = api.spotify_reset(uid)
+        res = await asyncio.to_thread(api.spotify_reset, uid)
         resp_msg = res.get("message", "Đã giải phóng phiên thiết bị thành công!")
         await msg.edit_text(
             f"✅ <b>ĐÃ RESET THIẾT BỊ SPOTIFY THÀNH CÔNG!</b>\n\n"
@@ -1326,7 +1327,7 @@ async def cb_user_reset_spotify_menu(update: Update, ctx: ContextTypes.DEFAULT_T
         latest_spot = sorted(spot_orders, key=lambda x: x["created_at"], reverse=True)[0]
         uid = latest_spot.get("uid")
         try:
-            res = api.spotify_reset(uid)
+            res = await asyncio.to_thread(api.spotify_reset, uid)
             resp_msg = res.get("message", "Đã giải phóng phiên thiết bị thành công!")
             text = (
                 f"✅ <b>ĐÃ RESET THIẾT BỊ SPOTIFY THÀNH CÔNG!</b>\n\n"

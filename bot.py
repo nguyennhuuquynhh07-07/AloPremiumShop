@@ -1,4 +1,4 @@
-"""
+﻿"""
 bot.py – Entry point của Bot VIP:
 1. Gói Locket Gold VIP (API CTV)
 2. Gói Spotify Premium (API CTV)
@@ -232,7 +232,14 @@ def main():
 
     print("🚀 Đang khởi động Bot AloPremium.shop (Locket Gold & Spotify Premium)...")
 
-    app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
+    app = (
+        ApplicationBuilder()
+        .token(BOT_TOKEN)
+        .post_init(post_init)
+        .concurrent_updates(True)
+        .connection_pool_size(64)
+        .build()
+    )
 
     # ── ConversationHandler: Luồng mua hàng (allow_reentry=True, nhận click gói liên tục) ──
     buy_conv = ConversationHandler(

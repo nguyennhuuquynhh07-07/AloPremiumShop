@@ -1,10 +1,11 @@
-"""
+﻿"""
 order_service.py – Logic xử lý đơn hàng tập trung (Locket Gold & Spotify Premium)
 Tự động kích hoạt bản quyền qua API CTV, cấp DNS profile và thông báo.
 """
 
 import io
 import logging
+import asyncio
 from datetime import datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
@@ -58,11 +59,11 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             }
             pkg_map = combo_map.get(plan_key, {"locket": "LKGVV", "spotify": "SPVV"})
             try:
-                api.create_subscription(uid=target_account, package_code=pkg_map["locket"], service="locket", note=f"Combo {order_id} Locket")
+                await asyncio.to_thread(api.create_subscription, uid=target_account, package_code=pkg_map["locket"], service="locket", note=f"Combo {order_id} Locket")
             except Exception as e_lk:
                 logger.warning(f"Combo Locket API: {e_lk}")
             try:
-                api.create_subscription(uid=target_account, package_code=pkg_map["spotify"], service="spotify", note=f"Combo {order_id} Spotify")
+                await asyncio.to_thread(api.create_subscription, uid=target_account, package_code=pkg_map["spotify"], service="spotify", note=f"Combo {order_id} Spotify")
             except Exception as e_sp:
                 logger.warning(f"Combo Spotify API: {e_sp}")
 
@@ -76,7 +77,8 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             )
         else:
             # Gói Locket hoặc Spotify đơn lẻ
-            result = api.create_subscription(
+            result = await asyncio.to_thread(
+                api.create_subscription,
                 uid=target_account,
                 package_code=plnv["packageCode"],
                 service=pv["service"],
