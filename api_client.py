@@ -1,4 +1,4 @@
-"""
+﻿"""
 api_client.py – Gọi API locket.2707226.xyz
 Tích hợp bảng tra cứu và phân loại mã lỗi HTTP chuẩn:
   400, 401, 402, 403, 404, 409, 429
@@ -6,6 +6,12 @@ Tích hợp bảng tra cứu và phân loại mã lỗi HTTP chuẩn:
 
 import httpx
 from config import API_KEY, API_BASE_URL
+
+_client = httpx.Client(
+    timeout=httpx.Timeout(12.0, connect=5.0),
+    limits=httpx.Limits(max_keepalive_connections=20, max_connections=50),
+    headers={"User-Agent": "AloPremiumBot/2.0"}
+)
 
 
 # ─── BẢNG TRA CỨU MÃ LỖI THEO TÀI LIỆU API CTV ─────────────────────────────
@@ -73,7 +79,7 @@ def get_account_info() -> dict:
     Tra cứu thông tin tài khoản CTV: username, email, balanceCoin, role...
     """
     url = f"{API_BASE_URL}/api/keys/me"
-    resp = httpx.get(url, headers=_headers(), timeout=15)
+    resp = _client.get(url, headers=_headers(), timeout=15)
     if resp.is_error:
         raise Exception(parse_api_error(resp))
     return resp.json()
@@ -85,7 +91,7 @@ def get_packages(service: str = "all") -> dict:
     Lấy danh sách các gói cước và giá coin từ máy chủ.
     """
     url = f"{API_BASE_URL}/api/packages"
-    resp = httpx.get(url, params={"service": service}, headers=_headers(), timeout=15)
+    resp = _client.get(url, params={"service": service}, headers=_headers(), timeout=15)
     if resp.is_error:
         raise Exception(parse_api_error(resp))
     return resp.json()
@@ -97,7 +103,7 @@ def check_uid_details(username: str, service: str = "locket") -> dict:
     Kiểm tra thông tin chi tiết gói, hạn dùng, trạng thái kích hoạt của UID.
     """
     url = f"{API_BASE_URL}/api/uid/check"
-    resp = httpx.get(url, params={"username": username, "service": service}, headers=_headers(), timeout=15)
+    resp = _client.get(url, params={"username": username, "service": service}, headers=_headers(), timeout=15)
     if resp.is_error:
         raise Exception(parse_api_error(resp))
     return resp.json()
@@ -111,7 +117,7 @@ def spotify_check(uid_or_link: str) -> dict:
     Kiểm tra tài khoản & Profile Spotify.
     """
     url = f"{API_BASE_URL}/api/spotify/check"
-    resp = httpx.get(url, params={"uid": uid_or_link}, headers=_headers(), timeout=15)
+    resp = _client.get(url, params={"uid": uid_or_link}, headers=_headers(), timeout=15)
     if resp.is_error:
         raise Exception(parse_api_error(resp))
     return resp.json()
@@ -124,7 +130,7 @@ def spotify_reset(uid: str) -> dict:
     Body: {"uid": "<uid>"}
     """
     url = f"{API_BASE_URL}/api/spotify/reset"
-    resp = httpx.post(url, json={"uid": uid}, headers=_headers(), timeout=15)
+    resp = _client.post(url, json={"uid": uid}, headers=_headers(), timeout=15)
     if resp.is_error:
         raise Exception(parse_api_error(resp))
     return resp.json()
@@ -138,7 +144,7 @@ def locket_resolve(identifier: str) -> dict:
     Tra cứu Link / Username ra UID & Avatar.
     """
     url = f"{API_BASE_URL}/api/uid/resolve"
-    resp = httpx.post(
+    resp = _client.post(
         url,
         json={"identifier": identifier, "service": "locket"},
         headers=_headers(),
@@ -158,7 +164,7 @@ def create_subscription(uid: str, package_code: str, service: str, note: str = "
     Body: { "username": "<uid>", "packageCode": "<code>", "service": "<service>", "note": "..." }
     """
     url = f"{API_BASE_URL}/api/uid/create"
-    resp = httpx.post(
+    resp = _client.post(
         url,
         json={
             "username": uid,
@@ -191,7 +197,7 @@ def get_activated_uids(force_refresh: bool = False) -> list:
 
     url = f"{API_BASE_URL}/api/uid/list"
     try:
-        resp = httpx.get(url, headers=_headers(), timeout=5)
+        resp = _client.get(url, headers=_headers(), timeout=5)
         if resp.is_success:
             data = resp.json().get("data", [])
             if data:

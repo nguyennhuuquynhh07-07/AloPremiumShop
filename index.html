@@ -271,15 +271,19 @@
             animation: pvring 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
         }
 
-        /* 6. Marquee Horizontal Ticker */
+        /* 6. Marquee Horizontal Ticker - Hardware-Accelerated 60fps/120fps Seamless Loop */
         @keyframes tscroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
         }
         .marquee-track {
             display: flex;
             width: max-content;
-            animation: tscroll 28s linear infinite;
+            animation: tscroll 30s linear infinite;
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translate3d(0, 0, 0);
         }
         .marquee-track:hover {
             animation-play-state: paused;
@@ -430,9 +434,11 @@
 
             <!-- 5. INFINITE MARQUEE TICKER (Authentic Locket.com / uplocket style) -->
             <div class="w-full overflow-hidden py-3 bg-[#FFF3D6] border-y-2 border-[#FFE29A] my-4 select-none rounded-2xl shadow-xs">
-                <div class="marquee-track flex items-center gap-8 text-xs sm:text-sm font-fredoka font-black text-[#8A5B00]">
-                    <div class="flex items-center gap-8 whitespace-nowrap">
-                        <span>💛 LOCKET GOLD VIP TRỌN ĐỜI</span>`r`n                        <span>•</span>`r`n                        <span>🔥 MỞ KHOÁ TÍNH NĂNG FILTER MỚI</span>
+                <div class="marquee-track flex items-center text-xs sm:text-sm font-fredoka font-black text-[#8A5B00]">
+                    <div class="flex items-center gap-6 sm:gap-8 whitespace-nowrap pr-6 sm:pr-8">
+                        <span>💛 LOCKET GOLD VIP TRỌN ĐỜI</span>
+                        <span>•</span>
+                        <span>🔥 MỞ KHOÁ TOÀN BỘ TÍNH NĂNG VIP</span>
                         <span>•</span>
                         <span>🎵 SPOTIFY PREMIUM LOSSLESS KHÔNG QUẢNG CÁO</span>
                         <span>•</span>
@@ -445,8 +451,10 @@
                         <span>👑 HƠN 200+ NGƯỜI ĐÃ NÂNG CẤP THÀNH CÔNG</span>
                         <span>•</span>
                     </div>
-                    <div class="flex items-center gap-8 whitespace-nowrap">
-                        <span>💛 LOCKET GOLD VIP TRỌN ĐỜI</span>`r`n                        <span>•</span>`r`n                        <span>🔥 MỞ KHOÁ TÍNH NĂNG FILTER MỚI</span>
+                    <div class="flex items-center gap-6 sm:gap-8 whitespace-nowrap pr-6 sm:pr-8" aria-hidden="true">
+                        <span>💛 LOCKET GOLD VIP TRỌN ĐỜI</span>
+                        <span>•</span>
+                        <span>🔥 MỞ KHOÁ TOÀN BỘ TÍNH NĂNG VIP</span>
                         <span>•</span>
                         <span>🎵 SPOTIFY PREMIUM LOSSLESS KHÔNG QUẢNG CÁO</span>
                         <span>•</span>
@@ -1627,12 +1635,12 @@
             document.getElementById('paymentModal').classList.add('hidden');
         }
 
-        // Vòng lặp kiểm tra trạng thái đơn hàng mỗi 2.5 giây
+        // Vòng lặp kiểm tra trạng thái đơn hàng siêu tốc (Kiểm tra ngay + lặp mỗi 2 giây)
         function startPollingOrder(orderId) {
             if (pollTimer) clearInterval(pollTimer);
-            pollTimer = setInterval(async () => {
+            const checkStatus = async () => {
                 try {
-                    const res = await fetch(`/api/order_status?order_id=${encodeURIComponent(orderId)}`);
+                    const res = await fetch('/api/order_status?order_id=' + encodeURIComponent(orderId));
                     if (res.ok) {
                         const data = await res.json();
                         if (data.is_paid || data.status === 'done') {
@@ -1643,7 +1651,9 @@
                 } catch (e) {
                     console.warn('Poll error:', e);
                 }
-            }, 2500);
+            };
+            checkStatus();
+            pollTimer = setInterval(checkStatus, 2000);
         }
 
         // Hiển thị màn hình Thanh Toán Thành Công

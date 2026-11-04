@@ -150,14 +150,15 @@ async def check_sepay_auto_payments(bot):
 
 
 async def sepay_worker(bot):
-    """Vòng lặp chạy ngầm quét biến động số dư TPBank mỗi 8 giây"""
-    logger.info("🚀 Luồng SePay worker đã khởi động (quét TPBank tự động)...")
+    """Vòng lặp chạy ngầm quét biến động số dư TPBank mỗi 4 giây (Siêu tốc)"""
+    logger.info("🚀 Luồng SePay worker đã khởi động (quét TPBank tự động mỗi 4s)...")
+    from order_service import check_all_sepay_pending_payments
     while True:
         try:
-            await check_sepay_auto_payments(bot)
+            await check_all_sepay_pending_payments(bot)
         except Exception as e:
             logger.warning(f"SePay worker loop error: {e}")
-        await asyncio.sleep(8)
+        await asyncio.sleep(4)
 
 async def keep_alive_worker():
     """Tự động ping server Render mỗi 10 phút để giữ máy chủ và bot luôn thức 24/7 (Async, không nghẽn)"""

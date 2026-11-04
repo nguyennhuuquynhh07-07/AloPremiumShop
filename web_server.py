@@ -1,5 +1,5 @@
-"""
-web_server.py – Máy chủ Web & API Cổng Thanh Toán VIP 3-in-1
+﻿"""
+web_server.py – Máy chủ Web & API Cổng Thanh Toán VIP Duo (Locket & Spotify)
 Phục vụ:
 1. Giao diện Web App bán hàng Responsive siêu đẹp cho Safari iPhone & Desktop.
 2. Tải trực tiếp file .mobileconfig vào Cài đặt iOS (Content-Type: application/x-apple-aspen-config).
@@ -320,7 +320,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
             if not order:
                 self._send_json(404, {"ok": False, "error": "Không tìm thấy đơn hàng"})
                 return
-            
+
+            # Tự động quét giao dịch SePay tức thì nếu đơn chưa hoàn tất (Web Polling Siêu Tốc)
+            if order.get("status") in ("pending", "waiting_payment", "pending_approval"):
+                try:
+                    from order_service import check_and_activate_sepay_order
+                    check_and_activate_sepay_order(order_id, bot=BOT_INSTANCE)
+                    order = db.get_order(order_id)
+                except Exception as e_poll_sp:
+                    logger.warning(f"Error checking SePay during order_status: {e_poll_sp}")
+
             is_done = order.get("status") == "done"
             download_url = f"/api/download_profile?order_id={order_id}" if is_done else None
             self._send_json(200, {
@@ -532,6 +541,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.send_header("Content-Length", str(len(html_bytes)))
+                self.send_header("Cache-Control", "no-cache, must-revalidate")
                 self._send_cors_headers()
                 self.end_headers()
                 self.wfile.write(html_bytes)
@@ -725,6 +735,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.send_header("Content-Length", str(len(html_bytes)))
+                self.send_header("Cache-Control", "no-cache, must-revalidate")
                 self._send_cors_headers()
                 self.end_headers()
                 self.wfile.write(html_bytes)

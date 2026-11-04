@@ -1,10 +1,13 @@
-"""
+﻿"""
 database.py – Quản lý dữ liệu JSON (đơn hàng, thống kê, người dùng, mã giảm giá)
 """
 
 import json
 import os
+import threading
 from datetime import datetime
+
+_db_lock = threading.Lock()
 
 from config import DB_ORDERS, DB_STATS
 
@@ -32,8 +35,9 @@ def _load(path: str, default):
 
 def _save(path: str, data):
     _ensure(path)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    with _db_lock:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
 
 
 # ── ORDERS ────────────────────────────────────────────────────────────────────
