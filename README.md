@@ -1,13 +1,13 @@
-# Telegram Bot Kích Hoạt Locket Gold VIP + Spotify Premium + YouTube Premium 3-in-1
+﻿# Telegram Bot & Web Kích Hoạt Locket Gold VIP + Spotify Premium
 
 Dự án chuyển đổi toàn bộ tính năng của giao diện Web kích hoạt DNS Locket Gold thành **Telegram Bot** tự động hóa 100%.
 
 ---
 
-## 🔍 I. ĐÁNH GIÁ THỰC HƯ: WEB NÀY CÓ PHẢI KÍCH HOẠT LOCKET, SPOTIFY & YOUTUBE THẬT KHÔNG?
+## 🔍 I. ĐÁNH GIÁ THỰC HƯ: WEB NÀY CÓ PHẢI KÍCH HOẠT LOCKET & SPOTIFY THẬT KHÔNG?
 
 ### 1. Cơ chế hoạt động thực tế (Bản chất kỹ thuật)
-* **Đây KHÔNG PHẢI là kích hoạt bản quyền chính thức trên máy chủ của Locket, Spotify hay Google/YouTube.**
+* **Đây KHÔNG PHẢI là kích hoạt bản quyền chính thức trên máy chủ của Locket hay Spotify.**
 * **Nguyên lý thực tế:** Đây là phương pháp **Bypass phía thiết bị (Client-Side MITM Proxy qua DNS-over-HTTPS)**.
   1. **Với Locket:** Ứng dụng Locket dùng dịch vụ của bên thứ ba là RevenueCat (`api.revenuecat.com`) để kiểm tra thuê bao Gold. Khi cài cấu hình DNS và chứng chỉ Root CA (`Locket Gold Root CA`), lưu lượng mạng tới `api.revenuecat.com` bị chuyển hướng qua máy chủ proxy (`160.191.242.70`). Máy chủ này chặn yêu cầu và giả lập (spoofing) một phản hồi JSON khẳng định rằng tài khoản của bạn đã mua gói Gold VIP vĩnh viễn đến năm 2099. Nhờ đó, ứng dụng Locket trên máy mở khóa toàn bộ tính năng Gold.
   2. **Với Spotify:** Cấu hình DNS chặn các domain máy chủ quảng cáo của Spotify (`spclient.wg.spotify.com`,...) giúp hạn chế quảng cáo và can thiệp một số tính năng phát nhạc.
@@ -72,5 +72,5 @@ Dự án chuyển đổi toàn bộ tính năng của giao diện Web kích ho�
 7. **Bật tin cậy chứng chỉ:**
    * Vào **Cài đặt** -> **Cài đặt chung** (General) -> **Giới thiệu** (About) -> **Cài đặt tin cậy chứng nhận** (Certificate Trust Settings).
    * Bật **XANH** công tắc cho chứng chỉ **Locket Gold Root CA**.
-8. Mở Locket, Spotify hoặc YouTube lên để trải nghiệm!
+8. Mở Locket hoặc Spotify lên để trải nghiệm!
 
