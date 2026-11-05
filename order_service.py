@@ -7,8 +7,14 @@ import io
 import logging
 import asyncio
 from datetime import datetime
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.constants import ParseMode
+try:
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    from telegram.constants import ParseMode
+except ImportError:
+    InlineKeyboardButton = None
+    InlineKeyboardMarkup = None
+    class ParseMode:
+        HTML = "HTML"
 
 import database as db
 import api_client as api
@@ -424,3 +430,103 @@ async def check_all_sepay_pending_payments(bot=None) -> list[str]:
                 break
 
     return activated_list
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  ĐỒNG BỘ ĐƠN HÀNG TỪ MÁY CHỦ API CTV (WEB CHỦ) VỀ WEB & BOT NỘI BỘ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def sync_upstream_orders() -> int:
+    """
+    Đồng bộ toàn bộ danh sách tài khoản đã kích hoạt từ máy chủ API CTV (web chủ)
+    vào cơ sở dữ liệu nội bộ. Giúp khách hàng tra cứu và tải lại cấu hình DNS VIP trọn đời!
+    """
+    try:
+        import api_client
+        uids = api_client.get_activated_uids(force_refresh=True)
+        if not uids:
+            return 0
+
+        orders = db.get_orders()
+        synced_count = 0
+
+        for item in uids:
+            username = str(item.get("username") or "").strip()
+            uid_str = str(item.get("uidString") or "").strip()
+            if not username and not uid_str:
+                continue
+
+            service = item.get("service") or "locket"
+            pkg = item.get("package") or {}
+            pkg_name = pkg.get("name") or ("Locket Gold VIP" if service == "locket" else "Spotify Premium")
+            pkg_code = (pkg.get("code") or "").upper()
+
+            # Xác định plan key chuẩn (6m, 1y, ltm, test)
+            plan_key = "ltm"
+            if "6M" in pkg_code or "6 THÁNG" in pkg_name.upper():
+                plan_key = "6m"
+            elif "1Y" in pkg_code or "1 NĂM" in pkg_name.upper():
+                plan_key = "1y"
+            elif "T3D" in pkg_code or "TEST" in pkg_name.upper():
+                plan_key = "test"
+
+            clean_u = username.lower().lstrip("@")
+            clean_uid = uid_str.lower()
+            matched_oid = None
+
+            for oid, od in orders.items():
+                od_u = str(od.get("username", "")).lower().lstrip("@")
+                od_disp = str(od.get("display_name", "")).lower().lstrip("@")
+                od_uid = str(od.get("uid", "")).lower()
+                od_target = str(od.get("account_target", "")).lower().lstrip("@")
+
+                if (clean_u and (clean_u == od_u or clean_u == od_disp or clean_u == od_target)) or \
+                   (clean_uid and (clean_uid == od_uid or clean_uid == od_target)):
+                    matched_oid = oid
+                    break
+
+            dns_link = f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+            created_at = item.get("createdAt") or datetime.now().isoformat()
+            expires_at = item.get("expiresAt")
+            avatar_url = item.get("avatarUrl")
+
+            if matched_oid:
+                orders[matched_oid]["status"] = "done"
+                if not orders[matched_oid].get("dns_link"):
+                    orders[matched_oid]["dns_link"] = dns_link
+                if expires_at:
+                    orders[matched_oid]["expires_at"] = expires_at
+                if avatar_url and not orders[matched_oid].get("avatar"):
+                    orders[matched_oid]["avatar"] = avatar_url
+                if not orders[matched_oid].get("uid"):
+                    orders[matched_oid]["uid"] = uid_str
+            else:
+                safe_oid_suffix = (uid_str[:8] if len(uid_str) >= 8 else username[:8]).upper()
+                new_oid = f"CTV_{safe_oid_suffix}"
+                orders[new_oid] = {
+                    "order_id": new_oid,
+                    "user_id": 0,
+                    "username": username or uid_str,
+                    "display_name": username or uid_str,
+                    "account_target": username or uid_str,
+                    "uid": uid_str or username,
+                    "product": service,
+                    "plan": plan_key,
+                    "plan_label": pkg_name,
+                    "price": 0,
+                    "status": "done",
+                    "avatar": avatar_url,
+                    "created_at": created_at,
+                    "done_at": created_at,
+                    "expires_at": expires_at,
+                    "dns_link": dns_link,
+                    "source": "web_chu"
+                }
+                synced_count += 1
+
+        db.save_orders(orders)
+        logger.info(f"🔄 [SYNC WEB CHỦ] Đã đồng bộ thành công {len(uids)} tài khoản ({synced_count} đơn mới)!")
+        return len(uids)
+    except Exception as e:
+        logger.error(f"Lỗi đồng bộ từ web chủ: {e}")
+        return 0

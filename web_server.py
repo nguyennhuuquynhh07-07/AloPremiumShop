@@ -289,6 +289,17 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
+        # 3.0 API Đồng bộ đơn hàng từ máy chủ CTV (Web Chủ)
+        if path == "/api/sync_upstream":
+            from order_service import sync_upstream_orders
+            cnt = sync_upstream_orders()
+            self._send_json(200, {
+                "ok": True,
+                "message": f"Đã đồng bộ {cnt} tài khoản từ máy chủ CTV thành công!",
+                "synced_count": cnt
+            })
+            return
+
         # 3.1 API Danh sách đơn hàng vừa kích hoạt thành công (Đồng bộ máy chủ CTV + Đơn nội bộ)
         if path == "/api/recent_purchases":
             recent_list = []
@@ -548,29 +559,107 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "direct_safari_url": f"{config.DNS_BASE_URL}/{config.DNS_SLUG}" if is_done else None
                     })
 
-            # Nếu chưa thấy trong database local nhưng tài khoản đã kích hoạt trên máy chủ API CTV
+            # Nếu chưa thấy trong database local nhưng tài khoản đã kích hoạt trên máy chủ API CTV (web chủ)
             if len(results) == 0 and len(q_clean) >= 3:
+                # 1. Quét nhanh trong danh sách UIDs đã kích hoạt từ web chủ
                 try:
-                    ctv_res = api.check_uid_details(q_clean, "locket")
-                    dt = ctv_res.get("data", {}) if isinstance(ctv_res, dict) else {}
-                    if dt.get("active") or dt.get("status") == "ACTIVE":
-                        pkg_info = dt.get("package") or {}
-                        results.append({
-                            "order_id": f"CTV_{q_clean.upper()}",
-                            "product": dt.get("service") or "locket",
-                            "plan": pkg_info.get("name") or "Locket Gold VIP",
-                            "price": 0,
-                            "status": "done",
-                            "uid": dt.get("uid"),
-                            "display_name": dt.get("username") or q_clean,
-                            "avatar": dt.get("avatarUrl"),
-                            "expires_at": dt.get("expiresAt"),
-                            "created_at": dt.get("createdAt") or datetime.now().isoformat(),
-                            "download_url": f"/api/download_profile?username={q_clean}&service=locket",
-                            "direct_safari_url": f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
-                        })
-                except Exception:
-                    pass
+                    uids = api.get_activated_uids()
+                    for it in uids:
+                        it_u = str(it.get("username", "")).lower().lstrip("@")
+                        it_uid = str(it.get("uidString", "")).lower()
+                        if q_clean == it_u or q_clean == it_uid or (len(q_clean) >= 4 and (q_clean in it_u or q_clean in it_uid)):
+                            pkg_it = it.get("package") or {}
+                            svc_it = it.get("service") or "locket"
+                            safe_suffix = (it_uid[:8] if len(it_uid) >= 8 else it_u[:8]).upper()
+                            oid_it = f"CTV_{safe_suffix}"
+
+                            # Tự động đồng bộ ngay vào database nội bộ
+                            db.update_order(
+                                oid_it,
+                                order_id=oid_it,
+                                user_id=0,
+                                username=it.get("username") or it_u,
+                                display_name=it.get("username") or it_u,
+                                account_target=it.get("username") or it_u,
+                                uid=it.get("uidString") or q_clean,
+                                product=svc_it,
+                                plan=pkg_it.get("name") or "VIP",
+                                plan_label=pkg_it.get("name") or "VIP",
+                                status="done",
+                                created_at=it.get("createdAt") or datetime.now().isoformat(),
+                                done_at=it.get("createdAt") or datetime.now().isoformat(),
+                                expires_at=it.get("expiresAt"),
+                                avatar=it.get("avatarUrl"),
+                                dns_link=f"{config.DNS_BASE_URL}/{config.DNS_SLUG}",
+                                source="web_chu"
+                            )
+                            results.append({
+                                "order_id": oid_it,
+                                "product": svc_it,
+                                "plan": pkg_it.get("name") or "VIP",
+                                "price": 0,
+                                "status": "done",
+                                "uid": it.get("uidString") or q_clean,
+                                "display_name": it.get("username") or q_clean,
+                                "avatar": it.get("avatarUrl"),
+                                "expires_at": it.get("expiresAt"),
+                                "created_at": it.get("createdAt") or datetime.now().isoformat(),
+                                "download_url": f"/api/download_profile?order_id={oid_it}",
+                                "direct_safari_url": f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+                            })
+                            break
+                except Exception as e_q_uids:
+                    logger.warning(f"Error checking active UIDs during lookup: {e_q_uids}")
+
+                # 2. Nếu vẫn chưa có, gọi tra cứu chi tiết UID (cả Locket và Spotify)
+                if len(results) == 0:
+                    for svc in ("locket", "spotify"):
+                        try:
+                            ctv_res = api.check_uid_details(q_clean, svc)
+                            dt = ctv_res.get("data", {}) if isinstance(ctv_res, dict) else {}
+                            if dt.get("active") or dt.get("status") == "ACTIVE" or dt.get("found"):
+                                pkg_info = dt.get("package") or {}
+                                ret_uid = dt.get("uid") or q_clean
+                                ret_user = dt.get("username") or q_clean
+                                safe_suffix = (ret_uid[:8] if len(ret_uid) >= 8 else ret_user[:8]).upper()
+                                ret_oid = f"CTV_{safe_suffix}"
+
+                                db.update_order(
+                                    ret_oid,
+                                    order_id=ret_oid,
+                                    user_id=0,
+                                    username=ret_user,
+                                    display_name=ret_user,
+                                    account_target=ret_user,
+                                    uid=ret_uid,
+                                    product=dt.get("service") or svc,
+                                    plan=pkg_info.get("name") or "VIP",
+                                    plan_label=pkg_info.get("name") or "VIP",
+                                    status="done",
+                                    created_at=dt.get("createdAt") or datetime.now().isoformat(),
+                                    done_at=dt.get("createdAt") or datetime.now().isoformat(),
+                                    expires_at=dt.get("expiresAt"),
+                                    avatar=dt.get("avatarUrl"),
+                                    dns_link=f"{config.DNS_BASE_URL}/{config.DNS_SLUG}",
+                                    source="web_chu"
+                                )
+                                results.append({
+                                    "order_id": ret_oid,
+                                    "product": dt.get("service") or svc,
+                                    "plan": pkg_info.get("name") or "VIP",
+                                    "price": 0,
+                                    "status": "done",
+                                    "uid": ret_uid,
+                                    "display_name": ret_user,
+                                    "avatar": dt.get("avatarUrl"),
+                                    "expires_at": dt.get("expiresAt"),
+                                    "created_at": dt.get("createdAt") or datetime.now().isoformat(),
+                                    "download_url": f"/api/download_profile?order_id={ret_oid}",
+                                    "direct_safari_url": f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+                                })
+                                break
+                        except Exception:
+                            pass
 
             results.sort(key=lambda x: x.get("created_at", ""), reverse=True)
             self._send_json(200, {"ok": True, "orders": results[:5]})
@@ -1473,5 +1562,10 @@ def start_web_server(bot=None, loop=None, port=None):
     t = threading.Thread(target=server.serve_forever, daemon=True)
     t.start()
     logger.info(f"🌐 Web App & API Server đã khởi động thành công trên cổng {port}!")
+    try:
+        from order_service import sync_upstream_orders
+        threading.Thread(target=sync_upstream_orders, daemon=True).start()
+    except Exception as e_sync:
+        logger.warning(f"Initial upstream sync failed: {e_sync}")
     return server
 

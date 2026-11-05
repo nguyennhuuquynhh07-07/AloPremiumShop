@@ -1,4 +1,4 @@
-﻿"""
+"""
 bot.py – Entry point của Bot VIP:
 1. Gói Locket Gold VIP (API CTV)
 2. Gói Spotify Premium (API CTV)
@@ -50,7 +50,7 @@ from handlers.admin_handlers import (
     noti_cmd, notistop_cmd,
     rs_cmd, stats_cmd, users_cmd, find_cmd,
     ban_cmd, unban_cmd, orders_cmd, tokens_cmd,
-    checkbank_cmd, addcode_cmd, delcode_cmd, codes_cmd, coin_cmd, packages_cmd, duyet_cmd, setprice_cmd,
+    checkbank_cmd, addcode_cmd, delcode_cmd, codes_cmd, coin_cmd, packages_cmd, duyet_cmd, setprice_cmd, sync_cmd,
     handle_admin_text_input,
 )
 
@@ -204,6 +204,7 @@ async def post_init(application):
         BotCommand("addcode", "Tạo mã giảm giá"),
         BotCommand("noti", "Gửi thông báo toàn hệ thống"),
         BotCommand("duyet", "Duyệt đơn thủ công"),
+        BotCommand("sync", "Đồng bộ đơn hàng từ web chủ"),
         BotCommand("cancel", "Hủy thao tác đang làm"),
     ]
 
@@ -224,6 +225,18 @@ async def post_init(application):
 
     asyncio.create_task(keep_alive_worker())
     logger.info("⚡ Đã kích hoạt cơ chế giữ máy chủ Render hoạt động 24/7.")
+
+    async def sync_upstream_worker():
+        from order_service import sync_upstream_orders
+        while True:
+            try:
+                await asyncio.to_thread(sync_upstream_orders)
+            except Exception as e_s:
+                logger.warning(f"Sync upstream worker error: {e_s}")
+            await asyncio.sleep(600)  # Lặp lại mỗi 10 phút
+
+    asyncio.create_task(sync_upstream_worker())
+    logger.info("⚡ Đã kích hoạt luồng tự động đồng bộ đơn hàng từ máy chủ CTV (web chủ).")
 
 
 def main():
@@ -301,6 +314,7 @@ def main():
     app.add_handler(CommandHandler("admin",     admin_cmd))
     app.add_handler(CommandHandler("setprice",  setprice_cmd))
     app.add_handler(CommandHandler("duyet",     duyet_cmd))
+    app.add_handler(CommandHandler("sync",      sync_cmd))
     app.add_handler(CommandHandler("coin",      coin_cmd))
     app.add_handler(CommandHandler("balance",   coin_cmd))
     app.add_handler(CommandHandler("packages",  packages_cmd))
