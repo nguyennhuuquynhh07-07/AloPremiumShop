@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -1593,7 +1593,7 @@
                     body: JSON.stringify({
                         product: selectedProduct,
                         plan: selectedPlan,
-                        identifier: verifiedAccountData.uid,
+                        identifier: (selectedProduct === 'locket' && verifiedAccountData.display_name) ? verifiedAccountData.display_name : (verifiedAccountData.uid || verifiedAccountData.display_name),
                         display_name: verifiedAccountData.display_name,
                         avatar: verifiedAccountData.avatar,
                         token: verifiedAccountData.token || '',

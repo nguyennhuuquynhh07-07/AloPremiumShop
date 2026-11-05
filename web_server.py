@@ -1,4 +1,4 @@
-﻿"""
+"""
 web_server.py – Máy chủ Web & API Cổng Thanh Toán VIP Duo (Locket & Spotify)
 Phục vụ:
 1. Giao diện Web App bán hàng Responsive siêu đẹp cho Safari iPhone & Desktop.
@@ -62,6 +62,71 @@ def check_ip_rate_limit(ip: str, max_requests: int = 60, window_secs: int = 60) 
         return False, "Tần suất yêu cầu bất thường. IP của bạn đã bị tạm khóa 15 phút để đảm bảo an toàn."
 
     return True, ""
+
+
+def dispatch_admin_order_alert(order_id: str, pv: dict, plnv: dict, display_name: str, identifier: str, price: int, orig_price: int, applied_code: str = "", discount_amount: int = 0):
+    """Gửi thông báo đơn hàng mới từ Web sang Bot Telegram siêu tốc (< 0.2s, đa kênh dự phòng)"""
+    def _worker():
+        if applied_code and discount_amount > 0:
+            price_line = (
+                f"• Giá niêm yết: <s>{utils.fmt_price(orig_price)}</s>\n"
+                f"• Mã giảm giá: <code>{applied_code}</code> (-{utils.fmt_price(discount_amount)})\n"
+                f"• Cần thanh toán: <b>{utils.fmt_price(price)}</b>"
+            )
+        else:
+            price_line = f"• Số tiền: <b>{utils.fmt_price(price)}</b>"
+
+        msg_admin = (
+            f"🛒 <b>[ĐƠN HÀNG WEB MỚI]</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"• Mã đơn: <code>ORDER_{order_id}</code>\n"
+            f"• Dịch vụ: <b>{pv.get('name', 'Gói VIP')} - {plnv.get('label', '')}</b>\n"
+            f"• Khách: {display_name} (<code>@{identifier}</code>)\n"
+            f"{price_line}\n"
+            f"• Đang chờ chuyển khoản VietQR..."
+        )
+        from keyboards import admin_approval_kb
+        kb = admin_approval_kb(order_id)
+
+        # 1. Thử gửi qua Telegram Bot loop nếu có
+        sent_any = False
+        if BOT_INSTANCE and BOT_LOOP and BOT_LOOP.is_running():
+            for aid in config.ADMIN_IDS:
+                try:
+                    asyncio.run_coroutine_threadsafe(
+                        BOT_INSTANCE.send_message(
+                            chat_id=aid,
+                            text=msg_admin,
+                            parse_mode="HTML",
+                            reply_markup=kb
+                        ),
+                        BOT_LOOP
+                    )
+                    sent_any = True
+                except Exception as e_bot:
+                    logger.warning(f"Bot loop send failed: {e_bot}")
+
+        # 2. Dự phòng: Gửi thẳng qua Telegram HTTP API không bao giờ nghẽn
+        if not sent_any:
+            try:
+                import httpx
+                bot_token = getattr(config, "BOT_TOKEN", "")
+                if bot_token:
+                    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+                    kb_dict = kb.to_dict() if hasattr(kb, "to_dict") else {}
+                    with httpx.Client(timeout=4.0) as client:
+                        for aid in config.ADMIN_IDS:
+                            client.post(url, json={
+                                "chat_id": aid,
+                                "text": msg_admin,
+                                "parse_mode": "HTML",
+                                "reply_markup": kb_dict
+                            })
+            except Exception as e_http:
+                logger.warning(f"Telegram HTTP direct notification failed: {e_http}")
+
+    threading.Thread(target=_worker, daemon=True).start()
+
 
 class WebAppHandler(BaseHTTPRequestHandler):
     server_version = "ProtectedServer/2.0"
@@ -321,12 +386,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(404, {"ok": False, "error": "Không tìm thấy đơn hàng"})
                 return
 
-            # Tự động quét giao dịch SePay tức thì nếu đơn chưa hoàn tất (Web Polling Siêu Tốc)
+            # Tự động quét giao dịch SePay trong luồng phụ (không làm nghẽn phản hồi HTTP của Web)
             if order.get("status") in ("pending", "waiting_payment", "pending_approval"):
                 try:
                     from order_service import check_and_activate_sepay_order
-                    check_and_activate_sepay_order(order_id, bot=BOT_INSTANCE)
-                    order = db.get_order(order_id)
+                    threading.Thread(target=check_and_activate_sepay_order, args=(order_id, BOT_INSTANCE), daemon=True).start()
                 except Exception as e_poll_sp:
                     logger.warning(f"Error checking SePay during order_status: {e_poll_sp}")
 
@@ -1147,6 +1211,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 p_id = pending_same_order["order_id"]
                 p_price = pending_same_order["price"]
                 qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
+                dispatch_admin_order_alert(p_id, pv, plnv, display_name, identifier, p_price, orig_price, applied_code, discount_amount)
                 self._send_json(200, {
                     "ok": True,
                     "order_id": p_id,
@@ -1206,40 +1271,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
             # Sinh link VietQR chuẩn
             qr_url = utils.get_vietqr_url(amount=price, add_info=f"ORDER_{order_id}")
 
-            # Gửi thông báo đến Admin qua Telegram Bot (nếu đang chạy)
-            if BOT_INSTANCE and BOT_LOOP:
-                if applied_code and discount_amount > 0:
-                    price_line = (
-                        f"• Giá niêm yết: <s>{utils.fmt_price(orig_price)}</s>\n"
-                        f"• Mã giảm giá: <code>{applied_code}</code> (-{utils.fmt_price(discount_amount)})\n"
-                        f"• Cần thanh toán: <b>{utils.fmt_price(price)}</b>"
-                    )
-                else:
-                    price_line = f"• Số tiền: <b>{utils.fmt_price(price)}</b>"
-
-                msg_admin = (
-                    f"🛒 <b>[ĐƠN HÀNG WEB MỚI]</b>\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                    f"• Mã đơn: <code>ORDER_{order_id}</code>\n"
-                    f"• Dịch vụ: <b>{pv['name']} - {plnv['label']}</b>\n"
-                    f"• Khách: {display_name} (<code>@{identifier}</code>)\n"
-                    f"{price_line}\n"
-                    f"• Đang chờ chuyển khoản VietQR..."
-                )
-                from keyboards import admin_approval_kb
-                for aid in config.ADMIN_IDS:
-                    try:
-                        asyncio.run_coroutine_threadsafe(
-                            BOT_INSTANCE.send_message(
-                                chat_id=aid,
-                                text=msg_admin,
-                                parse_mode="HTML",
-                                reply_markup=admin_approval_kb(order_id)
-                            ),
-                            BOT_LOOP
-                        )
-                    except Exception:
-                        pass
+            # Gửi thông báo đến Admin qua Telegram Bot (siêu tốc <0.2s, đa kênh)
+            dispatch_admin_order_alert(order_id, pv, plnv, display_name, identifier, price, orig_price, applied_code, discount_amount)
 
             self._send_json(200, {
                 "ok": True,

@@ -1,4 +1,4 @@
-﻿"""
+"""
 order_service.py – Logic xử lý đơn hàng tập trung (Locket Gold & Spotify Premium)
 Tự động kích hoạt bản quyền qua API CTV, cấp DNS profile và thông báo.
 """
@@ -42,10 +42,35 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
         return False, f"Gói cước {plan_key} không tồn tại."
 
     try:
-        # Luôn ưu tiên dùng UID hệ thống (bắt buộc với Spotify: UID dạng 31jtteb4... chứ không lấy nickname như 'nnq')
-        target_account = str(order.get("uid") or order.get("account_target") or "").strip()
-        if not target_account:
-            target_account = str(order.get("display_name") or "").strip()
+        # Danh sách tài khoản thử kích hoạt:
+        # Đối với Locket: API yêu cầu Username Locket (ví dụ: thongtriloaimeo_00) chứ KHÔNG nhận UID Firebase 28 ký tự.
+        # Do đó với Locket, ưu tiên display_name / account_target trước UID!
+        if pv.get("service") == "locket" or product_key == "locket":
+            raw_cands = [
+                str(order.get("display_name") or "").strip(),
+                str(order.get("account_target") or "").strip(),
+                utils.clean_input(str(order.get("username") or "")),
+                str(order.get("uid") or "").strip(),
+            ]
+        else:
+            raw_cands = [
+                str(order.get("uid") or "").strip(),
+                str(order.get("account_target") or "").strip(),
+                str(order.get("display_name") or "").strip(),
+                utils.clean_input(str(order.get("username") or "")),
+            ]
+
+        candidate_accounts = []
+        for cand in raw_cands:
+            # Loại bỏ tiền tố web_ nếu có
+            if cand.startswith("web_"):
+                cand = cand[4:]
+            if cand and cand not in candidate_accounts:
+                candidate_accounts.append(cand)
+        if not candidate_accounts:
+            return False, "Đơn hàng thiếu thông tin tài khoản (UID / Username)."
+
+        target_account = candidate_accounts[0]
         dns_link = f"{DNS_BASE_URL}/{DNS_SLUG}"
         dns_link_locket = dns_link
         dns_link_spotify = dns_link
@@ -76,14 +101,32 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 dns_link_spotify=dns_link_spotify
             )
         else:
-            # Gói Locket hoặc Spotify đơn lẻ
-            result = await asyncio.to_thread(
-                api.create_subscription,
-                uid=target_account,
-                package_code=plnv["packageCode"],
-                service=pv["service"],
-                note=f"Order {order_id} via Telegram Bot"
-            )
+            # Gói Locket hoặc Spotify đơn lẻ: tự động fallback các candidate nếu dính 404
+            act_success = False
+            last_err = None
+            for acc in candidate_accounts:
+                try:
+                    result = await asyncio.to_thread(
+                        api.create_subscription,
+                        uid=acc,
+                        package_code=plnv["packageCode"],
+                        service=pv["service"],
+                        note=f"Order {order_id} via Telegram Bot"
+                    )
+                    act_success = True
+                    target_account = acc
+                    if acc != order.get("uid"):
+                        db.update_order(order_id, uid=acc, account_target=acc)
+                    break
+                except Exception as e_act:
+                    last_err = e_act
+                    err_str = str(e_act).lower()
+                    if "404" not in err_str and "không tồn tại" not in err_str:
+                        # Nếu không phải lỗi 404 không tồn tại (vd: hết coin 402, 401...) thì ngắt ngay
+                        break
+            if not act_success:
+                return False, str(last_err or "Kích hoạt thất bại")
+
             db.update_order(order_id, status="done", done_at=datetime.now().isoformat(), dns_link=dns_link)
 
         db.record_sale(product_key, plan_key, order["price"])
