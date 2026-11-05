@@ -50,9 +50,23 @@ from handlers.admin_handlers import (
     noti_cmd, notistop_cmd,
     rs_cmd, stats_cmd, users_cmd, find_cmd,
     ban_cmd, unban_cmd, orders_cmd, tokens_cmd,
-    checkbank_cmd, addcode_cmd, delcode_cmd, codes_cmd, coin_cmd, packages_cmd, duyet_cmd, setprice_cmd, sync_cmd,
+    checkbank_cmd, addcode_cmd, delcode_cmd, codes_cmd, coin_cmd, packages_cmd, duyet_cmd, setprice_cmd,
     handle_admin_text_input,
 )
+
+try:
+    from handlers.admin_handlers import sync_cmd
+except ImportError:
+    async def sync_cmd(update, ctx):
+        if update.effective_user.id not in ADMIN_IDS:
+            return
+        msg = await update.message.reply_text("⏳ Đang đồng bộ tài khoản từ web chủ...")
+        try:
+            from order_service import sync_upstream_orders
+            cnt = await asyncio.to_thread(sync_upstream_orders)
+            await msg.edit_text(f"✅ Đã đồng bộ <b>{cnt}</b> tài khoản từ web chủ thành công!", parse_mode="HTML")
+        except Exception as e_s:
+            await msg.edit_text(f"❌ Lỗi đồng bộ: {e_s}")
 
 import web_server
 
@@ -386,4 +400,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        print("💥 FATAL ERROR ON STARTUP:")
+        traceback.print_exc()
+        sys.exit(1)
