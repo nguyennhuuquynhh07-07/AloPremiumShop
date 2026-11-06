@@ -184,10 +184,18 @@ def account_kb(dns_link: str = None) -> InlineKeyboardMarkup:
         rows.append([
             InlineKeyboardButton("📷 Tạo Mã QR DNS", callback_data="show_qr"),
         ])
-    rows.append([
-        InlineKeyboardButton("📦 Đơn hàng đã mua",        callback_data="my_orders"),
-        InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS",  callback_data="show_guide"),
-    ])
+        rows.append([
+            InlineKeyboardButton("📦 Đơn hàng đã mua",        callback_data="my_orders"),
+            InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS",  callback_data="show_guide"),
+        ])
+    else:
+        rows.append([
+            InlineKeyboardButton("🛍️ Mua gói ngay",           callback_data="back_products"),
+        ])
+        rows.append([
+            InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS",  callback_data="show_guide"),
+            InlineKeyboardButton("💬 Hỗ trợ CSKH",           callback_data="support"),
+        ])
     rows.append([
         InlineKeyboardButton("🏠 Về menu chính",          callback_data="back_main"),
     ])
