@@ -42,6 +42,7 @@ from handlers.user_handlers import (
     cb_back_main, cb_back_products, cb_show_qr,
     receive_identifier, cancel_conv, resetspotify_user_cmd, guide_cmd, cb_show_guide, cb_user_reset_spotify_menu,
     cb_coupon, cb_coupon_info, coupon_cmd, handle_user_coupon_text,
+    cb_ai_studio_opt, cb_buy_studio,
     WAITING_IDENTIFIER,
 )
 from handlers.admin_handlers import (
@@ -358,6 +359,8 @@ def main():
     app.add_handler(CallbackQueryHandler(cb_coupon,        pattern=r"^coupon:"))
     app.add_handler(CallbackQueryHandler(cb_coupon_info,   pattern=r"^coupon_info:"))
     app.add_handler(CallbackQueryHandler(cb_product,       pattern=r"^product:"))
+    app.add_handler(CallbackQueryHandler(cb_ai_studio_opt, pattern=r"^ai_studio_opt:"))
+    app.add_handler(CallbackQueryHandler(cb_buy_studio,    pattern=r"^buy_studio:"))
     app.add_handler(CallbackQueryHandler(cb_paid,          pattern=r"^paid:"))
     app.add_handler(CallbackQueryHandler(cb_buy,           pattern=r"^buy:"))
     app.add_handler(CallbackQueryHandler(cb_cancel,        pattern=r"^cancel:"))

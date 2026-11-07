@@ -97,6 +97,55 @@ def pending_approval_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(rows)
 
 
+def locket_ai_ask_studio_kb(order_id: str) -> InlineKeyboardMarkup:
+    """Hỏi khách có muốn thêm quyền năng Chỉnh chú thích & Đổi khung viền Studio (+10.000đ) không."""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎨 Có, thêm Studio (+10.000đ) ➔ 249.000đ", callback_data=f"ai_studio_opt:yes:{order_id}")],
+        [InlineKeyboardButton("⚡ Không, chỉ mua gói VIP ➔ 239.000đ", callback_data=f"ai_studio_opt:no:{order_id}")],
+        [InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")],
+    ])
+
+
+def locket_ai_success_kb(download_url: str, studio_url: str = None, order_id: str = None) -> InlineKeyboardMarkup:
+    """Bàn phím hiển thị khi khách kích hoạt thành công gói Locket Gold & AI Filters VIP."""
+    rows = [
+        [InlineKeyboardButton("📲 Tải Cấu Hình VIP (Safari)", url=download_url)],
+    ]
+    if studio_url:
+        rows.append([
+            InlineKeyboardButton("🎨 Mở Studio Chỉnh Chú Thích & Khung Viền", url=studio_url),
+        ])
+        rows.append([
+            InlineKeyboardButton("📋 Copy Link Studio", api_kwargs={"copy_text": {"text": studio_url}}),
+            InlineKeyboardButton("📋 Copy Link Tải VIP", api_kwargs={"copy_text": {"text": download_url}}),
+        ])
+    else:
+        rows.append([
+            InlineKeyboardButton("📋 Copy Link Cấu Hình VIP", api_kwargs={"copy_text": {"text": download_url}}),
+        ])
+        if order_id:
+            rows.append([
+                InlineKeyboardButton("🎨 Thêm Studio Chú Thích & Khung Viền (+10.000đ)", callback_data=f"buy_studio:{order_id}")
+            ])
+    rows.extend([
+        [
+            InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
+            InlineKeyboardButton("💬 Hỗ trợ kỹ thuật 24/7", callback_data="support"),
+        ],
+        [InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")],
+    ])
+    return InlineKeyboardMarkup(rows)
+
+
+def studio_success_kb(studio_url: str) -> InlineKeyboardMarkup:
+    """Bàn phím khi khách thanh toán thành công gói phụ Studio 10.000đ."""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎨 Mở Studio Chỉnh Chú Thích & Khung Viền", url=studio_url)],
+        [InlineKeyboardButton("📋 Copy Link Studio", api_kwargs={"copy_text": {"text": studio_url}})],
+        [InlineKeyboardButton("💬 Hỗ trợ CSKH", callback_data="support"), InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")],
+    ])
+
+
 def combo_success_kb(dns_locket: str = None, dns_spotify: str = None) -> InlineKeyboardMarkup:
     dns_locket = dns_locket or "https://alopremium.shop"
     dns_spotify = dns_spotify or "https://alopremium.shop"

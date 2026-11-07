@@ -479,7 +479,7 @@
                     </h2>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
                     
                     <!-- CARD 1: LOCKET GOLD VIP -->
                     <div onclick="selectProduct('locket')" id="card_locket" 
@@ -615,6 +615,43 @@
                         </ul>
                     </div>
 
+                    <!-- CARD 4: LOCKET GOLD & AI FILTERS VIP (ALL-IN-ONE) -->
+                    <div onclick="selectProduct('locket_ai')" id="card_locket_ai" 
+                         class="relative rounded-[32px] p-6 sm:p-7 bg-white/90 border-2 border-[#E8D8B0] hover:border-purple-500 cursor-pointer shadow-lg locket-card-interactive">
+                        <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-purple-600 via-pink-600 to-[#FFB800] text-white text-[11px] font-fredoka font-black uppercase px-4 py-1 rounded-full shadow-md">
+                            ✨ VIP All-in-One
+                        </div>
+                        <div class="flex items-center gap-3.5 mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-500 to-[#FFB800] flex items-center justify-center text-2xl shadow-md border-2 border-purple-300 shrink-0">✨</div>
+                            <div>
+                                <h3 class="font-fredoka text-xl font-black text-[#1E1B18]">AI Filters VIP</h3>
+                                <p class="text-xs text-purple-700 font-bold">Locket + AI + Multi VIP</p>
+                            </div>
+                        </div>
+                        <div class="my-4 pb-4 border-b border-[#F0E4C8]">
+                            <div class="font-fredoka text-3xl font-black text-purple-700" id="price_display_locket_ai">239.000đ</div>
+                            <div class="text-xs text-[#6E6659] font-medium mt-1">Gói Vĩnh Viễn • 6 Đặc quyền độc lập cao cấp</div>
+                        </div>
+                        <ul class="space-y-2 text-xs text-[#1E1B18]">
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-[#FFB800] text-[#1E1B18] flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                <span class="font-semibold text-[#1E1B18]">👑 <strong>Locket Gold:</strong> Viền vàng, 60s, 38 khung, 4K</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                <span class="font-semibold text-[#1E1B18]">🎭 <strong>AI Filters Mới:</strong> Full 8 danh mục bộ lọc</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-purple-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                <span class="font-semibold text-[#1E1B18]">✨ <strong>Tạo diện mạo AI:</strong> Tự do nhập prompt</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                <span class="font-semibold text-[#1E1B18]">🎵 <strong>Spotify + SoundCloud Go+ + YouTube VIP</strong></span>
+                            </li>
+                        </ul>
+                    </div>
+
 
                 </div>
             </div>
@@ -657,6 +694,22 @@
                                 <span id="btnCheckAccountText">⚡ Kiểm Tra Tài Khoản</span>
                             </button>
                         </div>
+                    </div>
+
+                    <!-- TUỲ CHỌN NÂNG CẤP STUDIO CHÚ THÍCH & ĐỔI KHUNG VIỀN -->
+                    <div id="studioOptionContainer" class="p-4 rounded-2xl bg-gradient-to-r from-purple-50 via-pink-50 to-[#FFF9ED] border-2 border-purple-300 shadow-sm transition-all">
+                        <label class="flex items-start gap-3.5 cursor-pointer select-none">
+                            <input type="checkbox" id="chkAddStudio" onchange="toggleStudioAddon()" class="mt-1 w-5 h-5 rounded-lg text-purple-600 focus:ring-purple-400 border-gray-300 cursor-pointer shrink-0">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="font-fredoka font-black text-sm text-purple-900">🎨 Kèm Studio Chỉnh Chú Thích & Đổi Khung Viền</span>
+                                    <span class="text-[11px] font-fredoka font-bold text-white bg-purple-600 px-2.5 py-0.5 rounded-full shadow-sm">+10.000đ</span>
+                                </div>
+                                <p class="text-xs text-purple-800 font-medium mt-1">
+                                    Tự do sáng tạo chú thích cá nhân độc quyền và đổi 38 khung viền Locket không giới hạn qua Link Studio riêng.
+                                </p>
+                            </div>
+                        </label>
                     </div>
 
                     <!-- KẾT QUẢ XÁC MINH PROFILE -->
@@ -1248,6 +1301,64 @@
                     </div>
                 </div>
 
+                <!-- NÚT CÀI ĐẶT DÀNH CHO GÓI LOCKET GOLD & AI FILTERS VIP (ALL-IN-ONE) -->
+                <div id="locketAiDownloadActions" class="hidden space-y-3">
+                    <div class="p-4 rounded-2xl bg-gradient-to-r from-purple-100 via-pink-100 to-amber-100 border-2 border-purple-400 text-left space-y-3 shadow-md">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-fredoka font-black text-purple-950 flex items-center gap-1.5">
+                                <span>✨</span> Cấu Hình VIP All-in-One (Vĩnh Viễn):
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full bg-purple-700 text-white text-[10px] font-bold">Cloud VIP</span>
+                        </div>
+                        <p class="text-[11px] text-purple-900 font-medium">
+                            Đã mở khóa trọn bộ: <b>Locket Gold viền vàng, AI Filters 8 danh mục, Tạo diện mạo AI, Spotify Lossless, SoundCloud Go+, YouTube VIP</b>.
+                        </p>
+                        <a id="aiVipSafariBtn" href="https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1" target="_blank"
+                           class="w-full block py-3.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-fredoka font-bold text-center text-sm shadow-lg transition-all cursor-pointer">
+                            📲 CÀI ĐẶT CẤU HÌNH VIP (MỞ BẰNG SAFARI)
+                        </a>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" onclick="copyAiVipUrl()" class="py-2 px-3 rounded-lg bg-white border border-purple-300 text-[11px] font-semibold text-purple-900 hover:bg-purple-50 text-center cursor-pointer">
+                                📋 Copy Link Cấu Hình VIP
+                            </button>
+                            <span class="py-2 px-3 rounded-lg bg-white/70 border border-purple-200 text-[11px] font-semibold text-purple-900 text-center" id="aiPaidAmountDisplay">
+                                💵 Đã TT: 239.000đ
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- KHUNG STUDIO CHỈNH CHÚ THÍCH & ĐỔI KHUNG VIỀN -->
+                    <div id="aiStudioSuccessCard" class="p-4 rounded-2xl bg-[#FFF9ED] border-2 border-[#FFB800] text-left space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-fredoka font-black text-[#1E1B18] flex items-center gap-1.5">
+                                <span>🎨</span> Studio Chỉnh Chú Thích & Đổi Khung Viền:
+                            </span>
+                            <span id="studioStatusBadge" class="px-2.5 py-0.5 rounded-full bg-amber-100 text-[#92400E] text-[10px] font-bold">Chưa kích hoạt</span>
+                        </div>
+                        <div id="studioHasPaidContent" class="hidden space-y-2">
+                            <p class="text-[11px] text-emerald-800 font-bold">
+                                ✅ Đã mở khóa bản quyền Studio thành công!
+                            </p>
+                            <a id="btnOpenStudioLink" href="#" target="_blank"
+                               class="w-full block py-3 px-4 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-bold text-xs shadow-md text-center transition-all cursor-pointer">
+                                🎨 MỞ STUDIO CHÚ THÍCH & ĐỔI KHUNG VIỀN
+                            </a>
+                            <button type="button" onclick="copyStudioLink()" class="w-full py-2 px-3 rounded-lg bg-white border border-[#E8D8B0] text-[11px] font-semibold text-[#6E6659] hover:text-[#1E1B18] text-center cursor-pointer">
+                                📋 Copy Link Studio Cá Nhân
+                            </button>
+                        </div>
+                        <div id="studioNotPaidPrompt" class="space-y-2">
+                            <p class="text-[11px] text-[#6E6659]">
+                                Bạn có muốn chỉnh chú thích theo ý muốn và đổi 38 khung viền Locket không? Thanh toán thêm <b>10.000đ</b> để nhận Link Studio độc quyền!
+                            </p>
+                            <button type="button" onclick="upgradeStudioAddonWeb()"
+                                    class="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-fredoka font-bold text-xs shadow-md text-center transition-all cursor-pointer">
+                                🎨 Nâng Cấp Thêm Studio (+10.000đ)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Tóm tắt 4 bước cài đặt chuẩn iOS giống Bot -->
                 <div class="mt-6 text-left text-xs space-y-2 bg-[#FFF3D6] p-4 rounded-2xl border border-[#FFE29A]">
                     <div class="flex items-center justify-between">
@@ -1343,8 +1454,8 @@
                     const data = await res.json();
                     systemProducts = data.products || {};
                     
-                    // Tự động cập nhật khoảng giá cho 3 card gói cước từ dữ liệu động
-                    ['locket', 'spotify', 'combo'].forEach(pk => {
+                    // Tự động cập nhật khoảng giá cho các card gói cước từ dữ liệu động
+                    ['locket', 'spotify', 'combo', 'locket_ai'].forEach(pk => {
                         const p = systemProducts[pk];
                         if (p && p.plans) {
                             const pValues = Object.values(p.plans).map(x => x.price).filter(v => typeof v === 'number' && v > 0);
@@ -1353,7 +1464,7 @@
                                 const maxP = Math.max(...pValues);
                                 const el = document.getElementById('price_display_' + pk);
                                 if (el) {
-                                    el.textContent = `${minP.toLocaleString('vi-VN')}đ - ${maxP.toLocaleString('vi-VN')}đ`;
+                                    el.textContent = minP === maxP ? `${minP.toLocaleString('vi-VN')}đ` : `${minP.toLocaleString('vi-VN')}đ - ${maxP.toLocaleString('vi-VN')}đ`;
                                 }
                             }
                         }
@@ -1365,17 +1476,19 @@
             selectProduct('locket');
         }
 
-        // Chọn sản phẩm (locket / spotify)
+        // Chọn sản phẩm (locket / spotify / combo / locket_ai)
         function selectProduct(prodKey) {
             selectedProduct = prodKey;
             switchCompareTab(prodKey);
             
             // Highlight card with Locket Cream & Gold theme
-            ['locket', 'spotify', 'combo'].forEach(k => {
+            ['locket', 'spotify', 'combo', 'locket_ai'].forEach(k => {
                 const card = document.getElementById('card_' + k);
                 if (card) {
                     if (k === prodKey) {
-                        card.className = 'relative rounded-[32px] p-6 sm:p-7 bg-white border-2 border-[#FFB800] cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive';
+                        card.className = (k === 'locket_ai')
+                            ? 'relative rounded-[32px] p-6 sm:p-7 bg-white border-2 border-purple-500 cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive ring-2 ring-purple-400/40'
+                            : 'relative rounded-[32px] p-6 sm:p-7 bg-white border-2 border-[#FFB800] cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive';
                     } else {
                         card.className = 'rounded-[32px] p-6 sm:p-7 bg-white/80 border-2 border-[#E8D8B0] hover:border-[#FFB800] cursor-pointer shadow-md locket-card-interactive';
                     }
@@ -1387,23 +1500,32 @@
             const inputLabel = document.getElementById('accountInputLabel');
             const inputEl = document.getElementById('accountInput');
             const planContainer = document.getElementById('planSelectionContainer');
+            const studioBox = document.getElementById('studioOptionContainer');
 
             const prodNames = {
                 locket: 'Locket Gold VIP',
                 spotify: 'Spotify Premium',
-                combo: 'Combo Duo VIP (Locket + Spotify)'
+                combo: 'Combo Duo VIP (Locket + Spotify)',
+                locket_ai: 'Locket Gold & AI Filters VIP (All-in-One)'
             };
             if (badge) badge.textContent = `Gói đang chọn: ${prodNames[prodKey] || prodKey}`;
 
             if (prodKey === 'spotify') {
                 if (inputLabel) inputLabel.textContent = 'Nhập UID Spotify hoặc Link Profile:';
                 if (inputEl) inputEl.placeholder = 'VD: 31xxxxxxxxxx hoặc https://open.spotify.com/user/...';
+                if (studioBox) studioBox.classList.add('hidden');
             } else if (prodKey === 'combo') {
                 if (inputLabel) inputLabel.textContent = 'Nhập Username Locket hoặc Tên bạn (để in trên Profile VIP):';
                 if (inputEl) inputEl.placeholder = 'VD: conlaigii hoặc Tên của bạn';
+                if (studioBox) studioBox.classList.add('hidden');
+            } else if (prodKey === 'locket_ai') {
+                if (inputLabel) inputLabel.textContent = 'Nhập Username Locket hoặc Link locket.cam:';
+                if (inputEl) inputEl.placeholder = 'VD: thokoncute_19 hoặc https://locket.cam/thokoncute_19';
+                if (studioBox) studioBox.classList.remove('hidden');
             } else {
                 if (inputLabel) inputLabel.textContent = 'Nhập Username Locket hoặc Link Profile:';
                 if (inputEl) inputEl.placeholder = 'VD: conlaigii hoặc https://locket.cam/conlaigii';
+                if (studioBox) studioBox.classList.remove('hidden');
             }
 
             // Render plan pills
@@ -1448,14 +1570,22 @@
             updatePayAmount();
         }
 
+        function toggleStudioAddon() {
+            updatePayAmount();
+        }
+
         function updatePayAmount() {
             const pv = systemProducts[selectedProduct];
-            let price = pv?.plans?.[selectedPlan]?.price || 0;
+            let basePrice = pv?.plans?.[selectedPlan]?.price || 0;
+            const chkStudio = document.getElementById('chkAddStudio');
+            const hasStudio = (chkStudio && chkStudio.checked && (selectedProduct === 'locket_ai' || selectedProduct === 'locket'));
+            const addonPrice = hasStudio ? 10000 : 0;
+            let price = basePrice + addonPrice;
+
             const btnPayAmount = document.getElementById('btnPayAmount');
-            
-            if (appliedCouponData && appliedCouponData.original_price === price) {
-                price = appliedCouponData.final_price;
-                if (btnPayAmount) btnPayAmount.innerHTML = `<span class="line-through text-zinc-400 font-normal text-xs mr-1">${appliedCouponData.original_price.toLocaleString()}đ</span>${price.toLocaleString()}đ`;
+            if (appliedCouponData && appliedCouponData.original_price === basePrice) {
+                price = appliedCouponData.final_price + addonPrice;
+                if (btnPayAmount) btnPayAmount.innerHTML = `<span class="line-through text-zinc-400 font-normal text-xs mr-1">${(appliedCouponData.original_price + addonPrice).toLocaleString()}đ</span>${price.toLocaleString()}đ`;
             } else if (btnPayAmount) {
                 btnPayAmount.textContent = price.toLocaleString() + 'đ';
             }
@@ -1585,6 +1715,9 @@
             const pv = systemProducts[selectedProduct];
             const planInfo = pv?.plans?.[selectedPlan] || { price: 200000, label: 'Vĩnh Viễn' };
 
+            const chkStudio = document.getElementById('chkAddStudio');
+            const hasStudio = !!(chkStudio && chkStudio.checked && (selectedProduct === 'locket_ai' || selectedProduct === 'locket'));
+
             try {
                 // Tạo đơn hàng trên Server
                 const res = await fetch('/api/create_order', {
@@ -1593,10 +1726,11 @@
                     body: JSON.stringify({
                         product: selectedProduct,
                         plan: selectedPlan,
-                        identifier: (selectedProduct === 'locket' && verifiedAccountData.display_name) ? verifiedAccountData.display_name : (verifiedAccountData.uid || verifiedAccountData.display_name),
+                        identifier: ((selectedProduct === 'locket' || selectedProduct === 'locket_ai') && verifiedAccountData.display_name) ? verifiedAccountData.display_name : (verifiedAccountData.uid || verifiedAccountData.display_name),
                         display_name: verifiedAccountData.display_name,
                         avatar: verifiedAccountData.avatar,
                         token: verifiedAccountData.token || '',
+                        has_studio: hasStudio,
                         discount_code: appliedCouponData ? appliedCouponData.code : ''
                     })
                 });
@@ -1674,15 +1808,76 @@
             const prod = orderProduct || (currentOrderData && currentOrderData.product) || selectedProduct || 'locket';
             const isCombo = prod === 'combo';
             const isSpotify = prod === 'spotify';
+            const isLocketAi = prod === 'locket_ai';
+            const isStudioOnly = prod === 'studio_caption';
+
             const singleBox = document.getElementById('singleDownloadActions');
             const comboBox = document.getElementById('comboDownloadActions');
+            const aiBox = document.getElementById('locketAiDownloadActions');
             const guideTitle = document.getElementById('setupGuideTitle');
             const guideList = document.getElementById('setupGuideList');
             const safariBtn = document.getElementById('modalSafariBtn');
 
-            if (isCombo) {
+            // Ẩn tất cả action box trước
+            if (singleBox) singleBox.classList.add('hidden');
+            if (comboBox) comboBox.classList.add('hidden');
+            if (aiBox) aiBox.classList.add('hidden');
+
+            let safariDnsUrl = 'https://doh.2707226.xyz/alopremiumshop';
+
+            if (isLocketAi || isStudioOnly) {
+                // GÓI LOCKET GOLD & AI FILTERS VIP (HOẶC NÂNG CẤP STUDIO RIÊNG)
+                if (aiBox) aiBox.classList.remove('hidden');
+
+                const vipUrl = "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1";
+                activeDownloadUrl = vipUrl;
+                safariDnsUrl = vipUrl;
+
+                const uTarget = (verifiedAccountData?.display_name || verifiedAccountData?.uid || '').replace(/^@/, '');
+                const studioUrl = "https://locket.jayteam.click/caption.html?u=" + encodeURIComponent(uTarget || 'vip');
+
+                const paidEl = document.getElementById('aiPaidAmountDisplay');
+                if (paidEl && currentOrderData) {
+                    paidEl.textContent = `💵 Đã TT: ${currentOrderData.price.toLocaleString()}đ`;
+                }
+
+                const chkStudio = document.getElementById('chkAddStudio');
+                const hasStudio = (currentOrderData?.has_studio || isStudioOnly || (chkStudio && chkStudio.checked && currentOrderData?.price > 240000));
+
+                const studioPaidContent = document.getElementById('studioHasPaidContent');
+                const studioPrompt = document.getElementById('studioNotPaidPrompt');
+                const studioBadge = document.getElementById('studioStatusBadge');
+                const studioLinkBtn = document.getElementById('btnOpenStudioLink');
+
+                if (hasStudio) {
+                    if (studioPaidContent) studioPaidContent.classList.remove('hidden');
+                    if (studioPrompt) studioPrompt.classList.add('hidden');
+                    if (studioBadge) {
+                        studioBadge.textContent = "Đã kích hoạt";
+                        studioBadge.className = "px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold";
+                    }
+                    if (studioLinkBtn) studioLinkBtn.href = studioUrl;
+                } else {
+                    if (studioPaidContent) studioPaidContent.classList.add('hidden');
+                    if (studioPrompt) studioPrompt.classList.remove('hidden');
+                    if (studioBadge) {
+                        studioBadge.textContent = "Chưa kích hoạt";
+                        studioBadge.className = "px-2.5 py-0.5 rounded-full bg-amber-100 text-[#92400E] text-[10px] font-bold";
+                    }
+                }
+
+                if (guideTitle) guideTitle.innerHTML = '<span>✨</span> Hướng Dẫn Cài Đặt Cấu Hình VIP All-in-One (30 giây):';
+                if (guideList) {
+                    guideList.innerHTML = `
+                        <li>Bấm nút <b>CÀI ĐẶT CẤU HÌNH VIP (MỞ BẰNG SAFARI)</b> ở trên để tải trực tiếp.</li>
+                        <li>Mở <b>Cài đặt iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
+                        <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật xanh tin cậy.</li>
+                        <li>Mở Locket & Spotify để trải nghiệm toàn bộ đặc quyền VIP không giới hạn! 🎉</li>
+                    `;
+                }
+
+            } else if (isCombo) {
                 // CHỈ KHI MUA COMBO DUO MỚI HIỆN CẢ 2 CẤU HÌNH LOCKET & SPOTIFY
-                if (singleBox) singleBox.classList.add('hidden');
                 if (comboBox) comboBox.classList.remove('hidden');
 
                 const base = window.location.origin;
@@ -1705,7 +1900,6 @@
             } else {
                 // GÓI ĐƠN LẺ: TÁCH RIÊNG HOÀN TOÀN
                 if (singleBox) singleBox.classList.remove('hidden');
-                if (comboBox) comboBox.classList.add('hidden');
                 const btnDl = document.getElementById('modalDownloadBtn');
                 if (btnDl) btnDl.href = activeDownloadUrl;
 
@@ -1736,8 +1930,7 @@
                 }
             }
 
-            // Hiển thị mã QR tải cấu hình chuẩn Safari từ máy chủ CTV giống Bot
-            const safariDnsUrl = 'https://doh.2707226.xyz/alopremiumshop';
+            // Hiển thị mã QR tải cấu hình chuẩn Safari
             const qrImg = document.getElementById('qrSuccessImg');
             if (qrImg) {
                 qrImg.src = `/api/qr?data=${encodeURIComponent(safariDnsUrl)}`;
@@ -1748,6 +1941,58 @@
 
             document.getElementById('modalWaitingPayment').classList.add('hidden');
             document.getElementById('modalSuccessPayment').classList.remove('hidden');
+        }
+
+        function copyAiVipUrl() {
+            const url = "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1";
+            navigator.clipboard.writeText(url).then(() => {
+                alert("✅ Đã sao chép liên kết tải cấu hình VIP All-in-One!");
+            });
+        }
+
+        function copyStudioLink() {
+            const uTarget = (verifiedAccountData?.display_name || verifiedAccountData?.uid || '').replace(/^@/, '');
+            const url = "https://locket.jayteam.click/caption.html?u=" + encodeURIComponent(uTarget || 'vip');
+            navigator.clipboard.writeText(url).then(() => {
+                alert("✅ Đã sao chép link Studio Chỉnh Chú Thích & Khung Viền: " + url);
+            });
+        }
+
+        async function upgradeStudioAddonWeb() {
+            if (!currentOrderData) return;
+            const uTarget = (verifiedAccountData?.display_name || verifiedAccountData?.uid || '').replace(/^@/, '');
+            try {
+                const res = await fetch('/api/create_studio_order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        parent_order_id: currentOrderData.order_id,
+                        identifier: uTarget,
+                        display_name: uTarget
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Không thể tạo đơn nâng cấp Studio');
+
+                // Chuyển sang chờ thanh toán 10.000đ cho đơn phụ Studio
+                currentOrderData = data;
+                document.getElementById('modalProductName').textContent = "Studio Chỉnh Chú Thích & Khung Viền (+10.000đ)";
+                document.getElementById('modalQrImg').src = data.qr_url;
+                document.getElementById('modalBankName').textContent = data.bank_name;
+                document.getElementById('modalAccountNo').textContent = data.bank_account;
+                document.getElementById('modalAccountHolder').textContent = data.account_holder;
+                document.getElementById('modalAmount').textContent = data.price.toLocaleString() + 'đ';
+                document.getElementById('modalMemo').textContent = data.memo;
+
+                document.getElementById('modalWaitingPayment').classList.remove('hidden');
+                document.getElementById('modalSuccessPayment').classList.add('hidden');
+
+                // Bắt đầu đếm ngược và Polling đơn phụ này
+                startCountdownTimer(600);
+                startPollingOrder(data.order_id);
+            } catch (e) {
+                alert("Lỗi tạo đơn nâng cấp Studio: " + e.message);
+            }
         }
 
         function toggleQrCodeDisplay() {

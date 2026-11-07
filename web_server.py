@@ -406,7 +406,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     logger.warning(f"Error checking SePay during order_status: {e_poll_sp}")
 
             is_done = order.get("status") == "done"
-            download_url = f"/api/download_profile?order_id={order_id}" if is_done else None
+            prod_key = order.get("product")
+            is_locket_ai = (prod_key == "locket_ai")
+            has_studio = order.get("has_studio", False) or (prod_key == "studio_caption")
+            username_target = utils.clean_input(str(order.get("uid") or order.get("username") or order.get("account_target") or order.get("display_name") or "")).lstrip("@")
+            studio_url = f"https://locket.jayteam.click/caption.html?u={username_target}" if has_studio else None
+            vip_download_url = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1") if is_locket_ai else None
+
+            download_url = vip_download_url if (is_locket_ai and is_done) else (f"/api/download_profile?order_id={order_id}" if is_done else None)
             self._send_json(200, {
                 "ok": True,
                 "order_id": order_id,
@@ -419,6 +426,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "display_name": order.get("display_name"),
                 "download_url": download_url,
                 "created_at": order.get("created_at"),
+                "is_locket_ai": is_locket_ai,
+                "has_studio": has_studio,
+                "studio_url": studio_url if is_done else None,
+                "vip_download_url": vip_download_url if is_done else None,
             })
             return
 
@@ -472,6 +483,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 return
 
             product_key = order.get("product", "locket")
+            if product_key == "locket_ai":
+                vip_url = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+                self.send_response(302)
+                self.send_header("Location", vip_url)
+                self._send_cors_headers()
+                self.end_headers()
+                return
+
             safe_name = order.get("display_name") or order.get("uid") or "VIP"
             clean_token = order.get("token") or order.get("uid") or "vip"
 
@@ -1273,6 +1292,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
             price = plnv["price"]
             orig_price = price
 
+            has_studio = bool(body.get("has_studio", False))
+            if product == "locket_ai" and has_studio:
+                price += 10000
+                orig_price += 10000
+
             # Chống Spam Đơn Hàng (Anti-Spam Order Creation)
             clean_ident = utils.clean_input(identifier).lower()
             existing_orders = db.get_orders()
@@ -1343,6 +1367,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "discount_code": applied_code,
                 "discount_amount": discount_amount,
                 "original_price": orig_price,
+                "has_studio": has_studio,
             }
 
             db.create_order(
@@ -1377,6 +1402,56 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "plan": plan,
                 "product_name": pv["name"],
                 "plan_label": plnv["label"],
+            })
+            return
+
+        # 2.1 API Tạo đơn phụ nâng cấp Studio Chú Thích & Khung Viền (+10.000đ)
+        if path == "/api/create_studio_order":
+            parent_order_id = str(body.get("parent_order_id", "") or body.get("order_id", "")).strip()
+            identifier = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
+            display_name = str(body.get("display_name", "")).strip() or identifier
+            if not identifier and parent_order_id:
+                p_ord = db.get_order(parent_order_id)
+                if p_ord:
+                    identifier = p_ord.get("display_name") or p_ord.get("uid") or p_ord.get("username")
+                    display_name = identifier
+
+            if not identifier:
+                self._send_json(400, {"ok": False, "error": "Thiếu tài khoản Locket cần mở Studio"})
+                return
+
+            sub_order_id = utils.gen_order_id()
+            studio_price = getattr(config, "STUDIO_CAPTION_PRICE", 10000)
+
+            db.create_order(
+                order_id=sub_order_id,
+                user_id=0,
+                username=f"web_{identifier[:15]}",
+                product="studio_caption",
+                plan="extra",
+                price=studio_price,
+                uid=identifier,
+                display_name=display_name,
+                account_target=identifier,
+                parent_order_id=parent_order_id,
+                source="web",
+                status="waiting_payment"
+            )
+
+            qr_url = utils.get_vietqr_url(amount=studio_price, add_info=f"ORDER_{sub_order_id}")
+            self._send_json(200, {
+                "ok": True,
+                "order_id": sub_order_id,
+                "memo": f"ORDER_{sub_order_id}",
+                "price": studio_price,
+                "qr_url": qr_url,
+                "bank_id": getattr(config, "BANK_ID", "TPB"),
+                "bank_name": getattr(config, "BANK_NAME", "TPBank"),
+                "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
+                "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
+                "product": "studio_caption",
+                "product_name": "Studio Chỉnh Chú Thích & Khung Viền",
+                "plan_label": "Bản Quyền Vĩnh Viễn"
             })
             return
 

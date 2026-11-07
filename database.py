@@ -1,4 +1,4 @@
-﻿"""
+"""
 database.py – Quản lý dữ liệu JSON (đơn hàng, thống kê, người dùng, mã giảm giá)
 """
 
@@ -357,6 +357,7 @@ DEFAULT_PRICES = {
     "locket": {"test": 5000, "6m": 40000, "1y": 60000, "ltm": 160000},
     "spotify": {"test": 5000, "6m": 40000, "1y": 60000, "ltm": 180000},
     "combo": {"6m": 65000, "1y": 99000, "ltm": 259000},
+    "locket_ai": {"ltm": 239000},
 }
 
 def get_custom_prices() -> dict:

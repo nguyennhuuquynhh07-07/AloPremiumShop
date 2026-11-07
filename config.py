@@ -19,37 +19,47 @@ if os.path.exists(env_file):
 # ============================================================
 #  1. CẤU HÌNH BOT TELEGRAM & ADMIN
 # ============================================================
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "9170943429:AAF6Hlu5qwSzMFHQpZZgLClQf450zcP6CZE")
-ADMIN_IDS = [int(x.strip()) for x in os.getenv("ADMIN_IDS", os.getenv("ADMIN_ID", "8313153487")).split(",") if x.strip()]
-SUPPORT_PHONE = os.getenv("SUPPORT_PHONE", "0345222802")
-SUPPORT_TELEGRAM = os.getenv("SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28")
-SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME", "nguyennhuquynh28")
-ADMIN_PIN = os.getenv("ADMIN_PIN", "2802")
+def _required_env(name: str) -> str:
+    value = os.getenv(name, "").strip()
+    if not value:
+        raise RuntimeError(f"Thiếu biến môi trường bắt buộc: {name}")
+    return value
+
+
+BOT_TOKEN = _required_env("TELEGRAM_BOT_TOKEN")
+admin_ids_raw = os.getenv("ADMIN_IDS", os.getenv("ADMIN_ID", "")).strip()
+if not admin_ids_raw:
+    raise RuntimeError("Thiếu biến môi trường bắt buộc: ADMIN_IDS hoặc ADMIN_ID")
+ADMIN_IDS = [int(x.strip()) for x in admin_ids_raw.split(",") if x.strip()]
+SUPPORT_PHONE = os.getenv("SUPPORT_PHONE", "")
+SUPPORT_TELEGRAM = os.getenv("SUPPORT_TELEGRAM", "")
+SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME", "")
+ADMIN_PIN = _required_env("ADMIN_PIN")
 
 # ============================================================
 #  2. CẤU HÌNH THANH TOÁN (VIETQR)
 # ============================================================
-BANK_ID = os.getenv("BANK_CODE", "TPB")
+BANK_ID = os.getenv("BANK_CODE", "").strip()
 BANK_CODE = BANK_ID
-BANK_NAME = "TPBank" if BANK_ID == "TPB" else os.getenv("BANK_NAME", "TPBank")
-ACCOUNT_NO = os.getenv("BANK_ACCOUNT", "34528022007")
+BANK_NAME = os.getenv("BANK_NAME", "").strip()
+ACCOUNT_NO = os.getenv("BANK_ACCOUNT", "").strip()
 BANK_ACCOUNT = ACCOUNT_NO
-ACCOUNT_NAME = "NGUYEN NHU QUYNH" if ACCOUNT_NO == "34528022007" else os.getenv("ACCOUNT_HOLDER", "NGUYEN NHU QUYNH")
+ACCOUNT_NAME = os.getenv("ACCOUNT_HOLDER", "").strip()
 ACCOUNT_HOLDER = ACCOUNT_NAME
 PRICE_VND = int(os.getenv("PRICE_VND", "200000"))
 AUTO_APPROVE = os.getenv("AUTO_APPROVE", "False").lower() in ("true", "1", "yes")
-SEPAY_API_TOKEN = os.getenv("SEPAY_API_TOKEN", "GUV55IMNQDTPTPZON8OXPHQUHD6FLY0JFNYBTB4CMRCVIAFJEWHGELCRUEZMLVXK")  # Tự động duyệt qua SePay API TPBank
+SEPAY_API_TOKEN = _required_env("SEPAY_API_TOKEN")
 
 # ============================================================
 #  3. CẤU HÌNH API CTV (locket.2707226.xyz) - GÓI LOCKET & SPOTIFY
 # ============================================================
-SECRET_KEY = os.getenv("SECRET_KEY", "sk_19ad928a9bb4379792503b27e04e2f3d8533ddfe8a7727a9757344edd16a99e6")
-PUBLIC_KEY = os.getenv("PUBLIC_KEY", "pk_5979f17ec3827247e8c5a5aef88561481d1e6c15f74f4d0fb9328b2a7b50a035")
+SECRET_KEY = _required_env("SECRET_KEY")
+PUBLIC_KEY = _required_env("PUBLIC_KEY")
 API_KEY = SECRET_KEY
-API_BASE_URL = os.getenv("API_BASE_URL", "https://locket.2707226.xyz")
+API_BASE_URL = os.getenv("API_BASE_URL", "").strip()
 
-DNS_BASE_URL = os.getenv("DNS_BASE_URL", "https://doh.2707226.xyz")
-DNS_SLUG = os.getenv("DNS_SLUG", "alopremiumshop")
+DNS_BASE_URL = os.getenv("DNS_BASE_URL", "").strip()
+DNS_SLUG = os.getenv("DNS_SLUG", "").strip()
 
 # ============================================================
 #  4. DANH SÁCH DỊCH VỤ & BẢNG GIÁ (LOCKET & SPOTIFY)
@@ -90,7 +100,20 @@ PRODUCTS = {
             "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "COMBOVV",  "price": 259000},
         },
     },
+    "locket_ai": {
+        "name": "Locket Gold & AI Filters VIP",
+        "emoji": "✨",
+        "service": "locket_ai",
+        "description": "Gói Vĩnh Viễn All-in-One: Locket Gold, AI Filters, Spotify, SoundCloud Go+, YouTube Premium.",
+        "plans": {
+            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "VIP_ALLINONE", "price": 239000},
+        },
+    },
 }
+
+VIP_DOWNLOAD_URL = "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1"
+STUDIO_CAPTION_BASE_URL = "https://locket.jayteam.click/caption.html?u="
+STUDIO_CAPTION_PRICE = 10000
 
 # ============================================================
 #  6. ĐƯỜNG DẪN DỮ LIỆU
