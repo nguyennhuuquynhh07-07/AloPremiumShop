@@ -42,9 +42,29 @@ from handlers.user_handlers import (
     cb_back_main, cb_back_products, cb_show_qr,
     receive_identifier, cancel_conv, resetspotify_user_cmd, guide_cmd, cb_show_guide, cb_user_reset_spotify_menu,
     cb_coupon, cb_coupon_info, coupon_cmd, handle_user_coupon_text,
-    cb_ai_studio_opt, cb_buy_studio,
     WAITING_IDENTIFIER,
 )
+try:
+    from handlers.user_handlers import cb_ai_studio_opt, cb_buy_studio
+except (ImportError, AttributeError):
+    try:
+        import user_handlers
+        cb_ai_studio_opt = getattr(user_handlers, "cb_ai_studio_opt", None)
+        cb_buy_studio = getattr(user_handlers, "cb_buy_studio", None)
+    except Exception:
+        cb_ai_studio_opt = None
+        cb_buy_studio = None
+
+if cb_ai_studio_opt is None:
+    async def cb_ai_studio_opt(update, ctx):
+        query = update.callback_query
+        await query.answer("Hệ thống đang đồng bộ tính năng Studio, vui lòng thử lại sau giây lát!", show_alert=True)
+
+if cb_buy_studio is None:
+    async def cb_buy_studio(update, ctx):
+        query = update.callback_query
+        await query.answer("Hệ thống đang đồng bộ tính năng Studio, vui lòng thử lại sau giây lát!", show_alert=True)
+
 from handlers.admin_handlers import (
     admin_cmd, cb_admin,
     cb_admin_approve, cb_admin_reject,
