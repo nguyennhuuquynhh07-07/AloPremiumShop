@@ -26,7 +26,7 @@ from keyboards import (
     main_menu_kb, plan_kb, confirm_buy_kb, back_main_kb,
     payment_kb, admin_approval_kb, back_to_plan_kb,
     success_kb, pending_approval_kb, orders_kb, support_kb, account_kb, language_kb,
-    apidocs_kb, apierrors_kb
+    apidocs_kb, apierrors_kb, locket_ai_ask_studio_kb, locket_ai_success_kb, studio_success_kb
 )
 
 logger = logging.getLogger(__name__)
@@ -176,19 +176,21 @@ async def account_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             prod = PRODUCTS.get(o["product"], {}).get("name", o["product"])
             plan = PRODUCTS.get(o["product"], {}).get("plans", {}).get(o["plan"], {}).get("label", o["plan"])
             lines.append(f"• <b>{prod} ({plan})</b> — UID: <code>{o.get('uid')}</code>")
+        lines.extend([
+            "\n━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"🌐 <b>Link DNS Profile iOS:</b>\n<code>{dns_link}</code>",
+            "💡 <i>Mở link trên Safari để tải & cài đặt cấu hình VPN & DNS.</i>"
+        ])
+        kb = account_kb(dns_link=dns_link)
     else:
         lines.append("<i>Chưa có gói dịch vụ nào đang kích hoạt.</i>")
-
-    lines.extend([
-        "\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-        f"🌐 <b>Link DNS Profile iOS:</b>\n<code>{dns_link}</code>",
-        "💡 <i>Mở link trên Safari để tải & cài đặt cấu hình VPN & DNS.</i>"
-    ])
+        lines.append("\n💡 <i>Bấm <b>'Mua gói ngay'</b> bên dưới để kích hoạt bản quyền VIP nhé!</i>")
+        kb = account_kb(dns_link=None)
 
     await update.message.reply_text(
         "\n".join(lines),
         parse_mode=ParseMode.HTML,
-        reply_markup=account_kb(dns_link)
+        reply_markup=kb
     )
 
 
@@ -345,26 +347,28 @@ async def cb_my_account(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             prod = PRODUCTS.get(o["product"], {}).get("name", o["product"])
             plan = PRODUCTS.get(o["product"], {}).get("plans", {}).get(o["plan"], {}).get("label", o["plan"])
             lines.append(f"• <b>{prod} ({plan})</b> — UID: <code>{o.get('uid')}</code>")
+        lines.extend([
+            "\n━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"🌐 <b>Link DNS Profile iOS:</b>\n<code>{dns_link}</code>",
+            "💡 <i>Mở link trên Safari để tải & cài đặt cấu hình VPN & DNS.</i>"
+        ])
+        kb = account_kb(dns_link=dns_link)
     else:
         lines.append("<i>Chưa có gói dịch vụ nào đang kích hoạt.</i>")
-
-    lines.extend([
-        "\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-        f"🌐 <b>Link DNS Profile iOS:</b>\n<code>{dns_link}</code>",
-        "💡 <i>Mở link trên Safari để tải & cài đặt cấu hình VPN & DNS.</i>"
-    ])
+        lines.append("\n💡 <i>Bấm <b>'Mua gói ngay'</b> bên dưới để kích hoạt bản quyền VIP nhé!</i>")
+        kb = account_kb(dns_link=None)
 
     try:
         await query.edit_message_text(
             "\n".join(lines),
             parse_mode=ParseMode.HTML,
-            reply_markup=account_kb(dns_link)
+            reply_markup=kb
         )
     except Exception:
         await query.message.reply_text(
             "\n".join(lines),
             parse_mode=ParseMode.HTML,
-            reply_markup=account_kb(dns_link)
+            reply_markup=kb
         )
 
 
@@ -431,9 +435,10 @@ async def cb_get_mobileconfig(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     profile_bytes = None
     try:
         import httpx
-        r_ctv = httpx.get(dns_link, timeout=5)
-        if r_ctv.is_success and b"PayloadContent" in r_ctv.content:
-            profile_bytes = r_ctv.content
+        async with httpx.AsyncClient(timeout=5) as client:
+            r_ctv = await client.get(dns_link)
+            if r_ctv.is_success and b"PayloadContent" in r_ctv.content:
+                profile_bytes = r_ctv.content
     except Exception:
         pass
 
@@ -604,6 +609,26 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"👇 <b>Gửi Link hoặc UID Spotify vào ô chat bên dưới:</b>\n"
             f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>link MÃ_GIẢM_GIÁ</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
         )
+    elif product_key == "locket_ai":
+        prompt = (
+            f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"
+            f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"🎁 <b>ĐẶC QUYỀN MỞ KHÓA TRỌN BỘ:</b>\n"
+            f"👑 <b>Locket Gold:</b> Viền vàng Avatar VIP, Video 60s, Kho 38 khung viền, Tải ảnh 4K.\n"
+            f"🎭 <b>AI Filters Mới:</b> Mở full 8 danh mục bộ lọc (Events, Goofy, Looks, Celebrate...).\n"
+            f"✨ <b>Nút [✨ Tạo diện mạo]:</b> Tự do nhập prompt sáng tạo diện mạo AI cá nhân.\n"
+            f"🎵 <b>Spotify Premium:</b> Chặn 100% Ads quảng cáo, Next bài vô hạn, Âm thanh 320kbps.\n"
+            f"🟠 <b>SoundCloud Go+:</b> Mở khóa SoundCloud Go+ (Plus), Tải nghe Offline, Âm thanh HQ Audio.\n"
+            f"🎬 <b>YouTube Premium:</b> Chặn 100% Ads video, Phát âm thanh tắt màn hình & Hình trong hình (PiP).\n"
+            f"━━━━━━━━━━━━━━━━━━\n\n"
+            f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET CỦA BẠN</b>\n\n"
+            f"<b>Hướng dẫn:</b>\n"
+            f"  Mở app Locket → Bấm Avatar góc trên → Xem phần <b>@username</b>\n\n"
+            f"<i>Ví dụ:</i> <code>thokoncute_19</code>\n\n"
+            f"👇 <b>Gửi Username Locket của bạn vào ô chat bên dưới:</b>\n"
+            f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>username MÃ_GIẢM_GIÁ</code>)</i>"
+        )
     elif product_key == "combo":
         prompt = (
             f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"
@@ -760,6 +785,25 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
         await checking_msg.delete()
 
+        # Đối với gói Locket Gold & AI Filters VIP: Hỏi khách trước xem có muốn thêm Studio Chú Thích & Khung Viền (+10.000đ) không
+        if product_key == "locket_ai":
+            ask_text = (
+                f"🎨 <b>BẠN CÓ MUỐN CHỈNH CHÚ THÍCH VÀ ĐỔI KHUNG VIỀN KHÔNG?</b>\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"👤 <b>Tài khoản Locket:</b> @{display}\n"
+                f"💎 <b>Gói VIP:</b> {pv['name']} ({utils.fmt_price(final_price)})\n\n"
+                f"✨ <b>Đặc quyền thêm chỉ với +10.000đ:</b>\n"
+                f"• Nhận riêng <b>Link Studio Chỉnh Chú Thích & Đổi Khung Viền</b> cá nhân theo username @{display}.\n"
+                f"• Tự do sáng tạo chú thích độc quyền và đổi 38 khung viền Locket không giới hạn.\n\n"
+                f"👇 <i>Bạn có muốn nâng cấp thêm Studio vào đơn hàng không?</i>"
+            )
+            await update.message.reply_text(
+                ask_text,
+                parse_mode=ParseMode.HTML,
+                reply_markup=locket_ai_ask_studio_kb(order_id)
+            )
+            return ConversationHandler.END
+
         # Tạo ảnh QR VietQR chuẩn
         transfer_memo = f"ORDER_{order_id}"
         qr_url = utils.get_vietqr_url(final_price, transfer_memo)
@@ -844,8 +888,22 @@ async def cb_paid(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await query.answer("Đơn hàng đang chờ Admin duyệt, bạn vui lòng không bấm lại!", show_alert=True)
         return
 
-    pv = PRODUCTS[order["product"]]
-    plnv = pv["plans"][order["plan"]]
+    if order["product"] == "studio_caption":
+        pv = {"name": "Studio Chỉnh Chú Thích & Khung Viền", "emoji": "🎨"}
+        plnv = {"label": "Bản Quyền Vĩnh Viễn"}
+    else:
+        pv = PRODUCTS.get(order["product"], {"name": "Gói VIP", "emoji": "💎"})
+        plnv = pv.get("plans", {}).get(order["plan"], {"label": "VIP"})
+
+    # 1. Quét ngay SePay API xem tiền đã vào tài khoản TPBank chưa (Phản hồi tức thì trong 1 giây!)
+    from order_service import check_and_activate_sepay_order
+    try:
+        ok_sp, msg_sp = await asyncio.to_thread(check_and_activate_sepay_order, order_id, ctx.bot)
+        if ok_sp:
+            await query.answer("🎉 Đã nhận được thanh toán thành công! Hồ sơ đã được kích hoạt.", show_alert=True)
+            return
+    except Exception as e_sp:
+        logger.warning(f"Error checking SePay in cb_paid: {e_sp}")
 
     if getattr(config, "AUTO_APPROVE", False):
         from order_service import execute_order_activation
@@ -911,6 +969,146 @@ async def cb_paid(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             )
         except Exception as e:
             logger.error(f"Error notifying admin {admin_id}: {e}")
+
+
+async def cb_ai_studio_opt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Xử lý lựa chọn Có / Không thêm Studio (+10.000đ) khi mua gói Locket Gold & AI Filters VIP."""
+    query = update.callback_query
+    await query.answer()
+    parts = query.data.split(":")
+    choice = parts[1]   # "yes" hoặc "no"
+    order_id = parts[2]
+    order = db.get_order(order_id)
+    if not order:
+        await query.answer("❌ Không tìm thấy đơn hàng!", show_alert=True)
+        return
+
+    has_studio = (choice == "yes")
+    base_price = order.get("original_price") or 239000
+    discount_amount = order.get("discount_amount", 0)
+    applied_coupon_code = order.get("discount_code", "")
+
+    final_price = (base_price - discount_amount) + (10000 if has_studio else 0)
+
+    db.update_order(
+        order_id,
+        price=final_price,
+        has_studio=has_studio,
+        studio_addon=has_studio
+    )
+
+    transfer_memo = f"ORDER_{order_id}"
+    qr_url = utils.get_vietqr_url(final_price, transfer_memo)
+    bank_id = getattr(config, "BANK_ID", "TPB")
+    account_no = getattr(config, "ACCOUNT_NO", "")
+    account_name = getattr(config, "ACCOUNT_NAME", "")
+
+    pv = PRODUCTS.get("locket_ai", {"name": "Locket Gold & AI Filters VIP", "emoji": "✨"})
+    plnv = pv.get("plans", {}).get("ltm", {"label": "Vĩnh Viễn"})
+
+    studio_line = "🎨 <b>Gói Studio thêm:</b> <b>Đã chọn (+10.000đ)</b> ✓\n" if has_studio else ""
+
+    caption = (
+        f"🧾 <b>HOÁ ĐƠN THANH TOÁN #{order_id}</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📦 <b>Dịch vụ:</b> {pv.get('emoji', '✨')} {pv.get('name')} — {plnv.get('label')}\n"
+        f"👤 <b>Tài khoản:</b> <b>{order.get('display_name')}</b>\n"
+        f"🆔 <b>UID:</b> <code>{order.get('uid')}</code>\n"
+        f"{studio_line}"
+        f"💵 <b>Số tiền thanh toán:</b> <b>{utils.fmt_price(final_price)}</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"🏦 <b>Ngân hàng:</b> <b>{bank_id}</b>\n"
+        f"🔢 <b>Số tài khoản:</b> <code>{account_no}</code>\n"
+        f"👤 <b>Chủ tài khoản:</b> <b>{account_name}</b>\n"
+        f"📝 <b>Nội dung CK:</b> <code>{transfer_memo}</code>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"⚠️ <b>LƯU Ý:</b>\n"
+        f"• Quét mã QR để chuyển khoản chính xác số tiền & nội dung.\n"
+        f"• Chuyển tiền xong, bấm nút <b>\"✅ Tôi đã chuyển khoản\"</b> bên dưới để Admin duyệt và nhận link cấu hình VIP!"
+    )
+
+    try:
+        await query.message.reply_photo(
+            photo=qr_url,
+            caption=caption,
+            parse_mode=ParseMode.HTML,
+            reply_markup=payment_kb(order_id, applied_coupon=applied_coupon_code)
+        )
+        try:
+            await query.message.delete()
+        except Exception:
+            pass
+    except Exception as e:
+        logger.error(f"Error replying QR photo in cb_ai_studio_opt: {e}")
+        await query.message.reply_text(
+            caption,
+            parse_mode=ParseMode.HTML,
+            reply_markup=payment_kb(order_id, applied_coupon=applied_coupon_code)
+        )
+
+
+async def cb_buy_studio(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Khách hàng đã mua gói VIP bấm thêm Studio Chỉnh Chú Thích & Khung Viền (+10.000đ)."""
+    query = update.callback_query
+    await query.answer()
+    order_id = query.data.split(":")[1]
+    parent_order = db.get_order(order_id)
+    if not parent_order:
+        await query.answer("❌ Không tìm thấy thông tin đơn hàng gốc!", show_alert=True)
+        return
+
+    user = update.effective_user
+    sub_order_id = utils.gen_order_id()
+    studio_price = getattr(config, "STUDIO_CAPTION_PRICE", 10000)
+
+    db.create_order(
+        order_id=sub_order_id,
+        user_id=user.id,
+        username=user.username or user.first_name,
+        product="studio_caption",
+        plan="extra",
+        price=studio_price,
+        uid=parent_order.get("uid"),
+        display_name=parent_order.get("display_name"),
+        parent_order_id=order_id
+    )
+    db.update_order(sub_order_id, status="waiting_payment")
+
+    transfer_memo = f"ORDER_{sub_order_id}"
+    qr_url = utils.get_vietqr_url(studio_price, transfer_memo)
+    bank_id = getattr(config, "BANK_ID", "TPB")
+    account_no = getattr(config, "ACCOUNT_NO", "")
+    account_name = getattr(config, "ACCOUNT_NAME", "")
+
+    caption = (
+        f"🎨 <b>MỞ KHÓA STUDIO CHỈNH CHÚ THÍCH & ĐỔI KHUNG VIỀN</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"🧾 <b>Mã đơn:</b> <code>ORDER_{sub_order_id}</code>\n"
+        f"👤 <b>Tài khoản Locket:</b> <b>@{parent_order.get('display_name') or parent_order.get('uid')}</b>\n"
+        f"💵 <b>Số tiền thanh toán:</b> <b>{utils.fmt_price(studio_price)}</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"🏦 <b>Ngân hàng:</b> <b>{bank_id}</b>\n"
+        f"🔢 <b>Số tài khoản:</b> <code>{account_no}</code>\n"
+        f"👤 <b>Chủ tài khoản:</b> <b>{account_name}</b>\n"
+        f"📝 <b>Nội dung CK:</b> <code>{transfer_memo}</code>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"💡 <i>Sau khi chuyển khoản thành công, bấm nút <b>'✅ Tôi đã chuyển khoản'</b> bên dưới để nhận Link Studio ngay nhé!</i>"
+    )
+
+    try:
+        await query.message.reply_photo(
+            photo=qr_url,
+            caption=caption,
+            parse_mode=ParseMode.HTML,
+            reply_markup=payment_kb(sub_order_id)
+        )
+    except Exception as e:
+        logger.error(f"Error sending studio QR: {e}")
+        await query.message.reply_text(
+            caption,
+            parse_mode=ParseMode.HTML,
+            reply_markup=payment_kb(sub_order_id)
+        )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
