@@ -1168,7 +1168,7 @@
                         <span>Đang chờ thanh toán</span>
                     </div>
                     <div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-mono font-bold">
-                        <span>⏱️</span> <span id="paymentCountdownTimer">10:00</span>
+                        <span>⏱️</span> <span id="paymentCountdownTimer">05:00</span>
                     </div>
                 </div>
                 <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]" id="modalProductName">Locket Gold VIP</h3>
@@ -1761,8 +1761,8 @@
                 document.getElementById('modalSuccessPayment').classList.add('hidden');
                 document.getElementById('paymentModal').classList.remove('hidden');
 
-                // Bắt đầu đếm ngược thời gian giữ đơn 10 phút
-                startCountdownTimer(600);
+                // Bắt đầu đếm ngược thời gian giữ đơn 5 phút (300 giây)
+                startCountdownTimer(300, data.order_id);
 
                 // Bắt đầu Polling kiểm tra SePay
                 startPollingOrder(data.order_id);
@@ -1787,7 +1787,12 @@
                         const data = await res.json();
                         if (data.is_paid || data.status === 'done') {
                             clearInterval(pollTimer);
+                            if (countdownInterval) clearInterval(countdownInterval);
                             showPaymentSuccess(orderId, data.download_url, data.product);
+                        } else if (data.status === 'cancelled' || data.status === 'rejected') {
+                            clearInterval(pollTimer);
+                            if (countdownInterval) clearInterval(countdownInterval);
+                            showOrderExpired();
                         }
                     }
                 } catch (e) {
@@ -1995,8 +2000,8 @@
                 document.getElementById('modalWaitingPayment').classList.remove('hidden');
                 document.getElementById('modalSuccessPayment').classList.add('hidden');
 
-                // Bắt đầu đếm ngược và Polling đơn phụ này
-                startCountdownTimer(600);
+                // Bắt đầu đếm ngược và Polling đơn phụ này (5 phút)
+                startCountdownTimer(300, data.order_id);
                 startPollingOrder(data.order_id);
             } catch (e) {
                 alert("Lỗi tạo đơn nâng cấp Studio: " + e.message);
@@ -2386,7 +2391,25 @@
         // TIỆN ÍCH TRẢI NGHIỆM NGƯỜI DÙNG & TƯƠNG TÁC THÔNG MINH
         // ============================================================
         let countdownInterval = null;
-        function startCountdownTimer(seconds = 600) {
+        function showOrderExpired() {
+            const waitingDiv = document.getElementById('modalWaitingPayment');
+            if (waitingDiv) {
+                waitingDiv.innerHTML = `
+                    <div class="py-6 text-center">
+                        <div class="w-16 h-16 rounded-full bg-rose-100 text-rose-600 text-3xl flex items-center justify-center mx-auto mb-3 shadow-inner font-bold">
+                            ✕
+                        </div>
+                        <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]">Đơn Hàng Đã Hết Hạn</h3>
+                        <p class="text-xs text-[#6E6659] mt-2 mb-6 max-w-xs mx-auto">Thời gian giữ đơn 5 phút đã kết thúc và đơn hàng đã tự động hủy. Vui lòng tạo lại đơn hàng mới để thanh toán.</p>
+                        <button onclick="closePaymentModal(); location.reload();" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-fredoka font-bold text-sm shadow-md transition-all">
+                            Tạo Đơn Hàng Mới
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function startCountdownTimer(seconds = 300, orderId = null) {
             if (countdownInterval) clearInterval(countdownInterval);
             let remain = seconds;
             const timerEl = document.getElementById('paymentCountdownTimer');
@@ -2399,6 +2422,10 @@
                 if (remain <= 0) {
                     clearInterval(countdownInterval);
                     if (timerEl) timerEl.textContent = '00:00';
+                    if (pollTimer) clearInterval(pollTimer);
+                    // Hủy đơn và hiển thị giao diện hết hạn
+                    showOrderExpired();
+                    return;
                 }
                 remain--;
             }

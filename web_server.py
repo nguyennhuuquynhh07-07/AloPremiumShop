@@ -399,11 +399,30 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             # Tự động quét giao dịch SePay trong luồng phụ (không làm nghẽn phản hồi HTTP của Web)
             if order.get("status") in ("pending", "waiting_payment", "pending_approval"):
-                try:
-                    from order_service import check_and_activate_sepay_order
-                    threading.Thread(target=check_and_activate_sepay_order, args=(order_id, BOT_INSTANCE), daemon=True).start()
-                except Exception as e_poll_sp:
-                    logger.warning(f"Error checking SePay during order_status: {e_poll_sp}")
+                # Kiểm tra nếu đơn hàng đã quá 5 phút (300 giây) chưa thanh toán -> Tự động hủy
+                created_str = order.get("created_at")
+                if created_str:
+                    try:
+                        from datetime import datetime, timezone
+                        dt_str = created_str.replace("Z", "+00:00")
+                        parsed_dt = datetime.fromisoformat(dt_str)
+                        if parsed_dt.tzinfo is not None:
+                            age = (datetime.now(timezone.utc) - parsed_dt).total_seconds()
+                        else:
+                            age = (datetime.now() - parsed_dt).total_seconds()
+
+                        if age > 300:
+                            db.update_order(order_id, status="cancelled", cancel_reason="Hết thời gian thanh toán (5 phút)")
+                            order["status"] = "cancelled"
+                    except Exception as e_expire_chk:
+                        logger.warning(f"Error checking expire for order {order_id}: {e_expire_chk}")
+
+                if order.get("status") in ("pending", "waiting_payment", "pending_approval"):
+                    try:
+                        from order_service import check_and_activate_sepay_order
+                        threading.Thread(target=check_and_activate_sepay_order, args=(order_id, BOT_INSTANCE), daemon=True).start()
+                    except Exception as e_poll_sp:
+                        logger.warning(f"Error checking SePay during order_status: {e_poll_sp}")
 
             is_done = order.get("status") == "done"
             prod_key = order.get("product")

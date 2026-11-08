@@ -193,7 +193,7 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     )
 
                 ai_msg = (
-                    f"🎉 <b>KÍCH HOẠT THÀNH CÔNG LOCKET GOLD & AI FILTERS VIP!</b>\n"
+                    f"🎉 <b>KÍCH HOẠT THÀNH CÔNG VIP ALL-IN-ONE (LOCKET GOLD & AI FILTERS)!</b>\n"
                     f"📦 <b>Gói cước:</b> Gói Vĩnh Viễn (VIP All-in-One)\n"
                     f"⏳ <b>Hạn dùng:</b> 31/12/2099\n"
                     f"🔒 <b>Trạng thái DNS:</b> ĐÃ BẬT (Active Combo Cloud VIP)\n"
@@ -531,6 +531,45 @@ async def check_all_sepay_pending_payments(bot=None) -> list[str]:
                 break
 
     return activated_list
+
+
+def cancel_expired_pending_orders(max_age_seconds: int = 300) -> list[str]:
+    """
+    Quét và tự động hủy các đơn hàng đang chờ thanh toán quá 5 phút (300s).
+    Tránh tình trạng đơn hàng treo mãi và giải phóng phiên cho khách hàng.
+    """
+    from datetime import datetime, timezone
+    orders = db.get_orders()
+    now_utc = datetime.now(timezone.utc)
+    now_local = datetime.now()
+    cancelled_ids = []
+
+    for oid, o in list(orders.items()):
+        if o.get("status") in ("waiting_payment", "pending"):
+            created_str = o.get("created_at")
+            if not created_str:
+                continue
+            try:
+                # Hỗ trợ cả định dạng ISO có Z/UTC và ISO local
+                dt_str = created_str.replace("Z", "+00:00")
+                parsed_dt = datetime.fromisoformat(dt_str)
+                if parsed_dt.tzinfo is not None:
+                    age = (now_utc - parsed_dt).total_seconds()
+                else:
+                    age = (now_local - parsed_dt).total_seconds()
+
+                if age > max_age_seconds:
+                    o["status"] = "cancelled"
+                    o["cancel_reason"] = f"Hết thời gian thanh toán ({int(max_age_seconds/60)} phút)"
+                    cancelled_ids.append(oid)
+                    logger.info(f"⏳ [TIMEOUT] Đơn hàng ORDER_{oid} đã quá 5 phút chưa thanh toán -> Tự động hủy.")
+            except Exception as e_time:
+                logger.warning(f"Error parsing date for order {oid}: {e_time}")
+
+    if cancelled_ids:
+        db.save_orders(orders)
+
+    return cancelled_ids
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

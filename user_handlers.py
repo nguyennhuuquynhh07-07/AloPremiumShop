@@ -625,7 +625,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET CỦA BẠN</b>\n\n"
             f"<b>Hướng dẫn:</b>\n"
             f"  Mở app Locket → Bấm Avatar góc trên → Xem phần <b>@username</b>\n\n"
-            f"<i>Ví dụ:</i> <code>thokoncute_19</code>\n\n"
+            f"<i>Ví dụ:</i> <code>conlaigii</code>\n\n"
             f"👇 <b>Gửi Username Locket của bạn vào ô chat bên dưới:</b>\n"
             f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>username MÃ_GIẢM_GIÁ</code>)</i>"
         )
@@ -835,8 +835,9 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"📝 <b>Nội dung CK:</b> <code>{transfer_memo}</code>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"⚠️ <b>LƯU Ý:</b>\n"
+            f"• Thời gian chuyển khoản là <b>5 phút</b> (đơn sẽ tự động hủy nếu quá hạn).\n"
             f"• Quét mã QR để chuyển khoản chính xác số tiền & nội dung.\n"
-            f"• Chuyển tiền xong, hãy bấm nút <b>\"✅ Tôi đã chuyển khoản\"</b> bên dưới để Admin duyệt và nhận link cài đặt DNS Profile!"
+            f"• Hệ thống tự động kích hoạt ngay khi nhận tiền hoặc bấm nút <b>\"✅ Tôi đã chuyển khoản\"</b> bên dưới!"
         )
 
         try:
