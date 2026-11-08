@@ -1,20 +1,26 @@
 import os
 
-# Tự động nạp file .env nếu tồn tại
-env_file = os.path.join(os.path.dirname(__file__), ".env")
-if os.path.exists(env_file):
-    try:
-        with open(env_file, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    key, val = line.split("=", 1)
-                    key = key.strip()
-                    val = val.strip().strip('"').strip("'")
-                    if key and key not in os.environ:
-                        os.environ[key] = val
-    except Exception:
-        pass
+# Tự động nạp file .env nếu tồn tại (hỗ trợ cả môi trường Local và Render /etc/secrets/.env)
+candidate_env_paths = [
+    os.path.join(os.path.dirname(__file__), ".env"),
+    os.path.join(os.getcwd(), ".env"),
+    "/etc/secrets/.env",
+]
+for env_path in candidate_env_paths:
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        key, val = line.split("=", 1)
+                        key = key.strip()
+                        val = val.strip().strip('"').strip("'")
+                        if key and key not in os.environ:
+                            os.environ[key] = val
+        except Exception:
+            pass
+
 
 # ============================================================
 #  1. CẤU HÌNH BOT TELEGRAM & ADMIN
@@ -101,7 +107,7 @@ PRODUCTS = {
         },
     },
     "locket_ai": {
-        "name": "Locket Gold & AI Filters VIP",
+        "name": "VIP ALL-IN-ONE (Locket Gold & AI Filters)",
         "emoji": "✨",
         "service": "locket_ai",
         "description": "Gói Vĩnh Viễn All-in-One: Locket Gold, AI Filters, Spotify, SoundCloud Go+, YouTube Premium.",
