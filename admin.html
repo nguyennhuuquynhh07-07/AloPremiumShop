@@ -459,6 +459,41 @@
                 </div>
             </div>
 
+            <!-- QUẢN LÝ BANNER THÔNG BÁO ƯU ĐÃI ĐẦU TRANG WEB -->
+            <div class="bg-slate-900/90 border border-amber-500/30 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-3 border-b border-slate-800 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">📢</span>
+                        <div>
+                            <h3 class="text-base font-black text-white">Banner Thông Báo Ưu Đãi Đầu Trang Web</h3>
+                            <p class="text-xs text-slate-400">Hiển thị thanh chữ chạy / thông báo ưu đãi nổi bật trên cùng của Website</p>
+                        </div>
+                    </div>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="adminBannerEnabled" checked class="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 cursor-pointer">
+                        <span class="text-xs font-bold text-slate-300">Bật hiển thị Banner</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Thẻ nhãn (Badge):</label>
+                        <input type="text" id="adminBannerTag" value="🔥 HOT ƯU ĐÃI" placeholder="VD: 🔥 HOT ƯU ĐÃI"
+                               class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Nội dung thông báo:</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="adminBannerText" value="Ra mắt VIP ALL-IN-ONE: Mở khóa trọn bộ Locket Gold, AI Filters, Spotify, YouTube Premium & Tặng kèm Studio Cá Nhân!" placeholder="Nhập câu thông báo ưu đãi..."
+                                   class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+                            <button onclick="saveAdminBanner()" id="btnSaveBanner" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shrink-0 cursor-pointer shadow-md transition-all">
+                                💾 Lưu Banner
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 3 PRODUCT PRICE CARDS (Locket, Spotify, Combo) -->
             <div id="adminPricesGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="p-8 text-center text-slate-500 col-span-3">Đang tải danh sách bảng giá...</div>
@@ -1307,6 +1342,16 @@
 
                 cachedAdminProducts = data.products;
                 renderAdminPrices(data.products);
+
+                // Tải cấu hình Banner thông báo ưu đãi
+                if (data.banner) {
+                    const chk = document.getElementById('adminBannerEnabled');
+                    const tag = document.getElementById('adminBannerTag');
+                    const txt = document.getElementById('adminBannerText');
+                    if (chk) chk.checked = data.banner.enabled !== false;
+                    if (tag && data.banner.tag) tag.value = data.banner.tag;
+                    if (txt && data.banner.text) txt.value = data.banner.text;
+                }
             } catch (err) {
                 console.error(err);
                 grid.innerHTML = '<div class="p-8 text-center text-red-400 font-bold col-span-3">❌ Lỗi kết nối: ' + err.message + '</div>';
@@ -1496,6 +1541,48 @@
                 }
             } catch (err) {
                 alert('Lỗi kết nối: ' + err.message);
+            }
+        }
+
+        async function saveAdminBanner() {
+            const btn = document.getElementById('btnSaveBanner');
+            const chk = document.getElementById('adminBannerEnabled');
+            const tagInput = document.getElementById('adminBannerTag');
+            const txtInput = document.getElementById('adminBannerText');
+
+            const enabled = chk ? chk.checked : true;
+            const tag = tagInput ? tagInput.value.trim() : '🔥 HOT ƯU ĐÃI';
+            const text = txtInput ? txtInput.value.trim() : '';
+
+            if (btn) {
+                btn.innerHTML = '⏳ Đang lưu...';
+                btn.disabled = true;
+            }
+
+            try {
+                const res = await fetch('/api/admin/update_banner', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        pin: currentPin,
+                        enabled: enabled,
+                        tag: tag,
+                        text: text
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showAdminToast('🎉 Đã lưu Banner thông báo ưu đãi thành công! F5 trang web để thấy thay đổi.');
+                } else {
+                    alert('Lỗi: ' + (data.error || 'Không thể lưu banner'));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối: ' + err.message);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '💾 Lưu Banner';
+                    btn.disabled = false;
+                }
             }
         }
 

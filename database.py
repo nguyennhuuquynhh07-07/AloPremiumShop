@@ -14,6 +14,7 @@ from config import DB_ORDERS, DB_STATS
 DB_USERS = "data/users.json"
 DB_CODES = "data/codes.json"
 DB_PRICES = "data/prices.json"
+DB_BANNER = "data/banner.json"
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -428,6 +429,28 @@ def reset_default_prices() -> bool:
             if pk in PRODUCTS and pl in PRODUCTS[pk]["plans"]:
                 PRODUCTS[pk]["plans"][pl]["price"] = val
     return True
+
+# ── BANNER / THÔNG BÁO ƯU ĐÃI WEB ───────────────────────────────────────────
+DEFAULT_BANNER = {
+    "enabled": True,
+    "tag": "🔥 HOT ƯU ĐÃI",
+    "text": "Ra mắt VIP ALL-IN-ONE: Mở khóa trọn bộ Locket Gold, AI Filters, Spotify, YouTube Premium & Tặng kèm Studio Cá Nhân!"
+}
+
+def get_banner_config() -> dict:
+    cfg = _load(DB_BANNER, None)
+    if not isinstance(cfg, dict):
+        return DEFAULT_BANNER.copy()
+    return cfg
+
+def update_banner_config(tag: str, text: str, enabled: bool = True) -> dict:
+    data = {
+        "enabled": bool(enabled),
+        "tag": str(tag).strip() or "🔥 HOT ƯU ĐÃI",
+        "text": str(text).strip()
+    }
+    _save(DB_BANNER, data)
+    return data
 
 # Tự động đồng bộ bảng giá tuỳ chỉnh ngay khi nạp module
 try:

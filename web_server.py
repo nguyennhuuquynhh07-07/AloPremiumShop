@@ -284,11 +284,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 3. API Danh sách gói cước & bảng giá
+        # 3. API Danh sách gói cước & bảng giá (kèm cấu hình Banner ưu đãi)
         if path == "/api/packages":
             self._send_json(200, {
                 "ok": True,
-                "products": config.PRODUCTS
+                "products": config.PRODUCTS,
+                "banner": db.get_banner_config()
             })
             return
 
@@ -787,7 +788,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {"ok": True, "orders": all_orders[:50]})
             return
 
-        # API Admin: Lấy danh sách bảng giá & mã gói
+        # API Admin: Lấy danh sách bảng giá & mã gói (kèm cấu hình Banner)
         if path == "/api/admin/prices":
             pin = params.get("pin", [""])[0].strip() or self.headers.get("X-Admin-PIN", "").strip()
             if pin != getattr(config, "ADMIN_PIN", "2802"):
@@ -796,7 +797,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {
                 "ok": True,
                 "products": config.PRODUCTS,
-                "custom_prices": db.get_custom_prices()
+                "custom_prices": db.get_custom_prices(),
+                "banner": db.get_banner_config()
             })
             return
 
@@ -964,6 +966,23 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True})
             else:
                 self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            return
+
+        # API Admin: Cập nhật thông báo ưu đãi (Banner Header Web)
+        if path == "/api/admin/update_banner":
+            pin = str(body.get("pin", "")).strip() or self.headers.get("X-Admin-PIN", "").strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            tag = body.get("tag", "🔥 HOT ƯU ĐÃI")
+            text = body.get("text", "")
+            enabled = body.get("enabled", True)
+            saved_banner = db.update_banner_config(tag, text, enabled)
+            self._send_json(200, {
+                "ok": True,
+                "message": "Đã cập nhật banner thông báo ưu đãi thành công!",
+                "banner": saved_banner
+            })
             return
 
         # API Admin: Cập nhật giá 1 gói cước (Đồng bộ Web & Bot)
