@@ -1432,7 +1432,8 @@
         // Load config & packages on startup
         async function initSystem() {
             try {
-                const res = await fetch('/api/packages');
+                // Thêm timestamp chống cache trình duyệt để luôn lấy giá mới nhất từ Admin
+                const res = await fetch('/api/packages?_t=' + Date.now(), { cache: 'no-store' });
                 if (res.ok) {
                     const data = await res.json();
                     systemProducts = data.products || {};
