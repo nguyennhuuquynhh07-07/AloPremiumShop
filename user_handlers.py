@@ -785,25 +785,6 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
         await checking_msg.delete()
 
-        # Đối với gói Locket Gold & AI Filters VIP: Hỏi khách trước xem có muốn thêm Studio Chú Thích & Khung Viền (+10.000đ) không
-        if product_key == "locket_ai":
-            ask_text = (
-                f"🎨 <b>BẠN CÓ MUỐN CHỈNH CHÚ THÍCH VÀ ĐỔI KHUNG VIỀN KHÔNG?</b>\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"👤 <b>Tài khoản Locket:</b> @{display}\n"
-                f"💎 <b>Gói VIP:</b> {pv['name']} ({utils.fmt_price(final_price)})\n\n"
-                f"✨ <b>Đặc quyền thêm chỉ với +10.000đ:</b>\n"
-                f"• Nhận riêng <b>Link Studio Chỉnh Chú Thích & Đổi Khung Viền</b> cá nhân theo username @{display}.\n"
-                f"• Tự do sáng tạo chú thích độc quyền và đổi 38 khung viền Locket không giới hạn.\n\n"
-                f"👇 <i>Bạn có muốn nâng cấp thêm Studio vào đơn hàng không?</i>"
-            )
-            await update.message.reply_text(
-                ask_text,
-                parse_mode=ParseMode.HTML,
-                reply_markup=locket_ai_ask_studio_kb(order_id)
-            )
-            return ConversationHandler.END
-
         # Tạo ảnh QR VietQR chuẩn
         transfer_memo = f"ORDER_{order_id}"
         qr_url = utils.get_vietqr_url(final_price, transfer_memo)

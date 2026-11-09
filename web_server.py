@@ -1311,10 +1311,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
             price = plnv["price"]
             orig_price = price
 
-            has_studio = bool(body.get("has_studio", False))
-            if product == "locket_ai" and has_studio:
-                price += 10000
-                orig_price += 10000
+            # Gói VIP ALL-IN-ONE (locket_ai) mặc định đã bao gồm sẵn bản quyền Studio (trọn bộ)
+            has_studio = True if product == "locket_ai" else bool(body.get("has_studio", False))
 
             # Chống Spam Đơn Hàng (Anti-Spam Order Creation)
             clean_ident = utils.clean_input(identifier).lower()

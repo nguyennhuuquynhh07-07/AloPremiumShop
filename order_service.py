@@ -86,17 +86,17 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
         dns_link_spotify = dns_link
 
         if product_key == "locket_ai":
-            # Cấu hình VIP All-in-One độc lập, không trừ coin web chủ
+            # Cấu hình VIP All-in-One độc lập, tự động cấp kèm luôn Link Studio cá nhân
             vip_url = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
-            has_studio = order.get("has_studio", False)
             username_target = utils.clean_input(str(order.get("uid") or order.get("username") or order.get("account_target") or order.get("display_name") or "")).lstrip("@")
-            studio_url = f"https://locket.jayteam.click/caption.html?u={username_target}" if has_studio else None
+            studio_url = f"https://locket.jayteam.click/caption.html?u={username_target}"
             db.update_order(
                 order_id, 
                 status="done", 
                 done_at=datetime.now().isoformat(), 
                 dns_link=vip_url,
                 vip_download_url=vip_url,
+                has_studio=True,
                 studio_link=studio_url
             )
         elif product_key == "studio_caption":
@@ -175,22 +175,13 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             if product_key == "locket_ai":
                 from keyboards import locket_ai_success_kb
                 vip_url = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
-                has_studio = order.get("has_studio", False)
                 username_target = utils.clean_input(str(order.get("uid") or order.get("username") or order.get("account_target") or order.get("display_name") or "")).lstrip("@")
-                studio_url = f"https://locket.jayteam.click/caption.html?u={username_target}" if has_studio else None
+                studio_url = f"https://locket.jayteam.click/caption.html?u={username_target}"
                 
-                studio_section = ""
-                if has_studio:
-                    studio_section = (
-                        f"\n🎨 <b>Link Studio Chỉnh Chú Thích & Đổi Khung Viền:</b>\n"
-                        f"{studio_url}\n"
-                    )
-                else:
-                    studio_section = (
-                        f"\n━━━━━━━━━━━━━━━━━━\n"
-                        f"🎨 <i>Bạn chưa kích hoạt Studio Chỉnh Chú Thích & Khung Viền.</i>\n"
-                        f"👉 <i>Bạn có muốn chỉnh chú thích và khung viền không? Bấm nút bên dưới để thanh toán thêm 10.000đ và nhận Link Studio ngay nhé!</i>\n"
-                    )
+                studio_section = (
+                    f"\n🎨 <b>Link Studio Chỉnh Chú Thích & Đổi Khung Viền:</b>\n"
+                    f"{studio_url}\n"
+                )
 
                 ai_msg = (
                     f"🎉 <b>KÍCH HOẠT THÀNH CÔNG VIP ALL-IN-ONE (LOCKET GOLD & AI FILTERS)!</b>\n"
@@ -202,6 +193,7 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     f"👑 <b>Locket Gold:</b> Viền vàng Avatar VIP, Video 60s, Kho 38 khung viền, Tải ảnh 4K.\n"
                     f"🎭 <b>AI Filters Mới:</b> Mở full 8 danh mục bộ lọc (Events, Goofy, Looks, Celebrate, Cute, Costumes, Holidays...).\n"
                     f"✨ <b>Nút [✨ Tạo diện mạo]:</b> Tự do nhập prompt sáng tạo diện mạo AI cá nhân.\n"
+                    f"🎨 <b>Studio Độc Quyền:</b> Tự do đổi 38 khung viền & chú thích cá nhân qua Studio riêng.\n"
                     f"🎵 <b>Spotify Premium:</b> Chặn 100% Ads quảng cáo, Next bài vô hạn, Âm thanh 320kbps.\n"
                     f"🟠 <b>SoundCloud Go+:</b> Mở khóa SoundCloud Go+ (Plus), Tải nghe Offline, Âm thanh HQ Audio.\n"
                     f"🎬 <b>YouTube Premium:</b> Chặn 100% Ads video, Phát âm thanh tắt màn hình & Hình trong hình (PiP).\n"
@@ -217,7 +209,7 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                         chat_id=order["user_id"],
                         text=ai_msg,
                         parse_mode=ParseMode.HTML,
-                        reply_markup=locket_ai_success_kb(download_url=vip_url, studio_url=studio_url, order_id=order_id if not has_studio else None)
+                        reply_markup=locket_ai_success_kb(download_url=vip_url, studio_url=studio_url)
                     )
                 except Exception as e_ai_send:
                     logger.error(f"Error sending Locket AI delivery: {e_ai_send}")
