@@ -112,7 +112,7 @@ PRODUCTS = {
         "service": "locket_ai",
         "description": "Gói Vĩnh Viễn All-in-One: Locket Gold, AI Filters, Spotify, SoundCloud Go+, YouTube Premium.",
         "plans": {
-            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "VIP_ALLINONE", "price": 239000},
+            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "VIP_ALLINONE", "price": 189000},
         },
     },
 }

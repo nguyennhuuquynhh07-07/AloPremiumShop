@@ -966,7 +966,7 @@ async def cb_ai_studio_opt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     has_studio = (choice == "yes")
-    base_price = order.get("original_price") or 239000
+    base_price = order.get("original_price") or 189000
     discount_amount = order.get("discount_amount", 0)
     applied_coupon_code = order.get("discount_code", "")
 
