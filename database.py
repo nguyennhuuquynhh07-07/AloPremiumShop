@@ -78,7 +78,9 @@ def update_order(order_id: str, **kwargs):
     orders = get_orders()
     if order_id in orders:
         orders[order_id].update(kwargs)
-        save_orders(orders)
+    else:
+        orders[order_id] = {"order_id": order_id, **kwargs}
+    save_orders(orders)
 
 
 def get_order(order_id: str) -> dict | None:

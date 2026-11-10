@@ -1928,6 +1928,17 @@
 
             document.getElementById('modalWaitingPayment').classList.add('hidden');
             document.getElementById('modalSuccessPayment').classList.remove('hidden');
+
+            // Lưu thông tin hồ sơ vào thiết bị để Cài Lại bất cứ lúc nào kể cả khi server khởi động lại
+            saveProfileLocally({
+                order_id: orderId,
+                display_name: verifiedAccountData?.display_name || currentOrderData?.display_name || orderId,
+                product: prod,
+                plan: currentOrderData?.plan_label || selectedPlan || 'VIP',
+                avatar: verifiedAccountData?.avatar || 'logo.png',
+                download_url: activeDownloadUrl,
+                direct_safari_url: safariDnsUrl
+            });
         }
 
         function copyAiVipUrl() {
@@ -2072,17 +2083,23 @@
             try {
                 const list = getSavedProfiles();
                 const key = (od.display_name || od.username || od.order_id || '').toLowerCase();
-                const exists = list.some(item => (item.display_name || item.username || item.order_id || '').toLowerCase() === key);
-                if (!exists) {
-                    list.unshift({
-                        order_id: od.order_id,
-                        display_name: od.display_name || od.username || 'Khách VIP',
-                        product: od.product || 'locket',
-                        plan: od.plan || 'VIP',
-                        saved_at: new Date().toISOString()
-                    });
-                    localStorage.setItem('alopremium_saved_profiles', JSON.stringify(list.slice(0, 5)));
+                const idx = list.findIndex(item => (item.display_name || item.username || item.order_id || '').toLowerCase() === key);
+                const profileObj = {
+                    order_id: od.order_id || 'VIP',
+                    display_name: od.display_name || od.username || 'Khách VIP',
+                    product: od.product || 'locket',
+                    plan: od.plan || 'VIP',
+                    avatar: od.avatar || 'logo.png',
+                    download_url: od.download_url || '',
+                    direct_safari_url: od.direct_safari_url || '',
+                    saved_at: new Date().toISOString()
+                };
+                if (idx >= 0) {
+                    list[idx] = { ...list[idx], ...profileObj };
+                } else {
+                    list.unshift(profileObj);
                 }
+                localStorage.setItem('alopremium_saved_profiles', JSON.stringify(list.slice(0, 8)));
                 renderSavedProfiles();
             } catch (e) {}
         }
@@ -2104,16 +2121,16 @@
             }
 
             container.classList.remove('hidden');
-            listEl.innerHTML = list.map(item => `
+            listEl.innerHTML = list.map((item, i) => `
                 <div class="p-3 rounded-2xl bg-[#FFFDF8] border-2 border-[#FFE29A] flex items-center justify-between gap-2 shadow-xs">
                     <div>
                         <div class="font-fredoka font-black text-xs text-[#1E1B18] flex items-center gap-1.5">
-                            <span>${item.product === 'spotify' ? '🎵' : '💛'}</span>
+                            <span>${item.product === 'spotify' ? '🎵' : (item.product === 'locket_ai' ? '✨' : '💛')}</span>
                             <span>@${item.display_name}</span>
                         </div>
                         <p class="text-[10px] text-[#6E6659]">Gói: ${item.plan}</p>
                     </div>
-                    <button type="button" onclick="document.getElementById('lookupQueryInput').value = '${item.display_name}'; performLookup();" 
+                    <button type="button" onclick="reinstallSavedProfile(${i})" 
                             class="px-3 py-1.5 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs cursor-pointer shadow-xs">
                         ⚡ Cài Lại
                     </button>
@@ -2121,7 +2138,15 @@
             `).join('');
         }
 
-        async function performLookup() {
+        function reinstallSavedProfile(idx) {
+            const list = getSavedProfiles();
+            const item = list[idx];
+            if (!item) return;
+            document.getElementById('lookupQueryInput').value = item.display_name;
+            performLookup(item);
+        }
+
+        async function performLookup(fallbackSavedItem = null) {
             const q = document.getElementById('lookupQueryInput').value.trim();
             const box = document.getElementById('lookupResultsContainer');
             if (!q) {
@@ -2136,7 +2161,30 @@
                 const data = await res.json();
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Lỗi tra cứu');
 
-                if (!data.orders || data.orders.length === 0) {
+                let ordersList = data.orders || [];
+
+                // Nếu server vừa khởi động lại (trên Render) chưa thấy đơn, tự động khôi phục từ bộ nhớ máy khách!
+                if (ordersList.length === 0) {
+                    const qClean = q.toLowerCase().replace(/^@/, '');
+                    const savedMatch = fallbackSavedItem || getSavedProfiles().find(it => (it.display_name || '').toLowerCase().replace(/^@/, '') === qClean);
+                    if (savedMatch) {
+                        const isAi = savedMatch.product === 'locket_ai' || savedMatch.plan === 'ltm' || savedMatch.plan === 'extra';
+                        const vipUrl = "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1";
+                        ordersList = [{
+                            order_id: savedMatch.order_id || 'SAVED_VIP',
+                            display_name: savedMatch.display_name,
+                            product: savedMatch.product || (isAi ? 'locket_ai' : 'locket'),
+                            plan: savedMatch.plan || 'VIP',
+                            status: 'done',
+                            avatar: savedMatch.avatar || 'logo.png',
+                            download_url: savedMatch.download_url || (isAi ? vipUrl : 'https://doh.2707226.xyz/alopremiumshop'),
+                            direct_safari_url: savedMatch.direct_safari_url || (isAi ? vipUrl : 'https://doh.2707226.xyz/alopremiumshop'),
+                            studio_url: `https://locket.jayteam.click/caption.html?u=${encodeURIComponent(savedMatch.display_name)}`
+                        }];
+                    }
+                }
+
+                if (ordersList.length === 0) {
                     box.innerHTML = `
                         <div class="p-5 rounded-2xl bg-[#FFF9ED] text-xs text-[#6E6659] border-2 border-[#E8D8B0] space-y-2">
                             <p class="font-fredoka font-bold text-sm text-[#1E1B18]">🔍 Không tìm thấy lịch sử cho: <i>"${q}"</i></p>
@@ -2147,17 +2195,19 @@
                 }
 
                 box.innerHTML = '';
-                data.orders.forEach(od => {
+                ordersList.forEach(od => {
                     const isDone = od.status === 'done';
                     if (isDone) saveProfileLocally(od);
 
                     const card = document.createElement('div');
                     card.className = 'p-5 rounded-3xl bg-white border-2 border-[#E8D8B0] shadow-md space-y-4';
 
-                    const prodName = od.product === 'spotify' ? 'Spotify Premium' : (od.product === 'combo' ? 'Combo Locket + Spotify' : 'Locket Gold VIP');
-                    const prodEmoji = od.product === 'spotify' ? '🎵' : (od.product === 'combo' ? '💎' : '💛');
-                    const dlUrl = (od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + od.download_url);
+                    const isAiProd = od.product === 'locket_ai';
+                    const prodName = od.product === 'spotify' ? 'Spotify Premium' : (od.product === 'combo' ? 'Combo Locket + Spotify' : (isAiProd ? 'VIP ALL-IN-ONE (Locket & AI)' : 'Locket Gold VIP'));
+                    const prodEmoji = od.product === 'spotify' ? '🎵' : (od.product === 'combo' ? '💎' : (isAiProd ? '✨' : '💛'));
+                    const dlUrl = (od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + (od.download_url || ''));
                     const safariUrl = od.direct_safari_url || 'https://doh.2707226.xyz/alopremiumshop';
+                    const studioUrl = od.studio_url || (isAiProd ? `https://locket.jayteam.click/caption.html?u=${encodeURIComponent(od.display_name)}` : '');
                     const avatarUrl = od.avatar || 'logo.png';
 
                     card.innerHTML = `
@@ -2189,6 +2239,12 @@
                                         <span>📷</span> Hiện Mã QR
                                     </button>
                                 </div>
+
+                                ${studioUrl ? `
+                                    <a href="${studioUrl}" target="_blank" class="w-full block py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-fredoka font-black text-xs text-center shadow-md transition-all">
+                                        🎨 Mở Studio Chỉnh Chú Thích & Đổi 38 Khung Viền
+                                    </a>
+                                ` : ''}
 
                                 <div id="qr-box-${od.order_id}" class="hidden p-4 bg-[#FFF9ED] rounded-2xl border-2 border-[#FFE29A] text-center shadow-inner">
                                     <div class="bg-white p-3 rounded-2xl inline-block mx-auto mb-2 border border-[#E8D8B0] shadow-sm">

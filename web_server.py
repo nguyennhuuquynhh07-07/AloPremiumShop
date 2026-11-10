@@ -587,18 +587,24 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
                 if match:
                     is_done = od.get("status") == "done"
+                    prod_k = od.get("product") or "locket"
+                    is_ai = (prod_k == "locket_ai")
+                    vip_dl = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+                    u_disp = od.get("display_name") or od.get("username") or od.get("identifier") or "Khách VIP"
+                    u_clean = utils.clean_input(str(u_disp)).lstrip("@")
                     results.append({
                         "order_id": oid,
-                        "product": od.get("product") or "locket",
+                        "product": prod_k,
                         "plan": od.get("plan") or "VIP",
                         "price": od.get("price", 0),
                         "status": od.get("status"),
                         "uid": od.get("uid"),
-                        "display_name": od.get("display_name") or od.get("username") or od.get("identifier") or "Khách VIP",
+                        "display_name": u_disp,
                         "avatar": od.get("avatar"),
                         "created_at": od.get("created_at"),
-                        "download_url": f"/api/download_profile?order_id={oid}" if is_done else None,
-                        "direct_safari_url": f"{config.DNS_BASE_URL}/{config.DNS_SLUG}" if is_done else None
+                        "download_url": (vip_dl if is_ai else f"/api/download_profile?order_id={oid}") if is_done else None,
+                        "direct_safari_url": (vip_dl if is_ai else f"{config.DNS_BASE_URL}/{config.DNS_SLUG}") if is_done else None,
+                        "studio_url": f"https://locket.jayteam.click/caption.html?u={u_clean}" if (is_ai and is_done) else None
                     })
 
             # Nếu chưa thấy trong database local nhưng tài khoản đã kích hoạt trên máy chủ API CTV (web chủ)
