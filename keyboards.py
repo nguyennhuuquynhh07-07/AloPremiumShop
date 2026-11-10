@@ -11,8 +11,8 @@ from config import PRODUCTS, SUPPORT_USERNAME, SUPPORT_TELEGRAM, SUPPORT_PHONE
 # ── MENU CHÍNH ────────────────────────────────────────────────────────────────
 
 def main_menu_kb() -> InlineKeyboardMarkup:
-    from utils import get_dynamic_products
-    prods = get_dynamic_products()
+    import utils
+    prods = getattr(utils, "get_dynamic_products", lambda: PRODUCTS)()
     web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop")
     rows = [
         [InlineKeyboardButton("🌐 Mở Website Mua Hàng & Tra Cứu", url=web_url)]
@@ -39,8 +39,9 @@ def main_menu_kb() -> InlineKeyboardMarkup:
 # ── CHỌN GÓI ─────────────────────────────────────────────────────────────────
 
 def plan_kb(product_key: str) -> InlineKeyboardMarkup:
-    from utils import get_dynamic_products, fmt_price
-    prods = get_dynamic_products()
+    import utils
+    from utils import fmt_price
+    prods = getattr(utils, "get_dynamic_products", lambda: PRODUCTS)()
     plans = prods.get(product_key, PRODUCTS[product_key])["plans"]
     rows = []
     for pk, pv in plans.items():

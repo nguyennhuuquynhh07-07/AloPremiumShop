@@ -33,7 +33,7 @@ from telegram.ext import (
 import config
 from config import BOT_TOKEN, ADMIN_IDS
 from handlers.user_handlers import (
-    start, menu_cmd, web_cmd, myorders_cmd, support_cmd,
+    start, menu_cmd, myorders_cmd, support_cmd,
     help_cmd, account_cmd, apidocs_cmd, apierrors_cmd, setlang_cmd,
     cb_product, cb_plan,
     cb_paid, cb_buy, cb_cancel,
@@ -44,6 +44,26 @@ from handlers.user_handlers import (
     cb_coupon, cb_coupon_info, coupon_cmd, handle_user_coupon_text,
     WAITING_IDENTIFIER,
 )
+try:
+    from handlers.user_handlers import web_cmd
+except (ImportError, AttributeError):
+    async def web_cmd(update, ctx):
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop")
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🌐 Mở Website AloPremium.Shop", url=web_url)],
+            [InlineKeyboardButton("🏠 Về Menu Chính", callback_data="back_main")]
+        ])
+        await update.message.reply_text(
+            f"🌐 <b>TRANG WEB CHÍNH THỨC — ALOPREMIUM.SHOP</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"• Mua gói VIP Locket Gold, AI Filters & Spotify tự động 24/7\n"
+            f"• Tra cứu lịch sử đơn hàng & Tải lại cấu hình DNS miễn phí\n"
+            f"• Nhận Link Studio chỉnh chú thích & đổi 38 khung viền\n\n"
+            f"🔗 Truy cập ngay: <a href='{web_url}'>{web_url}</a>",
+            parse_mode="HTML",
+            reply_markup=kb
+        )
 try:
     from handlers.user_handlers import cb_ai_studio_opt, cb_buy_studio
 except (ImportError, AttributeError):
@@ -187,16 +207,18 @@ async def check_sepay_auto_payments(bot):
 async def sepay_worker(bot):
     """Vòng lặp chạy ngầm quét biến động số dư TPBank mỗi 4 giây và tự động hủy đơn hết hạn 5 phút"""
     logger.info("🚀 Luồng SePay worker đã khởi động (quét TPBank tự động mỗi 4s)...")
-    from order_service import check_all_sepay_pending_payments, cancel_expired_pending_orders
+    import order_service
     cancel_counter = 0
     while True:
         try:
-            await check_all_sepay_pending_payments(bot)
+            await order_service.check_all_sepay_pending_payments(bot)
             # Quét và hủy các đơn hàng quá hạn 5 phút (kiểm tra mỗi 20 giây ~ 5 chu kỳ)
             cancel_counter += 1
             if cancel_counter >= 5:
                 cancel_counter = 0
-                await asyncio.to_thread(cancel_expired_pending_orders, 300)
+                cancel_fn = getattr(order_service, "cancel_expired_pending_orders", None)
+                if cancel_fn:
+                    await asyncio.to_thread(cancel_fn, 300)
         except Exception as e:
             logger.warning(f"SePay worker loop error: {e}")
         await asyncio.sleep(4)
