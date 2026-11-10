@@ -54,21 +54,55 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         return ConversationHandler.END
 
+    banner_line = ""
+    try:
+        b = db.get_banner_config()
+        if b and b.get("enabled", True) and b.get("text"):
+            badge = b.get("badge") or "🔥 HOT ƯU ĐÃI"
+            banner_line = f"🎉 <b>[{badge}]</b> {b.get('text')}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    except Exception:
+        pass
+
+    web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop")
     text = (
         f"👋 Xin chào <b>{user.first_name}</b>!\n"
         f"Chào mừng bạn đến với <b>AloPremium.Shop — Dịch Vụ Tự Động</b> 🌟\n\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"{banner_line}"
         f"⚡ <b>Kích hoạt siêu tốc:</b> Cài đặt trực tiếp qua DNS Profile iOS\n"
         f"🔒 <b>Bảo mật 100%:</b> Không yêu cầu cung cấp mật khẩu tài khoản\n"
         f"🛡 <b>Bảo hành uy tín:</b> Đổi mới & hỗ trợ 1-1 trọn đời gói\n"
+        f"🌐 <b>Website chính thức:</b> <a href='{web_url}'>AloPremium.Shop</a>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"👇 <b>Chọn dịch vụ bạn muốn trải nghiệm bên dưới:</b>"
+        f"👇 <b>Chọn dịch vụ bạn muốn trải nghiệm hoặc mở Website bên dưới:</b>"
     )
     await update.message.reply_text(
         text, parse_mode=ParseMode.HTML,
-        reply_markup=main_menu_kb()
+        reply_markup=main_menu_kb(),
+        disable_web_page_preview=True
     )
     return ConversationHandler.END
+
+
+async def web_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Lệnh /web – Mở nhanh Website AloPremium.Shop."""
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop")
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🌐 Mở Website AloPremium.Shop", url=web_url)],
+        [InlineKeyboardButton("🏠 Về Menu Chính", callback_data="back_main")]
+    ])
+    await update.message.reply_text(
+        f"🌐 <b>TRANG WEB CHÍNH THỨC — ALOPREMIUM.SHOP</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"• Mua gói VIP Locket Gold, AI Filters & Spotify tự động 24/7\n"
+        f"• Tra cứu lịch sử đơn hàng & Tải lại cấu hình DNS miễn phí\n"
+        f"• Nhận Link Studio chỉnh chú thích & đổi 38 khung viền\n"
+        f"• Hỗ trợ đổi máy / Reset thiết bị trực tiếp\n\n"
+        f"🔗 Truy cập ngay: <a href='{web_url}'>{web_url}</a>",
+        parse_mode=ParseMode.HTML,
+        reply_markup=kb
+    )
 
 
 async def menu_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -591,8 +625,9 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["product"] = product_key
     ctx.user_data["plan"]    = plan_key
 
-    pv   = PRODUCTS[product_key]
-    plnv = pv["plans"][plan_key]
+    prods = utils.get_dynamic_products()
+    pv    = prods.get(product_key, PRODUCTS[product_key])
+    plnv  = pv["plans"][plan_key]
 
     if product_key == "spotify":
         prompt = (
@@ -618,6 +653,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"👑 <b>Locket Gold:</b> Viền vàng Avatar VIP, Video 60s, Kho 38 khung viền, Tải ảnh 4K.\n"
             f"🎭 <b>AI Filters Mới:</b> Mở full 8 danh mục bộ lọc (Events, Goofy, Looks, Celebrate...).\n"
             f"✨ <b>Nút [✨ Tạo diện mạo]:</b> Tự do nhập prompt sáng tạo diện mạo AI cá nhân.\n"
+            f"🎨 <b>Tặng kèm Studio Cá Nhân:</b> Link chỉnh chú thích & đổi 38 khung viền không giới hạn.\n"
             f"🎵 <b>Spotify Premium:</b> Chặn 100% Ads quảng cáo, Next bài vô hạn, Âm thanh 320kbps.\n"
             f"🟠 <b>SoundCloud Go+:</b> Mở khóa SoundCloud Go+ (Plus), Tải nghe Offline, Âm thanh HQ Audio.\n"
             f"🎬 <b>YouTube Premium:</b> Chặn 100% Ads video, Phát âm thanh tắt màn hình & Hình trong hình (PiP).\n"
@@ -680,9 +716,10 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     coupon_candidate = None
     product_key_pre = ctx.user_data.get("product")
     plan_key_pre = ctx.user_data.get("plan")
+    prods = utils.get_dynamic_products()
     base_price = 0
     if product_key_pre and plan_key_pre:
-        base_price = PRODUCTS.get(product_key_pre, {}).get("plans", {}).get(plan_key_pre, {}).get("price", 0)
+        base_price = prods.get(product_key_pre, {}).get("plans", {}).get(plan_key_pre, {}).get("price", 0)
 
     if len(tokens) >= 2 and base_price > 0:
         potential = tokens[-1].strip().upper()
@@ -704,7 +741,7 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         return ConversationHandler.END
 
-    pv   = PRODUCTS[product_key]
+    pv   = prods.get(product_key, PRODUCTS[product_key])
     plnv = pv["plans"][plan_key]
 
     checking_msg = await update.message.reply_text(

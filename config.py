@@ -40,6 +40,7 @@ ADMIN_IDS = [int(x.strip()) for x in admin_ids_raw.split(",") if x.strip()]
 SUPPORT_PHONE = os.getenv("SUPPORT_PHONE", "")
 SUPPORT_TELEGRAM = os.getenv("SUPPORT_TELEGRAM", "")
 SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME", "")
+WEBSITE_URL = os.getenv("WEBSITE_URL", "https://alopremium.shop").strip()
 ADMIN_PIN = _required_env("ADMIN_PIN")
 
 # ============================================================

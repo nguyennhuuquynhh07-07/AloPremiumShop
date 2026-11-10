@@ -33,7 +33,7 @@ from telegram.ext import (
 import config
 from config import BOT_TOKEN, ADMIN_IDS
 from handlers.user_handlers import (
-    start, menu_cmd, myorders_cmd, support_cmd,
+    start, menu_cmd, web_cmd, myorders_cmd, support_cmd,
     help_cmd, account_cmd, apidocs_cmd, apierrors_cmd, setlang_cmd,
     cb_product, cb_plan,
     cb_paid, cb_buy, cb_cancel,
@@ -224,6 +224,7 @@ async def post_init(application):
         logger.warning(f"Error binding bot loop: {e}")
     user_commands = [
         BotCommand("start", "Menu chính & Mua gói"),
+        BotCommand("web", "Mở Website AloPremium.Shop"),
         BotCommand("account", "Tài khoản của tôi"),
         BotCommand("myorders", "Đơn hàng đã mua"),
         BotCommand("resetspotify", "Reset thiết bị Spotify"),
@@ -234,6 +235,7 @@ async def post_init(application):
 
     admin_commands = [
         BotCommand("start", "Menu chính"),
+        BotCommand("web", "Mở Website AloPremium.Shop"),
         BotCommand("admin", "Bảng điều khiển Admin"),
         BotCommand("coin", "Số dư Coin CTV API"),
         BotCommand("packages", "Bảng giá gói cước API"),
@@ -313,6 +315,7 @@ def main():
         fallbacks=[
             CommandHandler("start", start),
             CommandHandler("menu", menu_cmd),
+            CommandHandler("web", web_cmd),
             CommandHandler("account", account_cmd),
             CommandHandler("help", help_cmd),
             CommandHandler("apidocs", apidocs_cmd),
@@ -337,6 +340,7 @@ def main():
 
     # ── Lệnh người dùng ──────────────────────────────────────────────────────
     app.add_handler(CommandHandler("start",     start))
+    app.add_handler(CommandHandler("web",       web_cmd))
     app.add_handler(CommandHandler("account",   account_cmd))
     app.add_handler(CommandHandler("apidocs",   apidocs_cmd))
     app.add_handler(CommandHandler("apierrors", apierrors_cmd))

@@ -571,7 +571,7 @@ def cancel_expired_pending_orders(max_age_seconds: int = 300) -> list[str]:
 def sync_upstream_orders() -> int:
     """
     Đồng bộ toàn bộ danh sách tài khoản đã kích hoạt từ máy chủ API CTV (web chủ)
-    vào cơ sở dữ liệu nội bộ. Giúp khách hàng tra cứu và tải lại cấu hình DNS VIP trọn đời!
+    vào cơ sở dữ liệu nội bộ để khách hàng cũ có thể tra cứu và tải lại DNS bất cứ lúc nào.
     """
     try:
         import api_client

@@ -11,8 +11,13 @@ from config import PRODUCTS, SUPPORT_USERNAME, SUPPORT_TELEGRAM, SUPPORT_PHONE
 # ── MENU CHÍNH ────────────────────────────────────────────────────────────────
 
 def main_menu_kb() -> InlineKeyboardMarkup:
-    rows = []
-    for pk, pv in PRODUCTS.items():
+    from utils import get_dynamic_products
+    prods = get_dynamic_products()
+    web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop")
+    rows = [
+        [InlineKeyboardButton("🌐 Mở Website Mua Hàng & Tra Cứu", url=web_url)]
+    ]
+    for pk, pv in prods.items():
         rows.append([InlineKeyboardButton(
             f"{pv['emoji']} {pv['name']} (Xem bảng giá)",
             callback_data=f"product:{pk}"
@@ -34,10 +39,11 @@ def main_menu_kb() -> InlineKeyboardMarkup:
 # ── CHỌN GÓI ─────────────────────────────────────────────────────────────────
 
 def plan_kb(product_key: str) -> InlineKeyboardMarkup:
-    plans = PRODUCTS[product_key]["plans"]
+    from utils import get_dynamic_products, fmt_price
+    prods = get_dynamic_products()
+    plans = prods.get(product_key, PRODUCTS[product_key])["plans"]
     rows = []
     for pk, pv in plans.items():
-        from utils import fmt_price
         rows.append([InlineKeyboardButton(
             f"⚡ {pv['label']} ➔ {fmt_price(pv['price'])}",
             callback_data=f"plan:{product_key}:{pk}"
@@ -123,10 +129,6 @@ def locket_ai_success_kb(download_url: str, studio_url: str = None, order_id: st
         rows.append([
             InlineKeyboardButton("📋 Copy Link Cấu Hình VIP", api_kwargs={"copy_text": {"text": download_url}}),
         ])
-        if order_id:
-            rows.append([
-                InlineKeyboardButton("🎨 Thêm Studio Chú Thích & Khung Viền (+10.000đ)", callback_data=f"buy_studio:{order_id}")
-            ])
     rows.extend([
         [
             InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
@@ -195,6 +197,7 @@ def success_kb(dns_link: str = None, service: str = "locket") -> InlineKeyboardM
 
 
 def orders_kb(has_done_order: bool = False, has_spotify: bool = False) -> InlineKeyboardMarkup:
+    web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop")
     rows = []
     if has_done_order:
         rows.append([
@@ -206,6 +209,7 @@ def orders_kb(has_done_order: bool = False, has_spotify: bool = False) -> Inline
         InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
         InlineKeyboardButton("🛒 Mua thêm gói",         callback_data="back_products")
     ])
+    rows.append([InlineKeyboardButton("🌐 Mở Website Tra Cứu & Cài Đặt", url=web_url)])
     rows.append([InlineKeyboardButton("🏠 Về trang chủ", callback_data="back_main")])
     return InlineKeyboardMarkup(rows)
 
@@ -213,11 +217,13 @@ def orders_kb(has_done_order: bool = False, has_spotify: bool = False) -> Inline
 def support_kb() -> InlineKeyboardMarkup:
     tele_url = getattr(config, "SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28")
     phone = getattr(config, "SUPPORT_PHONE", "0345222802")
+    web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop")
     rows = [
         [
             InlineKeyboardButton("✈️ Chat Telegram (@nguyennhuquynh28)", url=tele_url),
             InlineKeyboardButton("💬 Chat Zalo", url=f"https://zalo.me/{phone}"),
         ],
+        [InlineKeyboardButton("🌐 Mở Website AloPremium.Shop", url=web_url)],
         [InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide")],
         [InlineKeyboardButton("🏠 Về trang chủ", callback_data="back_main")],
     ]

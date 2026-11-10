@@ -73,33 +73,56 @@ def fmt_datetime(iso: str | None) -> str:
     return dt.strftime("%d/%m/%Y %H:%M")
 
 
+def get_dynamic_products() -> dict:
+    try:
+        import database as db
+        return db.get_prices()
+    except Exception:
+        return PRODUCTS
+
+
 def product_info(product_key: str) -> dict:
-    return PRODUCTS[product_key]
+    prods = get_dynamic_products()
+    return prods.get(product_key, PRODUCTS.get(product_key, {}))
 
 
 def plan_info(product_key: str, plan_key: str) -> dict:
-    return PRODUCTS[product_key]["plans"][plan_key]
+    prods = get_dynamic_products()
+    return prods.get(product_key, PRODUCTS.get(product_key, {})).get("plans", {}).get(plan_key, {})
 
 
 def build_product_menu_text() -> str:
+    prods = get_dynamic_products()
+    banner_line = ""
+    try:
+        import database as db
+        b = db.get_banner_config()
+        if b and b.get("enabled", True) and b.get("text"):
+            badge = b.get("badge") or "🔥 HOT ƯU ĐÃI"
+            banner_line = f"🎉 <b>[{badge}]</b> {b.get('text')}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    except Exception:
+        pass
+
     lines = [
         "✨ <b>HỆ THỐNG ALOPREMIUM.SHOP TỰ ĐỘNG</b> ✨",
         "━━━━━━━━━━━━━━━━━━━━━━━━━",
-        "⚡ <b>Kích hoạt siêu tốc qua DNS Profile</b>",
+        banner_line + "⚡ <b>Kích hoạt siêu tốc qua DNS Profile</b>",
         "🛡 <b>Bảo hành trọn gói — Không cần mật khẩu</b>",
         "💎 <b>Ổn định, mượt mà trên mọi thiết bị iOS</b>",
+        f"🌐 <b>Website chính thức:</b> <a href='{getattr(config, 'WEBSITE_URL', 'https://alopremium.shop')}'>AloPremium.Shop</a>",
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n",
         "🛒 <b>DANH SÁCH DỊCH VỤ NỔI BẬT:</b>\n"
     ]
-    for pk, pv in PRODUCTS.items():
+    for pk, pv in prods.items():
         lines.append(f"{pv['emoji']} <b>{pv['name'].upper()}</b>")
         lines.append(f"   └ <i>{pv['description']}</i>\n")
-    lines.append("👇 <i>Chọn dịch vụ bạn muốn đăng ký bên dưới:</i>")
+    lines.append("👇 <i>Chọn dịch vụ bạn muốn đăng ký hoặc mở Website bên dưới:</i>")
     return "\n".join(lines)
 
 
 def build_plan_text(product_key: str) -> str:
-    pv = PRODUCTS[product_key]
+    prods = get_dynamic_products()
+    pv = prods.get(product_key, PRODUCTS[product_key])
     lines = [
         f"{pv['emoji']} <b>BẢNG GIÁ {pv['name'].upper()}</b>",
         "━━━━━━━━━━━━━━━━━━━━━━━━━",
