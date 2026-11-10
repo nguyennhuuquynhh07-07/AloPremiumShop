@@ -687,6 +687,17 @@
                     </span>
                 </div>
 
+                <!-- Gợi ý dùng thử 5.000đ cho khách mới từ TikTok -->
+                <div class="mb-5 p-3 rounded-2xl bg-gradient-to-r from-[#FFF8E5] via-[#FFF3D1] to-[#FFF8E5] border border-[#FFB800]/60 flex flex-wrap items-center justify-between gap-2 shadow-xs">
+                    <div class="flex items-center gap-2 text-xs text-[#1E1B18] font-medium">
+                        <span class="text-base">🎁</span>
+                        <span>Khách mới từ <b>TikTok</b> muốn test thử độ uy tín trước?</span>
+                    </div>
+                    <button type="button" onclick="quickSelectTrial5k()" class="px-3.5 py-1.5 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs shadow-sm cursor-pointer transition-all">
+                        ⚡ Dùng Thử 24h Chỉ 5.000đ →
+                    </button>
+                </div>
+
                 <!-- Bảng chọn thời hạn gói -->
                 <div id="planSelectionContainer" class="mb-6">
                     <label class="block text-xs font-fredoka font-bold text-[#6E6659] mb-2.5">Chọn thời hạn gói:</label>
@@ -702,6 +713,7 @@
                         <div class="flex flex-col sm:flex-row gap-2.5">
                             <div class="relative flex-1">
                                 <input type="text" id="accountInput" 
+                                       onkeydown="if(event.key === 'Enter') checkAccount();"
                                        placeholder="VD: conlaigii hoặc https://locket.cam/conlaigii"
                                        class="w-full px-4 py-3.5 rounded-2xl bg-[#FFFDF8] border-2 border-[#E8D8B0] text-[#1E1B18] text-sm font-semibold focus:outline-none focus:border-[#FFB800] focus:ring-2 focus:ring-[#FFB800]/30 transition-all placeholder-[#A09685]">
                                 <button type="button" onclick="pasteAccountInput()" class="absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-[#FFF5DC] hover:bg-[#FFECC0] text-[#1E1B18] border border-[#E8D8B0] text-xs font-bold cursor-pointer">
@@ -715,23 +727,38 @@
                         </div>
                     </div>
 
-                    <!-- KẾT QUẢ XÁC MINH PROFILE -->
-                    <div id="accountProfileCard" class="hidden p-4 rounded-2xl bg-[#FFF9ED] border-2 border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-                        <div class="flex items-center gap-3.5">
-                            <img id="profileAvatar" src="" class="w-12 h-12 rounded-full object-cover border-2 border-[#FFB800] shrink-0" alt="avatar">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span id="profileDisplayName" class="font-fredoka font-bold text-[#1E1B18] text-sm sm:text-base">User Name</span>
-                                    <span class="text-[10px] font-fredoka font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">Hợp lệ</span>
+                    <!-- KẾT QUẢ XÁC MINH PROFILE (HIỆU ỨNG XEM TRƯỚC VIỀN VÀNG LOCKET GOLD) -->
+                    <div id="accountProfileCard" class="hidden p-5 rounded-3xl bg-gradient-to-br from-[#FFFDF7] via-[#FFF6DC] to-[#FFEBAF] border-2 border-[#FFB800] shadow-lg space-y-4">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="relative shrink-0">
+                                    <div class="p-1 rounded-full bg-gradient-to-tr from-[#D97706] via-[#FFB800] to-[#FDE047] shadow-md">
+                                        <img id="profileAvatar" src="" class="w-16 h-16 rounded-full object-cover border-2 border-white" alt="avatar">
+                                    </div>
+                                    <span class="absolute -top-2 -right-1 text-lg drop-shadow">👑</span>
+                                    <span class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-gradient-to-r from-[#D97706] to-[#FFB800] text-white font-fredoka font-black text-[9px] uppercase tracking-wider shadow">
+                                        GOLD
+                                    </span>
                                 </div>
-                                <p id="profileDetailText" class="text-xs text-[#6E6659] mt-0.5">UID: ...</p>
+                                <div>
+                                    <div class="flex items-center flex-wrap gap-2">
+                                        <span id="profileDisplayName" class="font-fredoka font-black text-[#1E1B18] text-base sm:text-lg">User Name</span>
+                                        <span class="text-[10px] font-fredoka font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">✓ Sẵn sàng nâng cấp</span>
+                                    </div>
+                                    <p id="profileDetailText" class="text-xs text-[#6E6659] mt-0.5 font-medium">UID: ...</p>
+                                    <div class="flex flex-wrap gap-1.5 mt-2">
+                                        <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-[#FFB800]/50 text-[10px] font-bold text-[#92400E]">👑 Viền Vàng VIP</span>
+                                        <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-purple-300 text-[10px] font-bold text-purple-800">🎭 AI Filters</span>
+                                        <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-pink-300 text-[10px] font-bold text-pink-800">🎨 38 Khung Studio</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="w-full sm:w-auto">
-                            <button type="button" onclick="openPaymentModal()" id="btnOpenPayment"
-                                    class="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-fredoka font-bold text-sm shadow-md locket-btn-interactive cursor-pointer">
-                                💳 Thanh Toán Ngay (<span id="btnPayAmount">200.000đ</span>)
-                            </button>
+                            <div class="w-full sm:w-auto">
+                                <button type="button" onclick="openPaymentModal()" id="btnOpenPayment"
+                                        class="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-fredoka font-black text-sm shadow-lg locket-btn-interactive cursor-pointer pulse-gold">
+                                    💳 Thanh Toán Ngay (<span id="btnPayAmount">189.000đ</span>)
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -1149,7 +1176,7 @@
     <!-- MODAL THANH TOÁN VIETQR & TỰ ĐỘNG KÍCH HOẠT                  -->
     <!-- ============================================================ -->
     <div id="paymentModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-white border-2 border-[#FFE29A] rounded-[32px] max-w-md w-full p-6 sm:p-7 relative shadow-2xl text-center">
+        <div class="bg-white border-2 border-[#FFE29A] rounded-[32px] max-w-md w-full max-h-[92vh] overflow-y-auto p-6 sm:p-7 relative shadow-2xl text-center">
             
             <button onclick="closePaymentModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#FFF5DC] hover:bg-[#FFECC0] text-[#1E1B18] flex items-center justify-center text-sm cursor-pointer border border-[#E8D8B0]">
                 ✕
@@ -1167,11 +1194,42 @@
                     </div>
                 </div>
                 <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]" id="modalProductName">Locket Gold VIP</h3>
-                <p class="text-xs text-[#6E6659] mt-1 font-medium">Quét mã VietQR bằng app ngân hàng bất kỳ</p>
+                <p class="text-xs text-[#6E6659] mt-1 font-medium">Quét mã VietQR hoặc bấm mở thẳng App Ngân Hàng bên dưới</p>
 
                 <!-- ẢNH VIETQR -->
-                <div class="my-5 p-3 rounded-2xl bg-white max-w-[240px] mx-auto shadow-lg border-2 border-[#FFB800]/50">
+                <div class="my-4 p-3 rounded-2xl bg-white max-w-[220px] mx-auto shadow-lg border-2 border-[#FFB800]/50">
                     <img id="modalQrImg" src="" alt="VietQR" class="w-full h-auto rounded-lg">
+                    <button type="button" onclick="downloadQrImage()" class="mt-2.5 w-full py-2 px-3 rounded-xl bg-[#FFF8E5] hover:bg-[#FFECC0] border border-[#FFB800] text-[#1E1B18] font-fredoka font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all">
+                        <span>📥</span> Lưu Ảnh Mã QR Về Máy
+                    </button>
+                </div>
+
+                <!-- MỞ NHANH APP NGÂN HÀNG 1 CHẠM (DEEP LINK VIETQR) -->
+                <div class="mb-4 p-3 rounded-2xl bg-gradient-to-br from-[#FFFDF7] to-[#FFF5D6] border border-[#FFE29A] text-left">
+                    <div class="text-[11px] font-fredoka font-black text-[#1E1B18] mb-2 flex items-center justify-between">
+                        <span>🚀 Mở App Ngân Hàng 1 Chạm (Tự điền sẵn):</span>
+                        <span class="text-[10px] text-emerald-700 font-bold">Siêu nhanh</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button type="button" onclick="openBankApp('mbbank')" class="py-2 px-2 rounded-xl bg-white hover:bg-[#FFF8E5] border border-[#E8D8B0] text-[#1E1B18] font-fredoka font-bold text-[11px] cursor-pointer shadow-2xs transition-all">
+                            🏦 MB Bank
+                        </button>
+                        <button type="button" onclick="openBankApp('vcb')" class="py-2 px-2 rounded-xl bg-white hover:bg-[#FFF8E5] border border-[#E8D8B0] text-[#1E1B18] font-fredoka font-bold text-[11px] cursor-pointer shadow-2xs transition-all">
+                            🏦 Vietcombank
+                        </button>
+                        <button type="button" onclick="openBankApp('tcb')" class="py-2 px-2 rounded-xl bg-white hover:bg-[#FFF8E5] border border-[#E8D8B0] text-[#1E1B18] font-fredoka font-bold text-[11px] cursor-pointer shadow-2xs transition-all">
+                            🏦 Techcombank
+                        </button>
+                        <button type="button" onclick="openBankApp('icb')" class="py-2 px-2 rounded-xl bg-white hover:bg-[#FFF8E5] border border-[#E8D8B0] text-[#1E1B18] font-fredoka font-bold text-[11px] cursor-pointer shadow-2xs transition-all">
+                            🏦 VietinBank
+                        </button>
+                        <button type="button" onclick="openBankApp('bidv')" class="py-2 px-2 rounded-xl bg-white hover:bg-[#FFF8E5] border border-[#E8D8B0] text-[#1E1B18] font-fredoka font-bold text-[11px] cursor-pointer shadow-2xs transition-all">
+                            🏦 BIDV
+                        </button>
+                        <button type="button" onclick="openBankApp('tpb')" class="py-2 px-2 rounded-xl bg-white hover:bg-[#FFF8E5] border border-[#E8D8B0] text-[#1E1B18] font-fredoka font-bold text-[11px] cursor-pointer shadow-2xs transition-all">
+                            🏦 TPBank
+                        </button>
+                    </div>
                 </div>
 
                 <!-- THÔNG TIN CHUYỂN KHOẢN -->
@@ -1215,6 +1273,16 @@
 
             <!-- TRẠNG THÁI 2: THANH TOÁN THÀNH CÔNG -->
             <div id="modalSuccessPayment" class="hidden">
+                <!-- CẢNH BÁO TỰ ĐỘNG KHI KHÁCH ĐANG MỞ TRONG APP TIKTOK / ZALO / MESSENGER -->
+                <div id="inAppBrowserWarning" class="hidden mb-4 p-3.5 rounded-2xl bg-rose-50 border-2 border-rose-400 text-left text-xs text-rose-900 space-y-1.5 shadow-sm">
+                    <div class="font-fredoka font-black text-rose-700 flex items-center gap-1.5">
+                        <span>⚠️</span> Bạn đang mở trong ứng dụng TikTok / Mạng xã hội!
+                    </div>
+                    <p class="text-[11px] leading-relaxed">
+                        iPhone chỉ cho phép cài đặt cấu hình trên <b>Safari</b>. Bạn hãy bấm dấu <b>⋯ (3 chấm ở góc trên bên phải màn hình)</b> ➔ Chọn <b>"Mở trong trình duyệt (Safari)"</b> để cài đặt nhé!
+                    </p>
+                </div>
+
                 <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 text-3xl flex items-center justify-center mx-auto mb-3 shadow-inner">
                     ✓
                 </div>
@@ -1642,6 +1710,60 @@
             updatePayAmount();
         }
 
+        function quickSelectTrial5k() {
+            selectedPlan = 'test';
+            selectProduct('locket');
+            updatePayAmount();
+            const inp = document.getElementById('accountInput');
+            if (inp) {
+                inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => inp.focus(), 400);
+            }
+            showToast('⚡ Đã chọn Gói Dùng Thử Locket Gold 24h (5.000đ)!');
+        }
+
+        function openBankApp(appId) {
+            if (!currentOrderData) return;
+            const acc = currentOrderData.bank_account || '';
+            const bankName = (currentOrderData.bank_name || 'TPB').toLowerCase();
+            let bankCode = 'tpb';
+            if (bankName.includes('mb')) bankCode = 'mbbank';
+            else if (bankName.includes('vietcombank') || bankName.includes('vcb')) bankCode = 'vcb';
+            else if (bankName.includes('techcombank') || bankName.includes('tcb')) bankCode = 'tcb';
+            else if (bankName.includes('bidv')) bankCode = 'bidv';
+            else if (bankName.includes('vietin') || bankName.includes('icb')) bankCode = 'icb';
+
+            const amt = currentOrderData.price || 0;
+            const memo = currentOrderData.memo || '';
+            const deepLink = `https://dl.vietqr.io/pay?app=${encodeURIComponent(appId)}&ba=${encodeURIComponent(acc)}@${encodeURIComponent(bankCode)}&am=${encodeURIComponent(amt)}&tn=${encodeURIComponent(memo)}`;
+            window.location.href = deepLink;
+        }
+
+        async function downloadQrImage() {
+            const qrImg = document.getElementById('modalQrImg');
+            if (!qrImg || !qrImg.src) return;
+            try {
+                const res = await fetch(qrImg.src);
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `VietQR_${currentOrderData ? currentOrderData.memo : 'AloPremium'}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('📥 Đã tải ảnh mã QR về máy!');
+            } catch (e) {
+                window.open(qrImg.src, '_blank');
+            }
+        }
+
+        function isInAppBrowser() {
+            const ua = navigator.userAgent || navigator.vendor || '';
+            return /BytedanceWebview|musical_ly|TikTok|FBAN|FBAV|Instagram|Zalo|Line/i.test(ua);
+        }
+
         // Paste account from clipboard
         async function pasteAccountInput() {
             try {
@@ -1687,7 +1809,7 @@
                 
                 // Show profile
                 document.getElementById('profileAvatar').src = data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.display_name || 'VIP')}&background=FFB800&color=1E1B18`;
-                document.getElementById('profileDisplayName').textContent = data.display_name || data.uid;
+                document.getElementById('profileDisplayName').textContent = '@' + String(data.display_name || data.uid).replace(/^@/, '');
                 
                 let detailTxt = `UID: ${data.uid}`;
                 if (data.plan) detailTxt += ` • Gói: ${data.plan}`;
@@ -1695,6 +1817,7 @@
                 document.getElementById('profileDetailText').textContent = detailTxt;
 
                 profileCard.classList.remove('hidden');
+                profileCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (err) {
                 errBox.textContent = '❌ ' + err.message;
                 errBox.classList.remove('hidden');
@@ -1928,6 +2051,12 @@
 
             document.getElementById('modalWaitingPayment').classList.add('hidden');
             document.getElementById('modalSuccessPayment').classList.remove('hidden');
+
+            const inAppWarn = document.getElementById('inAppBrowserWarning');
+            if (inAppWarn) {
+                if (isInAppBrowser()) inAppWarn.classList.remove('hidden');
+                else inAppWarn.classList.add('hidden');
+            }
 
             // Lưu thông tin hồ sơ vào thiết bị để Cài Lại bất cứ lúc nào kể cả khi server khởi động lại
             saveProfileLocally({
@@ -2280,9 +2409,20 @@
             }
         }
 
-        // Tự động tải danh sách hồ sơ đã lưu khi mở trang
+        // Tự động tải danh sách hồ sơ đã lưu & tự áp mã giảm giá từ link TikTok (?voucher=... hoặc ?code=...)
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(renderSavedProfiles, 300);
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const voucher = params.get('voucher') || params.get('code');
+                if (voucher) {
+                    const cInput = document.getElementById('couponInput');
+                    if (cInput) {
+                        cInput.value = voucher.trim().toUpperCase();
+                        setTimeout(() => applyCouponCode(), 600);
+                    }
+                }
+            } catch (e) {}
         });
 
         // ============================================================
