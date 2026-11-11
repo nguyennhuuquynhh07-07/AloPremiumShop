@@ -783,8 +783,9 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             cleaned_username = utils.clean_input(locket_part)
             res = await asyncio.to_thread(api.locket_resolve, cleaned_username)
             data = res.get("data") if isinstance(res.get("data"), dict) else res
-            uid  = cleaned_username or data.get("username") or data.get("uid")
-            display = data.get("username") or data.get("displayName") or cleaned_username
+            locket_username = data.get("username") or cleaned_username
+            uid  = data.get("uid") or data.get("id") or locket_username
+            display = locket_username
             avatar_url = data.get("avatar") or data.get("avatarUrl")
 
             sp_uid_resolved = ""
@@ -798,7 +799,8 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                     sp_uid_resolved = spotify_part
 
             extra_order_fields = {
-                "account_target": cleaned_username or display,
+                "account_target": locket_username,
+                "locket_username": locket_username,
                 "spotify_uid": sp_uid_resolved,
                 "avatar": avatar_url,
             }
@@ -806,11 +808,13 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             cleaned_username = utils.clean_input(raw_identifier)
             res = await asyncio.to_thread(api.locket_resolve, cleaned_username)
             data = res.get("data") if isinstance(res.get("data"), dict) else res
-            uid  = data.get("uid") or data.get("id") or cleaned_username
-            display = data.get("displayName") or data.get("username") or data.get("name") or cleaned_username
+            locket_username = data.get("username") or cleaned_username
+            uid  = data.get("uid") or data.get("id") or locket_username
+            display = locket_username
             avatar_url = data.get("avatar") or data.get("avatarUrl")
             extra_order_fields = {
-                "account_target": display or cleaned_username,
+                "account_target": locket_username,
+                "locket_username": locket_username,
                 "avatar": avatar_url,
             }
 

@@ -1263,13 +1263,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     return
 
                 else:
-                    # Gói Locket Gold
+                    # Gói Locket Gold / Combo / VIP All-in-One: Luôn ưu tiên lấy đúng Locket Username (không lấy displayName có dấu/khoảng trắng)
                     cleaned = utils.clean_input(raw_id)
                     try:
                         res = api.locket_resolve(cleaned)
                         data = res.get("data") if isinstance(res.get("data"), dict) else res
-                        uid = data.get("uid") or data.get("id") or cleaned
-                        display = data.get("displayName") or data.get("username") or data.get("name") or cleaned
+                        locket_username = data.get("username") or cleaned
+                        uid = data.get("uid") or data.get("id") or locket_username
+                        display = locket_username
                         avatar = data.get("avatar") or data.get("avatarUrl")
                     except Exception as e:
                         logger.warning(f"Locket resolve error: {e}")
@@ -1531,8 +1532,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 # Kiểm tra tài khoản này đã từng mua gói bản quyền Locket hợp lệ chưa
                 has_paid_order = False
                 for od in db.get_orders().values():
-                    if od.get("product") == "locket" and od.get("status") == "done":
-                        if str(od.get("identifier", "")).lower() == cleaned.lower() or str(od.get("uid", "")).lower() == cleaned.lower() or str(od.get("display_name", "")).lower() == cleaned.lower():
+                    if od.get("product") in ("locket", "combo", "locket_ai") and od.get("status") == "done":
+                        if str(od.get("identifier", "")).lower() == cleaned.lower() or str(od.get("uid", "")).lower() == cleaned.lower() or str(od.get("display_name", "")).lower() == cleaned.lower() or str(od.get("account_target", "")).lower() == cleaned.lower():
                             has_paid_order = True
                             break
 

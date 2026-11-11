@@ -53,12 +53,13 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
 
     try:
         # Danh sách tài khoản thử kích hoạt:
-        # Đối với Locket & Combo: API yêu cầu Username Locket (ví dụ: nminhtruong) chứ KHÔNG nhận UID Firebase 28 ký tự.
-        # Do đó với Locket và Combo, ưu tiên display_name / account_target trước UID!
+        # Đối với Locket & Combo: API yêu cầu Username Locket (ví dụ: nminhtruong) chứ KHÔNG nhận UID Firebase 28 ký tự hay Tên hiển thị có dấu.
+        # Do đó với Locket và Combo, ưu tiên locket_username / account_target / display_name trước UID!
         if pv.get("service") in ("locket", "combo") or product_key in ("locket", "combo"):
             raw_cands = [
-                str(order.get("display_name") or "").strip(),
-                str(order.get("account_target") or "").strip(),
+                str(order.get("locket_username") or "").strip().lstrip("@"),
+                str(order.get("account_target") or "").strip().lstrip("@"),
+                str(order.get("display_name") or "").strip().lstrip("@"),
                 utils.clean_input(str(order.get("username") or "")),
                 str(order.get("uid") or "").strip(),
             ]
