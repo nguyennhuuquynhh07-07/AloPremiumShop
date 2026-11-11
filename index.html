@@ -1845,7 +1845,7 @@
                     body: JSON.stringify({
                         product: selectedProduct,
                         plan: selectedPlan,
-                        identifier: ((selectedProduct === 'locket' || selectedProduct === 'locket_ai') && verifiedAccountData.display_name) ? verifiedAccountData.display_name : (verifiedAccountData.uid || verifiedAccountData.display_name),
+                        identifier: ((selectedProduct === 'locket' || selectedProduct === 'locket_ai' || selectedProduct === 'combo') && verifiedAccountData.display_name) ? verifiedAccountData.display_name : (verifiedAccountData.uid || verifiedAccountData.display_name),
                         display_name: verifiedAccountData.display_name,
                         avatar: verifiedAccountData.avatar,
                         token: verifiedAccountData.token || '',

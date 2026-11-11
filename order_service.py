@@ -53,9 +53,9 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
 
     try:
         # Danh sách tài khoản thử kích hoạt:
-        # Đối với Locket: API yêu cầu Username Locket (ví dụ: thongtriloaimeo_00) chứ KHÔNG nhận UID Firebase 28 ký tự.
-        # Do đó với Locket, ưu tiên display_name / account_target trước UID!
-        if pv.get("service") == "locket" or product_key == "locket":
+        # Đối với Locket & Combo: API yêu cầu Username Locket (ví dụ: nminhtruong) chứ KHÔNG nhận UID Firebase 28 ký tự.
+        # Do đó với Locket và Combo, ưu tiên display_name / account_target trước UID!
+        if pv.get("service") in ("locket", "combo") or product_key in ("locket", "combo"):
             raw_cands = [
                 str(order.get("display_name") or "").strip(),
                 str(order.get("account_target") or "").strip(),
@@ -110,21 +110,34 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 studio_link=studio_url
             )
         elif product_key == "combo":
-            # Tách biệt 2 mã API cho Locket và Spotify
+            # Tách biệt 2 mã API cho Locket và Spotify, tự động thử lần lượt qua các candidate_accounts (ưu tiên Username trước UID 28 ký tự)
             combo_map = {
                 "6m":  {"locket": "LKG6M",  "spotify": "SP6M"},
                 "1y":  {"locket": "LKG1Y",  "spotify": "SPOTIFY1Y"},
                 "ltm": {"locket": "LKGVV",  "spotify": "SPVV"},
             }
             pkg_map = combo_map.get(plan_key, {"locket": "LKGVV", "spotify": "SPVV"})
-            try:
-                await asyncio.to_thread(api.create_subscription, uid=target_account, package_code=pkg_map["locket"], service="locket", note=f"Combo {order_id} Locket")
-            except Exception as e_lk:
-                logger.warning(f"Combo Locket API: {e_lk}")
-            try:
-                await asyncio.to_thread(api.create_subscription, uid=target_account, package_code=pkg_map["spotify"], service="spotify", note=f"Combo {order_id} Spotify")
-            except Exception as e_sp:
-                logger.warning(f"Combo Spotify API: {e_sp}")
+            locket_ok = False
+            last_lk_err = None
+            for acc in candidate_accounts:
+                try:
+                    await asyncio.to_thread(api.create_subscription, uid=acc, package_code=pkg_map["locket"], service="locket", note=f"Combo {order_id} Locket")
+                    locket_ok = True
+                    target_account = acc
+                    break
+                except Exception as e_lk:
+                    last_lk_err = e_lk
+                    logger.warning(f"Combo Locket API ({acc}): {e_lk}")
+
+            for acc in candidate_accounts:
+                try:
+                    await asyncio.to_thread(api.create_subscription, uid=acc, package_code=pkg_map["spotify"], service="spotify", note=f"Combo {order_id} Spotify")
+                    break
+                except Exception as e_sp:
+                    logger.warning(f"Combo Spotify API ({acc}): {e_sp}")
+
+            if not locket_ok and last_lk_err:
+                logger.error(f"Combo Locket activation failed for all candidates {candidate_accounts}: {last_lk_err}")
 
             db.update_order(
                 order_id, 

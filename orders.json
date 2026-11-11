@@ -453,5 +453,24 @@
     "done_at": "2026-03-31T00:00:00",
     "dns_link": "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1",
     "source": "admin"
+  },
+  "UCRQSLR5": {
+    "order_id": "UCRQSLR5",
+    "user_id": 0,
+    "username": "nminhtruong",
+    "display_name": "nminhtruong",
+    "account_target": "nminhtruong",
+    "uid": "nminhtruong",
+    "product": "combo",
+    "plan": "ltm",
+    "plan_label": "Combo Duo VIP (Vĩnh Viễn)",
+    "price": 259000,
+    "status": "done",
+    "created_at": "2026-11-10T20:19:00",
+    "done_at": "2026-11-10T20:19:00",
+    "dns_link": "https://doh.2707226.xyz/alopremiumshop",
+    "dns_link_locket": "https://doh.2707226.xyz/alopremiumshop",
+    "dns_link_spotify": "https://doh.2707226.xyz/alopremiumshop",
+    "source": "web"
   }
 }
