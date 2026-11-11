@@ -709,31 +709,32 @@
                     <div class="space-y-3">
                         <div>
                             <label id="accountInputLabel" class="block text-xs font-fredoka font-bold text-[#1E1B18] mb-2">
-                                Nhập Username Locket hoặc Link locket.cam:
+                                Nhập Username Locket của bạn (Chỉ điền User, không dán link):
                             </label>
                             <div class="relative">
                                 <input type="text" id="accountInput" 
                                        onkeydown="if(event.key === 'Enter') checkAccount();"
-                                       placeholder="VD: conlaigii hoặc https://locket.cam/conlaigii"
+                                       onpaste="handleAccountInputPaste(event)"
+                                       placeholder="VD: conlaigii (Chỉ nhập tên người dùng Locket)"
                                        class="w-full px-4 py-3.5 pr-20 rounded-2xl bg-[#FFFDF8] border-2 border-[#E8D8B0] text-[#1E1B18] text-sm font-semibold focus:outline-none focus:border-[#FFB800] focus:ring-2 focus:ring-[#FFB800]/30 transition-all placeholder-[#A09685]">
-                                <button type="button" onclick="pasteAccountInput()" class="absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-[#FFF5DC] hover:bg-[#FFECC0] text-[#1E1B18] border border-[#E8D8B0] text-xs font-bold cursor-pointer">
-                                    📋 Dán
+                                <button type="button" id="btnPasteAccount" onclick="pasteAccountInput()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-[#FFF5DC] hover:bg-[#FFECC0] text-[#1E1B18] border border-[#E8D8B0] text-xs font-bold cursor-pointer">
+                                    📋 Dán Link
                                 </button>
                             </div>
                         </div>
 
-                        <!-- DÒNG 2 DÀNH RIÊNG CHO GÓI COMBO (LINK HOẶC UID SPOTIFY) -->
+                        <!-- DÒNG 2 DÀNH RIÊNG CHO GÓI COMBO (LINK PROFILE SPOTIFY) -->
                         <div id="comboSpotifyInputContainer" class="hidden pt-1">
                             <label class="block text-xs font-fredoka font-bold text-[#1E1B18] mb-2">
-                                2️⃣ Nhập Link Profile hoặc UID Spotify của bạn:
+                                2️⃣ Dán Link Profile Spotify của bạn (Chỉ nhận Link Spotify):
                             </label>
                             <div class="relative">
                                 <input type="text" id="spotifyAccountInput" 
                                        onkeydown="if(event.key === 'Enter') checkAccount();"
-                                       placeholder="VD: https://open.spotify.com/user/... hoặc UID Spotify"
+                                       placeholder="VD: https://open.spotify.com/user/31xxxxxxxxxx..."
                                        class="w-full px-4 py-3.5 pr-20 rounded-2xl bg-[#FFFDF8] border-2 border-[#E8D8B0] text-[#1E1B18] text-sm font-semibold focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-400/30 transition-all placeholder-[#A09685]">
                                 <button type="button" onclick="pasteSpotifyAccountInput()" class="absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-[#FFF5DC] hover:bg-[#FFECC0] text-[#1E1B18] border border-[#E8D8B0] text-xs font-bold cursor-pointer">
-                                    📋 Dán
+                                    📋 Dán Link
                                 </button>
                             </div>
                             <p class="text-[11px] text-[#6E6659] mt-1.5">
@@ -1579,6 +1580,7 @@
 
         // Chọn sản phẩm (locket / spotify / combo / locket_ai)
         function selectProduct(prodKey) {
+            const isSwitchingProduct = (selectedProduct !== prodKey);
             selectedProduct = prodKey;
             switchCompareTab(prodKey);
             
@@ -1600,7 +1602,15 @@
             const badge = document.getElementById('activeProductBadge');
             const inputLabel = document.getElementById('accountInputLabel');
             const inputEl = document.getElementById('accountInput');
+            const spInputEl = document.getElementById('spotifyAccountInput');
+            const btnPasteAcc = document.getElementById('btnPasteAccount');
             const planContainer = document.getElementById('planSelectionContainer');
+
+            // Khi chuyển đổi giữa các gói, tự động làm sạch ô nhập để không bị lẫn link Spotify vào ô Locket
+            if (isSwitchingProduct) {
+                if (inputEl) inputEl.value = '';
+                if (spInputEl) spInputEl.value = '';
+            }
 
             const prodNames = {
                 locket: 'Locket Gold VIP',
@@ -1614,20 +1624,24 @@
 
             if (prodKey === 'locket_ai') {
                 if (comboSpContainer) comboSpContainer.classList.add('hidden');
-                if (inputLabel) inputLabel.textContent = 'Nhập Username Locket hoặc Link locket.cam:';
-                if (inputEl) inputEl.placeholder = 'VD: conlaigii hoặc https://locket.cam/conlaigii';
+                if (btnPasteAcc) btnPasteAcc.classList.add('hidden');
+                if (inputLabel) inputLabel.textContent = 'Nhập Username Locket của bạn (Chỉ điền User, không dán link):';
+                if (inputEl) inputEl.placeholder = 'VD: conlaigii (Chỉ nhập tên người dùng Locket)';
             } else if (prodKey === 'spotify') {
                 if (comboSpContainer) comboSpContainer.classList.add('hidden');
-                if (inputLabel) inputLabel.textContent = 'Nhập UID Spotify hoặc Link Profile:';
-                if (inputEl) inputEl.placeholder = 'VD: 31xxxxxxxxxx hoặc https://open.spotify.com/user/...';
+                if (btnPasteAcc) btnPasteAcc.classList.remove('hidden');
+                if (inputLabel) inputLabel.textContent = 'Dán Link Profile Spotify của bạn (Chỉ nhận Link Spotify):';
+                if (inputEl) inputEl.placeholder = 'VD: https://open.spotify.com/user/31xxxxxxxxxx...';
             } else if (prodKey === 'combo') {
                 if (comboSpContainer) comboSpContainer.classList.remove('hidden');
-                if (inputLabel) inputLabel.textContent = '1️⃣ Nhập Username Locket hoặc Link locket.cam:';
-                if (inputEl) inputEl.placeholder = 'VD: conlaigii hoặc https://locket.cam/conlaigii';
+                if (btnPasteAcc) btnPasteAcc.classList.add('hidden');
+                if (inputLabel) inputLabel.textContent = '1️⃣ Nhập Username Locket của bạn (Chỉ điền User, không dán link):';
+                if (inputEl) inputEl.placeholder = 'VD: conlaigii (Chỉ nhập tên người dùng Locket)';
             } else {
                 if (comboSpContainer) comboSpContainer.classList.add('hidden');
-                if (inputLabel) inputLabel.textContent = 'Nhập Username Locket hoặc Link Profile:';
-                if (inputEl) inputEl.placeholder = 'VD: conlaigii hoặc https://locket.cam/conlaigii';
+                if (btnPasteAcc) btnPasteAcc.classList.add('hidden');
+                if (inputLabel) inputLabel.textContent = 'Nhập Username Locket của bạn (Chỉ điền User, không dán link):';
+                if (inputEl) inputEl.placeholder = 'VD: conlaigii (Chỉ nhập tên người dùng Locket)';
             }
 
             // Render plan pills
@@ -1792,11 +1806,32 @@
             return /BytedanceWebview|musical_ly|TikTok|FBAN|FBAV|Instagram|Zalo|Line/i.test(ua);
         }
 
-        // Paste account from clipboard
+        // Chặn dán đường link vào ô Locket (chỉ cho phép điền Username)
+        function handleAccountInputPaste(event) {
+            if (selectedProduct !== 'spotify') {
+                const pastedText = (event.clipboardData || window.clipboardData)?.getData('text') || '';
+                if (/https?:\/\/|\/|spotify\.com|locket\.cam/i.test(pastedText)) {
+                    event.preventDefault();
+                    const errBox = document.getElementById('accountErrorMsg');
+                    if (errBox) {
+                        errBox.textContent = '❌ Phần Locket chỉ cho phép điền Username Locket (VD: conlaigii), không được dán đường link!';
+                        errBox.classList.remove('hidden');
+                    }
+                    showToast('⚠️ Phần Locket chỉ điền Username, không dán link!');
+                }
+            }
+        }
+
+        // Paste account from clipboard (Dành riêng cho gói Spotify)
         async function pasteAccountInput() {
             try {
-                const text = await navigator.clipboard.readText();
-                if (text) document.getElementById('accountInput').value = text.trim();
+                const text = (await navigator.clipboard.readText() || '').trim();
+                if (!text) return;
+                if (selectedProduct === 'spotify' && !/spotify\.com\/user\/[a-zA-Z0-9._-]+/i.test(text)) {
+                    alert('⚠️ Phần Spotify chỉ nhận Link Profile Spotify (VD: https://open.spotify.com/user/...)!');
+                    return;
+                }
+                document.getElementById('accountInput').value = text;
             } catch (e) {
                 alert('Vui lòng cấp quyền dán hoặc dán thủ công bằng tay.');
             }
@@ -1804,14 +1839,19 @@
 
         async function pasteSpotifyAccountInput() {
             try {
-                const text = await navigator.clipboard.readText();
-                if (text) document.getElementById('spotifyAccountInput').value = text.trim();
+                const text = (await navigator.clipboard.readText() || '').trim();
+                if (!text) return;
+                if (!/spotify\.com\/user\/[a-zA-Z0-9._-]+/i.test(text)) {
+                    alert('⚠️ Dòng 2 (Spotify) chỉ nhận Link Profile Spotify (VD: https://open.spotify.com/user/...)!');
+                    return;
+                }
+                document.getElementById('spotifyAccountInput').value = text;
             } catch (e) {
                 alert('Vui lòng cấp quyền dán hoặc dán thủ công bằng tay.');
             }
         }
 
-        // Kiểm tra tài khoản Locket / Spotify trực tiếp
+        // Kiểm tra tài khoản Locket / Spotify trực tiếp (Tách biệt hoàn toàn: Locket chỉ điền User, Spotify chỉ điền Link)
         async function checkAccount() {
             const rawId = document.getElementById('accountInput').value.trim();
             const rawSpId = (document.getElementById('spotifyAccountInput')?.value || '').trim();
@@ -1819,19 +1859,50 @@
             const errBox = document.getElementById('accountErrorMsg');
             const profileCard = document.getElementById('accountProfileCard');
 
+            errBox.classList.add('hidden');
+            profileCard.classList.add('hidden');
+
             if (!rawId) {
-                alert(selectedProduct === 'combo' ? 'Vui lòng nhập Dòng 1: Username hoặc Link Locket của bạn!' : 'Vui lòng nhập Username hoặc Link tài khoản!');
-                return;
-            }
-            if (selectedProduct === 'combo' && !rawSpId) {
-                alert('Vui lòng nhập Dòng 2: Link Profile hoặc UID Spotify của bạn để kích hoạt đồng thời cả 2 gói!');
-                document.getElementById('spotifyAccountInput')?.focus();
+                const msgEmpty = selectedProduct === 'spotify'
+                    ? 'Vui lòng dán Link Profile Spotify của bạn!'
+                    : (selectedProduct === 'combo' ? 'Vui lòng nhập Dòng 1: Username Locket của bạn!' : 'Vui lòng nhập Username Locket của bạn!');
+                errBox.textContent = '❌ ' + msgEmpty;
+                errBox.classList.remove('hidden');
                 return;
             }
 
+            // Kiểm tra tách biệt nghiêm ngặt giữa Locket và Spotify
+            if (selectedProduct === 'spotify') {
+                if (!/spotify\.com\/user\/[a-zA-Z0-9._-]+/i.test(rawId)) {
+                    errBox.textContent = '❌ Phần Spotify chỉ được dán Link Profile Spotify (VD: https://open.spotify.com/user/...), không điền Username!';
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+            } else {
+                // Gói Locket / VIP All-in-One / Combo Dòng 1: Chỉ được nhập Username, cấm dán link
+                if (/https?:\/\/|\/|spotify\.com|locket\.cam/i.test(rawId)) {
+                    errBox.textContent = '❌ Phần Locket chỉ được điền Username Locket (VD: conlaigii), tuyệt đối không dán đường link!';
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+            }
+
+            if (selectedProduct === 'combo') {
+                if (!rawSpId) {
+                    errBox.textContent = '❌ Vui lòng dán thêm Dòng 2: Link Profile Spotify của bạn!';
+                    errBox.classList.remove('hidden');
+                    document.getElementById('spotifyAccountInput')?.focus();
+                    return;
+                }
+                if (!/spotify\.com\/user\/[a-zA-Z0-9._-]+/i.test(rawSpId)) {
+                    errBox.textContent = '❌ Dòng 2 (Spotify) bắt buộc phải dán đúng Link Profile Spotify (VD: https://open.spotify.com/user/...)!';
+                    errBox.classList.remove('hidden');
+                    document.getElementById('spotifyAccountInput')?.focus();
+                    return;
+                }
+            }
+
             btnText.textContent = '⏳ Đang kiểm tra...';
-            errBox.classList.add('hidden');
-            profileCard.classList.add('hidden');
 
             try {
                 const res = await fetch('/api/check_account', {

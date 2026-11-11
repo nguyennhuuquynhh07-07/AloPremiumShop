@@ -1202,34 +1202,32 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True, "message": f"Đã mở khóa người dùng {user_id}"})
             return
 
-        # 1. API Kiểm tra tài khoản Locket / Spotify trước khi mua
+        # 1. API Kiểm tra tài khoản Locket / Spotify trước khi mua (TÁCH BIỆT NGHIÊM NGẶT)
         if path == "/api/check_account":
             service = body.get("service", "locket")
             raw_id = str(body.get("identifier", "")).strip()
             if not raw_id:
-                self._send_json(400, {"ok": False, "error": "Vui lòng nhập Username hoặc Link tài khoản"})
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập thông tin tài khoản!"})
                 return
 
             try:
                 if service == "spotify":
-                    cleaned_sp = utils.clean_input(raw_id)
-                    try:
-                        res = api.spotify_check(raw_id)
-                        data = res.get("data") if isinstance(res.get("data"), dict) else res
-                        uid = data.get("uid") or data.get("id") or cleaned_sp
-                        display = data.get("displayName") or data.get("username") or data.get("name") or uid
-                        avatar = data.get("avatar") or data.get("image") or data.get("avatarUrl")
-                        plan = data.get("plan") or data.get("product") or "Free"
-                        is_bound = data.get("isBound", False)
-                    except Exception as e_sp:
-                        logger.warning(f"Spotify check fallback for {cleaned_sp}: {e_sp}")
-                        if len(cleaned_sp) < 3:
-                            raise e_sp
-                        uid = cleaned_sp
-                        display = cleaned_sp
-                        avatar = None
-                        plan = "Free"
-                        is_bound = False
+                    import re
+                    if not re.search(r"spotify\.com/user/[a-zA-Z0-9._-]+", raw_id, re.I):
+                        self._send_json(400, {
+                            "ok": False,
+                            "error": "Phần Spotify chỉ nhận Link Profile Spotify (VD: https://open.spotify.com/user/...). Không điền Username chữ thông thường!"
+                        })
+                        return
+
+                    cleaned_sp = utils.extract_spotify_uid(raw_id)
+                    res = api.spotify_check(raw_id)
+                    data = res.get("data") if isinstance(res.get("data"), dict) else res
+                    uid = data.get("uid") or data.get("id") or cleaned_sp
+                    display = data.get("displayName") or data.get("username") or data.get("name") or uid
+                    avatar = data.get("avatar") or data.get("image") or data.get("avatarUrl")
+                    plan = data.get("plan") or data.get("product") or "Free"
+                    is_bound = data.get("isBound", False)
 
                     self._send_json(200, {
                         "ok": True,
@@ -1244,20 +1242,36 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     return
 
                 else:
-                    # Gói Locket Gold / Combo / VIP All-in-One: Luôn ưu tiên lấy đúng Locket Username (không lấy displayName có dấu/khoảng trắng)
+                    # Gói Locket Gold / Combo (Dòng 1) / VIP All-in-One: CHỈ NHẬN USERNAME LOCKET, CHẶN MỌI ĐƯỜNG LINK
+                    import re
+                    if re.search(r"(https?://|/|spotify\.com|locket\.cam)", raw_id, re.I):
+                        self._send_json(400, {
+                            "ok": False,
+                            "error": "Phần Locket chỉ cho phép điền Username Locket (VD: conlaigii), tuyệt đối không được dán đường link!"
+                        })
+                        return
+
                     cleaned = utils.clean_input(raw_id)
-                    try:
-                        res = api.locket_resolve(cleaned)
-                        data = res.get("data") if isinstance(res.get("data"), dict) else res
-                        locket_username = data.get("username") or cleaned
-                        uid = data.get("uid") or data.get("id") or locket_username
-                        display = locket_username
-                        avatar = data.get("avatar") or data.get("avatarUrl")
-                    except Exception as e:
-                        logger.warning(f"Locket resolve error: {e}")
-                        uid = cleaned
-                        display = cleaned
-                        avatar = None
+                    if not cleaned or len(cleaned) < 2 or " " in cleaned:
+                        self._send_json(400, {
+                            "ok": False,
+                            "error": "Username Locket không hợp lệ! Vui lòng chỉ điền đúng tên người dùng Locket (không khoảng trắng, không dán link)."
+                        })
+                        return
+
+                    res = api.locket_resolve(cleaned)
+                    data = res.get("data") if isinstance(res.get("data"), dict) else res
+                    if not isinstance(data, dict) or (not data.get("uid") and not data.get("id") and not data.get("username")):
+                        self._send_json(400, {
+                            "ok": False,
+                            "error": f"Không tìm thấy tài khoản Locket '@{cleaned}'! Vui lòng kiểm tra lại đúng Username trên app Locket."
+                        })
+                        return
+
+                    locket_username = data.get("username") or cleaned
+                    uid = data.get("uid") or data.get("id") or locket_username
+                    display = locket_username
+                    avatar = data.get("avatar") or data.get("avatarUrl")
 
                     self._send_json(200, {
                         "ok": True,
@@ -1278,8 +1292,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
             product = str(body.get("product", "locket"))
             plan = str(body.get("plan", "ltm"))
             
-            all_prods = db.get_prices()
-            pv = all_prods.get(product) or config.PRODUCTS.get(product, {})
+            try:
+                db.apply_custom_prices()
+            except Exception:
+                pass
+            pv = config.PRODUCTS.get(product, {})
             plnv = pv.get("plans", {}).get(plan, {})
             orig_price = plnv.get("price", 160000)
 
@@ -1306,12 +1323,15 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 product = body.get("product")
                 plan = body.get("plan")
                 raw_ident = str(body.get("identifier", "")).strip()
-                identifier = utils.clean_input(raw_ident) or raw_ident
+                if product == "spotify":
+                    identifier = utils.extract_spotify_uid(raw_ident) or raw_ident
+                else:
+                    identifier = utils.clean_input(raw_ident) or raw_ident
                 display_name = str(body.get("display_name", "")).strip() or identifier
                 if "spotify.com/user/" in display_name.lower() or "locket.cam/" in display_name.lower():
                     display_name = identifier
                 raw_sp = str(body.get("spotify_uid", "")).strip()
-                spotify_uid = utils.clean_input(raw_sp) if raw_sp else (identifier if product == "spotify" else "")
+                spotify_uid = utils.extract_spotify_uid(raw_sp) if raw_sp else (identifier if product == "spotify" else "")
                 avatar = body.get("avatar", "")
                 token = body.get("token", "")
 
@@ -1319,8 +1339,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     self._send_json(400, {"ok": False, "error": "Thiếu thông tin gói hoặc tài khoản khách"})
                     return
 
-                all_prods = db.get_prices()
-                pv = all_prods.get(product) or config.PRODUCTS.get(product)
+                try:
+                    db.apply_custom_prices()
+                except Exception:
+                    pass
+                pv = config.PRODUCTS.get(product)
                 if not pv or plan not in pv.get("plans", {}):
                     self._send_json(400, {"ok": False, "error": "Gói cước không hợp lệ"})
                     return

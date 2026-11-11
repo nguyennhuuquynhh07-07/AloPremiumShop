@@ -11,12 +11,15 @@ from config import PRODUCTS
 
 
 def clean_input(raw: str) -> str:
-    """Tách username hoặc UID sạch từ chuỗi nhập vào (link locket.cam, open.spotify.com/user/..., @username hoặc text)"""
-    import re
+    """Làm sạch Username Locket (loại bỏ ký tự @ và khoảng trắng thừa)."""
     s = (raw or "").strip().lstrip("@")
-    m_lk = re.search(r"locket\.cam/(?:u/)?([^/?#&\s]+)", s, re.I)
-    if m_lk:
-        return m_lk.group(1).lstrip("@").strip()
+    return s.strip()
+
+
+def extract_spotify_uid(raw: str) -> str:
+    """Tách UID Spotify từ Link Profile Spotify (https://open.spotify.com/user/...)."""
+    import re
+    s = (raw or "").strip()
     m_sp = re.search(r"spotify\.com/user/([^/?#&\s]+)", s, re.I)
     if m_sp:
         return m_sp.group(1).strip()
@@ -82,7 +85,9 @@ def fmt_datetime(iso: str | None) -> str:
 def get_dynamic_products() -> dict:
     try:
         import database as db
-        return db.get_prices()
+        if hasattr(db, "apply_custom_prices"):
+            db.apply_custom_prices()
+        return PRODUCTS
     except Exception:
         return PRODUCTS
 

@@ -634,14 +634,12 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"
             f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"📌 <b>BƯỚC 1: GỬI LINK HOẶC UID SPOTIFY</b>\n\n"
+            f"📌 <b>BƯỚC 1: GỬI LINK PROFILE SPOTIFY (BẮT BUỘC DẠNG LINK)</b>\n\n"
             f"<b>Cách lấy liên kết Spotify cá nhân:</b>\n"
             f"  1️⃣ Mở app Spotify → Bấm <b>Cài đặt (hoặc Avatar)</b>\n"
             f"  2️⃣ Chọn <b>Hồ sơ cá nhân</b> → Bấm <b>Chia sẻ</b> → <b>Sao chép liên kết</b>\n\n"
-            f"<i>Hệ thống tự động lọc cả hai dạng:</i>\n"
-            f"• Link URL: <code>https://open.spotify.com/user/31t3tcqt...</code>\n"
-            f"• Hoặc UID trực tiếp: <code>31t3tcqt17dugzvuubw2ydhqy6km</code>\n\n"
-            f"👇 <b>Gửi Link hoặc UID Spotify vào ô chat bên dưới:</b>\n"
+            f"• Link URL mẫu: <code>https://open.spotify.com/user/31t3tcqt...</code>\n\n"
+            f"👇 <b>Dán Link Profile Spotify vào ô chat bên dưới:</b>\n"
             f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>link MÃ_GIẢM_GIÁ</code> hoặc bấm nút nhập mã sau khi hoá đơn xuất hiện)</i>"
         )
     elif product_key == "locket_ai":
@@ -658,7 +656,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"🟠 <b>SoundCloud Go+:</b> Mở khóa SoundCloud Go+ (Plus), Tải nghe Offline, Âm thanh HQ Audio.\n"
             f"🎬 <b>YouTube Premium:</b> Chặn 100% Ads video, Phát âm thanh tắt màn hình & Hình trong hình (PiP).\n"
             f"━━━━━━━━━━━━━━━━━━\n\n"
-            f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET CỦA BẠN</b>\n\n"
+            f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET CỦA BẠN (CHỈ ĐIỀN USER, KHÔNG DÁN LINK)</b>\n\n"
             f"<b>Hướng dẫn:</b>\n"
             f"  Mở app Locket → Bấm Avatar góc trên → Xem phần <b>@username</b>\n\n"
             f"<i>Ví dụ:</i> <code>conlaigii</code>\n\n"
@@ -670,11 +668,11 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"
             f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"📌 <b>BƯỚC 1: GỬI 2 DÒNG (LOCKET & SPOTIFY)</b>\n\n"
+            f"📌 <b>BƯỚC 1: GỬI 2 DÒNG (LOCKET & SPOTIFY TÁCH BIỆT)</b>\n\n"
             f"🌟 <i>Gói Combo sẽ tự động kích hoạt đồng thời cả Locket Gold VIP và Spotify Premium!</i>\n"
-            f"<b>Vui lòng gửi tin nhắn gồm 2 dòng (hoặc cách nhau bằng dấu cách):</b>\n"
-            f"1️⃣ <b>Dòng 1:</b> Username Locket (VD: <code>conlaigii</code>)\n"
-            f"2️⃣ <b>Dòng 2:</b> Link Profile hoặc UID Spotify (VD: <code>https://open.spotify.com/user/...</code>)\n\n"
+            f"<b>Vui lòng gửi tin nhắn gồm 2 dòng:</b>\n"
+            f"1️⃣ <b>Dòng 1:</b> Username Locket (Chỉ điền User, không dán link — VD: <code>conlaigii</code>)\n"
+            f"2️⃣ <b>Dòng 2:</b> Link Profile Spotify (Bắt buộc dạng Link — VD: <code>https://open.spotify.com/user/...</code>)\n\n"
             f"<i>Ví dụ gửi tin nhắn:</i>\n"
             f"<pre>conlaigii\nhttps://open.spotify.com/user/31t3tcqt...</pre>\n\n"
             f"👇 <b>Gửi 2 dòng thông tin vào ô chat bên dưới:</b>"
@@ -684,7 +682,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"
             f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET</b>\n\n"
+            f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET (CHỈ ĐIỀN USER, KHÔNG DÁN LINK)</b>\n\n"
             f"<b>Hướng dẫn:</b>\n"
             f"  Mở app Locket → Bấm Avatar góc trên → Xem phần <b>@username</b>\n\n"
             f"<i>Ví dụ:</i> <code>conlaigii</code>\n\n"
@@ -757,25 +755,18 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         spotify_extra_info = ""
 
         extra_order_fields = {}
+        import re
         if product_key == "spotify":
-            cleaned_sp = utils.clean_input(raw_identifier)
-            try:
-                res = await asyncio.to_thread(api.spotify_check, raw_identifier)
-                data = res.get("data") if isinstance(res.get("data"), dict) else res
-                uid  = data.get("uid") or data.get("id") or cleaned_sp
-                display = data.get("displayName") or data.get("username") or data.get("name") or uid
-                avatar_url = data.get("avatar") or data.get("image") or data.get("avatarUrl")
-                current_plan = data.get("plan") or data.get("product") or "Free"
-                is_bound = data.get("isBound")
-            except Exception as e_sp_bot:
-                logger.warning(f"Bot Spotify check fallback for {cleaned_sp}: {e_sp_bot}")
-                if len(cleaned_sp) < 3:
-                    raise e_sp_bot
-                uid = cleaned_sp
-                display = cleaned_sp
-                avatar_url = None
-                current_plan = "Free"
-                is_bound = False
+            if not re.search(r"spotify\.com/user/[a-zA-Z0-9._-]+", raw_identifier, re.I):
+                raise ValueError("Phần Spotify chỉ nhận Link Profile Spotify (VD: https://open.spotify.com/user/...). Vui lòng sao chép liên kết hồ sơ từ ứng dụng Spotify!")
+            cleaned_sp = utils.extract_spotify_uid(raw_identifier)
+            res = await asyncio.to_thread(api.spotify_check, raw_identifier)
+            data = res.get("data") if isinstance(res.get("data"), dict) else res
+            uid  = data.get("uid") or data.get("id") or cleaned_sp
+            display = data.get("displayName") or data.get("username") or data.get("name") or uid
+            avatar_url = data.get("avatar") or data.get("image") or data.get("avatarUrl")
+            current_plan = data.get("plan") or data.get("product") or "Free"
+            is_bound = data.get("isBound")
 
             bound_text = "Đã kết nối IP thiết bị" if is_bound else "Chưa khoá IP (sẵn sàng)"
 
@@ -793,6 +784,11 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             locket_part = parts[0] if parts else raw_identifier
             spotify_part = parts[1] if len(parts) >= 2 else ""
 
+            if re.search(r"(https?://|/|spotify\.com|locket\.cam)", locket_part, re.I):
+                raise ValueError("Dòng 1 (Locket) chỉ được điền Username Locket (VD: conlaigii), tuyệt đối không dán đường link!")
+            if not spotify_part or not re.search(r"spotify\.com/user/[a-zA-Z0-9._-]+", spotify_part, re.I):
+                raise ValueError("Dòng 2 (Spotify) bắt buộc phải dán đúng Link Profile Spotify (VD: https://open.spotify.com/user/...)!")
+
             cleaned_username = utils.clean_input(locket_part)
             res = await asyncio.to_thread(api.locket_resolve, cleaned_username)
             data = res.get("data") if isinstance(res.get("data"), dict) else res
@@ -801,15 +797,11 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             display = locket_username
             avatar_url = data.get("avatar") or data.get("avatarUrl")
 
-            sp_uid_resolved = utils.clean_input(spotify_part) if spotify_part else ""
-            if spotify_part:
-                try:
-                    res_sp = await asyncio.to_thread(api.spotify_check, spotify_part)
-                    data_sp = res_sp.get("data") if isinstance(res_sp.get("data"), dict) else res_sp
-                    sp_uid_resolved = data_sp.get("uid") or data_sp.get("id") or sp_uid_resolved
-                    spotify_extra_info = f"🎵 <b>Spotify UID:</b> <code>{sp_uid_resolved}</code>\n"
-                except Exception:
-                    spotify_extra_info = f"🎵 <b>Spotify UID:</b> <code>{sp_uid_resolved}</code>\n"
+            sp_uid_resolved = utils.extract_spotify_uid(spotify_part)
+            res_sp = await asyncio.to_thread(api.spotify_check, spotify_part)
+            data_sp = res_sp.get("data") if isinstance(res_sp.get("data"), dict) else res_sp
+            sp_uid_resolved = data_sp.get("uid") or data_sp.get("id") or sp_uid_resolved
+            spotify_extra_info = f"🎵 <b>Spotify UID:</b> <code>{sp_uid_resolved}</code>\n"
 
             extra_order_fields = {
                 "account_target": locket_username,
@@ -818,6 +810,8 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 "avatar": avatar_url,
             }
         else:
+            if re.search(r"(https?://|/|spotify\.com|locket\.cam)", raw_identifier, re.I):
+                raise ValueError("Phần Locket chỉ cho phép điền Username Locket (VD: conlaigii), tuyệt đối không dán đường link!")
             cleaned_username = utils.clean_input(raw_identifier)
             res = await asyncio.to_thread(api.locket_resolve, cleaned_username)
             data = res.get("data") if isinstance(res.get("data"), dict) else res
