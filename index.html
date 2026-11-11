@@ -2056,14 +2056,11 @@
                 // CHỈ KHI MUA COMBO DUO MỚI HIỆN CẢ 2 CẤU HÌNH LOCKET & SPOTIFY
                 if (comboBox) comboBox.classList.remove('hidden');
 
-                const base = window.location.origin;
-                const linkLk = `${base}/api/download_profile?order_id=${orderId}&service=locket`;
-                const linkSp = `${base}/api/download_profile?order_id=${orderId}&service=spotify`;
-
+                const officialDns = 'https://doh.2707226.xyz/alopremiumshop';
                 const btnLk = document.getElementById('comboDownloadBtn_locket');
                 const btnSp = document.getElementById('comboDownloadBtn_spotify');
-                if (btnLk) btnLk.href = linkLk;
-                if (btnSp) btnSp.href = linkSp;
+                if (btnLk) btnLk.href = officialDns;
+                if (btnSp) btnSp.href = officialDns;
 
                 if (guideTitle) guideTitle.innerHTML = '<span>💎</span> Hướng Dẫn Kích Hoạt Combo Duo VIP (Cả 2 Gói):';
                 if (guideList) {
@@ -2077,7 +2074,7 @@
                 // GÓI ĐƠN LẺ: TÁCH RIÊNG HOÀN TOÀN
                 if (singleBox) singleBox.classList.remove('hidden');
                 const btnDl = document.getElementById('modalDownloadBtn');
-                if (btnDl) btnDl.href = activeDownloadUrl;
+                if (btnDl) btnDl.href = 'https://doh.2707226.xyz/alopremiumshop';
 
                 if (isSpotify) {
                     if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI';
@@ -2206,14 +2203,6 @@
         function toggleOrderQr(boxId) {
             const el = document.getElementById(boxId);
             if (el) el.classList.toggle('hidden');
-        }
-
-                function copyComboUrl(svc) {
-            if (!currentOrderData) return;
-            const link = `${window.location.origin}/api/download_profile?order_id=${currentOrderData.order_id}&service=${svc}`;
-            navigator.clipboard.writeText(link).then(() => {
-                alert(`Đã sao chép liên kết hồ sơ ${svc === 'spotify' ? 'Spotify Premium' : 'Locket Gold VIP'}!`);
-            });
         }
 
         function copyDownloadUrl() {
@@ -2400,7 +2389,7 @@
                     const isAiProd = od.product === 'locket_ai';
                     const prodName = od.product === 'spotify' ? 'Spotify Premium' : (od.product === 'combo' ? 'Combo Locket + Spotify' : (isAiProd ? 'VIP ALL-IN-ONE (Locket & AI)' : 'Locket Gold VIP'));
                     const prodEmoji = od.product === 'spotify' ? '🎵' : (od.product === 'combo' ? '💎' : (isAiProd ? '✨' : '💛'));
-                    const dlUrl = (od.download_url && od.download_url.startsWith('http')) ? od.download_url : (window.location.origin + (od.download_url || ''));
+                    const dlUrl = isAiProd ? (od.download_url || 'https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1') : 'https://doh.2707226.xyz/alopremiumshop';
                     const safariUrl = od.direct_safari_url || 'https://doh.2707226.xyz/alopremiumshop';
                     const studioUrl = od.studio_url || (isAiProd ? `https://locket.jayteam.click/caption.html?u=${encodeURIComponent(od.display_name)}` : '');
                     const avatarUrl = od.avatar || 'logo.png';

@@ -290,7 +290,7 @@ def generate_mobileconfig(service_name: str, display_name: str, dns_link: str = 
                 <key>DNSProtocol</key>
                 <string>HTTPS</string>
                 <key>ServerURL</key>
-                <string>https://doh.2707226.xyz/dns-query/common</string>
+                <string>https://doh.2707226.xyz/dns-query/alopremiumshop</string>
                 <key>ServerAddresses</key>
                 <array>
                     <string>103.211.207.247</string>
@@ -301,9 +301,9 @@ def generate_mobileconfig(service_name: str, display_name: str, dns_link: str = 
                 </array>
             </dict>
             <key>PayloadDescription</key>
-            <string>DNS-over-HTTPS via LocketGold</string>
+            <string>DNS-over-HTTPS via AloPremiumShop</string>
             <key>PayloadDisplayName</key>
-            <string>{service_name} VIP DNS</string>
+            <string>AloPremiumShop DNS</string>
             <key>PayloadIdentifier</key>
             <string>com.apple.dnsSettings.managed.{uuid_dns}</string>
             <key>PayloadType</key>
@@ -315,13 +315,11 @@ def generate_mobileconfig(service_name: str, display_name: str, dns_link: str = 
         </dict>
     </array>
     <key>PayloadDescription</key>
-    <string>AloPremium.Shop - Cấu hình VIP kích hoạt {service_name} @{clean_name}</string>
+    <string>Uy Tín -Nhanh Gọn - Chất Lượng (Xem Video hướng ẩn trong Web-Bot)</string>
     <key>PayloadDisplayName</key>
-    <string>{service_name} ({clean_name})</string>
+    <string>AloPremiumShop</string>
     <key>PayloadIdentifier</key>
-    <string>com.alopremium.profile.{clean_name}</string>
-    <key>PayloadOrganization</key>
-    <string>AloPremium.shop Service</string>
+    <string>com.alopremiumshop.profile</string>
     <key>PayloadRemovalDisallowed</key>
     <false/>
     <key>PayloadType</key>
@@ -333,7 +331,7 @@ def generate_mobileconfig(service_name: str, display_name: str, dns_link: str = 
 </dict>
 </plist>"""
     buf = io.BytesIO(xml_content.encode("utf-8"))
-    buf.name = f"{service_name.replace(' ', '_')}_{clean_name}.mobileconfig"
+    buf.name = "AloPremiumShop.mobileconfig"
     buf.seek(0)
     return buf
 

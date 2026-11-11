@@ -514,43 +514,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
 
-            safe_name = order.get("display_name") or order.get("uid") or "VIP"
-            clean_token = order.get("token") or order.get("uid") or "vip"
-
-            req_service = params.get("service", [""])[0].lower()
-            if product_key == "combo":
-                if req_service == "spotify":
-                    svc_name = "Spotify Premium"
-                    file_name = f"Spotify_{safe_name}.mobileconfig"
-                    dns_link = order.get("dns_link_spotify") or order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
-                else:
-                    svc_name = "Locket Gold VIP"
-                    file_name = f"Locket_{safe_name}.mobileconfig"
-                    dns_link = order.get("dns_link_locket") or order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
-            else:
-                pv = config.PRODUCTS.get(product_key, {})
-                svc_name = pv.get("name", "Locket Gold VIP")
-                dns_link = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
-                file_name = f"{product_key.capitalize()}_{safe_name}.mobileconfig"
-
-            # Tách biệt hoàn toàn cấu hình DNS:
-            # - Mua Locket: Profile chỉ chứa domain Locket (không ảnh hưởng Spotify)
-            # - Mua Spotify: Profile chỉ chứa domain Spotify (không ảnh hưởng Locket)
-            # - Mua Combo: Profile tích hợp đầy đủ cả 2 dịch vụ
-            bio = utils.generate_mobileconfig(
-                service_name=svc_name,
-                display_name=safe_name,
-                dns_link=dns_link
-            )
-            payload_bytes = bio.getvalue()
-
-            self.send_response(200)
-            self.send_header("Content-Type", "application/x-apple-aspen-config; charset=utf-8")
-            self.send_header("Content-Disposition", f'attachment; filename="{file_name}"')
-            self.send_header("Content-Length", str(len(payload_bytes)))
+            # Chuyển hướng trực tiếp về hồ sơ chính chủ AloPremiumShop trên server CTV (https://doh.2707226.xyz/alopremiumshop)
+            official_dns_url = f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+            self.send_response(302)
+            self.send_header("Location", official_dns_url)
             self._send_cors_headers()
             self.end_headers()
-            self.wfile.write(payload_bytes)
             return
 
         # 6. API Tra cứu đơn hàng & Lịch sử mua DNS (Khớp Order ID, Username Locket/Spotify hoặc UID)
