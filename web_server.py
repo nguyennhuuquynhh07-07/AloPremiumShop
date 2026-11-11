@@ -1296,7 +1296,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
             product = str(body.get("product", "locket"))
             plan = str(body.get("plan", "ltm"))
             
-            pv = config.PRODUCTS.get(product, {})
+            all_prods = db.get_prices()
+            pv = all_prods.get(product) or config.PRODUCTS.get(product, {})
             plnv = pv.get("plans", {}).get(plan, {})
             orig_price = plnv.get("price", 160000)
 
@@ -1323,6 +1324,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             plan = body.get("plan")
             identifier = str(body.get("identifier", "")).strip()
             display_name = str(body.get("display_name", "")).strip() or identifier
+            spotify_uid = str(body.get("spotify_uid", "")).strip()
             avatar = body.get("avatar", "")
             token = body.get("token", "")
 
@@ -1330,7 +1332,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": "Thiếu thông tin gói hoặc tài khoản khách"})
                 return
 
-            pv = config.PRODUCTS.get(product)
+            all_prods = db.get_prices()
+            pv = all_prods.get(product) or config.PRODUCTS.get(product)
             if not pv or plan not in pv.get("plans", {}):
                 self._send_json(400, {"ok": False, "error": "Gói cước không hợp lệ"})
                 return
@@ -1409,6 +1412,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "avatar": avatar,
                 "token": token,
                 "account_target": identifier,  # Luôn lưu UID thực tế, không dùng display_name
+                "spotify_uid": spotify_uid,
                 "discount_code": applied_code,
                 "discount_amount": discount_amount,
                 "original_price": orig_price,

@@ -110,7 +110,7 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 studio_link=studio_url
             )
         elif product_key == "combo":
-            # Tách biệt 2 mã API cho Locket và Spotify, tự động thử lần lượt qua các candidate_accounts (ưu tiên Username trước UID 28 ký tự)
+            # Tách biệt 2 mã API cho Locket (dùng Username Locket) và Spotify (dùng UID Spotify)
             combo_map = {
                 "6m":  {"locket": "LKG6M",  "spotify": "SP6M"},
                 "1y":  {"locket": "LKG1Y",  "spotify": "SPOTIFY1Y"},
@@ -129,12 +129,28 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     last_lk_err = e_lk
                     logger.warning(f"Combo Locket API ({acc}): {e_lk}")
 
-            for acc in candidate_accounts:
+            # Danh sách tài khoản Spotify cho gói Combo (ưu tiên spotify_uid khách điền ở dòng 2)
+            sp_raw = str(order.get("spotify_uid") or "").strip()
+            sp_candidates = []
+            if sp_raw:
                 try:
-                    await asyncio.to_thread(api.create_subscription, uid=acc, package_code=pkg_map["spotify"], service="spotify", note=f"Combo {order_id} Spotify")
+                    clean_sp = api._extract_spotify_uid(sp_raw)
+                except Exception:
+                    clean_sp = sp_raw
+                if clean_sp:
+                    sp_candidates.append(clean_sp)
+                if sp_raw not in sp_candidates:
+                    sp_candidates.append(sp_raw)
+            for c in candidate_accounts:
+                if c not in sp_candidates:
+                    sp_candidates.append(c)
+
+            for sp_acc in sp_candidates:
+                try:
+                    await asyncio.to_thread(api.create_subscription, uid=sp_acc, package_code=pkg_map["spotify"], service="spotify", note=f"Combo {order_id} Spotify")
                     break
                 except Exception as e_sp:
-                    logger.warning(f"Combo Spotify API ({acc}): {e_sp}")
+                    logger.warning(f"Combo Spotify API ({sp_acc}): {e_sp}")
 
             if not locket_ok and last_lk_err:
                 logger.error(f"Combo Locket activation failed for all candidates {candidate_accounts}: {last_lk_err}")

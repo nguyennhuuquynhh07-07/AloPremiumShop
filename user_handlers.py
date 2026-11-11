@@ -625,7 +625,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["product"] = product_key
     ctx.user_data["plan"]    = plan_key
 
-    prods = utils.get_dynamic_products()
+    prods = getattr(utils, "get_dynamic_products", lambda: PRODUCTS)()
     pv    = prods.get(product_key, PRODUCTS[product_key])
     plnv  = pv["plans"][plan_key]
 
@@ -670,11 +670,14 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"
             f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET HOẶC TÊN BẠN</b>\n\n"
-            f"🌟 <i>Hồ sơ Combo sẽ tự động kích hoạt đồng thời cả Locket Gold VIP và Spotify Premium Lossless!</i>\n"
-            f"<b>Hướng dẫn:</b> Nhập Username Locket hoặc Tên của bạn để tạo file cấu hình DNS cá nhân.\n"
-            f"<i>Ví dụ:</i> <code>conlaigii</code>\n\n"
-            f"👇 <b>Gửi Username hoặc Tên vào ô chat bên dưới:</b>"
+            f"📌 <b>BƯỚC 1: GỬI 2 DÒNG (LOCKET & SPOTIFY)</b>\n\n"
+            f"🌟 <i>Gói Combo sẽ tự động kích hoạt đồng thời cả Locket Gold VIP và Spotify Premium!</i>\n"
+            f"<b>Vui lòng gửi tin nhắn gồm 2 dòng (hoặc cách nhau bằng dấu cách):</b>\n"
+            f"1️⃣ <b>Dòng 1:</b> Username Locket (VD: <code>conlaigii</code>)\n"
+            f"2️⃣ <b>Dòng 2:</b> Link Profile hoặc UID Spotify (VD: <code>https://open.spotify.com/user/...</code>)\n\n"
+            f"<i>Ví dụ gửi tin nhắn:</i>\n"
+            f"<pre>conlaigii\nhttps://open.spotify.com/user/31t3tcqt...</pre>\n\n"
+            f"👇 <b>Gửi 2 dòng thông tin vào ô chat bên dưới:</b>"
         )
     else:  # locket
         prompt = (
@@ -716,7 +719,7 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     coupon_candidate = None
     product_key_pre = ctx.user_data.get("product")
     plan_key_pre = ctx.user_data.get("plan")
-    prods = utils.get_dynamic_products()
+    prods = getattr(utils, "get_dynamic_products", lambda: PRODUCTS)()
     base_price = 0
     if product_key_pre and plan_key_pre:
         base_price = prods.get(product_key_pre, {}).get("plans", {}).get(plan_key_pre, {}).get("price", 0)
@@ -770,6 +773,33 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             )
             extra_order_fields = {
                 "account_target": uid or raw_identifier,
+                "avatar": avatar_url,
+            }
+        elif product_key == "combo":
+            parts = [p.strip() for p in raw_identifier.replace("\n", " ").split() if p.strip()]
+            locket_part = parts[0] if parts else raw_identifier
+            spotify_part = parts[1] if len(parts) >= 2 else ""
+
+            cleaned_username = utils.clean_input(locket_part)
+            res = await asyncio.to_thread(api.locket_resolve, cleaned_username)
+            data = res.get("data") if isinstance(res.get("data"), dict) else res
+            uid  = cleaned_username or data.get("username") or data.get("uid")
+            display = data.get("username") or data.get("displayName") or cleaned_username
+            avatar_url = data.get("avatar") or data.get("avatarUrl")
+
+            sp_uid_resolved = ""
+            if spotify_part:
+                try:
+                    res_sp = await asyncio.to_thread(api.spotify_check, spotify_part)
+                    data_sp = res_sp.get("data") if isinstance(res_sp.get("data"), dict) else res_sp
+                    sp_uid_resolved = data_sp.get("uid") or data_sp.get("id") or spotify_part
+                    spotify_extra_info = f"🎵 <b>Spotify UID:</b> <code>{sp_uid_resolved}</code>\n"
+                except Exception:
+                    sp_uid_resolved = spotify_part
+
+            extra_order_fields = {
+                "account_target": cleaned_username or display,
+                "spotify_uid": sp_uid_resolved,
                 "avatar": avatar_url,
             }
         else:
