@@ -383,6 +383,12 @@ def apply_custom_prices():
                     except (ValueError, TypeError):
                         pass
 
+def get_prices() -> dict:
+    """Đồng bộ giá tùy chỉnh và trả về toàn bộ cấu trúc PRODUCTS."""
+    apply_custom_prices()
+    from config import PRODUCTS
+    return PRODUCTS
+
 def update_plan_price(prod_key: str, plan_key: str, new_price: int) -> bool:
     from config import PRODUCTS
     if prod_key not in PRODUCTS or plan_key not in PRODUCTS[prod_key].get("plans", {}):
