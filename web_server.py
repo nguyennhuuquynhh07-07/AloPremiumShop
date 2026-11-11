@@ -1212,13 +1212,25 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             try:
                 if service == "spotify":
-                    res = api.spotify_check(raw_id)
-                    data = res.get("data") if isinstance(res.get("data"), dict) else res
-                    uid = data.get("uid") or data.get("id") or raw_id
-                    display = data.get("displayName") or data.get("username") or data.get("name") or uid
-                    avatar = data.get("avatar") or data.get("image") or data.get("avatarUrl")
-                    plan = data.get("plan") or data.get("product") or "Free"
-                    is_bound = data.get("isBound", False)
+                    cleaned_sp = utils.clean_input(raw_id)
+                    try:
+                        res = api.spotify_check(raw_id)
+                        data = res.get("data") if isinstance(res.get("data"), dict) else res
+                        uid = data.get("uid") or data.get("id") or cleaned_sp
+                        display = data.get("displayName") or data.get("username") or data.get("name") or uid
+                        avatar = data.get("avatar") or data.get("image") or data.get("avatarUrl")
+                        plan = data.get("plan") or data.get("product") or "Free"
+                        is_bound = data.get("isBound", False)
+                    except Exception as e_sp:
+                        logger.warning(f"Spotify check fallback for {cleaned_sp}: {e_sp}")
+                        if len(cleaned_sp) < 3:
+                            raise e_sp
+                        uid = cleaned_sp
+                        display = cleaned_sp
+                        avatar = None
+                        plan = "Free"
+                        is_bound = False
+
                     self._send_json(200, {
                         "ok": True,
                         "service": "spotify",
@@ -1290,64 +1302,140 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # 2. API Tạo đơn hàng Web & Sinh VietQR
         if path == "/api/create_order":
-            product = body.get("product")
-            plan = body.get("plan")
-            identifier = str(body.get("identifier", "")).strip()
-            display_name = str(body.get("display_name", "")).strip() or identifier
-            spotify_uid = str(body.get("spotify_uid", "")).strip()
-            avatar = body.get("avatar", "")
-            token = body.get("token", "")
+            try:
+                product = body.get("product")
+                plan = body.get("plan")
+                raw_ident = str(body.get("identifier", "")).strip()
+                identifier = utils.clean_input(raw_ident) or raw_ident
+                display_name = str(body.get("display_name", "")).strip() or identifier
+                if "spotify.com/user/" in display_name.lower() or "locket.cam/" in display_name.lower():
+                    display_name = identifier
+                raw_sp = str(body.get("spotify_uid", "")).strip()
+                spotify_uid = utils.clean_input(raw_sp) if raw_sp else (identifier if product == "spotify" else "")
+                avatar = body.get("avatar", "")
+                token = body.get("token", "")
 
-            if not product or not plan or not identifier:
-                self._send_json(400, {"ok": False, "error": "Thiếu thông tin gói hoặc tài khoản khách"})
-                return
+                if not product or not plan or not identifier:
+                    self._send_json(400, {"ok": False, "error": "Thiếu thông tin gói hoặc tài khoản khách"})
+                    return
 
-            all_prods = db.get_prices()
-            pv = all_prods.get(product) or config.PRODUCTS.get(product)
-            if not pv or plan not in pv.get("plans", {}):
-                self._send_json(400, {"ok": False, "error": "Gói cước không hợp lệ"})
-                return
+                all_prods = db.get_prices()
+                pv = all_prods.get(product) or config.PRODUCTS.get(product)
+                if not pv or plan not in pv.get("plans", {}):
+                    self._send_json(400, {"ok": False, "error": "Gói cước không hợp lệ"})
+                    return
 
-            plnv = pv["plans"][plan]
-            price = plnv["price"]
-            orig_price = price
+                plnv = pv["plans"][plan]
+                price = plnv["price"]
+                orig_price = price
 
-            # Gói VIP ALL-IN-ONE (locket_ai) mặc định đã bao gồm sẵn bản quyền Studio (trọn bộ)
-            has_studio = True if product == "locket_ai" else bool(body.get("has_studio", False))
+                # Gói VIP ALL-IN-ONE (locket_ai) mặc định đã bao gồm sẵn bản quyền Studio (trọn bộ)
+                has_studio = True if product == "locket_ai" else bool(body.get("has_studio", False))
 
-            # Chống Spam Đơn Hàng (Anti-Spam Order Creation)
-            clean_ident = utils.clean_input(identifier).lower()
-            existing_orders = db.get_orders()
-            pending_same_order = None
-            pending_count_user = 0
+                # Tính toán mã giảm giá trước (tránh lỗi UnboundLocalError khi tái sử dụng đơn cũ)
+                coupon = str(body.get("discount_code", "") or body.get("coupon", "")).strip().upper()
+                discount_amount = 0
+                applied_code = ""
 
-            for od in existing_orders.values():
-                if od.get("status") in ("waiting_payment", "pending"):
-                    od_ident = str(od.get("uid", "")).lower()
-                    if od_ident == clean_ident or od_ident == identifier.lower():
-                        pending_count_user += 1
-                        if od.get("product") == product and od.get("plan") == plan:
-                            pending_same_order = od
+                if coupon:
+                    chk = utils.check_and_apply_coupon(coupon, orig_price)
+                    if chk.get("ok"):
+                        discount_amount = chk["discount_amount"]
+                        price = chk["final_price"]
+                        applied_code = chk["code"]
 
-            # Nếu tài khoản này đã tạo từ 3 đơn trở lên mà chưa thanh toán đơn nào -> Chặn spam
-            if pending_count_user >= 3:
-                self._send_json(429, {
-                    "ok": False,
-                    "error": "Bạn đang có nhiều đơn hàng chưa thanh toán! Vui lòng hoàn tất chuyển khoản đơn hàng trước đó hoặc chờ 5 phút."
-                })
-                return
+                # Chống Spam Đơn Hàng (Anti-Spam Order Creation)
+                clean_ident = utils.clean_input(identifier).lower()
+                existing_orders = db.get_orders()
+                pending_same_order = None
+                pending_count_user = 0
 
-            # Nếu khách vừa tạo đơn cho cùng gói này -> Tái sử dụng đơn cũ, KHÔNG spam thông báo cho Admin!
-            if pending_same_order:
-                p_id = pending_same_order["order_id"]
-                p_price = pending_same_order["price"]
-                qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
-                dispatch_admin_order_alert(p_id, pv, plnv, display_name, identifier, p_price, orig_price, applied_code, discount_amount)
+                for od in existing_orders.values():
+                    if od.get("status") in ("waiting_payment", "pending"):
+                        od_ident = str(od.get("uid", "")).lower()
+                        if od_ident == clean_ident or od_ident == identifier.lower():
+                            pending_count_user += 1
+                            if od.get("product") == product and od.get("plan") == plan:
+                                pending_same_order = od
+
+                # Nếu tài khoản này đã tạo từ 5 đơn trở lên mà chưa thanh toán đơn nào -> Chặn spam
+                if pending_count_user >= 5 and not pending_same_order:
+                    self._send_json(429, {
+                        "ok": False,
+                        "error": "Bạn đang có nhiều đơn hàng chưa thanh toán! Vui lòng hoàn tất chuyển khoản đơn hàng trước đó hoặc chờ 5 phút."
+                    })
+                    return
+
+                # Nếu khách vừa tạo đơn cho cùng gói này -> Tái sử dụng đơn cũ, cập nhật lại giá nếu có mã giảm giá
+                if pending_same_order:
+                    p_id = pending_same_order["order_id"]
+                    p_price = price if applied_code else pending_same_order.get("price", price)
+                    p_code = applied_code or pending_same_order.get("discount_code", "")
+                    p_disc = discount_amount if applied_code else pending_same_order.get("discount_amount", 0)
+                    if applied_code and pending_same_order.get("discount_code") != applied_code:
+                        db.update_order(p_id, price=p_price, discount_code=p_code, discount_amount=p_disc)
+                    qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
+                    dispatch_admin_order_alert(p_id, pv, plnv, display_name, clean_ident or identifier, p_price, orig_price, p_code, p_disc)
+                    self._send_json(200, {
+                        "ok": True,
+                        "order_id": p_id,
+                        "memo": f"ORDER_{p_id}",
+                        "price": p_price,
+                        "qr_url": qr_url,
+                        "bank_id": getattr(config, "BANK_ID", "TPB"),
+                        "bank_name": getattr(config, "BANK_NAME", "TPBank"),
+                        "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
+                        "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
+                        "product": product,
+                        "plan": plan,
+                        "product_name": pv["name"],
+                        "plan_label": plnv["label"],
+                        "is_reused": True
+                    })
+                    return
+
+                order_id = utils.gen_order_id()
+                if applied_code:
+                    chk_use = utils.check_and_apply_coupon(applied_code, orig_price)
+                    if chk_use.get("ok") and chk_use.get("is_db"):
+                        db.use_code(applied_code)
+
+                # Lưu vào Database dùng chung với Bot Telegram
+                extra_fields = {
+                    "source": "web",
+                    "avatar": avatar,
+                    "token": token,
+                    "account_target": identifier,  # Luôn lưu UID thực tế, không dùng display_name
+                    "spotify_uid": spotify_uid,
+                    "discount_code": applied_code,
+                    "discount_amount": discount_amount,
+                    "original_price": orig_price,
+                    "has_studio": has_studio,
+                }
+
+                db.create_order(
+                    order_id=order_id,
+                    user_id=0,
+                    username=f"web_{identifier[:15]}",
+                    product=product,
+                    plan=plan,
+                    price=price,
+                    uid=identifier,
+                    display_name=display_name,
+                    **extra_fields
+                )
+
+                # Sinh link VietQR chuẩn
+                qr_url = utils.get_vietqr_url(amount=price, add_info=f"ORDER_{order_id}")
+
+                # Gửi thông báo đến Admin qua Telegram Bot (siêu tốc <0.2s, đa kênh)
+                dispatch_admin_order_alert(order_id, pv, plnv, display_name, identifier, price, orig_price, applied_code, discount_amount)
+
                 self._send_json(200, {
                     "ok": True,
-                    "order_id": p_id,
-                    "memo": f"ORDER_{p_id}",
-                    "price": p_price,
+                    "order_id": order_id,
+                    "memo": f"ORDER_{order_id}",
+                    "price": price,
                     "qr_url": qr_url,
                     "bank_id": getattr(config, "BANK_ID", "TPB"),
                     "bank_name": getattr(config, "BANK_NAME", "TPBank"),
@@ -1357,72 +1445,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     "plan": plan,
                     "product_name": pv["name"],
                     "plan_label": plnv["label"],
-                    "is_reused": True
                 })
                 return
-
-            order_id = utils.gen_order_id()
-
-            coupon = str(body.get("discount_code", "") or body.get("coupon", "")).strip().upper()
-            discount_amount = 0
-            applied_code = ""
-
-            if coupon:
-                chk = utils.check_and_apply_coupon(coupon, orig_price)
-                if chk.get("ok"):
-                    discount_amount = chk["discount_amount"]
-                    price = chk["final_price"]
-                    applied_code = chk["code"]
-                    if chk.get("is_db"):
-                        db.use_code(applied_code)
-
-            # Lưu vào Database dùng chung với Bot Telegram
-            extra_fields = {
-                "source": "web",
-                "avatar": avatar,
-                "token": token,
-                "account_target": identifier,  # Luôn lưu UID thực tế, không dùng display_name
-                "spotify_uid": spotify_uid,
-                "discount_code": applied_code,
-                "discount_amount": discount_amount,
-                "original_price": orig_price,
-                "has_studio": has_studio,
-            }
-
-            db.create_order(
-                order_id=order_id,
-                user_id=0,
-                username=f"web_{identifier[:15]}",
-                product=product,
-                plan=plan,
-                price=price,
-                uid=identifier,
-                display_name=display_name,
-                **extra_fields
-            )
-
-            # Sinh link VietQR chuẩn
-            qr_url = utils.get_vietqr_url(amount=price, add_info=f"ORDER_{order_id}")
-
-            # Gửi thông báo đến Admin qua Telegram Bot (siêu tốc <0.2s, đa kênh)
-            dispatch_admin_order_alert(order_id, pv, plnv, display_name, identifier, price, orig_price, applied_code, discount_amount)
-
-            self._send_json(200, {
-                "ok": True,
-                "order_id": order_id,
-                "memo": f"ORDER_{order_id}",
-                "price": price,
-                "qr_url": qr_url,
-                "bank_id": getattr(config, "BANK_ID", "TPB"),
-                "bank_name": getattr(config, "BANK_NAME", "TPBank"),
-                "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
-                "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
-                "product": product,
-                "plan": plan,
-                "product_name": pv["name"],
-                "plan_label": plnv["label"],
-            })
-            return
+            except Exception as e_create:
+                logger.error(f"Error in /api/create_order: {e_create}", exc_info=True)
+                self._send_json(500, {"ok": False, "error": f"Lỗi tạo đơn hàng: {e_create}"})
+                return
 
         # 2.1 API Tạo đơn phụ nâng cấp Studio Chú Thích & Khung Viền (+10.000đ)
         if path == "/api/create_studio_order":

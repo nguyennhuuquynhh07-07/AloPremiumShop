@@ -11,12 +11,18 @@ from config import PRODUCTS
 
 
 def clean_input(raw: str) -> str:
-    """Tách username hoặc UID sạch từ chuỗi nhập vào (link locket.cam, @username hoặc text)"""
+    """Tách username hoặc UID sạch từ chuỗi nhập vào (link locket.cam, open.spotify.com/user/..., @username hoặc text)"""
     import re
-    s = raw.strip().lstrip("@")
-    m = re.search(r"locket\.cam/(?:u/)?([^/?#&\s]+)", s, re.I)
-    if m:
-        s = m.group(1).lstrip("@")
+    s = (raw or "").strip().lstrip("@")
+    m_lk = re.search(r"locket\.cam/(?:u/)?([^/?#&\s]+)", s, re.I)
+    if m_lk:
+        return m_lk.group(1).lstrip("@").strip()
+    m_sp = re.search(r"spotify\.com/user/([^/?#&\s]+)", s, re.I)
+    if m_sp:
+        return m_sp.group(1).strip()
+    m_sp_uri = re.search(r"spotify:user:([^/?#&\s:]+)", s, re.I)
+    if m_sp_uri:
+        return m_sp_uri.group(1).strip()
     return s.strip()
 
 

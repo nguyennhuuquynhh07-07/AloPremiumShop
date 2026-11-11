@@ -1919,7 +1919,13 @@
                         discount_code: appliedCouponData ? appliedCouponData.code : ''
                     })
                 });
-                const data = await res.json();
+                const rawResText = await res.text();
+                let data = {};
+                try {
+                    data = JSON.parse(rawResText);
+                } catch (eJson) {
+                    throw new Error('Máy chủ đang bận hoặc kết nối gián đoạn, vui lòng bấm Thanh Toán lại!');
+                }
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Không thể tạo đơn hàng');
 
                 currentOrderData = data;

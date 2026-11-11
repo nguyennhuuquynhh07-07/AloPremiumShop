@@ -758,13 +758,25 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
         extra_order_fields = {}
         if product_key == "spotify":
-            res = await asyncio.to_thread(api.spotify_check, raw_identifier)
-            data = res.get("data") if isinstance(res.get("data"), dict) else res
-            uid  = data.get("uid") or data.get("id") or raw_identifier
-            display = data.get("displayName") or data.get("username") or data.get("name") or uid
-            avatar_url = data.get("avatar") or data.get("image") or data.get("avatarUrl")
-            current_plan = data.get("plan") or data.get("product") or "Free"
-            is_bound = data.get("isBound")
+            cleaned_sp = utils.clean_input(raw_identifier)
+            try:
+                res = await asyncio.to_thread(api.spotify_check, raw_identifier)
+                data = res.get("data") if isinstance(res.get("data"), dict) else res
+                uid  = data.get("uid") or data.get("id") or cleaned_sp
+                display = data.get("displayName") or data.get("username") or data.get("name") or uid
+                avatar_url = data.get("avatar") or data.get("image") or data.get("avatarUrl")
+                current_plan = data.get("plan") or data.get("product") or "Free"
+                is_bound = data.get("isBound")
+            except Exception as e_sp_bot:
+                logger.warning(f"Bot Spotify check fallback for {cleaned_sp}: {e_sp_bot}")
+                if len(cleaned_sp) < 3:
+                    raise e_sp_bot
+                uid = cleaned_sp
+                display = cleaned_sp
+                avatar_url = None
+                current_plan = "Free"
+                is_bound = False
+
             bound_text = "Đã kết nối IP thiết bị" if is_bound else "Chưa khoá IP (sẵn sàng)"
 
             spotify_extra_info = (
@@ -772,7 +784,8 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 f"📶 <b>Phiên IP:</b> <i>{bound_text}</i>\n"
             )
             extra_order_fields = {
-                "account_target": uid or raw_identifier,
+                "account_target": uid or cleaned_sp,
+                "spotify_uid": uid or cleaned_sp,
                 "avatar": avatar_url,
             }
         elif product_key == "combo":
@@ -788,15 +801,15 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             display = locket_username
             avatar_url = data.get("avatar") or data.get("avatarUrl")
 
-            sp_uid_resolved = ""
+            sp_uid_resolved = utils.clean_input(spotify_part) if spotify_part else ""
             if spotify_part:
                 try:
                     res_sp = await asyncio.to_thread(api.spotify_check, spotify_part)
                     data_sp = res_sp.get("data") if isinstance(res_sp.get("data"), dict) else res_sp
-                    sp_uid_resolved = data_sp.get("uid") or data_sp.get("id") or spotify_part
+                    sp_uid_resolved = data_sp.get("uid") or data_sp.get("id") or sp_uid_resolved
                     spotify_extra_info = f"🎵 <b>Spotify UID:</b> <code>{sp_uid_resolved}</code>\n"
                 except Exception:
-                    sp_uid_resolved = spotify_part
+                    spotify_extra_info = f"🎵 <b>Spotify UID:</b> <code>{sp_uid_resolved}</code>\n"
 
             extra_order_fields = {
                 "account_target": locket_username,
