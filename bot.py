@@ -33,7 +33,7 @@ from telegram.ext import (
 import config
 from config import BOT_TOKEN, ADMIN_IDS
 from handlers.user_handlers import (
-    start, menu_cmd, myorders_cmd, support_cmd, zalo_cmd, cb_zalo_group,
+    start, menu_cmd, myorders_cmd, support_cmd,
     help_cmd, account_cmd, apidocs_cmd, apierrors_cmd, setlang_cmd,
     cb_product, cb_plan,
     cb_paid, cb_buy, cb_cancel,
@@ -44,6 +44,34 @@ from handlers.user_handlers import (
     cb_coupon, cb_coupon_info, coupon_cmd, handle_user_coupon_text,
     WAITING_IDENTIFIER,
 )
+try:
+    from handlers.user_handlers import zalo_cmd, cb_zalo_group
+except (ImportError, AttributeError):
+    async def zalo_cmd(update, ctx):
+        import keyboards
+        zkb = getattr(keyboards, "zalo_group_kb", getattr(keyboards, "support_kb", None))()
+        await update.message.reply_text(
+            "👥 <b>NHÓM HỖ TRỢ & GIAO LƯU ZALO — ALOPREMIUM</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Tham gia cộng đồng Zalo để được hỗ trợ kỹ thuật và nhận mã giảm giá VIP!\n"
+            "Hotline / Zalo CSKH: <code>0345.222.802</code>",
+            parse_mode="HTML",
+            reply_markup=zkb
+        )
+
+    async def cb_zalo_group(update, ctx):
+        query = update.callback_query
+        await query.answer()
+        import keyboards
+        zkb = getattr(keyboards, "zalo_group_kb", getattr(keyboards, "support_kb", None))()
+        await query.message.reply_text(
+            "👥 <b>NHÓM HỖ TRỢ & GIAO LƯU ZALO — ALOPREMIUM</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Tham gia cộng đồng Zalo để được hỗ trợ kỹ thuật và nhận mã giảm giá VIP!\n"
+            "Hotline / Zalo CSKH: <code>0345.222.802</code>",
+            parse_mode="HTML",
+            reply_markup=zkb
+        )
 try:
     from handlers.user_handlers import web_cmd
 except (ImportError, AttributeError):
