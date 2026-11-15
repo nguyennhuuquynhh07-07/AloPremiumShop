@@ -187,6 +187,10 @@
         ::-webkit-scrollbar-track { background: #FFF9ED; }
         ::-webkit-scrollbar-thumb { background: #E5D6B8; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #FFB800; }
+        
+        /* Ẩn scrollbar cho carousel ngang mobile */
+        .no-scrollbar::-webkit-scrollbar { display: none !important; }
+        .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
     
         /* ═══════════════════════════════════════════════════════════════
            UPLOCKET & LOCKET.CAMERA SIGNATURE MOTION ENGINE
@@ -490,18 +494,37 @@
 
             <!-- BƯỚC 1: CHỌN GÓI DỊCH VỤ -->
             <div>
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-3">
                     <h2 class="font-fredoka text-xl sm:text-2xl font-black text-[#1E1B18] flex items-center gap-2.5">
                         <span class="w-7 h-7 rounded-xl bg-[#FFB800] text-[#1E1B18] flex items-center justify-center text-xs font-black shadow-md">1</span>
                         <span>Chọn gói dịch vụ muốn nâng cấp</span>
                     </h2>
+                    <span class="hidden sm:inline-block text-xs font-bold text-[#A09685]">4 gói dịch vụ cao cấp</span>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+                <!-- Thanh chọn nhanh 4 gói trên Mobile (Tap để cuộn mượt đến thẻ tương ứng) -->
+                <div class="sm:hidden flex items-center gap-2 overflow-x-auto no-scrollbar mb-3 pb-1">
+                    <button type="button" onclick="scrollToProductCard('locket')" id="quickTab_locket" class="px-3.5 py-1.5 rounded-full text-xs font-fredoka font-black bg-[#FFB800] text-[#1E1B18] shadow-sm whitespace-nowrap border border-[#FFB800] transition-all cursor-pointer">
+                        💛 Locket Gold
+                    </button>
+                    <button type="button" onclick="scrollToProductCard('spotify')" id="quickTab_spotify" class="px-3.5 py-1.5 rounded-full text-xs font-fredoka font-bold bg-white text-[#6E6659] border border-[#E8D8B0] hover:border-[#FFB800] whitespace-nowrap transition-all cursor-pointer">
+                        🎵 Spotify
+                    </button>
+                    <button type="button" onclick="scrollToProductCard('combo')" id="quickTab_combo" class="px-3.5 py-1.5 rounded-full text-xs font-fredoka font-bold bg-white text-[#6E6659] border border-[#E8D8B0] hover:border-[#FFB800] whitespace-nowrap transition-all cursor-pointer">
+                        👑 Combo Duo
+                    </button>
+                    <button type="button" onclick="scrollToProductCard('locket_ai')" id="quickTab_locket_ai" class="px-3.5 py-1.5 rounded-full text-xs font-fredoka font-bold bg-white text-[#6E6659] border border-[#E8D8B0] hover:border-[#FFB800] whitespace-nowrap transition-all cursor-pointer">
+                        ✨ All-in-One
+                    </button>
+                </div>
+
+                <!-- CAROUSEL CUỘN NGANG TRÊN MOBILE / GRID TRÊN DESKTOP -->
+                <div id="productCardsContainer" onscroll="handleProductCarouselScroll()" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-4 pb-4 pt-1 px-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 xl:grid-cols-4 sm:gap-5 sm:overflow-visible scroll-smooth">
                     
                     <!-- CARD 1: LOCKET GOLD VIP -->
                     <div onclick="selectProduct('locket')" id="card_locket" 
-                         class="relative rounded-[32px] p-6 sm:p-7 bg-white border-2 border-[#FFB800] cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive">
+                         class="w-[85vw] max-w-[340px] shrink-0 snap-center sm:w-auto sm:max-w-none flex flex-col justify-between relative rounded-[32px] p-6 sm:p-7 bg-white border-2 border-[#FFB800] cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive">
+                        <div>
                         <div class="absolute -top-3.5 right-6 bg-[#FFB800] text-[#1E1B18] text-[11px] font-fredoka font-black uppercase px-4 py-1 rounded-full shadow-md">
                             🌟 Bán chạy nhất • Khuyên Dùng
                         </div>
@@ -560,125 +583,167 @@
                                 <span class="font-semibold text-[#1E1B18]">Caption dài hơn</span>
                             </li>
                         </ul>
+                        </div>
+                        <!-- Nút bấm chọn gói dưới chân thẻ -->
+                        <div class="mt-5 pt-3 border-t border-[#F0E4C8]">
+                            <div id="btnCardSelect_locket" class="w-full py-2.5 px-3 rounded-2xl font-fredoka font-black text-xs text-center transition-all bg-[#FFB800] text-[#1E1B18] shadow-sm">
+                                ✓ Đang chọn gói này
+                            </div>
+                        </div>
                     </div>
 
                     <!-- CARD 2: SPOTIFY PREMIUM -->
                     <div onclick="selectProduct('spotify')" id="card_spotify" 
-                         class="rounded-[32px] p-6 sm:p-7 bg-white/90 border-2 border-[#E8D8B0] hover:border-emerald-500 cursor-pointer shadow-lg locket-card-interactive">
-                        <div class="flex items-center gap-3.5 mb-4">
-                            <img src="/spotify-icon.png" alt="Spotify Premium" class="w-12 h-12 rounded-2xl object-cover shadow-md shrink-0">
-                            <div>
-                                <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]">Spotify Premium</h3>
-                                <p class="text-xs text-emerald-700 font-bold">Gói nghe nhạc Lossless cao cấp</p>
+                         class="w-[85vw] max-w-[340px] shrink-0 snap-center sm:w-auto sm:max-w-none flex flex-col justify-between rounded-[32px] p-6 sm:p-7 bg-white/90 border-2 border-[#E8D8B0] hover:border-emerald-500 cursor-pointer shadow-lg locket-card-interactive">
+                        <div>
+                            <div class="flex items-center gap-3.5 mb-4">
+                                <img src="/spotify-icon.png" alt="Spotify Premium" class="w-12 h-12 rounded-2xl object-cover shadow-md shrink-0">
+                                <div>
+                                    <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]">Spotify Premium</h3>
+                                    <p class="text-xs text-emerald-700 font-bold">Gói nghe nhạc Lossless cao cấp</p>
+                                </div>
+                            </div>
+                            <div class="my-4 pb-4 border-b border-[#F0E4C8]">
+                                <div class="font-fredoka text-3xl font-black text-emerald-700" id="price_display_spotify">5.000đ - 180.000đ</div>
+                                <div class="text-xs text-[#6E6659] font-medium mt-1">Từ 1 ngày đến Vĩnh viễn • Đổi thiết bị thoải mái</div>
+                            </div>
+                            <ul class="space-y-2 text-xs text-[#1E1B18]">
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">Nghe nhạc chất lượng cao Lossless không giới hạn</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">Chặn 100% âm thanh & banner quảng cáo phiền toái</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">Chuyển bài không giới hạn, phát theo thứ tự tùy thích</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">Tích hợp công cụ Reset IP thiết bị miễn phí 24/7</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-5 pt-3 border-t border-[#F0E4C8]">
+                            <div id="btnCardSelect_spotify" class="w-full py-2.5 px-3 rounded-2xl font-fredoka font-bold text-xs text-center transition-all bg-[#FFF5DC] text-[#6E6659] border border-[#E8D8B0] hover:bg-emerald-500 hover:text-white">
+                                👉 Bấm chọn gói này
                             </div>
                         </div>
-                        <div class="my-4 pb-4 border-b border-[#F0E4C8]">
-                            <div class="font-fredoka text-3xl font-black text-emerald-700" id="price_display_spotify">5.000đ - 180.000đ</div>
-                            <div class="text-xs text-[#6E6659] font-medium mt-1">Từ 1 ngày đến Vĩnh viễn • Đổi thiết bị thoải mái</div>
-                        </div>
-                        <ul class="space-y-2 text-xs text-[#1E1B18]">
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">Nghe nhạc chất lượng cao Lossless không giới hạn</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">Chặn 100% âm thanh & banner quảng cáo phiền toái</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">Chuyển bài không giới hạn, phát theo thứ tự tùy thích</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">Tích hợp công cụ Reset IP thiết bị miễn phí 24/7</span>
-                            </li>
-                        </ul>
                     </div>
 
                     <!-- CARD 3: COMBO ALL-IN-ONE (DUO VIP) -->
                     <div onclick="selectProduct('combo')" id="card_combo" 
-                         class="relative rounded-[32px] p-6 sm:p-7 bg-white/90 border-2 border-[#E8D8B0] hover:border-amber-500 cursor-pointer shadow-lg locket-card-interactive">
-                        <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-[#FFB800] to-[#E11D48] text-white text-[11px] font-fredoka font-black uppercase px-4 py-1 rounded-full shadow-md">
-                            🔥 Tiết Kiệm Đến 81K
+                         class="w-[85vw] max-w-[340px] shrink-0 snap-center sm:w-auto sm:max-w-none flex flex-col justify-between relative rounded-[32px] p-6 sm:p-7 bg-white/90 border-2 border-[#E8D8B0] hover:border-amber-500 cursor-pointer shadow-lg locket-card-interactive">
+                        <div>
+                            <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-[#FFB800] to-[#E11D48] text-white text-[11px] font-fredoka font-black uppercase px-4 py-1 rounded-full shadow-md">
+                                🔥 Tiết Kiệm Đến 81K
+                            </div>
+                            <div class="flex items-center gap-3.5 mb-4">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFB800] via-[#F59E0B] to-[#10B981] flex items-center justify-center text-2xl shadow-md border-2 border-amber-300 shrink-0">👑</div>
+                                <div>
+                                    <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]">Combo Duo VIP</h3>
+                                    <p class="text-xs text-[#D97706] font-bold">Locket Gold + Spotify Premium</p>
+                                </div>
+                            </div>
+                            <div class="my-4 pb-4 border-b border-[#F0E4C8]">
+                                <div class="font-fredoka text-3xl font-black text-[#D97706]" id="price_display_combo">65.000đ - 259.000đ</div>
+                                <div class="text-xs text-[#6E6659] font-medium mt-1">Từ 6 tháng đến Vĩnh viễn • Gói tiết kiệm nhất</div>
+                            </div>
+                            <ul class="space-y-2 text-xs text-[#1E1B18]">
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-[#FFB800] text-[#1E1B18] flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">Trọn bộ 10 tính năng <strong>Locket Gold VIP</strong> (gồm cả Filter)</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">Trọn bộ <strong>Spotify Lossless không quảng cáo</strong></span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">1 Cấu hình kích hoạt dùng song song cả 2</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-purple-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">Bảo hành 1-1 trọn đời cho cả 2 dịch vụ</span>
+                                </li>
+                            </ul>
                         </div>
-                        <div class="flex items-center gap-3.5 mb-4">
-                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFB800] via-[#F59E0B] to-[#10B981] flex items-center justify-center text-2xl shadow-md border-2 border-amber-300 shrink-0">👑</div>
-                            <div>
-                                <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]">Combo Duo VIP</h3>
-                                <p class="text-xs text-[#D97706] font-bold">Locket Gold + Spotify Premium</p>
+                        <div class="mt-5 pt-3 border-t border-[#F0E4C8]">
+                            <div id="btnCardSelect_combo" class="w-full py-2.5 px-3 rounded-2xl font-fredoka font-bold text-xs text-center transition-all bg-[#FFF5DC] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-500 hover:text-white">
+                                👉 Bấm chọn gói này
                             </div>
                         </div>
-                        <div class="my-4 pb-4 border-b border-[#F0E4C8]">
-                            <div class="font-fredoka text-3xl font-black text-[#D97706]" id="price_display_combo">65.000đ - 259.000đ</div>
-                            <div class="text-xs text-[#6E6659] font-medium mt-1">Từ 6 tháng đến Vĩnh viễn • Gói tiết kiệm nhất</div>
-                        </div>
-                        <ul class="space-y-2 text-xs text-[#1E1B18]">
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-[#FFB800] text-[#1E1B18] flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">Trọn bộ 10 tính năng <strong>Locket Gold VIP</strong> (gồm cả Filter)</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">Trọn bộ <strong>Spotify Lossless không quảng cáo</strong></span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">1 Cấu hình kích hoạt dùng song song cả 2</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-purple-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">Bảo hành 1-1 trọn đời cho cả 2 dịch vụ</span>
-                            </li>
-                        </ul>
                     </div>
 
                     <!-- CARD 4: VIP ALL-IN-ONE (LOCKET GOLD & AI FILTERS) -->
                     <div onclick="selectProduct('locket_ai')" id="card_locket_ai" 
-                         class="relative rounded-[32px] p-6 sm:p-7 bg-white/90 border-2 border-[#E8D8B0] hover:border-purple-500 cursor-pointer shadow-lg locket-card-interactive">
-                        <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-purple-600 via-pink-600 to-[#FFB800] text-white text-[11px] font-fredoka font-black uppercase px-4 py-1 rounded-full shadow-md">
-                            ✨ VIP ALL-IN-ONE
+                         class="w-[85vw] max-w-[340px] shrink-0 snap-center sm:w-auto sm:max-w-none flex flex-col justify-between relative rounded-[32px] p-6 sm:p-7 bg-white/90 border-2 border-[#E8D8B0] hover:border-purple-500 cursor-pointer shadow-lg locket-card-interactive">
+                        <div>
+                            <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-purple-600 via-pink-600 to-[#FFB800] text-white text-[11px] font-fredoka font-black uppercase px-4 py-1 rounded-full shadow-md">
+                                ✨ VIP ALL-IN-ONE
+                            </div>
+                            <div class="flex items-center gap-3.5 mb-4">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-500 to-[#FFB800] flex items-center justify-center text-2xl shadow-md border-2 border-purple-300 shrink-0">✨</div>
+                                <div>
+                                    <h3 class="font-fredoka text-xl sm:text-2xl font-black text-[#1E1B18]">VIP ALL-IN-ONE</h3>
+                                    <p class="text-xs text-purple-700 font-bold">Locket Gold + AI Filters + Multi VIP</p>
+                                </div>
+                            </div>
+                            <div class="my-4 pb-4 border-b border-[#F0E4C8]">
+                                <div class="font-fredoka text-3xl font-black text-purple-700" id="price_display_locket_ai">189.000đ</div>
+                                <div class="text-xs text-[#6E6659] font-medium mt-1">Gói Vĩnh Viễn • Trọn bộ 6 dịch vụ cao cấp</div>
+                            </div>
+                            <ul class="space-y-2 text-xs text-[#1E1B18]">
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-[#FFB800] text-[#1E1B18] flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">👑 <strong>Locket Gold VIP:</strong> Viền vàng, 60s, 38 khung, 4K</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">🎭 <strong>AI Filters Mới:</strong> Mở full 8 danh mục bộ lọc</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-purple-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">✨ <strong>Nút [Tạo diện mạo]:</strong> Nhập prompt sáng tạo AI</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">🎵 <strong>Spotify Premium:</strong> Chặn Ads, Next vô hạn, 320kbps</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-amber-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">🟠 <strong>SoundCloud Go+:</strong> Mở khóa Go+ Plus, Tải nghe Offline</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <span class="w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
+                                    <span class="font-semibold text-[#1E1B18]">🎬 <strong>YouTube Premium:</strong> Chặn 100% Ads video, Phát nền & PiP</span>
+                                </li>
+                            </ul>
                         </div>
-                        <div class="flex items-center gap-3.5 mb-4">
-                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-500 to-[#FFB800] flex items-center justify-center text-2xl shadow-md border-2 border-purple-300 shrink-0">✨</div>
-                            <div>
-                                <h3 class="font-fredoka text-xl sm:text-2xl font-black text-[#1E1B18]">VIP ALL-IN-ONE</h3>
-                                <p class="text-xs text-purple-700 font-bold">Locket Gold + AI Filters + Multi VIP</p>
+                        <div class="mt-5 pt-3 border-t border-[#F0E4C8]">
+                            <div id="btnCardSelect_locket_ai" class="w-full py-2.5 px-3 rounded-2xl font-fredoka font-bold text-xs text-center transition-all bg-[#FFF5DC] text-[#6E6659] border border-[#E8D8B0] hover:bg-purple-600 hover:text-white">
+                                👉 Bấm chọn gói này
                             </div>
                         </div>
-                        <div class="my-4 pb-4 border-b border-[#F0E4C8]">
-                            <div class="font-fredoka text-3xl font-black text-purple-700" id="price_display_locket_ai">189.000đ</div>
-                            <div class="text-xs text-[#6E6659] font-medium mt-1">Gói Vĩnh Viễn • Trọn bộ 6 dịch vụ cao cấp</div>
-                        </div>
-                        <ul class="space-y-2 text-xs text-[#1E1B18]">
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-[#FFB800] text-[#1E1B18] flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">👑 <strong>Locket Gold VIP:</strong> Viền vàng, 60s, 38 khung, 4K</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">🎭 <strong>AI Filters Mới:</strong> Mở full 8 danh mục bộ lọc</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-purple-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">✨ <strong>Nút [Tạo diện mạo]:</strong> Nhập prompt sáng tạo AI</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">🎵 <strong>Spotify Premium:</strong> Chặn Ads, Next vô hạn, 320kbps</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-amber-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">🟠 <strong>SoundCloud Go+:</strong> Mở khóa Go+ Plus, Tải nghe Offline</span>
-                            </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                <span class="font-semibold text-[#1E1B18]">🎬 <strong>YouTube Premium:</strong> Chặn 100% Ads video, Phát nền & PiP</span>
-                            </li>
-                        </ul>
                     </div>
 
 
+                </div>
+
+                <!-- Chỉ báo vuốt ngang và Dots trên mobile -->
+                <div class="sm:hidden flex items-center justify-between px-2 pt-1 text-xs text-[#A09685]">
+                    <div class="flex items-center gap-1.5 font-medium">
+                        <span>👉</span>
+                        <span>Vuốt ngang để xem 4 gói</span>
+                    </div>
+                    <div class="flex items-center gap-1.5" id="carouselDots">
+                        <button type="button" onclick="scrollToProductCard('locket')" id="dot_locket" class="w-3 h-2 rounded-full bg-[#FFB800] transition-all" aria-label="Gói Locket"></button>
+                        <button type="button" onclick="scrollToProductCard('spotify')" id="dot_spotify" class="w-2 h-2 rounded-full bg-[#E8D8B0] transition-all" aria-label="Gói Spotify"></button>
+                        <button type="button" onclick="scrollToProductCard('combo')" id="dot_combo" class="w-2 h-2 rounded-full bg-[#E8D8B0] transition-all" aria-label="Gói Combo"></button>
+                        <button type="button" onclick="scrollToProductCard('locket_ai')" id="dot_locket_ai" class="w-2 h-2 rounded-full bg-[#E8D8B0] transition-all" aria-label="Gói All-in-One"></button>
+                    </div>
                 </div>
             </div>
 
@@ -708,7 +773,7 @@
                 <!-- Bảng chọn thời hạn gói -->
                 <div id="planSelectionContainer" class="mb-6">
                     <label class="block text-xs font-fredoka font-bold text-[#6E6659] mb-2.5">Chọn thời hạn gói:</label>
-                    <div id="planPills" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+                    <div id="planPills" class="flex overflow-x-auto no-scrollbar gap-2.5 pb-1 sm:grid sm:grid-cols-4 sm:gap-3"></div>
                 </div>
 
                 <!-- Nhập Username / Link tài khoản -->
@@ -1756,16 +1821,58 @@
             selectedProduct = prodKey;
             switchCompareTab(prodKey);
             
+            const baseCarousel = 'w-[85vw] max-w-[340px] shrink-0 snap-center sm:w-auto sm:max-w-none flex flex-col justify-between ';
+
             // Highlight card with Locket Cream & Gold theme
             ['locket', 'spotify', 'combo', 'locket_ai'].forEach(k => {
                 const card = document.getElementById('card_' + k);
+                const btnSelect = document.getElementById('btnCardSelect_' + k);
+                const quickTab = document.getElementById('quickTab_' + k);
+                const dot = document.getElementById('dot_' + k);
+
                 if (card) {
                     if (k === prodKey) {
-                        card.className = (k === 'locket_ai')
+                        card.className = baseCarousel + (k === 'locket_ai'
                             ? 'relative rounded-[32px] p-6 sm:p-7 bg-white border-2 border-purple-500 cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive ring-2 ring-purple-400/40'
-                            : 'relative rounded-[32px] p-6 sm:p-7 bg-white border-2 border-[#FFB800] cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive';
+                            : (k === 'spotify' 
+                                ? 'relative rounded-[32px] p-6 sm:p-7 bg-white border-2 border-emerald-500 cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive ring-2 ring-emerald-400/40'
+                                : (k === 'combo'
+                                    ? 'relative rounded-[32px] p-6 sm:p-7 bg-white border-2 border-amber-500 cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive ring-2 ring-amber-400/40'
+                                    : 'relative rounded-[32px] p-6 sm:p-7 bg-white border-2 border-[#FFB800] cursor-pointer shadow-2xl locket-gold-glow locket-card-interactive ring-2 ring-[#FFB800]/40'
+                                  )
+                              )
+                        );
                     } else {
-                        card.className = 'rounded-[32px] p-6 sm:p-7 bg-white/80 border-2 border-[#E8D8B0] hover:border-[#FFB800] cursor-pointer shadow-md locket-card-interactive';
+                        card.className = baseCarousel + 'relative rounded-[32px] p-6 sm:p-7 bg-white/80 border-2 border-[#E8D8B0] hover:border-[#FFB800] cursor-pointer shadow-md locket-card-interactive';
+                    }
+                }
+
+                // Cập nhật nút CTA dưới đáy mỗi thẻ
+                if (btnSelect) {
+                    if (k === prodKey) {
+                        btnSelect.className = 'w-full py-2.5 px-3 rounded-2xl font-fredoka font-black text-xs text-center transition-all bg-[#FFB800] text-[#1E1B18] shadow-sm';
+                        btnSelect.innerHTML = '✓ Đang chọn gói này';
+                    } else {
+                        btnSelect.className = 'w-full py-2.5 px-3 rounded-2xl font-fredoka font-bold text-xs text-center transition-all bg-[#FFF5DC] text-[#6E6659] border border-[#E8D8B0] hover:bg-[#FFB800] hover:text-[#1E1B18]';
+                        btnSelect.innerHTML = '👉 Bấm chọn gói này';
+                    }
+                }
+
+                // Cập nhật Quick Tabs trên mobile
+                if (quickTab) {
+                    if (k === prodKey) {
+                        quickTab.className = 'px-3.5 py-1.5 rounded-full text-xs font-fredoka font-black bg-[#FFB800] text-[#1E1B18] shadow-sm whitespace-nowrap border border-[#FFB800] transition-all cursor-pointer';
+                    } else {
+                        quickTab.className = 'px-3.5 py-1.5 rounded-full text-xs font-fredoka font-bold bg-white text-[#6E6659] border border-[#E8D8B0] hover:border-[#FFB800] whitespace-nowrap transition-all cursor-pointer';
+                    }
+                }
+
+                // Cập nhật Carousel Dots
+                if (dot) {
+                    if (k === prodKey) {
+                        dot.className = 'w-3 h-2 rounded-full bg-[#FFB800] transition-all';
+                    } else {
+                        dot.className = 'w-2 h-2 rounded-full bg-[#E8D8B0] transition-all';
                     }
                 }
             });
@@ -1830,9 +1937,9 @@
                     const pl = pv.plans[pk];
                     const btn = document.createElement('button');
                     btn.type = 'button';
-                    btn.className = `p-3.5 rounded-2xl border-2 text-center cursor-pointer locket-pill-interactive ${
+                    btn.className = `min-w-[130px] flex-1 sm:min-w-0 p-3.5 rounded-2xl border-2 text-center cursor-pointer shrink-0 transition-all locket-pill-interactive ${
                         pk === selectedPlan 
-                        ? 'border-[#FFB800] bg-[#FFF8E5] text-[#1E1B18] font-fredoka font-black shadow-md' 
+                        ? 'border-[#FFB800] bg-[#FFF8E5] text-[#1E1B18] font-fredoka font-black shadow-md ring-2 ring-[#FFB800]/40' 
                         : 'border-[#E8D8B0] bg-white text-[#6E6659] hover:border-[#FFB800] hover:text-[#1E1B18]'
                     }`;
                     btn.innerHTML = `
@@ -1856,6 +1963,51 @@
             document.getElementById('accountProfileCard')?.classList.add('hidden');
             document.getElementById('accountErrorMsg')?.classList.add('hidden');
             updatePayAmount();
+        }
+
+        // Điều khiển cuộn mượt đến thẻ sản phẩm tương ứng trên mobile
+        function scrollToProductCard(prodKey) {
+            selectProduct(prodKey);
+            const card = document.getElementById('card_' + prodKey);
+            const container = document.getElementById('productCardsContainer');
+            if (card && container && window.innerWidth < 640) {
+                const cardLeft = card.offsetLeft;
+                const containerWidth = container.offsetWidth;
+                const cardWidth = card.offsetWidth;
+                const targetScroll = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+                container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+            }
+        }
+
+        // Tự động nhận diện thẻ đang nằm chính giữa màn hình khi người dùng vuốt trên mobile
+        let carouselScrollTimeout = null;
+        function handleProductCarouselScroll() {
+            if (window.innerWidth >= 640) return;
+            clearTimeout(carouselScrollTimeout);
+            carouselScrollTimeout = setTimeout(() => {
+                const container = document.getElementById('productCardsContainer');
+                if (!container) return;
+                const containerCenter = container.scrollLeft + (container.offsetWidth / 2);
+                const keys = ['locket', 'spotify', 'combo', 'locket_ai'];
+                let closestKey = selectedProduct;
+                let minDistance = Infinity;
+
+                keys.forEach(k => {
+                    const card = document.getElementById('card_' + k);
+                    if (card) {
+                        const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
+                        const distance = Math.abs(containerCenter - cardCenter);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestKey = k;
+                        }
+                    }
+                });
+
+                if (closestKey && closestKey !== selectedProduct) {
+                    selectProduct(closestKey);
+                }
+            }, 80);
         }
 
         function updatePayAmount() {
