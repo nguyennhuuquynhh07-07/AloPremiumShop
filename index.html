@@ -759,8 +759,8 @@
                     </span>
                 </div>
 
-                <!-- Gợi ý dùng thử 5.000đ cho khách mới từ TikTok -->
-                <div class="mb-5 p-3 rounded-2xl bg-gradient-to-r from-[#FFF8E5] via-[#FFF3D1] to-[#FFF8E5] border border-[#FFB800]/60 flex flex-wrap items-center justify-between gap-2 shadow-xs">
+                <!-- Gợi ý dùng thử 5.000đ cho khách mới từ TikTok (Ẩn khi chọn Combo hoặc All-in-One) -->
+                <div id="tiktokTrialBanner" class="mb-5 p-3 rounded-2xl bg-gradient-to-r from-[#FFF8E5] via-[#FFF3D1] to-[#FFF8E5] border border-[#FFB800]/60 flex flex-wrap items-center justify-between gap-2 shadow-xs">
                     <div class="flex items-center gap-2 text-xs text-[#1E1B18] font-medium">
                         <span class="text-base">🎁</span>
                         <span>Khách mới từ <b>TikTok</b> muốn test thử độ uy tín trước?</span>
@@ -1900,24 +1900,29 @@
             if (badge) badge.textContent = `Gói đang chọn: ${prodNames[prodKey] || prodKey}`;
 
             const comboSpContainer = document.getElementById('comboSpotifyInputContainer');
+            const tiktokBanner = document.getElementById('tiktokTrialBanner');
 
             if (prodKey === 'locket_ai') {
                 if (comboSpContainer) comboSpContainer.classList.add('hidden');
+                if (tiktokBanner) tiktokBanner.classList.add('hidden');
                 if (btnPasteAcc) btnPasteAcc.classList.add('hidden');
                 if (inputLabel) inputLabel.textContent = 'Nhập Username Locket của bạn (Chỉ điền User, không dán link):';
                 if (inputEl) inputEl.placeholder = 'VD: conlaigii (Chỉ nhập tên người dùng Locket)';
             } else if (prodKey === 'spotify') {
                 if (comboSpContainer) comboSpContainer.classList.add('hidden');
+                if (tiktokBanner) tiktokBanner.classList.remove('hidden');
                 if (btnPasteAcc) btnPasteAcc.classList.remove('hidden');
                 if (inputLabel) inputLabel.textContent = 'Dán Link Profile Spotify của bạn (Chỉ nhận Link Spotify):';
                 if (inputEl) inputEl.placeholder = 'VD: https://open.spotify.com/user/31xxxxxxxxxx...';
             } else if (prodKey === 'combo') {
                 if (comboSpContainer) comboSpContainer.classList.remove('hidden');
+                if (tiktokBanner) tiktokBanner.classList.add('hidden');
                 if (btnPasteAcc) btnPasteAcc.classList.add('hidden');
                 if (inputLabel) inputLabel.textContent = '1️⃣ Nhập Username Locket của bạn (Chỉ điền User, không dán link):';
                 if (inputEl) inputEl.placeholder = 'VD: conlaigii (Chỉ nhập tên người dùng Locket)';
             } else {
                 if (comboSpContainer) comboSpContainer.classList.add('hidden');
+                if (tiktokBanner) tiktokBanner.classList.remove('hidden');
                 if (btnPasteAcc) btnPasteAcc.classList.add('hidden');
                 if (inputLabel) inputLabel.textContent = 'Nhập Username Locket của bạn (Chỉ điền User, không dán link):';
                 if (inputEl) inputEl.placeholder = 'VD: conlaigii (Chỉ nhập tên người dùng Locket)';
