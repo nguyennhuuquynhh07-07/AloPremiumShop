@@ -109,7 +109,7 @@ def build_product_menu_text() -> str:
         import database as db
         b = db.get_banner_config()
         if b and b.get("enabled", True) and b.get("text"):
-            badge = b.get("badge") or "🔥 HOT ƯU ĐÃI"
+            badge = b.get("tag") or b.get("badge") or "✨ UY TÍN"
             banner_line = f"🎉 <b>[{badge}]</b> {b.get('text')}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
     except Exception:
         pass

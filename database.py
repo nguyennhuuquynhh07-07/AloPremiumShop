@@ -441,8 +441,8 @@ def reset_default_prices() -> bool:
 # ── BANNER / THÔNG BÁO ƯU ĐÃI WEB ───────────────────────────────────────────
 DEFAULT_BANNER = {
     "enabled": True,
-    "tag": "🔥 HOT ƯU ĐÃI",
-    "text": "Ra mắt VIP ALL-IN-ONE: Mở khóa trọn bộ Locket Gold, AI Filters, Spotify, YouTube Premium & Tặng kèm Studio Cá Nhân!"
+    "tag": "✨ UY TÍN",
+    "text": "Một chữ tín - Vạn niềm tin"
 }
 
 def get_banner_config() -> dict:
