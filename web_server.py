@@ -286,10 +286,18 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # 3. API Danh sách gói cước & bảng giá (kèm cấu hình Banner ưu đãi)
         if path == "/api/packages":
+            try:
+                db.apply_custom_prices()
+            except Exception:
+                pass
             self._send_json(200, {
                 "ok": True,
                 "products": config.PRODUCTS,
-                "banner": db.get_banner_config()
+                "banner": db.get_banner_config(),
+                "zalo_group_url": getattr(config, "ZALO_GROUP_URL", "").strip(),
+                "zalo_group_qr": "/zalo_group_qr.png",
+                "support_phone": getattr(config, "SUPPORT_PHONE", "0345222802"),
+                "support_telegram": getattr(config, "SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28"),
             })
             return
 

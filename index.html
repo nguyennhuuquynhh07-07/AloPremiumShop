@@ -348,6 +348,9 @@
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="switchMainTab('zalo_group'); window.scrollTo({top: 0, behavior: 'smooth'});" class="locket-btn-interactive flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md transition-all cursor-pointer">
+                    <span>👥 Nhóm Zalo</span>
+                </button>
                 <a href="https://t.me/nguyennhuquynh28" target="_blank" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#FFECC0] border border-[#E8D8B0] text-[#1E1B18] text-xs font-bold shadow-sm transition-all">
                     <span>✈️ Telegram</span>
                 </a>
@@ -375,6 +378,10 @@
             </button>
             <button onclick="switchMainTab('guide')" id="tabBtn_guide" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-[#6E6659] hover:text-[#1E1B18] hover:bg-white/80 whitespace-nowrap cursor-pointer">
                 📖 Hướng Dẫn Cài Đặt
+            </button>
+            <button onclick="switchMainTab('zalo_group')" id="tabBtn_zalo_group" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-[#6E6659] hover:text-[#1E1B18] hover:bg-white/80 whitespace-nowrap cursor-pointer flex items-center gap-1.5">
+                <span>👥 Nhóm Hỗ Trợ Zalo</span>
+                <span class="px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[9px] font-black uppercase tracking-wider">Mới</span>
             </button>
         </div>
     </div>
@@ -946,6 +953,35 @@
             </div>
 
             <!-- ============================================================ -->
+            <!-- BANNER THAM GIA NHÓM ZALO HỖ TRỢ & ƯU ĐÃI                    -->
+            <!-- ============================================================ -->
+            <div class="mt-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-[32px] p-6 sm:p-7 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border-2 border-blue-400/40">
+                <div class="space-y-2 text-center md:text-left z-10 flex-1">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Cộng Đồng Zalo Chính Thức
+                    </div>
+                    <h3 class="font-fredoka text-xl sm:text-2xl font-black">Nhóm Hỗ Trợ Kỹ Thuật & Nhận Ưu Đãi Zalo</h3>
+                    <p class="text-xs sm:text-sm text-blue-100 max-w-xl">
+                        Tham gia nhóm Zalo AloPremium để được giải đáp 24/7, cập nhật DNS iOS mới nhất và săn mã giảm giá & quà tặng VIP độc quyền!
+                    </p>
+                </div>
+                <div class="flex items-center gap-4 shrink-0 z-10">
+                    <div class="bg-white p-2 rounded-2xl shadow-lg border border-white/30 hidden sm:block cursor-pointer hover:scale-105 transition-all text-center" onclick="switchMainTab('zalo_group')" title="Bấm để xem mã QR phóng to">
+                        <img src="/zalo_group_qr.png" alt="Mã QR Nhóm Zalo" class="w-20 h-20 object-contain rounded-xl select-none" />
+                        <span class="text-[9px] font-bold text-blue-800 block mt-0.5">Quét bằng Zalo</span>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="switchMainTab('zalo_group'); window.scrollTo({top: 0, behavior: 'smooth'});" class="locket-btn-interactive px-5 py-2.5 rounded-2xl bg-white text-blue-700 hover:bg-blue-50 font-fredoka font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                            <span>👥</span> Mở Nhóm & Quét QR
+                        </button>
+                        <button onclick="shareZaloGroup()" class="locket-btn-interactive px-5 py-2 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold border border-white/30 transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                            <span>🔗</span> Chia Sẻ Link Nhóm
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
             <!-- CÂU HỎI THƯỜNG GẶP (FAQ ACCORDION)                            -->
             <!-- ============================================================ -->
             <div class="mt-8 bg-white rounded-[32px] p-6 sm:p-8 shadow-xl border-2 border-[#FFE29A]">
@@ -1189,6 +1225,90 @@
 
                 <div class="mt-6 p-4 rounded-2xl bg-[#FFF3D6] border border-[#FFE29A] text-[#92400E] text-xs font-bold">
                     ✨ <strong>Hoàn tất:</strong> Sau khi xong 5 bước trên, bạn chỉ cần mở Locket hoặc Spotify lên là tự động kích hoạt tính năng Premium vĩnh viễn!
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 5: NHÓM HỖ TRỢ & GIAO LƯU ZALO                           -->
+        <!-- ============================================================ -->
+        <div id="section_zalo_group" class="hidden space-y-6">
+            <div class="bg-white rounded-[32px] p-6 sm:p-8 shadow-xl border-2 border-[#FFE29A]">
+                <div class="text-center max-w-2xl mx-auto mb-8">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold mb-3">
+                        <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span> CỘNG ĐỒNG CHÍNH THỨC
+                    </div>
+                    <h2 class="font-fredoka text-2xl sm:text-3xl font-black text-[#1E1B18] mb-3">
+                        👥 Nhóm Hỗ Trợ & Giao Lưu Zalo
+                    </h2>
+                    <p class="text-xs sm:text-sm text-[#6E6659]">
+                        Tham gia cộng đồng Zalo chính thức của AloPremium.Shop để nhận hỗ trợ kỹ thuật 24/7, cập nhật chứng chỉ DNS iOS mới nhất và nhận quà tặng voucher độc quyền!
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-4xl mx-auto">
+                    <!-- Cột trái: Khung hiển thị QR Code Zalo -->
+                    <div class="lg:col-span-5 flex flex-col items-center">
+                        <div class="p-5 bg-gradient-to-b from-[#FFF5DC] to-[#FFECC0] rounded-[32px] border-2 border-[#FFD24C] shadow-xl text-center relative group w-full max-w-xs">
+                            <div class="bg-white p-3 rounded-2xl shadow-inner border border-[#E8D8B0] inline-block w-full">
+                                <img id="zaloGroupQrImg" src="/zalo_group_qr.png" alt="Mã QR Nhóm Zalo AloPremium" class="w-full aspect-square object-contain rounded-xl mx-auto select-none" />
+                            </div>
+                            <div class="mt-3.5 flex items-center justify-center gap-1.5 text-xs font-bold text-[#1E1B18]">
+                                <span class="text-blue-600 font-black">Zalo</span> • Quét mã để vào nhóm
+                            </div>
+                            <p class="text-[11px] text-[#8C7A5E] mt-1">Dùng camera iPhone hoặc quét mã trong Zalo</p>
+                        </div>
+                    </div>
+
+                    <!-- Cột phải: Thông tin quyền lợi & Các nút bấm tương tác -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3.5 p-4 rounded-2xl bg-[#FFF9ED] border border-[#F0E0B8]">
+                                <div class="w-10 h-10 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold shrink-0 shadow-sm">⚡</div>
+                                <div>
+                                    <h4 class="font-fredoka font-bold text-sm text-[#1E1B18]">Hỗ Trợ Kỹ Thuật Siêu Tốc 24/7</h4>
+                                    <p class="text-xs text-[#6E6659] mt-0.5">Admin & kỹ thuật viên túc trực giải đáp, hướng dẫn kích hoạt Locket Gold & Spotify từng bước.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3.5 p-4 rounded-2xl bg-[#FFF9ED] border border-[#F0E0B8]">
+                                <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl font-bold shrink-0 shadow-sm">🔔</div>
+                                <div>
+                                    <h4 class="font-fredoka font-bold text-sm text-[#1E1B18]">Cập Nhật Chứng Chỉ & DNS Miễn Phí</h4>
+                                    <p class="text-xs text-[#6E6659] mt-0.5">Thông báo tức thời khi có bản nâng cấp cấu hình mới, đảm bảo dịch vụ thông suốt không gián đoạn.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3.5 p-4 rounded-2xl bg-[#FFF9ED] border border-[#F0E0B8]">
+                                <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold shrink-0 shadow-sm">🎁</div>
+                                <div>
+                                    <h4 class="font-fredoka font-bold text-sm text-[#1E1B18]">Voucher Ưu Đãi & GiveAway Định Kỳ</h4>
+                                    <p class="text-xs text-[#6E6659] mt-0.5">Thành viên trong nhóm được nhận mã giảm giá lên đến 50% và tham gia tặng gói VIP miễn phí.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hành động: Tham gia, Chia sẻ, Tải ảnh QR -->
+                        <div class="pt-2 flex flex-col sm:flex-row gap-2.5">
+                            <a id="btnJoinZaloGroup" href="https://zalo.me/0345222802" target="_blank"
+                               class="flex-1 locket-btn-interactive py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-fredoka font-bold text-xs sm:text-sm text-center shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-2 transition-all">
+                                <span>🚀</span> Tham Gia Nhóm Zalo
+                            </a>
+                            <button onclick="shareZaloGroup()"
+                                    class="locket-btn-interactive py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-fredoka font-bold text-xs sm:text-sm text-center shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all">
+                                <span>🔗</span> Chia Sẻ Nhóm
+                            </button>
+                            <button onclick="downloadZaloQr()"
+                                    class="locket-btn-interactive py-3 px-4 rounded-2xl bg-white hover:bg-[#FFF5DC] border border-[#E8D8B0] text-[#1E1B18] font-fredoka font-bold text-xs sm:text-sm text-center shadow-sm flex items-center justify-center gap-2 cursor-pointer transition-all">
+                                <span>📥</span> Lưu Mã QR
+                            </button>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 text-xs text-blue-800 flex items-center justify-between">
+                            <span>💬 Cần hỗ trợ trực tiếp từ Admin riêng?</span>
+                            <a href="https://zalo.me/0345222802" target="_blank" class="font-bold underline ml-2 shrink-0 hover:text-blue-900">Chat CSKH: 0345.222.802</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1466,6 +1586,10 @@
     <!-- FLOATING SUPPORT WIDGET (ZALO & TELEGRAM) -->
     <div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2.5">
         <div id="supportOptions" class="hidden flex flex-col gap-2 items-end transition-all transform duration-300">
+            <button type="button" onclick="switchMainTab('zalo_group'); toggleSupportWidget(); window.scrollTo({top: 0, behavior: 'smooth'});"
+               class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-xl hover:scale-105 transition-all cursor-pointer">
+                <span>👥</span> Nhóm Zalo Hỗ Trợ & Ưu Đãi
+            </button>
             <a href="https://t.me/nguyennhuquynh28" target="_blank"
                class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#229ED9] hover:bg-[#1e8ec3] text-white text-xs font-bold shadow-xl hover:scale-105 transition-all">
                 <span>✈️</span> Chat Telegram CSKH
@@ -1523,12 +1647,47 @@
 
         // Switch main tabs
         function switchMainTab(tabKey) {
-            ['store', 'lookup', 'spotify_reset', 'guide'].forEach(k => {
+            ['store', 'lookup', 'spotify_reset', 'guide', 'zalo_group'].forEach(k => {
                 const sec = document.getElementById('section_' + k);
                 const btn = document.getElementById('tabBtn_' + k);
                 if (sec) sec.classList.toggle('hidden', k !== tabKey);
                 if (btn) btn.classList.toggle('active', k === tabKey);
             });
+        }
+
+        // Chia sẻ Nhóm Zalo (Hỗ trợ Web Share API hoặc Copy link)
+        async function shareZaloGroup() {
+            const groupUrl = window.zaloGroupUrl || (window.location.origin + '/#zalo_group');
+            const shareData = {
+                title: 'Nhóm Hỗ Trợ Zalo — AloPremium.Shop',
+                text: 'Tham gia nhóm Zalo hỗ trợ kích hoạt Locket Gold & Spotify Premium, nhận mã giảm giá và bảo hành 24/7:',
+                url: groupUrl
+            };
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                    return;
+                } catch (e) {
+                    // Người dùng hủy hoặc không hỗ trợ, chuyển sang copy
+                }
+            }
+            try {
+                await navigator.clipboard.writeText(groupUrl);
+                showToast('📋 Đã sao chép link nhóm Zalo thành công!');
+            } catch (err) {
+                prompt('Sao chép liên kết nhóm Zalo bên dưới:', groupUrl);
+            }
+        }
+
+        // Tải ảnh mã QR nhóm Zalo về máy
+        function downloadZaloQr() {
+            const a = document.createElement('a');
+            a.href = '/zalo_group_qr.png';
+            a.download = 'QR_Nhom_Zalo_AloPremium.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('📥 Đang tải ảnh mã QR nhóm Zalo về thiết bị!');
         }
 
         // Load config & packages on startup
@@ -1571,9 +1730,22 @@
                             }
                         }
                     });
+                    // Cập nhật cấu hình Nhóm Zalo Hỗ Trợ
+                    if (data.zalo_group_url) {
+                        window.zaloGroupUrl = data.zalo_group_url;
+                        const btnJoin = document.getElementById('btnJoinZaloGroup');
+                        if (btnJoin) btnJoin.href = data.zalo_group_url;
+                    }
+                    if (data.zalo_group_qr) {
+                        const qrImg = document.getElementById('zaloGroupQrImg');
+                        if (qrImg) qrImg.src = data.zalo_group_qr;
+                    }
                 }
             } catch (e) {
                 console.warn('Failed to load packages:', e);
+            }
+            if (window.location.hash === '#zalo_group') {
+                switchMainTab('zalo_group');
             }
             selectProduct('locket');
         }

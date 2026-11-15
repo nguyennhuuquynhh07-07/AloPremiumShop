@@ -1419,6 +1419,92 @@ async def cb_support(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
 
 
+async def zalo_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Lệnh /zalo – Nhóm Hỗ Trợ & Giao Lưu Zalo."""
+    from keyboards import zalo_group_kb
+    qr_filename = getattr(config, "ZALO_GROUP_QR", "zalo_group_qr.png")
+    qr_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), qr_filename)
+    if not os.path.exists(qr_path):
+        qr_path = os.path.join(os.getcwd(), qr_filename)
+
+    caption = (
+        "👥 <b>NHÓM HỖ TRỢ & GIAO LƯU ZALO — ALOPREMIUM</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "Tham gia cộng đồng Zalo chính thức của shop để:\n"
+        "• ⚡ Cập nhật chứng chỉ DNS & thông báo iOS mới nhất\n"
+        "• 🛡 Được hỗ trợ kích hoạt, bảo hành 1-1 trực tiếp 24/7\n"
+        "• 🎁 Nhận mã giảm giá độc quyền & GiveAway hàng tuần\n"
+        "• 💬 Giao lưu và chia sẻ mẹo sử dụng Locket Gold, Spotify Premium\n\n"
+        "📲 <b>Cách tham gia:</b>\n"
+        "1️⃣ Mở ứng dụng <b>Zalo</b> trên điện thoại\n"
+        "2️⃣ Bấm vào biểu tượng <b>Quét mã QR</b> góc trên màn hình\n"
+        "3️⃣ Quét mã QR đính kèm hoặc bấm nút <b>Tham Gia Nhóm Ngay</b> bên dưới!"
+    )
+
+    if os.path.exists(qr_path):
+        with open(qr_path, "rb") as photo:
+            await update.message.reply_photo(
+                photo=photo,
+                caption=caption,
+                parse_mode=ParseMode.HTML,
+                reply_markup=zalo_group_kb()
+            )
+    else:
+        await update.message.reply_text(
+            caption,
+            parse_mode=ParseMode.HTML,
+            reply_markup=zalo_group_kb()
+        )
+
+
+async def cb_zalo_group(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Callback hiển thị Nhóm Hỗ Trợ & Share Zalo."""
+    query = update.callback_query
+    await query.answer()
+    from keyboards import zalo_group_kb
+
+    qr_filename = getattr(config, "ZALO_GROUP_QR", "zalo_group_qr.png")
+    qr_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), qr_filename)
+    if not os.path.exists(qr_path):
+        qr_path = os.path.join(os.getcwd(), qr_filename)
+
+    caption = (
+        "👥 <b>NHÓM HỖ TRỢ & GIAO LƯU ZALO — ALOPREMIUM</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "Tham gia cộng đồng Zalo chính thức của shop để:\n"
+        "• ⚡ Cập nhật chứng chỉ DNS & thông báo iOS mới nhất\n"
+        "• 🛡 Được hỗ trợ kích hoạt, bảo hành 1-1 trực tiếp 24/7\n"
+        "• 🎁 Nhận mã giảm giá độc quyền & GiveAway hàng tuần\n"
+        "• 💬 Giao lưu và chia sẻ mẹo sử dụng Locket Gold, Spotify Premium\n\n"
+        "📲 <b>Cách tham gia:</b>\n"
+        "1️⃣ Mở ứng dụng <b>Zalo</b> trên điện thoại\n"
+        "2️⃣ Bấm vào biểu tượng <b>Quét mã QR</b> góc trên màn hình\n"
+        "3️⃣ Quét mã QR đính kèm hoặc bấm nút <b>Tham Gia Nhóm Ngay</b> bên dưới!"
+    )
+
+    if os.path.exists(qr_path):
+        with open(qr_path, "rb") as photo:
+            await query.message.reply_photo(
+                photo=photo,
+                caption=caption,
+                parse_mode=ParseMode.HTML,
+                reply_markup=zalo_group_kb()
+            )
+    else:
+        try:
+            await query.edit_message_text(
+                caption,
+                parse_mode=ParseMode.HTML,
+                reply_markup=zalo_group_kb()
+            )
+        except Exception:
+            await query.message.reply_text(
+                caption,
+                parse_mode=ParseMode.HTML,
+                reply_markup=zalo_group_kb()
+            )
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  ĐIỀU HƯỚNG QUAY LẠI & VỀ TRANG CHỦ
 # ═══════════════════════════════════════════════════════════════════════════════

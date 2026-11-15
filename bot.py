@@ -33,7 +33,7 @@ from telegram.ext import (
 import config
 from config import BOT_TOKEN, ADMIN_IDS
 from handlers.user_handlers import (
-    start, menu_cmd, myorders_cmd, support_cmd,
+    start, menu_cmd, myorders_cmd, support_cmd, zalo_cmd, cb_zalo_group,
     help_cmd, account_cmd, apidocs_cmd, apierrors_cmd, setlang_cmd,
     cb_product, cb_plan,
     cb_paid, cb_buy, cb_cancel,
@@ -350,6 +350,7 @@ def main():
             CallbackQueryHandler(cb_back_products, pattern=r"^back_products$"),
             CallbackQueryHandler(cb_product, pattern=r"^product:"),
             CallbackQueryHandler(cb_support, pattern=r"^support$"),
+            CallbackQueryHandler(cb_zalo_group, pattern=r"^zalo_group$"),
             CallbackQueryHandler(cb_show_guide, pattern=r"^show_guide$"),
             CallbackQueryHandler(cb_my_orders, pattern=r"^my_orders$"),
             CallbackQueryHandler(cb_my_account, pattern=r"^my_account$"),
@@ -363,6 +364,7 @@ def main():
     # ── Lệnh người dùng ──────────────────────────────────────────────────────
     app.add_handler(CommandHandler("start",     start))
     app.add_handler(CommandHandler("web",       web_cmd))
+    app.add_handler(CommandHandler("zalo",      zalo_cmd))
     app.add_handler(CommandHandler("account",   account_cmd))
     app.add_handler(CommandHandler("apidocs",   apidocs_cmd))
     app.add_handler(CommandHandler("apierrors", apierrors_cmd))
@@ -424,6 +426,7 @@ def main():
     app.add_handler(CallbackQueryHandler(cb_get_mobileconfig, pattern=r"^get_mobileconfig$"))
     app.add_handler(CallbackQueryHandler(cb_show_qr,          pattern=r"^show_qr(:.*)?$"))
     app.add_handler(CallbackQueryHandler(cb_support,       pattern=r"^support$"))
+    app.add_handler(CallbackQueryHandler(cb_zalo_group,    pattern=r"^zalo_group$"))
     app.add_handler(CallbackQueryHandler(cb_back_products, pattern=r"^back_products$"))
     app.add_handler(CallbackQueryHandler(cb_back_main,     pattern=r"^back_main$"))
 

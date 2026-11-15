@@ -31,6 +31,9 @@ def main_menu_kb() -> InlineKeyboardMarkup:
         InlineKeyboardButton("💬 Hỗ trợ CSKH",          callback_data="support"),
     ])
     rows.append([
+        InlineKeyboardButton("👥 Nhóm Hỗ Trợ & Share Zalo", callback_data="zalo_group"),
+    ])
+    rows.append([
         InlineKeyboardButton("🌐 Đổi ngôn ngữ",        callback_data="cmd_setlang"),
     ])
     return InlineKeyboardMarkup(rows)
@@ -222,12 +225,34 @@ def support_kb() -> InlineKeyboardMarkup:
     rows = [
         [
             InlineKeyboardButton("✈️ Chat Telegram (@nguyennhuquynh28)", url=tele_url),
-            InlineKeyboardButton("💬 Chat Zalo", url=f"https://zalo.me/{phone}"),
+            InlineKeyboardButton("💬 Chat Zalo CSKH", url=f"https://zalo.me/{phone}"),
         ],
+        [InlineKeyboardButton("👥 Nhóm Hỗ Trợ & Giao Lưu Zalo", callback_data="zalo_group")],
         [InlineKeyboardButton("🌐 Mở Website AloPremium.Shop", url=web_url)],
         [InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide")],
         [InlineKeyboardButton("🏠 Về trang chủ", callback_data="back_main")],
     ]
+    return InlineKeyboardMarkup(rows)
+
+
+def zalo_group_kb() -> InlineKeyboardMarkup:
+    """Bàn phím dành riêng cho Nhóm Zalo Hỗ Trợ & Chia Sẻ."""
+    phone = getattr(config, "SUPPORT_PHONE", "0345222802")
+    zalo_url = getattr(config, "ZALO_GROUP_URL", "").strip() or f"https://zalo.me/{phone}"
+    web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop")
+    rows = []
+    if getattr(config, "ZALO_GROUP_URL", "").strip():
+        rows.append([
+            InlineKeyboardButton("🚀 Tham Gia Nhóm Zalo Ngay", url=config.ZALO_GROUP_URL)
+        ])
+    rows.append([
+        InlineKeyboardButton("📋 Copy Link Nhóm Zalo", api_kwargs={"copy_text": {"text": zalo_url}}),
+        InlineKeyboardButton("💬 Chat CSKH Zalo", url=f"https://zalo.me/{phone}")
+    ])
+    rows.append([
+        InlineKeyboardButton("🌐 Mở Trên Website", url=f"{web_url}#zalo_group"),
+        InlineKeyboardButton("🏠 Về Menu Chính", callback_data="back_main")
+    ])
     return InlineKeyboardMarkup(rows)
 
 

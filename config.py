@@ -41,6 +41,8 @@ SUPPORT_PHONE = os.getenv("SUPPORT_PHONE", "")
 SUPPORT_TELEGRAM = os.getenv("SUPPORT_TELEGRAM", "")
 SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME", "")
 WEBSITE_URL = os.getenv("WEBSITE_URL", "https://alopremium.shop").strip()
+ZALO_GROUP_URL = os.getenv("ZALO_GROUP_URL", "").strip()
+ZALO_GROUP_QR = os.getenv("ZALO_GROUP_QR", "zalo_group_qr.png").strip()
 ADMIN_PIN = _required_env("ADMIN_PIN")
 
 # ============================================================
