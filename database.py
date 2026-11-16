@@ -442,7 +442,7 @@ def reset_default_prices() -> bool:
 DEFAULT_BANNER = {
     "enabled": True,
     "tag": "✨ UY TÍN",
-    "text": "Một chữ tín - Vạn niềm tin"
+    "text": "Một Chữ Tín - Vạn Niềm Tin"
 }
 
 def get_banner_config() -> dict:
