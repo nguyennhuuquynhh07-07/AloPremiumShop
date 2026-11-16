@@ -1478,8 +1478,8 @@
                 <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 text-3xl flex items-center justify-center mx-auto mb-3 shadow-inner">
                     ✓
                 </div>
-                <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]">Thanh Toán Thành Công!</h3>
-                <p class="text-xs text-[#6E6659] mt-1 mb-5">Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.</p>
+                <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]" id="successModalTitle">Thanh Toán Thành Công!</h3>
+                <p class="text-xs text-[#6E6659] mt-1 mb-5" id="successModalSubtitle">Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.</p>
 
                 <!-- NÚT BẤM TẠO / XEM MÃ QR CODE CỦA LINK DNS -->
                 <button type="button" onclick="toggleQrCodeDisplay()" id="btnToggleQrCode"
@@ -1564,57 +1564,78 @@
                     </div>
                 </div>
 
-                <!-- NÚT CÀI ĐẶT DÀNH CHO GÓI LOCKET GOLD & AI FILTERS VIP (ALL-IN-ONE) -->
-                <div id="locketAiDownloadActions" class="hidden space-y-3">
-                    <div class="p-4 rounded-2xl bg-gradient-to-r from-purple-100 via-pink-100 to-amber-100 border-2 border-purple-400 text-left space-y-3 shadow-md">
+                <!-- KHUNG LIÊN HỆ ADMIN HỖ TRỢ KÍCH HOẠT DÀNH CHO GÓI VIP ALL-IN-ONE (KHÔNG DÙNG DNS) -->
+                <div id="locketAiDownloadActions" class="hidden space-y-3.5">
+                    <div class="p-5 rounded-3xl bg-gradient-to-br from-[#FFF9ED] via-[#FFF3D6] to-[#FFEAA7] border-2 border-purple-500 text-left space-y-3.5 shadow-xl">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-fredoka font-black text-purple-950 flex items-center gap-1.5">
-                                <span>✨</span> Cấu Hình VIP All-in-One (Vĩnh Viễn):
+                            <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-fredoka font-black shadow-sm">
+                                ✨ GÓI VIP ALL-IN-ONE (VĨNH VIỄN)
                             </span>
-                            <span class="px-2.5 py-0.5 rounded-full bg-purple-700 text-white text-[10px] font-bold">Cloud VIP</span>
-                        </div>
-                        <p class="text-[11px] text-purple-900 font-medium">
-                            Đã mở khóa trọn bộ: <b>Locket Gold viền vàng, AI Filters 8 danh mục, Tạo diện mạo AI, Spotify Lossless, SoundCloud Go+, YouTube VIP</b>.
-                        </p>
-                        <a id="aiVipSafariBtn" href="https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1" target="_blank"
-                           class="w-full block py-3.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-fredoka font-bold text-center text-sm shadow-lg transition-all cursor-pointer">
-                            📲 CÀI ĐẶT CẤU HÌNH VIP (MỞ BẰNG SAFARI)
-                        </a>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" onclick="copyAiVipUrl()" class="py-2 px-3 rounded-lg bg-white border border-purple-300 text-[11px] font-semibold text-purple-900 hover:bg-purple-50 text-center cursor-pointer">
-                                📋 Copy Link Cấu Hình VIP
-                            </button>
-                            <span class="py-2 px-3 rounded-lg bg-white/70 border border-purple-200 text-[11px] font-semibold text-purple-900 text-center" id="aiPaidAmountDisplay">
-                                💵 Đã TT: 189.000đ
+                            <span class="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[11px] font-bold shadow-xs">
+                                ✓ Đã Thanh Toán
                             </span>
                         </div>
-                    </div>
 
-                    <!-- KHUNG STUDIO CHỈNH CHÚ THÍCH & ĐỔI KHUNG VIỀN (TỰ ĐỘNG GỬI KHI MUA VIP ALL-IN-ONE) -->
-                    <div id="aiStudioSuccessCard" class="p-4 rounded-2xl bg-[#FFF9ED] border-2 border-[#FFB800] text-left space-y-2.5">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-fredoka font-black text-[#1E1B18] flex items-center gap-1.5">
-                                <span>🎨</span> Studio Chỉnh Chú Thích & Đổi Khung Viền:
-                            </span>
-                            <span id="studioStatusBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Đã kích hoạt</span>
-                        </div>
-                        <div id="studioHasPaidContent" class="space-y-2">
-                            <p class="text-[11px] text-emerald-800 font-bold">
-                                ✅ Đã mở khóa bản quyền Studio thành công!
+                        <div class="space-y-1">
+                            <h4 class="font-fredoka text-lg sm:text-xl font-black text-[#1E1B18] flex items-center gap-1.5">
+                                <span>👑</span> Liên Hệ Admin Hỗ Trợ Kích Hoạt
+                            </h4>
+                            <p class="text-xs text-[#6E6659] leading-relaxed">
+                                Bạn đã thanh toán thành công gói <b>VIP ALL-IN-ONE</b> cho tài khoản <b id="aiDisplayUser" class="text-purple-700">@...</b>! Gói này được <b>Admin trực tiếp hỗ trợ cấu hình & kích hoạt độc quyền</b> để mở khóa toàn bộ đặc quyền cao cấp (Locket Gold, AI Filters, Spotify, SoundCloud, YouTube).
                             </p>
-                            <a id="btnOpenStudioLink" href="#" target="_blank"
-                               class="w-full block py-3 px-4 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-bold text-xs shadow-md text-center transition-all cursor-pointer">
-                                🎨 MỞ STUDIO CHÚ THÍCH & ĐỔI KHUNG VIỀN
+                        </div>
+
+                        <!-- Thông tin tóm tắt đơn hàng -->
+                        <div class="p-3.5 rounded-2xl bg-white/90 border border-purple-200 space-y-2 shadow-xs">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-[#6E6659] font-medium">Mã đơn hàng:</span>
+                                <span id="aiOrderCodeText" class="font-mono font-black text-sm text-purple-900">ORDER_XXXX</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-[#6E6659] font-medium">Tài khoản Locket:</span>
+                                <span id="aiAccountTargetText" class="font-bold text-[#D97706]">@conlaigii</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-[#6E6659] font-medium">Số tiền đã chuyển:</span>
+                                <span id="aiAmountPaidText" class="font-fredoka font-black text-emerald-700">189.000đ</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-[#6E6659] font-medium">Trạng thái:</span>
+                                <span class="font-bold text-emerald-600">✅ Đã nhận đủ tiền (Chờ kích hoạt)</span>
+                            </div>
+                        </div>
+
+                        <!-- Các nút liên hệ Admin hỗ trợ mua & kích hoạt -->
+                        <div class="space-y-2 pt-1">
+                            <!-- Nút 1: Zalo Admin (Nổi bật nhất) -->
+                            <a id="btnContactZaloAi" href="https://zalo.me/0345222802" target="_blank"
+                               class="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-fredoka font-black text-sm shadow-lg hover:scale-[1.01] transition-all cursor-pointer">
+                                <span>💬</span> NHẮN ZALO ADMIN HỖ TRỢ KÍCH HOẠT (0345.222.802)
                             </a>
-                            <button type="button" onclick="copyStudioLink()" class="w-full py-2 px-3 rounded-lg bg-white border border-[#E8D8B0] text-[11px] font-semibold text-[#6E6659] hover:text-[#1E1B18] text-center cursor-pointer">
-                                📋 Copy Link Studio Cá Nhân
+
+                            <!-- Nút 2: Telegram Admin -->
+                            <a id="btnContactTelegramAi" href="https://t.me/nguyennhuquynh28" target="_blank"
+                               class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#0088cc] hover:bg-[#0077b5] text-white font-fredoka font-bold text-xs shadow-md transition-all cursor-pointer">
+                                <span>✈️</span> NHẮN TELEGRAM ADMIN (@nguyennhuquynh28)
+                            </a>
+
+                            <!-- Nút 3: Nhóm Zalo Hỗ Trợ -->
+                            <button type="button" onclick="closePaymentModal(); switchMainTab('zalo_group'); window.scrollTo({top: 0, behavior: 'smooth'});"
+                                    class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 text-blue-700 border border-blue-300 font-bold text-xs transition-all cursor-pointer">
+                                <span>👥</span> Vào Nhóm Zalo Hỗ Trợ Khách Hàng
+                            </button>
+
+                            <!-- Nút 4: Sao chép tin nhắn mẫu gửi Admin -->
+                            <button type="button" onclick="copyAiAdminMsg()" id="btnCopyAiAdminMsg"
+                                    class="w-full py-2.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-[#92400E] border border-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all">
+                                <span>📋</span> Sao Chép Tin Nhắn Mẫu Gửi Admin
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tóm tắt 4 bước cài đặt chuẩn iOS giống Bot -->
-                <div class="mt-6 text-left text-xs space-y-2 bg-[#FFF3D6] p-4 rounded-2xl border border-[#FFE29A]">
+                <!-- Tóm tắt 4 bước cài đặt chuẩn iOS giống Bot (Chỉ hiện cho các gói dùng DNS) -->
+                <div id="generalSetupGuideBox" class="mt-6 text-left text-xs space-y-2 bg-[#FFF3D6] p-4 rounded-2xl border border-[#FFE29A]">
                     <div class="flex items-center justify-between">
                         <p class="font-bold text-[#D97706] flex items-center gap-1.5">
                             <span>⚡</span> 4 Bước Kích Hoạt Lên Gold VIP (30 giây):
@@ -2397,6 +2418,10 @@
             const guideTitle = document.getElementById('setupGuideTitle');
             const guideList = document.getElementById('setupGuideList');
             const safariBtn = document.getElementById('modalSafariBtn');
+            const btnToggleQr = document.getElementById('btnToggleQrCode');
+            const qrWrapper = document.getElementById('qrCodeDisplayWrapper');
+            const guideBox = document.getElementById('generalSetupGuideBox');
+            const modalSubtitle = document.getElementById('successModalSubtitle');
 
             // Ẩn tất cả action box trước
             if (singleBox) singleBox.classList.add('hidden');
@@ -2405,101 +2430,96 @@
 
             let safariDnsUrl = 'https://doh.2707226.xyz/alopremiumshop';
 
-            if (isLocketAi || isStudioOnly) {
-                // GÓI LOCKET GOLD & AI FILTERS VIP (HOẶC NÂNG CẤP STUDIO RIÊNG)
+            if (isLocketAi) {
+                // GÓI VIP ALL-IN-ONE: XÓA DNS HOÀN TOÀN, HIỆN LIÊN HỆ ADMIN HỖ TRỢ KÍCH HOẠT
                 if (aiBox) aiBox.classList.remove('hidden');
+                if (btnToggleQr) btnToggleQr.classList.add('hidden');
+                if (qrWrapper) qrWrapper.classList.add('hidden');
+                if (guideBox) guideBox.classList.add('hidden');
+                if (modalSubtitle) modalSubtitle.textContent = 'Gói VIP ALL-IN-ONE đã thanh toán thành công! Vui lòng liên hệ Admin để được hỗ trợ kích hoạt ngay.';
 
-                const vipUrl = "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1";
-                activeDownloadUrl = vipUrl;
-                safariDnsUrl = vipUrl;
+                const uTarget = (verifiedAccountData?.display_name || verifiedAccountData?.uid || (currentOrderData && (currentOrderData.display_name || currentOrderData.uid)) || '').replace(/^@/, '');
+                const rawOrderCode = currentOrderData?.order_id || orderId || 'VIP';
+                const formattedCode = String(rawOrderCode).startsWith('ORDER_') ? rawOrderCode : `ORDER_${rawOrderCode}`;
+                const priceVal = (currentOrderData?.price || 189000).toLocaleString() + 'đ';
 
-                const uTarget = (verifiedAccountData?.display_name || verifiedAccountData?.uid || '').replace(/^@/, '');
-                const studioUrl = "https://locket.jayteam.click/caption.html?u=" + encodeURIComponent(uTarget || 'vip');
+                const elCode = document.getElementById('aiOrderCodeText');
+                const elUser = document.getElementById('aiAccountTargetText');
+                const elDisplayUser = document.getElementById('aiDisplayUser');
+                const elPrice = document.getElementById('aiAmountPaidText');
 
-                const paidEl = document.getElementById('aiPaidAmountDisplay');
-                if (paidEl && currentOrderData) {
-                    paidEl.textContent = `💵 Đã TT: ${currentOrderData.price.toLocaleString()}đ`;
-                }
+                if (elCode) elCode.textContent = formattedCode;
+                if (elUser) elUser.textContent = '@' + (uTarget || 'quy_khach');
+                if (elDisplayUser) elDisplayUser.textContent = '@' + (uTarget || 'quy_khach');
+                if (elPrice) elPrice.textContent = priceVal;
 
-                const studioPaidContent = document.getElementById('studioHasPaidContent');
-                const studioBadge = document.getElementById('studioStatusBadge');
-                const studioLinkBtn = document.getElementById('btnOpenStudioLink');
-
-                if (studioPaidContent) studioPaidContent.classList.remove('hidden');
-                if (studioBadge) {
-                    studioBadge.textContent = "Đã kích hoạt";
-                    studioBadge.className = "px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold";
-                }
-                if (studioLinkBtn) studioLinkBtn.href = studioUrl;
-
-                if (guideTitle) guideTitle.innerHTML = '<span>✨</span> Hướng Dẫn Cài Đặt Cấu Hình VIP All-in-One (30 giây):';
-                if (guideList) {
-                    guideList.innerHTML = `
-                        <li>Bấm nút <b>CÀI ĐẶT CẤU HÌNH VIP (MỞ BẰNG SAFARI)</b> ở trên để tải trực tiếp.</li>
-                        <li>Mở <b>Cài đặt iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
-                        <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật xanh tin cậy.</li>
-                        <li>Mở Locket & Spotify để trải nghiệm toàn bộ đặc quyền VIP không giới hạn! 🎉</li>
-                    `;
-                }
-
-            } else if (isCombo) {
-                // CHỈ KHI MUA COMBO DUO MỚI HIỆN CẢ 2 CẤU HÌNH LOCKET & SPOTIFY
-                if (comboBox) comboBox.classList.remove('hidden');
-
-                const officialDns = 'https://doh.2707226.xyz/alopremiumshop';
-                const btnLk = document.getElementById('comboDownloadBtn_locket');
-                const btnSp = document.getElementById('comboDownloadBtn_spotify');
-                if (btnLk) btnLk.href = officialDns;
-                if (btnSp) btnSp.href = officialDns;
-
-                if (guideTitle) guideTitle.innerHTML = '<span>💎</span> Hướng Dẫn Kích Hoạt Combo Duo VIP (Cả 2 Gói):';
-                if (guideList) {
-                    guideList.innerHTML = `
-                        <li><b>Bước 1 (Locket):</b> Bấm Cài Safari Locket Gold VIP ở khung trên → Cài đặt hồ sơ vào iPhone → Bật tin cậy chứng chỉ LocketGold.</li>
-                        <li><b>Bước 2 (Spotify):</b> Bấm Cài Safari Spotify Premium ở khung dưới → Cài đặt hồ sơ vào iPhone.</li>
-                        <li>Mở lần lượt 2 ứng dụng Locket và Spotify để tận hưởng trọn bộ tính năng VIP! 🎉</li>
-                    `;
-                }
             } else {
-                // GÓI ĐƠN LẺ: TÁCH RIÊNG HOÀN TOÀN
-                if (singleBox) singleBox.classList.remove('hidden');
-                const btnDl = document.getElementById('modalDownloadBtn');
-                if (btnDl) btnDl.href = 'https://doh.2707226.xyz/alopremiumshop';
+                // CÁC GÓI THƯỜNG (LOCKET GOLD, SPOTIFY, COMBO): DÙNG CẤU HÌNH DNS
+                if (btnToggleQr) btnToggleQr.classList.remove('hidden');
+                if (guideBox) guideBox.classList.remove('hidden');
+                if (modalSubtitle) modalSubtitle.textContent = 'Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.';
 
-                if (isSpotify) {
-                    if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI';
-                    if (guideTitle) guideTitle.innerHTML = '<span>🎵</span> 4 Bước Kích Hoạt Spotify Premium (30 giây):';
+                if (isCombo) {
+                    // CHỈ KHI MUA COMBO DUO MỚI HIỆN CẢ 2 CẤU HÌNH LOCKET & SPOTIFY
+                    if (comboBox) comboBox.classList.remove('hidden');
+
+                    const officialDns = 'https://doh.2707226.xyz/alopremiumshop';
+                    const btnLk = document.getElementById('comboDownloadBtn_locket');
+                    const btnSp = document.getElementById('comboDownloadBtn_spotify');
+                    if (btnLk) btnLk.href = officialDns;
+                    if (btnSp) btnSp.href = officialDns;
+
+                    if (guideTitle) guideTitle.innerHTML = '<span>💎</span> Hướng Dẫn Kích Hoạt Combo Duo VIP (Cả 2 Gói):';
                     if (guideList) {
                         guideList.innerHTML = `
-                            <li>Bấm nút <b>CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI</b> (hoặc tải file .mobileconfig).</li>
-                            <li>Bấm <b>"Cho phép" (Allow)</b> khi màn hình hiện thông báo tải hồ sơ.</li>
-                            <li>Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
-                            <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật tin cậy chứng chỉ.</li>
-                            <li>Mở app Spotify và nghe nhạc Lossless không giới hạn! 🎉</li>
+                            <li><b>Bước 1 (Locket):</b> Bấm Cài Safari Locket Gold VIP ở khung trên → Cài đặt hồ sơ vào iPhone → Bật tin cậy chứng chỉ LocketGold.</li>
+                            <li><b>Bước 2 (Spotify):</b> Bấm Cài Safari Spotify Premium ở khung dưới → Cài đặt hồ sơ vào iPhone.</li>
+                            <li>Mở lần lượt 2 ứng dụng Locket và Spotify để tận hưởng trọn bộ tính năng VIP! 🎉</li>
                         `;
                     }
                 } else {
-                    if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT LOCKET GOLD QUA SAFARI';
-                    if (guideTitle) guideTitle.innerHTML = '<span>💛</span> 4 Bước Kích Hoạt Locket Gold VIP (30 giây):';
-                    if (guideList) {
-                        guideList.innerHTML = `
-                            <li>Bấm nút <b>CÀI ĐẶT LOCKET GOLD QUA SAFARI</b> (hoặc tải file .mobileconfig).</li>
-                            <li>Bấm <b>"Cho phép" (Allow)</b> khi màn hình hiện thông báo tải hồ sơ.</li>
-                            <li>Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
-                            <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật xanh <b>LocketGold</b>.</li>
-                            <li>Mở app Locket lên và tận hưởng trọn bộ tính năng Gold VIP! 🎉</li>
-                        `;
+                    // GÓI ĐƠN LẺ: TÁCH RIÊNG HOÀN TOÀN
+                    if (singleBox) singleBox.classList.remove('hidden');
+                    const btnDl = document.getElementById('modalDownloadBtn');
+                    if (btnDl) btnDl.href = 'https://doh.2707226.xyz/alopremiumshop';
+
+                    if (isSpotify) {
+                        if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI';
+                        if (guideTitle) guideTitle.innerHTML = '<span>🎵</span> 4 Bước Kích Hoạt Spotify Premium (30 giây):';
+                        if (guideList) {
+                            guideList.innerHTML = `
+                                <li>Bấm nút <b>CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI</b> (hoặc tải file .mobileconfig).</li>
+                                <li>Bấm <b>"Cho phép" (Allow)</b> khi màn hình hiện thông báo tải hồ sơ.</li>
+                                <li>Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
+                                <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật tin cậy chứng chỉ.</li>
+                                <li>Mở app Spotify và nghe nhạc Lossless không giới hạn! 🎉</li>
+                            `;
+                        }
+                    } else {
+                        if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT LOCKET GOLD QUA SAFARI';
+                        if (guideTitle) guideTitle.innerHTML = '<span>💛</span> 4 Bước Kích Hoạt Locket Gold VIP (30 giây):';
+                        if (guideList) {
+                            guideList.innerHTML = `
+                                <li>Bấm nút <b>CÀI ĐẶT LOCKET GOLD QUA SAFARI</b> (hoặc tải file .mobileconfig).</li>
+                                <li>Bấm <b>"Cho phép" (Allow)</b> khi màn hình hiện thông báo tải hồ sơ.</li>
+                                <li>Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
+                                <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật xanh <b>LocketGold</b>.</li>
+                                <li>Mở app Locket lên và tận hưởng trọn bộ tính năng Gold VIP! 🎉</li>
+                            `;
+                        }
                     }
                 }
             }
 
-            // Hiển thị mã QR tải cấu hình chuẩn Safari
+            // Hiển thị mã QR tải cấu hình chuẩn Safari (chỉ cho các gói DNS)
             const qrImg = document.getElementById('qrSuccessImg');
             if (qrImg) {
-                qrImg.src = `/api/qr?data=${encodeURIComponent(safariDnsUrl)}`;
-                qrImg.onerror = () => {
-                    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(safariDnsUrl)}`;
-                };
+                if (!isLocketAi) {
+                    qrImg.src = `/api/qr?data=${encodeURIComponent(safariDnsUrl)}`;
+                    qrImg.onerror = () => {
+                        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(safariDnsUrl)}`;
+                    };
+                }
             }
 
             document.getElementById('modalWaitingPayment').classList.add('hidden');
@@ -2507,7 +2527,7 @@
 
             const inAppWarn = document.getElementById('inAppBrowserWarning');
             if (inAppWarn) {
-                if (isInAppBrowser()) inAppWarn.classList.remove('hidden');
+                if (!isLocketAi && isInAppBrowser()) inAppWarn.classList.remove('hidden');
                 else inAppWarn.classList.add('hidden');
             }
 
@@ -2615,6 +2635,26 @@
                 showToast(`✅ Đã chép link DNS ${service === 'spotify' ? 'Spotify' : 'Locket'}: ` + link);
             }).catch(() => {
                 showToast('Link: ' + link);
+            });
+        }
+
+        function copyAiAdminMsg() {
+            const rawOrderCode = currentOrderData?.order_id || 'VIP';
+            const formattedCode = String(rawOrderCode).startsWith('ORDER_') ? rawOrderCode : `ORDER_${rawOrderCode}`;
+            const user = (verifiedAccountData?.display_name || verifiedAccountData?.uid || (currentOrderData && (currentOrderData.display_name || currentOrderData.uid)) || '').replace(/^@/, '');
+            const price = (currentOrderData?.price || 189000).toLocaleString();
+            const msg = `Chào Admin, mình vừa thanh toán thành công đơn hàng ${formattedCode} (${price}đ) gói VIP ALL-IN-ONE cho tài khoản @${user}. Nhờ Admin hỗ trợ kích hoạt giúp mình với ạ!`;
+            navigator.clipboard.writeText(msg).then(() => {
+                showToast('✅ Đã sao chép tin nhắn gửi Admin!');
+                const btn = document.getElementById('btnCopyAiAdminMsg');
+                if (btn) {
+                    btn.innerHTML = '<span>✓</span> Đã sao chép! Hãy dán gửi cho Admin nhé';
+                    setTimeout(() => {
+                        btn.innerHTML = '<span>📋</span> Sao Chép Tin Nhắn Mẫu Gửi Admin';
+                    }, 3000);
+                }
+            }).catch(() => {
+                showToast('Mã đơn: ' + formattedCode);
             });
         }
 
@@ -2800,7 +2840,27 @@
                             </div>
                         </div>
 
-                        ${isDone ? `
+                        ${isDone ? (
+                            isAiProd ? `
+                            <div class="space-y-3">
+                                <div class="p-4 rounded-2xl bg-gradient-to-r from-purple-50 via-pink-50 to-amber-50 border-2 border-purple-300 space-y-2.5">
+                                    <div class="flex items-center gap-2 text-xs font-bold text-purple-900">
+                                        <span>👑</span> Gói VIP ALL-IN-ONE (Vĩnh Viễn) • Liên hệ Admin hỗ trợ kích hoạt
+                                    </div>
+                                    <p class="text-[11px] text-[#6E6659] leading-relaxed">
+                                        Gói VIP ALL-IN-ONE được Admin cấu hình độc quyền riêng cho tài khoản. Vui lòng gửi mã đơn <b>${od.order_id}</b> cho Admin để được hỗ trợ kích hoạt lại ngay lập tức!
+                                    </p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                                        <a href="https://zalo.me/0345222802" target="_blank" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-fredoka font-bold text-xs text-center flex items-center justify-center gap-1.5 shadow-sm">
+                                            <span>💬</span> Nhắn Zalo Admin (0345.222.802)
+                                        </a>
+                                        <a href="https://t.me/nguyennhuquynh28" target="_blank" class="py-2.5 px-3 rounded-xl bg-[#0088cc] hover:bg-[#0077b5] text-white font-fredoka font-bold text-xs text-center flex items-center justify-center gap-1.5 shadow-sm">
+                                            <span>✈️</span> Nhắn Telegram Admin
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : `
                             <div class="space-y-3">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                                     <a href="${safariUrl}" target="_blank" class="px-4 py-3 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs text-center flex items-center justify-center gap-1.5 shadow-sm locket-btn-glow">
@@ -2841,7 +2901,7 @@
                                     </ol>
                                 </div>
                             </div>
-                        ` : `
+                        `) : `
                             <div class="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-800">
                                 Đơn hàng đang chờ thanh toán. Vui lòng thanh toán theo mã đơn để hệ thống tự động kích hoạt gói VIP cho bạn.
                             </div>

@@ -116,30 +116,25 @@ def locket_ai_ask_studio_kb(order_id: str) -> InlineKeyboardMarkup:
     ])
 
 
-def locket_ai_success_kb(download_url: str, studio_url: str = None, order_id: str = None) -> InlineKeyboardMarkup:
-    """Bàn phím hiển thị khi khách kích hoạt thành công gói Locket Gold & AI Filters VIP."""
+def locket_ai_success_kb(download_url: str = None, studio_url: str = None, order_id: str = None) -> InlineKeyboardMarkup:
+    """Bàn phím hiển thị khi khách thanh toán thành công gói VIP ALL-IN-ONE (Liên hệ Admin hỗ trợ mua & kích hoạt)."""
     rows = [
-        [InlineKeyboardButton("📲 Tải Cấu Hình VIP (Safari)", url=download_url)],
+        [InlineKeyboardButton("💬 Nhắn Telegram Admin Hỗ Trợ Kích Hoạt", url="https://t.me/nguyennhuquynh28")],
+        [InlineKeyboardButton("💬 Chat Zalo Admin (0345.222.802)", url="https://zalo.me/0345222802")],
     ]
-    if studio_url:
+    zalo_group = getattr(config, "ZALO_GROUP_URL", "").strip() or "https://zalo.me/0345222802"
+    rows.append([
+        InlineKeyboardButton("👥 Nhóm Zalo Hỗ Trợ 24/7", url=zalo_group),
+    ])
+    if order_id:
         rows.append([
-            InlineKeyboardButton("🎨 Mở Studio Chỉnh Chú Thích & Khung Viền", url=studio_url),
-        ])
-        rows.append([
-            InlineKeyboardButton("📋 Copy Link Studio", api_kwargs={"copy_text": {"text": studio_url}}),
-            InlineKeyboardButton("📋 Copy Link Tải VIP", api_kwargs={"copy_text": {"text": download_url}}),
-        ])
-    else:
-        rows.append([
-            InlineKeyboardButton("📋 Copy Link Cấu Hình VIP", api_kwargs={"copy_text": {"text": download_url}}),
+            InlineKeyboardButton(f"📋 Copy Mã Đơn: {order_id}", api_kwargs={"copy_text": {"text": f"ORDER_{order_id}"}}),
         ])
     rows.extend([
-        [
-            InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),
-            InlineKeyboardButton("💬 Hỗ trợ kỹ thuật 24/7", callback_data="support"),
-        ],
+        [InlineKeyboardButton("💬 Hỗ trợ kỹ thuật 24/7", callback_data="support")],
         [InlineKeyboardButton("🏠 Về menu chính", callback_data="back_main")],
     ])
+    return InlineKeyboardMarkup(rows)
     return InlineKeyboardMarkup(rows)
 
 

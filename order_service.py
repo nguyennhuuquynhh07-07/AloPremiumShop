@@ -135,7 +135,7 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             sp_candidates = []
             if sp_raw:
                 try:
-                    clean_sp = api._extract_spotify_uid(sp_raw)
+                    clean_sp = utils.extract_spotify_uid(sp_raw)
                 except Exception:
                     clean_sp = sp_raw
                 if clean_sp:
@@ -204,42 +204,32 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
 
             if product_key == "locket_ai":
                 from keyboards import locket_ai_success_kb
-                vip_url = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
                 username_target = utils.clean_input(str(order.get("uid") or order.get("username") or order.get("account_target") or order.get("display_name") or "")).lstrip("@")
-                studio_url = f"https://locket.jayteam.click/caption.html?u={username_target}"
                 
-                studio_section = (
-                    f"\n🎨 <b>Link Studio Chỉnh Chú Thích & Đổi Khung Viền:</b>\n"
-                    f"{studio_url}\n"
-                )
-
                 ai_msg = (
-                    f"🎉 <b>KÍCH HOẠT THÀNH CÔNG VIP ALL-IN-ONE (LOCKET GOLD & AI FILTERS)!</b>\n"
-                    f"📦 <b>Gói cước:</b> Gói Vĩnh Viễn (VIP All-in-One)\n"
-                    f"⏳ <b>Hạn dùng:</b> 31/12/2099\n"
-                    f"🔒 <b>Trạng thái DNS:</b> ĐÃ BẬT (Active Combo Cloud VIP)\n"
+                    f"🎉 <b>BẠN ĐÃ THANH TOÁN THÀNH CÔNG GÓI VIP ALL-IN-ONE!</b>\n\n"
+                    f"📦 <b>Gói cước:</b> Gói Vĩnh Viễn (VIP ALL-IN-ONE)\n"
+                    f"🆔 <b>Mã đơn hàng:</b> <code>ORDER_{order.get('order_id')}</code>\n"
+                    f"👤 <b>Tài khoản Locket:</b> @{username_target}\n"
+                    f"💵 <b>Số tiền đã thanh toán:</b> {utils.fmt_price(order['price'])}\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
                     f"🎁 <b>ĐẶC QUYỀN MỞ KHÓA TRỌN BỘ:</b>\n"
                     f"👑 <b>Locket Gold:</b> Viền vàng Avatar VIP, Video 60s, Kho 38 khung viền, Tải ảnh 4K.\n"
-                    f"🎭 <b>AI Filters Mới:</b> Mở full 8 danh mục bộ lọc (Events, Goofy, Looks, Celebrate, Cute, Costumes, Holidays...).\n"
+                    f"🎭 <b>AI Filters Mới:</b> Mở full 8 danh mục bộ lọc (Events, Goofy, Looks, Celebrate...).\n"
                     f"✨ <b>Nút [✨ Tạo diện mạo]:</b> Tự do nhập prompt sáng tạo diện mạo AI cá nhân.\n"
-                    f"🎨 <b>Studio Độc Quyền:</b> Tự do đổi 38 khung viền & chú thích cá nhân qua Studio riêng.\n"
                     f"🎵 <b>Spotify Premium:</b> Chặn 100% Ads quảng cáo, Next bài vô hạn, Âm thanh 320kbps.\n"
-                    f"🟠 <b>SoundCloud Go+:</b> Mở khóa SoundCloud Go+ (Plus), Tải nghe Offline, Âm thanh HQ Audio.\n"
-                    f"🎬 <b>YouTube Premium:</b> Chặn 100% Ads video, Phát âm thanh tắt màn hình & Hình trong hình (PiP).\n"
+                    f"🟠 <b>SoundCloud Go+:</b> Mở khóa SoundCloud Go+ (Plus), Tải nghe Offline.\n"
+                    f"🎬 <b>YouTube Premium:</b> Chặn 100% Ads video, Phát âm thanh tắt màn hình & PiP.\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
-                    f"📲 <b>Link tải cấu hình VIP (Mở bằng Safari):</b>\n"
-                    f"{vip_url}\n"
-                    f"{studio_section}"
-                    f"━━━━━━━━━━━━━━━━━━\n"
-                    f"💵 <b>Số tiền đã thanh toán:</b> {utils.fmt_price(order['price'])}"
+                    f"👑 <b>HƯỚNG DẪN KÍCH HOẠT:</b>\n"
+                    f"Vì đây là gói VIP ALL-IN-ONE độc quyền, bạn vui lòng <b>bấm nút Liên hệ Admin bên dưới</b> kèm Mã đơn hàng <code>ORDER_{order.get('order_id')}</code> để Admin trực tiếp cấu hình và hỗ trợ kích hoạt ngay lập tức cho bạn nhé!"
                 )
                 try:
                     await bot.send_message(
                         chat_id=order["user_id"],
                         text=ai_msg,
                         parse_mode=ParseMode.HTML,
-                        reply_markup=locket_ai_success_kb(download_url=vip_url, studio_url=studio_url)
+                        reply_markup=locket_ai_success_kb(order_id=order.get('order_id'))
                     )
                 except Exception as e_ai_send:
                     logger.error(f"Error sending Locket AI delivery: {e_ai_send}")

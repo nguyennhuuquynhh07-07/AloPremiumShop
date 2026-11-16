@@ -442,9 +442,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
             has_studio = order.get("has_studio", False) or (prod_key == "studio_caption")
             username_target = utils.clean_input(str(order.get("uid") or order.get("username") or order.get("account_target") or order.get("display_name") or "")).lstrip("@")
             studio_url = f"https://locket.jayteam.click/caption.html?u={username_target}" if has_studio else None
-            vip_download_url = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1") if is_locket_ai else None
+            vip_download_url = None
 
-            download_url = vip_download_url if (is_locket_ai and is_done) else (f"/api/download_profile?order_id={order_id}" if is_done else None)
+            download_url = None if is_locket_ai else (f"/api/download_profile?order_id={order_id}" if is_done else None)
             self._send_json(200, {
                 "ok": True,
                 "order_id": order_id,
@@ -458,9 +458,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "download_url": download_url,
                 "created_at": order.get("created_at"),
                 "is_locket_ai": is_locket_ai,
+                "contact_admin": is_locket_ai,
                 "has_studio": has_studio,
                 "studio_url": studio_url if is_done else None,
-                "vip_download_url": vip_download_url if is_done else None,
+                "vip_download_url": None,
             })
             return
 
@@ -566,7 +567,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     is_done = od.get("status") == "done"
                     prod_k = od.get("product") or "locket"
                     is_ai = (prod_k == "locket_ai")
-                    vip_dl = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
                     u_disp = od.get("display_name") or od.get("username") or od.get("identifier") or "Khách VIP"
                     u_clean = utils.clean_input(str(u_disp)).lstrip("@")
                     results.append({
@@ -579,9 +579,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "display_name": u_disp,
                         "avatar": od.get("avatar"),
                         "created_at": od.get("created_at"),
-                        "download_url": (vip_dl if is_ai else f"/api/download_profile?order_id={oid}") if is_done else None,
-                        "direct_safari_url": (vip_dl if is_ai else f"{config.DNS_BASE_URL}/{config.DNS_SLUG}") if is_done else None,
-                        "studio_url": f"https://locket.jayteam.click/caption.html?u={u_clean}" if (is_ai and is_done) else None
+                        "download_url": None if is_ai else (f"/api/download_profile?order_id={oid}" if is_done else None),
+                        "direct_safari_url": None if is_ai else (f"{config.DNS_BASE_URL}/{config.DNS_SLUG}" if is_done else None),
+                        "studio_url": None,
+                        "contact_admin": is_ai
                     })
 
             # Nếu chưa thấy trong database local nhưng tài khoản đã kích hoạt trên máy chủ API CTV (web chủ)
