@@ -680,7 +680,7 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif product_key in ("combo", "locket_spotify"):
         prompt = (
             f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> 👑 <b>Combo Duo VIP — {plnv['label']}</b>\n"
-            f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code> <i>(Rẻ hơn 161.000đ so với mua lẻ)</i>\n"
+            f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code> <i>(Rẻ hơn 110.000đ so với mua lẻ)</i>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"✨ <b>TÍNH NĂNG NỔI BẬT:</b>\n"
             f"• Trọn bộ tính năng của Locket Gold VIP, Quay 30s và âm thanh\n"
@@ -1032,7 +1032,7 @@ async def cb_ai_studio_opt(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     has_studio = (choice == "yes")
-    base_price = order.get("original_price") or 189000
+    base_price = order.get("original_price") or PRODUCTS.get("locket_ai", {}).get("plans", {}).get("ltm", {}).get("price", 250000)
     discount_amount = order.get("discount_amount", 0)
     applied_coupon_code = order.get("discount_code", "")
 

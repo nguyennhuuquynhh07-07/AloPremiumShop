@@ -359,8 +359,8 @@ def mark_tx_used(tx_id: str, order_id: str):
 DEFAULT_PRICES = {
     "locket": {"test": 5000, "6m": 40000, "1y": 60000, "ltm": 160000},
     "spotify": {"test": 5000, "6m": 40000, "1y": 60000, "ltm": 180000},
-    "combo": {"6m": 65000, "1y": 99000, "ltm": 259000},
-    "locket_ai": {"ltm": 189000},
+    "locket_spotify": {"ltm": 230000},
+    "locket_ai": {"ltm": 250000},
 }
 
 def get_custom_prices() -> dict:

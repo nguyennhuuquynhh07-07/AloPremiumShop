@@ -622,7 +622,7 @@
                          class="w-[85vw] max-w-[340px] shrink-0 snap-center sm:w-auto sm:max-w-none flex flex-col justify-between relative rounded-[32px] p-6 sm:p-7 bg-white/90 border-2 border-[#E8D8B0] hover:border-amber-500 cursor-pointer shadow-lg locket-card-interactive">
                         <div>
                             <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-[#FFB800] to-[#E11D48] text-white text-[11px] font-fredoka font-black uppercase px-4 py-1 rounded-full shadow-md">
-                                🔥 Rẻ Hơn 161K • Tiết Kiệm 47%
+                                🔥 Rẻ Hơn 110K • Tiết Kiệm 32%
                             </div>
                             <div class="flex items-center gap-3.5 mb-4">
                                 <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFB800] via-[#F59E0B] to-[#10B981] flex items-center justify-center text-2xl shadow-md border-2 border-amber-300 shrink-0">👑</div>
@@ -639,8 +639,8 @@
                             </div>
 
                             <div class="my-4 pb-4 border-b border-[#F0E4C8]">
-                                <div class="font-fredoka text-3xl font-black text-[#D97706]" id="price_display_locket_spotify">179.000đ</div>
-                                <div class="text-xs text-[#6E6659] font-medium mt-1">Duy nhất gói Vĩnh viễn • Rẻ hơn 161.000đ so với mua lẻ</div>
+                                <div class="font-fredoka text-3xl font-black text-[#D97706]" id="price_display_locket_spotify">230.000đ</div>
+                                <div class="text-xs text-[#6E6659] font-medium mt-1">Duy nhất gói Vĩnh viễn • Rẻ hơn 110.000đ so với mua lẻ</div>
                             </div>
                             <ul class="space-y-2 text-xs text-[#1E1B18]">
                                 <li class="flex items-center gap-2.5">
@@ -699,7 +699,7 @@
                                 </div>
                             </div>
                             <div class="my-4 pb-4 border-b border-[#F0E4C8]">
-                                <div class="font-fredoka text-3xl font-black text-purple-700" id="price_display_locket_ai">189.000đ</div>
+                                <div class="font-fredoka text-3xl font-black text-purple-700" id="price_display_locket_ai">250.000đ</div>
                                 <div class="text-xs text-[#6E6659] font-medium mt-1">Gói Vĩnh Viễn • Trọn bộ 6 dịch vụ cao cấp</div>
                             </div>
                             <ul class="space-y-2 text-xs text-[#1E1B18]">
@@ -858,7 +858,7 @@
                             <div class="w-full sm:w-auto">
                                 <button type="button" onclick="openPaymentModal()" id="btnOpenPayment"
                                         class="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-fredoka font-black text-sm shadow-lg locket-btn-interactive cursor-pointer pulse-gold">
-                                    💳 Thanh Toán Ngay (<span id="btnPayAmount">189.000đ</span>)
+                                    💳 Thanh Toán Ngay (<span id="btnPayAmount">250.000đ</span>)
                                 </button>
                             </div>
                         </div>
@@ -1646,7 +1646,7 @@
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <span class="text-[#6E6659] font-medium">Số tiền đã chuyển:</span>
-                                <span id="aiAmountPaidText" class="font-fredoka font-black text-emerald-700">189.000đ</span>
+                                <span id="aiAmountPaidText" class="font-fredoka font-black text-emerald-700">250.000đ</span>
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <span class="text-[#6E6659] font-medium">Trạng thái:</span>
@@ -2493,7 +2493,7 @@
                 const uTarget = (verifiedAccountData?.display_name || verifiedAccountData?.uid || (currentOrderData && (currentOrderData.display_name || currentOrderData.uid)) || '').replace(/^@/, '');
                 const rawOrderCode = currentOrderData?.order_id || orderId || 'VIP';
                 const formattedCode = String(rawOrderCode).startsWith('ORDER_') ? rawOrderCode : `ORDER_${rawOrderCode}`;
-                const priceVal = (currentOrderData?.price || 189000).toLocaleString() + 'đ';
+                const priceVal = (currentOrderData?.price || 250000).toLocaleString() + 'đ';
 
                 const elCode = document.getElementById('aiOrderCodeText');
                 const elUser = document.getElementById('aiAccountTargetText');
@@ -2699,7 +2699,7 @@
             const rawOrderCode = currentOrderData?.order_id || 'VIP';
             const formattedCode = String(rawOrderCode).startsWith('ORDER_') ? rawOrderCode : `ORDER_${rawOrderCode}`;
             const user = (verifiedAccountData?.display_name || verifiedAccountData?.uid || (currentOrderData && (currentOrderData.display_name || currentOrderData.uid)) || '').replace(/^@/, '');
-            const price = (currentOrderData?.price || 189000).toLocaleString();
+            const price = (currentOrderData?.price || 250000).toLocaleString();
             const msg = `Chào Admin, mình vừa thanh toán thành công đơn hàng ${formattedCode} (${price}đ) gói VIP ALL-IN-ONE cho tài khoản @${user}. Nhờ Admin hỗ trợ kích hoạt giúp mình với ạ!`;
             navigator.clipboard.writeText(msg).then(() => {
                 showToast('✅ Đã sao chép tin nhắn gửi Admin!');

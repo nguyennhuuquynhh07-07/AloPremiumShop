@@ -106,7 +106,7 @@ PRODUCTS = {
         "dns_link": "https://dns3.is-cool.dev/g/ECXI6NSHgj",
         "description": "Trọn bộ tính năng của Locket Gold, Quay 30s và âm thanh, Tính năng Photobooth rất nhiều đa dạng, Filter thú vị, Khung viền shin cute, Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao... (Thiên về PhotoBooth nhiều hơn).",
         "plans": {
-            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "LKGVV",    "price": 179000},
+            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "LKGVV",    "price": 230000},
         },
     },
     "locket_ai": {
@@ -115,7 +115,7 @@ PRODUCTS = {
         "service": "locket_ai",
         "description": "Gói Vĩnh Viễn All-in-One: Locket Gold, AI Filters, Spotify, SoundCloud Go+, YouTube Premium.",
         "plans": {
-            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "VIP_ALLINONE", "price": 189000},
+            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "VIP_ALLINONE", "price": 250000},
         },
     },
 }
