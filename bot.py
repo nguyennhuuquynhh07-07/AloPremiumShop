@@ -42,9 +42,54 @@ from handlers.user_handlers import (
     cb_back_main, cb_back_products, cb_show_qr,
     receive_identifier, cancel_conv, resetspotify_user_cmd, guide_cmd, cb_show_guide, cb_user_reset_spotify_menu,
     cb_coupon, cb_coupon_info, coupon_cmd, handle_user_coupon_text,
-    dns_cmd, cb_dns_combo,
     WAITING_IDENTIFIER,
 )
+try:
+    from handlers.user_handlers import dns_cmd, cb_dns_combo
+except (ImportError, AttributeError):
+    async def dns_cmd(update, ctx):
+        from telegram.constants import ParseMode
+        import keyboards
+        dns_kb = getattr(keyboards, "dns_combo_kb", getattr(keyboards, "back_main_kb", None))()
+        dns_text = (
+            "👑 <b>CẤU HÌNH DNS: LOCKET & SPOTIFY</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "📝 <b>Mô tả:</b>\n"
+            "Trọn bộ tính năng của Locket Gold, Quay 30s và âm thanh , Tính năng Photobooth rất nhiều đa dạng , Filter thu vị, Khung viền shin cute, Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao ...\n\n"
+            "🌐 <b>Link DNS Safari:</b>\n"
+            "👉 <code>https://dns3.is-cool.dev/g/ECXI6NSHgj</code>\n\n"
+            "⚡ <b>Cách cài đặt:</b>\n"
+            "1️⃣ Mở link trên bằng trình duyệt <b>Safari</b> trên iPhone.\n"
+            "2️⃣ Bấm <b>Cho phép (Allow)</b> để tải hồ sơ cấu hình về máy.\n"
+            "3️⃣ Vào <b>Cài đặt iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.\n"
+            "4️⃣ Vào <b>Cài đặt chung</b> → <b>Giới thiệu</b> → <b>Cài đặt tin cậy chứng nhận</b> → Bật xanh <b>LocketGold</b> là xong!"
+        )
+        await update.message.reply_text(dns_text, parse_mode=ParseMode.HTML, reply_markup=dns_kb)
+
+    async def cb_dns_combo(update, ctx):
+        query = update.callback_query
+        await query.answer()
+        from telegram.constants import ParseMode
+        import keyboards
+        dns_kb = getattr(keyboards, "dns_combo_kb", getattr(keyboards, "back_main_kb", None))()
+        dns_text = (
+            "👑 <b>CẤU HÌNH DNS: LOCKET & SPOTIFY</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "📝 <b>Mô tả:</b>\n"
+            "Trọn bộ tính năng của Locket Gold, Quay 30s và âm thanh , Tính năng Photobooth rất nhiều đa dạng , Filter thu vị, Khung viền shin cute, Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao ...\n\n"
+            "🌐 <b>Link DNS Safari:</b>\n"
+            "👉 <code>https://dns3.is-cool.dev/g/ECXI6NSHgj</code>\n\n"
+            "⚡ <b>Cách cài đặt:</b>\n"
+            "1️⃣ Mở link trên bằng trình duyệt <b>Safari</b> trên iPhone.\n"
+            "2️⃣ Bấm <b>Cho phép (Allow)</b> để tải hồ sơ cấu hình về máy.\n"
+            "3️⃣ Vào <b>Cài đặt iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.\n"
+            "4️⃣ Vào <b>Cài đặt chung</b> → <b>Giới thiệu</b> → <b>Cài đặt tin cậy chứng nhận</b> → Bật xanh <b>LocketGold</b> là xong!"
+        )
+        try:
+            await query.message.reply_text(dns_text, parse_mode=ParseMode.HTML, reply_markup=dns_kb)
+        except Exception:
+            await query.edit_message_text(dns_text, parse_mode=ParseMode.HTML, reply_markup=dns_kb)
+
 try:
     from handlers.user_handlers import zalo_cmd, cb_zalo_group
 except (ImportError, AttributeError):
