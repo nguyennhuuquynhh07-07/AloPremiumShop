@@ -31,6 +31,9 @@ def main_menu_kb() -> InlineKeyboardMarkup:
         InlineKeyboardButton("💬 Hỗ trợ CSKH",          callback_data="support"),
     ])
     rows.append([
+        InlineKeyboardButton("⚡ Cấu hình DNS: Locket & Spotify", callback_data="dns_combo"),
+    ])
+    rows.append([
         InlineKeyboardButton("👥 Nhóm Hỗ Trợ & Share Zalo", callback_data="zalo_group"),
     ])
     rows.append([
@@ -147,16 +150,30 @@ def studio_success_kb(studio_url: str) -> InlineKeyboardMarkup:
     ])
 
 
+def dns_combo_kb() -> InlineKeyboardMarkup:
+    dns_url = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🌐 Cài Đặt Safari (Locket & Spotify)", url=dns_url)],
+        [
+            InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": dns_url}}),
+            InlineKeyboardButton("📷 Tạo Mã QR DNS", callback_data="show_qr:combo"),
+        ],
+        [InlineKeyboardButton("📖 Hướng Dẫn Cài Đặt", callback_data="show_guide")],
+        [InlineKeyboardButton("🏠 Về Menu Chính", callback_data="back_main")],
+    ])
+
+
 def combo_success_kb(dns_locket: str = None, dns_spotify: str = None) -> InlineKeyboardMarkup:
-    dns_locket = dns_locket or "https://alopremium.shop"
-    dns_spotify = dns_spotify or "https://alopremium.shop"
+    dns_combo = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+    dns_locket = dns_locket or dns_combo
+    dns_spotify = dns_spotify or dns_combo
     rows = [
         [
-            InlineKeyboardButton("📋 Copy Link Locket", api_kwargs={"copy_text": {"text": dns_locket}}),
-            InlineKeyboardButton("📋 Copy Link Spotify", api_kwargs={"copy_text": {"text": dns_spotify}}),
+            InlineKeyboardButton("🌐 Cài Đặt Safari (Locket & Spotify)", url=dns_combo)
         ],
         [
-            InlineKeyboardButton("📷 Tạo Mã QR DNS", callback_data="show_qr")
+            InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": dns_combo}}),
+            InlineKeyboardButton("📷 Tạo Mã QR DNS", callback_data="show_qr:combo"),
         ],
         [
             InlineKeyboardButton("📖 Hướng dẫn cài đặt iOS", callback_data="show_guide"),

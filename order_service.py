@@ -111,6 +111,12 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 studio_link=studio_url
             )
         elif product_key == "combo":
+            # DNS Locket & Spotify độc quyền
+            dns_combo = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+            dns_link = dns_combo
+            dns_link_locket = dns_combo
+            dns_link_spotify = dns_combo
+
             # Tách biệt 2 mã API cho Locket (dùng Username Locket) và Spotify (dùng UID Spotify)
             combo_map = {
                 "6m":  {"locket": "LKG6M",  "spotify": "SP6M"},
