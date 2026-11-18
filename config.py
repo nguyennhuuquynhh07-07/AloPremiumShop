@@ -99,26 +99,16 @@ PRODUCTS = {
             "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "SPVV",      "price": 180000},
         },
     },
-    "combo": {
-        "name": "Combo Duo VIP (Locket + Spotify)",
-        "emoji": "👑",
-        "service": "combo",
-        "description": "Trọn bộ Locket Gold VIP & Spotify Premium – Tiết kiệm tới 81.000đ, kích hoạt đồng thời cả hai dịch vụ.",
-        "plans": {
-            "6m":   {"label": "6 Tháng",     "packageCode": "COMBO6M",  "price": 65000},
-            "1y":   {"label": "1 Năm",       "packageCode": "COMBO1Y",  "price": 99000},
-            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "COMBOVV",  "price": 259000},
-        },
-    },
     "locket_spotify": {
-        "name": "Locket & Spotify",
-        "emoji": "⚡",
+        "name": "Combo Duo VIP",
+        "emoji": "👑",
         "service": "locket_spotify",
         "dns_link": "https://dns3.is-cool.dev/g/ECXI6NSHgj",
         "description": "Trọn bộ tính năng của Locket Gold, Quay 30s và âm thanh , Tính năng Photobooth rất nhiều đa dạng , Filter thu vị, Khung viền shin cute, Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao ...",
         "plans": {
-
-            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "LKGVV",    "price": 179000},
+            "6m":   {"label": "6 Tháng",     "packageCode": "LKG6M",    "price": 65000},
+            "1y":   {"label": "1 Năm",       "packageCode": "LKG1Y",    "price": 99000},
+            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "LKGVV",    "price": 199000},
         },
     },
     "locket_ai": {
@@ -139,5 +129,5 @@ STUDIO_CAPTION_PRICE = 10000
 # ============================================================
 #  6. ĐƯỜNG DẪN DỮ LIỆU
 # ============================================================
-DB_ORDERS = "data/orders.json"
+DB_ORDERS = "data/orders.json"  
 DB_STATS  = "data/stats.json"

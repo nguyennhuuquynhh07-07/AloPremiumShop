@@ -402,7 +402,7 @@ def admin_prices_overview_kb() -> InlineKeyboardMarkup:
             InlineKeyboardButton("🎵 Sửa giá Spotify",     callback_data="admin:price_prod:spotify"),
         ],
         [
-            InlineKeyboardButton("👑 Sửa giá Combo Duo VIP", callback_data="admin:price_prod:combo"),
+            InlineKeyboardButton("👑 Sửa giá Combo Duo VIP", callback_data="admin:price_prod:locket_spotify"),
         ],
         [
             InlineKeyboardButton("🔄 Khôi phục giá mặc định", callback_data="admin:reset_prices_confirm"),
@@ -415,7 +415,7 @@ def admin_prices_overview_kb() -> InlineKeyboardMarkup:
 
 def admin_prices_plans_kb(product_key: str) -> InlineKeyboardMarkup:
     from config import PRODUCTS
-    prod = PRODUCTS.get(product_key, {})
+    prod = PRODUCTS.get(product_key, PRODUCTS.get("locket_spotify", {}))
     plans = prod.get("plans", {})
     rows = []
     for plan_key, plan_data in plans.items():
