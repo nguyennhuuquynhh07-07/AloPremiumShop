@@ -680,13 +680,14 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif product_key in ("combo", "locket_spotify"):
         prompt = (
             f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> 👑 <b>Combo Duo VIP — {plnv['label']}</b>\n"
-            f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code>\n"
+            f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code> <i>(Rẻ hơn 161.000đ so với mua lẻ)</i>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"✨ <b>TÍNH NĂNG NỔI BẬT:</b>\n"
             f"• Trọn bộ tính năng của Locket Gold VIP, Quay 30s và âm thanh\n"
             f"• Tính năng Photobooth rất nhiều đa dạng, Filter thú vị, Khung viền Shin cute\n"
             f"• Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao ...\n"
             f"• Kích hoạt đồng thời cả 2 bằng 1 DNS duy nhất (Không cần Link Spotify)!\n\n"
+            f"📸 <b>LƯU Ý:</b> <i>Gói này thiên về tính năng PhotoBooth nhiều hơn!</i>\n\n"
             f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET CỦA BẠN (CHỈ CẦN USER LOCKET)</b>\n\n"
             f"<b>Hướng dẫn:</b>\n"
             f"  Mở app Locket → Bấm Avatar góc trên → Xem phần <b>@username</b>\n\n"

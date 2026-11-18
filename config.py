@@ -104,11 +104,9 @@ PRODUCTS = {
         "emoji": "👑",
         "service": "locket_spotify",
         "dns_link": "https://dns3.is-cool.dev/g/ECXI6NSHgj",
-        "description": "Trọn bộ tính năng của Locket Gold, Quay 30s và âm thanh , Tính năng Photobooth rất nhiều đa dạng , Filter thu vị, Khung viền shin cute, Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao ...",
+        "description": "Trọn bộ tính năng của Locket Gold, Quay 30s và âm thanh, Tính năng Photobooth rất nhiều đa dạng, Filter thú vị, Khung viền shin cute, Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao... (Thiên về PhotoBooth nhiều hơn).",
         "plans": {
-            "6m":   {"label": "6 Tháng",     "packageCode": "LKG6M",    "price": 65000},
-            "1y":   {"label": "1 Năm",       "packageCode": "LKG1Y",    "price": 99000},
-            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "LKGVV",    "price": 199000},
+            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "LKGVV",    "price": 179000},
         },
     },
     "locket_ai": {
