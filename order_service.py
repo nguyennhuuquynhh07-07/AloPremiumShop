@@ -111,11 +111,11 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 studio_link=studio_url
             )
         elif product_key == "combo":
-            # DNS Locket & Spotify độc quyền
-            dns_combo = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
-            dns_link = dns_combo
-            dns_link_locket = dns_combo
-            dns_link_spotify = dns_combo
+            # GÓI COMBO DUO CHÍNH CHỦ (LOCKET + SPOTIFY QUA API CTV)
+            dns_base = f"{DNS_BASE_URL}/{DNS_SLUG}" if DNS_BASE_URL and DNS_SLUG else "https://doh.2707226.xyz/alopremiumshop"
+            dns_link = dns_base
+            dns_link_locket = dns_base
+            dns_link_spotify = dns_base
 
             # Tách biệt 2 mã API cho Locket (dùng Username Locket) và Spotify (dùng UID Spotify)
             combo_map = {
@@ -169,6 +169,43 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 dns_link=dns_link,
                 dns_link_locket=dns_link_locket,
                 dns_link_spotify=dns_link_spotify
+            )
+        elif product_key == "locket_spotify":
+            # GÓI MỚI: LOCKET & SPOTIFY (DNS https://dns3.is-cool.dev/g/ECXI6NSHgj, CHỈ CẦN KÍCH HOẠT USER LOCKET)
+            dns_vip = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+            dns_link = dns_vip
+            dns_link_locket = dns_vip
+            dns_link_spotify = dns_vip
+
+            act_success = False
+            last_err = None
+            for acc in candidate_accounts:
+                try:
+                    result = await asyncio.to_thread(
+                        api.create_subscription,
+                        uid=acc,
+                        package_code=plnv.get("packageCode", "LKGVV"),
+                        service="locket",
+                        note=f"Order {order_id} Locket&Spotify DNS"
+                    )
+                    act_success = True
+                    target_account = acc
+                    if acc != order.get("uid"):
+                        db.update_order(order_id, uid=acc, account_target=acc)
+                    break
+                except Exception as e_act:
+                    last_err = e_act
+                    err_str = str(e_act).lower()
+                    if "404" not in err_str and "không tồn tại" not in err_str:
+                        break
+
+            db.update_order(
+                order_id, 
+                status="done", 
+                done_at=datetime.now().isoformat(), 
+                dns_link=dns_vip,
+                dns_link_locket=dns_vip,
+                dns_link_spotify=dns_vip
             )
         else:
             # Gói Locket hoặc Spotify đơn lẻ: tự động fallback các candidate nếu dính 404
@@ -304,6 +341,38 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     )
                 except Exception as e:
                     logger.error(f"Error sending Combo delivery: {e}")
+
+            elif product_key == "locket_spotify":
+                # GÓI MỚI: LOCKET & SPOTIFY (DÙNG DNS https://dns3.is-cool.dev/g/ECXI6NSHgj)
+                dns_vip = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+                try:
+                    qr_vip = utils.generate_qr_code(dns_vip)
+                    await bot.send_photo(
+                        chat_id=order["user_id"],
+                        photo=qr_vip,
+                        caption=(
+                            f"⚡ <b>MÃ QR CẤU HÌNH: LOCKET & SPOTIFY</b>\n"
+                            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                            f"👤 Khách hàng: <b>@{uid_display}</b>\n"
+                            f"📦 Gói: <b>Locket & Spotify ({plnv['label']})</b>\n\n"
+                            f"⚡ <b>Cách cài đặt:</b>\n"
+                            f"1️⃣ Dùng <b>Camera iPhone</b> quét mã QR trên màn hình.\n"
+                            f"2️⃣ Chạm vào thông báo vàng <b>\"Mở trong Safari\"</b> để cài cấu hình dùng cả 2 ứng dụng!"
+                        ),
+                        parse_mode=ParseMode.HTML
+                    )
+                except Exception as e_qr:
+                    logger.warning(f"Could not send Locket&Spotify QR photo: {e_qr}")
+
+                try:
+                    await bot.send_message(
+                        chat_id=order["user_id"],
+                        text=success_text,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=combo_success_kb(dns_vip, dns_vip)
+                    )
+                except Exception as e:
+                    logger.error(f"Error sending Locket&Spotify delivery: {e}")
 
             elif product_key == "spotify":
                 # GÓI ĐƠN LẺ: CHỈ KÍCH HOẠT VÀ GỬI DUY NHẤT SPOTIFY PREMIUM

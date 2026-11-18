@@ -164,15 +164,13 @@ def dns_combo_kb() -> InlineKeyboardMarkup:
 
 
 def combo_success_kb(dns_locket: str = None, dns_spotify: str = None) -> InlineKeyboardMarkup:
-    dns_combo = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
-    dns_locket = dns_locket or dns_combo
-    dns_spotify = dns_spotify or dns_combo
+    dns_target = dns_locket or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
     rows = [
         [
-            InlineKeyboardButton("🌐 Cài Đặt Safari (Locket & Spotify)", url=dns_combo)
+            InlineKeyboardButton("🌐 Cài Đặt Safari", url=dns_target)
         ],
         [
-            InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": dns_combo}}),
+            InlineKeyboardButton("📋 Copy Link DNS", api_kwargs={"copy_text": {"text": dns_target}}),
             InlineKeyboardButton("📷 Tạo Mã QR DNS", callback_data="show_qr:combo"),
         ],
         [

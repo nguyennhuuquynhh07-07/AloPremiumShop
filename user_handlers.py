@@ -678,13 +678,29 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"📌 <b>BƯỚC 1: GỬI 2 DÒNG (LOCKET & SPOTIFY TÁCH BIỆT)</b>\n\n"
-            f"🌟 <i>Gói Combo sẽ tự động kích hoạt đồng thời cả Locket Gold VIP và Spotify Premium!</i>\n"
+            f"🌟 <i>Gói Combo Duo sẽ kích hoạt đồng thời cả Locket Gold VIP và Spotify Premium!</i>\n"
             f"<b>Vui lòng gửi tin nhắn gồm 2 dòng:</b>\n"
             f"1️⃣ <b>Dòng 1:</b> Username Locket (Chỉ điền User, không dán link — VD: <code>conlaigii</code>)\n"
             f"2️⃣ <b>Dòng 2:</b> Link Profile Spotify (Bắt buộc dạng Link — VD: <code>https://open.spotify.com/user/...</code>)\n\n"
             f"<i>Ví dụ gửi tin nhắn:</i>\n"
             f"<pre>conlaigii\nhttps://open.spotify.com/user/31t3tcqt...</pre>\n\n"
             f"👇 <b>Gửi 2 dòng thông tin vào ô chat bên dưới:</b>"
+        )
+    elif product_key == "locket_spotify":
+        prompt = (
+            f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> {pv['emoji']} <b>{pv['name']} — {plnv['label']}</b>\n"
+            f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"✨ <b>TÍNH NĂNG NỔI BẬT:</b>\n"
+            f"• Trọn bộ tính năng của Locket Gold, Quay 30s và âm thanh\n"
+            f"• Tính năng Photobooth rất nhiều đa dạng, Filter thú vị, Khung viền shin cute\n"
+            f"• Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao ...\n\n"
+            f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET CỦA BẠN (CHỈ CẦN USERNAME LOCKET)</b>\n\n"
+            f"<b>Hướng dẫn:</b>\n"
+            f"  Mở app Locket → Bấm Avatar góc trên → Xem phần <b>@username</b>\n\n"
+            f"<i>Ví dụ:</i> <code>conlaigii</code>\n\n"
+            f"👇 <b>Gửi Username Locket của bạn vào ô chat bên dưới:</b>\n"
+            f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>username MÃ_GIẢM_GIÁ</code>)</i>"
         )
     else:  # locket
         prompt = (
@@ -1209,6 +1225,19 @@ def _build_success_message(order, pv, plnv, dns_link: str) -> str:
             f"1️⃣ Link cấu hình Spotify: <code>{dns_sp}</code>\n"
             f"2️⃣ Bấm nút <b>'🎵 2. Cài Spotify'</b> bên dưới hoặc quét mã QR Spotify.\n"
             f"3️⃣ Cài đặt hồ sơ Spotify vào iPhone và nghe nhạc Lossless không quảng cáo! 🎉\n\n"
+            f"{duration_note}"
+        )
+
+    elif order["product"] == "locket_spotify":
+        dns_vip = order.get("dns_link") or "https://dns3.is-cool.dev/g/ECXI6NSHgj"
+        step4 = (
+            f"📌 <b>BƯỚC CÀI ĐẶT CẤU HÌNH LOCKET & SPOTIFY:</b>\n"
+            f"1️⃣ Mở trình duyệt <b>Safari</b> trên iPhone và truy cập link DNS:\n"
+            f"   👉 <code>{dns_vip}</code>\n"
+            f"2️⃣ Bấm <b>Cho phép (Allow)</b> khi thông báo tải hồ sơ xuất hiện\n"
+            f"3️⃣ Mở <b>Cài đặt iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>\n"
+            f"4️⃣ Vào <b>Cài đặt chung</b> → <b>Giới thiệu</b> → Kéo xuống cuối → <b>Cài đặt tin cậy chứng nhận</b> → Bật xanh <b>LocketGold</b>\n"
+            f"5️⃣ Mở đồng thời cả Locket và Spotify lên và tận hưởng trọn bộ tính năng VIP! 🎉\n\n"
             f"{duration_note}"
         )
 
