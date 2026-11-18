@@ -539,15 +539,20 @@ async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     orders = db.get_user_orders(user.id)
     done_orders = [o for o in orders if o.get("status") == "done"]
 
-    target_service = query.data.split(":")[1] if ":" in query.data else None
-    if target_service == "combo":
-        target_link = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
-        prod_name = "Locket & Spotify"
-        svc_label = "Locket & Spotify"
-        uid_name = user.first_name
-    elif not done_orders:
+    if not done_orders:
         await query.answer("⚠️ Bạn chưa có đơn hàng nào được kích hoạt để tạo mã QR DNS!", show_alert=True)
         return
+
+    target_service = query.data.split(":")[1] if ":" in query.data else None
+    if target_service in ("combo", "locket_spotify"):
+        matching = [o for o in done_orders if o.get("product") in ("combo", "locket_spotify")]
+        if not matching:
+            await query.answer("⚠️ Bạn chưa mua hoặc chưa thanh toán gói này!", show_alert=True)
+            return
+        latest = sorted(matching, key=lambda x: x.get("created_at") or "", reverse=True)[0]
+        target_link = latest.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+        prod_name = "Locket & Spotify" if latest.get("product") == "locket_spotify" else "Combo Duo VIP"
+        uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
     elif target_service:
         matching = [o for o in done_orders if o.get("product") == target_service]
         latest = sorted(matching, key=lambda x: x.get("created_at") or "", reverse=True)[0] if matching else sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
@@ -1679,36 +1684,6 @@ GUIDE_TEXT = """
 
 🎉 <b>Hoàn tất!</b> Mở Locket hoặc Spotify lên để tận hưởng trọn vẹn các tính năng VIP!
 """
-
-DNS_COMBO_TEXT = (
-    "👑 <b>CẤU HÌNH DNS: LOCKET & SPOTIFY</b>\n"
-    "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-    "📝 <b>Mô tả tính năng:</b>\n"
-    "Trọn bộ tính năng của Locket Gold, Quay 30s và âm thanh , Tính năng Photobooth rất nhiều đa dạng , Filter thu vị, Khung viền shin cute, Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao ...\n\n"
-    "🌐 <b>Link DNS Safari:</b>\n"
-    "👉 <code>https://dns3.is-cool.dev/g/ECXI6NSHgj</code>\n\n"
-    "⚡ <b>Cách cài đặt siêu tốc:</b>\n"
-    "1️⃣ Bấm nút <b>'🌐 Cài Đặt Safari (Locket & Spotify)'</b> bên dưới.\n"
-    "2️⃣ Chọn <b>Cho phép (Allow)</b> để tải hồ sơ cấu hình về iPhone.\n"
-    "3️⃣ Mở <b>Cài đặt iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.\n"
-    "4️⃣ Vào <b>Cài đặt chung</b> → <b>Giới thiệu</b> → <b>Cài đặt tin cậy chứng nhận</b> → Bật xanh công tắc <b>LocketGold</b>.\n"
-    "5️⃣ Mở đồng thời cả Locket & Spotify để trải nghiệm trọn bộ VIP!"
-)
-
-async def dns_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Lệnh /dns – Xem và cài đặt cấu hình DNS Locket & Spotify."""
-    from keyboards import dns_combo_kb
-    await update.message.reply_text(DNS_COMBO_TEXT, parse_mode=ParseMode.HTML, reply_markup=dns_combo_kb())
-
-async def cb_dns_combo(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Callback bấm nút xem cấu hình DNS Locket & Spotify."""
-    query = update.callback_query
-    await query.answer()
-    from keyboards import dns_combo_kb
-    try:
-        await query.message.reply_text(DNS_COMBO_TEXT, parse_mode=ParseMode.HTML, reply_markup=dns_combo_kb())
-    except Exception:
-        await query.edit_message_text(DNS_COMBO_TEXT, parse_mode=ParseMode.HTML, reply_markup=dns_combo_kb())
 
 async def guide_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Lệnh /guide – Xem hướng dẫn cài đặt iOS trực quan."""

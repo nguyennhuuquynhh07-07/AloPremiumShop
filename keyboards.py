@@ -31,9 +31,6 @@ def main_menu_kb() -> InlineKeyboardMarkup:
         InlineKeyboardButton("💬 Hỗ trợ CSKH",          callback_data="support"),
     ])
     rows.append([
-        InlineKeyboardButton("⚡ Cấu hình DNS: Locket & Spotify", callback_data="dns_combo"),
-    ])
-    rows.append([
         InlineKeyboardButton("👥 Nhóm Hỗ Trợ & Share Zalo", callback_data="zalo_group"),
     ])
     rows.append([
