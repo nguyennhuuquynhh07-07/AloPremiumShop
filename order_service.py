@@ -619,7 +619,10 @@ def sync_upstream_orders() -> int:
             if matched_oid:
                 orders[matched_oid]["status"] = "done"
                 if not orders[matched_oid].get("dns_link"):
-                    orders[matched_oid]["dns_link"] = dns_link
+                    if orders[matched_oid].get("product") in ("combo", "locket_spotify"):
+                        orders[matched_oid]["dns_link"] = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+                    else:
+                        orders[matched_oid]["dns_link"] = dns_link
                 if expires_at:
                     orders[matched_oid]["expires_at"] = expires_at
                 if avatar_url and not orders[matched_oid].get("avatar"):

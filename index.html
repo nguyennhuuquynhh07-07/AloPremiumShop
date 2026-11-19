@@ -1244,38 +1244,33 @@
                     Chỉ cần thao tác 5 bước đơn giản, không cần máy tính, không jailbreak, an toàn 100%.
                 </p>
 
-                <!-- CẤU HÌNH DNS LOCKET & SPOTIFY MỚI NHẤT -->
+                <!-- CẤU HÌNH DNS BẢO MẬT THEO ĐƠN HÀNG -->
                 <div class="mb-8 p-5 sm:p-7 rounded-[32px] bg-gradient-to-br from-[#FFF9ED] via-white to-[#FFF2D6] border-2 border-[#FFB800] shadow-xl relative overflow-hidden">
                     <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-[#FFB800] to-emerald-600 text-white text-[11px] font-fredoka font-black uppercase px-4 py-1 rounded-full shadow-md">
-                        ⚡ Cấu Hình Song Song Mới Nhất
+                        🔒 Bảo Mật Bản Quyền
                     </div>
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div class="space-y-2 flex-1">
                             <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFB800] via-[#F59E0B] to-[#10B981] flex items-center justify-center text-2xl shadow-md border-2 border-amber-300 shrink-0">👑</div>
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFB800] via-[#F59E0B] to-[#10B981] flex items-center justify-center text-2xl shadow-md border-2 border-amber-300 shrink-0">🛡️</div>
                                 <div>
-                                    <h3 class="font-fredoka text-xl sm:text-2xl font-black text-[#1E1B18]">Locket & Spotify</h3>
-                                    <p class="text-xs text-[#D97706] font-bold">1 Cấu hình DNS kích hoạt đồng thời cả 2 dịch vụ</p>
+                                    <h3 class="font-fredoka text-xl sm:text-2xl font-black text-[#1E1B18]">Link DNS Bản Quyền Cho Từng Gói</h3>
+                                    <p class="text-xs text-[#D97706] font-bold">Mỗi gói dịch vụ có link cấu hình DNS riêng biệt</p>
                                 </div>
                             </div>
                             <p class="text-xs sm:text-sm text-[#423C32] leading-relaxed font-medium">
-                                Trọn bộ tính năng của Locket Gold, Quay 30s và âm thanh , Tính năng Photobooth rất nhiều đa dạng , Filter thu vị, Khung viền shin cute, Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao ...
+                                Sau khi thanh toán thành công, màn hình sẽ hiển thị link cài đặt DNS và mã QR chính xác cho gói của bạn. Nếu bạn đã mua trước đó, hãy vào mục <b>Tra Cứu</b> bên dưới để lấy lại link DNS bất cứ lúc nào!
                             </p>
-                            <div class="pt-1.5 flex items-center gap-2 flex-wrap">
-                                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E8D8B0] text-xs font-mono font-bold text-[#1E1B18] shadow-xs">
-                                    <span>🌐</span> <span class="select-all">https://dns3.is-cool.dev/g/ECXI6NSHgj</span>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="w-full md:w-auto flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
-                            <a href="https://dns3.is-cool.dev/g/ECXI6NSHgj" target="_blank"
+                            <button type="button" onclick="switchMainTab('store')"
                                class="px-6 py-3.5 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
-                                <span>🌐</span> Cài Đặt Safari Trực Tiếp
-                            </a>
-                            <button type="button" onclick="navigator.clipboard.writeText('https://dns3.is-cool.dev/g/ECXI6NSHgj'); alert('✅ Đã sao chép link DNS Locket & Spotify!');"
+                                <span>🛒</span> Mua Gói Ngay
+                            </button>
+                            <button type="button" onclick="switchMainTab('lookup')"
                                     class="px-5 py-2.5 rounded-xl bg-white hover:bg-[#FFECC0] border border-[#E8D8B0] text-[#1E1B18] font-fredoka font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                                <span>📋</span> Sao Chép Link DNS
+                                <span>🔍</span> Tra Cứu Lấy Lại DNS
                             </button>
                         </div>
                     </div>
@@ -2354,6 +2349,14 @@
                 return;
             }
 
+            const btnPay = document.getElementById('btnOpenPayment');
+            if (btnPay && btnPay.dataset.loading === 'true') return;
+            if (btnPay) {
+                btnPay.dataset.loading = 'true';
+                btnPay.style.opacity = '0.7';
+                btnPay.style.pointerEvents = 'none';
+            }
+
             const pv = systemProducts[selectedProduct];
             const planInfo = pv?.plans?.[selectedPlan] || { price: 200000, label: 'Vĩnh Viễn' };
             const hasStudio = (selectedProduct === 'locket_ai');
@@ -2407,6 +2410,12 @@
                 startPollingOrder(data.order_id);
             } catch (err) {
                 alert('Lỗi tạo đơn: ' + err.message);
+            } finally {
+                if (btnPay) {
+                    btnPay.dataset.loading = 'false';
+                    btnPay.style.opacity = '';
+                    btnPay.style.pointerEvents = '';
+                }
             }
         }
 
@@ -2480,7 +2489,7 @@
             if (comboBox) comboBox.classList.add('hidden');
             if (aiBox) aiBox.classList.add('hidden');
 
-            let safariDnsUrl = 'https://doh.2707226.xyz/alopremiumshop';
+            let safariDnsUrl = '';
 
             if (isLocketAi) {
                 // GÓI VIP ALL-IN-ONE: XÓA DNS HOÀN TOÀN, HIỆN LIÊN HỆ ADMIN HỖ TRỢ KÍCH HOẠT
@@ -2505,65 +2514,64 @@
                 if (elDisplayUser) elDisplayUser.textContent = '@' + (uTarget || 'quy_khach');
                 if (elPrice) elPrice.textContent = priceVal;
 
+            } else if (isCombo || isLocketSpotify) {
+                // GÓI COMBO DUO VIP (LOCKET & SPOTIFY): DÙNG ĐÚNG DNS COMBO RIÊNG BIỆT
+                if (btnToggleQr) btnToggleQr.classList.remove('hidden');
+                if (guideBox) guideBox.classList.remove('hidden');
+                if (modalSubtitle) modalSubtitle.textContent = 'Gói Combo Duo VIP đã sẵn sàng cài đặt trên iPhone của bạn.';
+                if (comboBox) comboBox.classList.remove('hidden');
+
+                safariDnsUrl = (currentOrderData && (currentOrderData.direct_safari_url || currentOrderData.dns_link)) || 'https://dns3.is-cool.dev/g/ECXI6NSHgj';
+                const btnSafari = document.getElementById('comboSafariBtn');
+                const btnFile = document.getElementById('comboDownloadBtn_file');
+                if (btnSafari) btnSafari.href = safariDnsUrl;
+                if (btnFile) btnFile.href = safariDnsUrl;
+
+                if (guideTitle) guideTitle.innerHTML = '<span>👑</span> Hướng Dẫn Kích Hoạt Combo Duo VIP (Locket & Spotify):';
+                if (guideList) {
+                    guideList.innerHTML = `
+                        <li><b>Bước 1:</b> Bấm nút màu vàng <b>"CÀI ĐẶT TRỰC TIẾP QUA SAFARI"</b> ở trên.</li>
+                        <li><b>Bước 2:</b> Khi Safari hiển thị thông báo tải hồ sơ, chọn <b>Cho phép (Allow)</b>.</li>
+                        <li><b>Bước 3:</b> Mở ứng dụng <b>Cài đặt trên iPhone</b> → Chọn <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
+                        <li><b>Bước 4:</b> Vào <b>Cài đặt chung</b> → <b>Giới thiệu</b> → <b>Cài đặt tin cậy chứng nhận</b> → Bật xanh công tắc <b>LocketGold</b>.</li>
+                        <li>Mở đồng thời cả Locket và Spotify lên để tận hưởng trọn bộ tính năng VIP! 🎉</li>
+                    `;
+                }
             } else {
-                // CÁC GÓI THƯỜNG (LOCKET GOLD, SPOTIFY, COMBO, LOCKET & SPOTIFY): DÙNG CẤU HÌNH DNS
+                // GÓI ĐƠN LẺ (LOCKET GOLD HOẶC SPOTIFY): DÙNG LINK ALOPREMIUMSHOP TỪ SERVER CTV
                 if (btnToggleQr) btnToggleQr.classList.remove('hidden');
                 if (guideBox) guideBox.classList.remove('hidden');
                 if (modalSubtitle) modalSubtitle.textContent = 'Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.';
+                if (singleBox) singleBox.classList.remove('hidden');
 
-                if (isCombo || isLocketSpotify) {
-                    // GÓI COMBO HOẶC LOCKET & SPOTIFY
-                    if (comboBox) comboBox.classList.remove('hidden');
+                safariDnsUrl = (currentOrderData && (currentOrderData.direct_safari_url || currentOrderData.dns_link)) || 'https://doh.2707226.xyz/alopremiumshop';
+                const btnDl = document.getElementById('modalDownloadBtn');
+                if (btnDl) btnDl.href = safariDnsUrl;
+                if (safariBtn) safariBtn.href = safariDnsUrl;
 
-                    const targetDns = (isLocketSpotify || isCombo) ? 'https://dns3.is-cool.dev/g/ECXI6NSHgj' : (downloadUrl || 'https://doh.2707226.xyz/alopremiumshop');
-                    const btnSafari = document.getElementById('comboSafariBtn');
-                    const btnFile = document.getElementById('comboDownloadBtn_file');
-                    if (btnSafari) btnSafari.href = targetDns;
-                    if (btnFile) btnFile.href = targetDns;
-
-                    const qrImg = document.getElementById('qrSuccessImg');
-                    if (qrImg) qrImg.src = `/api/qr?data=${encodeURIComponent(targetDns)}`;
-
-                    if (guideTitle) guideTitle.innerHTML = '<span>👑</span> Hướng Dẫn Kích Hoạt Combo Duo VIP (Locket & Spotify):';
+                if (isSpotify) {
+                    if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI';
+                    if (guideTitle) guideTitle.innerHTML = '<span>🎵</span> 4 Bước Kích Hoạt Spotify Premium (30 giây):';
                     if (guideList) {
                         guideList.innerHTML = `
-                            <li><b>Bước 1:</b> Bấm nút màu vàng <b>"CÀI ĐẶT TRỰC TIẾP QUA SAFARI"</b> ở trên.</li>
-                            <li><b>Bước 2:</b> Khi Safari hiển thị thông báo tải hồ sơ, chọn <b>Cho phép (Allow)</b>.</li>
-                            <li><b>Bước 3:</b> Mở ứng dụng <b>Cài đặt trên iPhone</b> → Chọn <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
-                            <li><b>Bước 4:</b> Vào <b>Cài đặt chung</b> → <b>Giới thiệu</b> → <b>Cài đặt tin cậy chứng nhận</b> → Bật xanh công tắc <b>LocketGold</b>.</li>
-                            <li>Mở đồng thời cả Locket và Spotify lên để tận hưởng trọn bộ tính năng VIP! 🎉</li>
+                            <li>Bấm nút <b>CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI</b> (hoặc tải file .mobileconfig).</li>
+                            <li>Bấm <b>"Cho phép" (Allow)</b> khi màn hình hiện thông báo tải hồ sơ.</li>
+                            <li>Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
+                            <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật tin cậy chứng chỉ.</li>
+                            <li>Mở app Spotify và nghe nhạc Lossless không giới hạn! 🎉</li>
                         `;
                     }
                 } else {
-                    // GÓI ĐƠN LẺ: TÁCH RIÊNG HOÀN TOÀN
-                    if (singleBox) singleBox.classList.remove('hidden');
-                    const btnDl = document.getElementById('modalDownloadBtn');
-                    if (btnDl) btnDl.href = 'https://doh.2707226.xyz/alopremiumshop';
-
-                    if (isSpotify) {
-                        if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI';
-                        if (guideTitle) guideTitle.innerHTML = '<span>🎵</span> 4 Bước Kích Hoạt Spotify Premium (30 giây):';
-                        if (guideList) {
-                            guideList.innerHTML = `
-                                <li>Bấm nút <b>CÀI ĐẶT SPOTIFY PREMIUM QUA SAFARI</b> (hoặc tải file .mobileconfig).</li>
-                                <li>Bấm <b>"Cho phép" (Allow)</b> khi màn hình hiện thông báo tải hồ sơ.</li>
-                                <li>Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
-                                <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật tin cậy chứng chỉ.</li>
-                                <li>Mở app Spotify và nghe nhạc Lossless không giới hạn! 🎉</li>
-                            `;
-                        }
-                    } else {
-                        if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT LOCKET GOLD QUA SAFARI';
-                        if (guideTitle) guideTitle.innerHTML = '<span>💛</span> 4 Bước Kích Hoạt Locket Gold VIP (30 giây):';
-                        if (guideList) {
-                            guideList.innerHTML = `
-                                <li>Bấm nút <b>CÀI ĐẶT LOCKET GOLD QUA SAFARI</b> (hoặc tải file .mobileconfig).</li>
-                                <li>Bấm <b>"Cho phép" (Allow)</b> khi màn hình hiện thông báo tải hồ sơ.</li>
-                                <li>Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
-                                <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật xanh <b>LocketGold</b>.</li>
-                                <li>Mở app Locket lên và tận hưởng trọn bộ tính năng Gold VIP! 🎉</li>
-                            `;
-                        }
+                    if (safariBtn) safariBtn.innerHTML = '🌐 CÀI ĐẶT LOCKET GOLD QUA SAFARI';
+                    if (guideTitle) guideTitle.innerHTML = '<span>💛</span> 4 Bước Kích Hoạt Locket Gold VIP (30 giây):';
+                    if (guideList) {
+                        guideList.innerHTML = `
+                            <li>Bấm nút <b>CÀI ĐẶT LOCKET GOLD QUA SAFARI</b> (hoặc tải file .mobileconfig).</li>
+                            <li>Bấm <b>"Cho phép" (Allow)</b> khi màn hình hiện thông báo tải hồ sơ.</li>
+                            <li>Mở <b>Cài đặt (Settings) iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>.</li>
+                            <li>Vào Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận → Bật xanh <b>LocketGold</b>.</li>
+                            <li>Mở app Locket lên và tận hưởng trọn bộ tính năng Gold VIP! 🎉</li>
+                        `;
                     }
                 }
             }
@@ -2687,9 +2695,14 @@
         }
 
         function copyComboUrl(service) {
-            const link = 'https://doh.2707226.xyz/alopremiumshop';
+            const link = 'https://dns3.is-cool.dev/g/ECXI6NSHgj';
             navigator.clipboard.writeText(link).then(() => {
-                showToast(`✅ Đã chép link DNS ${service === 'spotify' ? 'Spotify' : 'Locket'}: ` + link);
+                showToast('✅ Đã sao chép link DNS Combo Duo VIP: ' + link);
+                const btn = document.getElementById('btnCopyComboUrl');
+                if (btn) {
+                    btn.textContent = '✓ Đã chép link DNS!';
+                    setTimeout(() => { btn.innerHTML = '<span>📋</span> Sao Chép Link DNS'; }, 2000);
+                }
             }).catch(() => {
                 showToast('Link: ' + link);
             });

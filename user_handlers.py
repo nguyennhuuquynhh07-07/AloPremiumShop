@@ -190,7 +190,6 @@ async def account_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     orders = db.get_user_orders(user.id)
     done_orders = [o for o in orders if o.get("status") == "done"]
-    dns_link = f"{DNS_BASE_URL}/{DNS_SLUG}"
     lang = db.get_user_lang(user.id)
     lang_name = "Tiếng Việt 🇻🇳" if lang == "vi" else "English 🇬🇧"
 
@@ -206,13 +205,25 @@ async def account_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ]
 
     if done_orders:
+        latest_done = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
+        prod_k = latest_done.get("product")
+        if prod_k in ("combo", "locket_spotify"):
+            dns_link = latest_done.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+            link_label = "👑 <b>Link DNS Combo Duo VIP (Locket & Spotify):</b>"
+        elif prod_k == "locket_ai":
+            dns_link = latest_done.get("vip_download_url") or latest_done.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+            link_label = "✨ <b>Link Cài Đặt VIP ALL-IN-ONE:</b>"
+        else:
+            dns_link = latest_done.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
+            link_label = "🌐 <b>Link DNS Profile iOS:</b>"
+
         for o in sorted(done_orders, key=lambda x: x["created_at"], reverse=True)[:5]:
             prod = PRODUCTS.get(o["product"], {}).get("name", o["product"])
             plan = PRODUCTS.get(o["product"], {}).get("plans", {}).get(o["plan"], {}).get("label", o["plan"])
             lines.append(f"• <b>{prod} ({plan})</b> — UID: <code>{o.get('uid')}</code>")
         lines.extend([
             "\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"🌐 <b>Link DNS Profile iOS:</b>\n<code>{dns_link}</code>",
+            f"{link_label}\n<code>{dns_link}</code>",
             "💡 <i>Mở link trên Safari để tải & cài đặt cấu hình VPN & DNS.</i>"
         ])
         kb = account_kb(dns_link=dns_link)
@@ -361,7 +372,6 @@ async def cb_my_account(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     db.upsert_user(user.id, user.username, user.first_name, user.last_name)
     orders = db.get_user_orders(user.id)
     done_orders = [o for o in orders if o.get("status") == "done"]
-    dns_link = f"{DNS_BASE_URL}/{DNS_SLUG}"
     lang = db.get_user_lang(user.id)
     lang_name = "Tiếng Việt 🇻🇳" if lang == "vi" else "English 🇬🇧"
 
@@ -377,13 +387,25 @@ async def cb_my_account(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ]
 
     if done_orders:
+        latest_done = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
+        prod_k = latest_done.get("product")
+        if prod_k in ("combo", "locket_spotify"):
+            dns_link = latest_done.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+            link_label = "👑 <b>Link DNS Combo Duo VIP (Locket & Spotify):</b>"
+        elif prod_k == "locket_ai":
+            dns_link = latest_done.get("vip_download_url") or latest_done.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+            link_label = "✨ <b>Link Cài Đặt VIP ALL-IN-ONE:</b>"
+        else:
+            dns_link = latest_done.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
+            link_label = "🌐 <b>Link DNS Profile iOS:</b>"
+
         for o in sorted(done_orders, key=lambda x: x["created_at"], reverse=True)[:5]:
             prod = PRODUCTS.get(o["product"], {}).get("name", o["product"])
             plan = PRODUCTS.get(o["product"], {}).get("plans", {}).get(o["plan"], {}).get("label", o["plan"])
             lines.append(f"• <b>{prod} ({plan})</b> — UID: <code>{o.get('uid')}</code>")
         lines.extend([
             "\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"🌐 <b>Link DNS Profile iOS:</b>\n<code>{dns_link}</code>",
+            f"{link_label}\n<code>{dns_link}</code>",
             "💡 <i>Mở link trên Safari để tải & cài đặt cấu hình VPN & DNS.</i>"
         ])
         kb = account_kb(dns_link=dns_link)
@@ -465,7 +487,12 @@ async def cb_get_mobileconfig(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     prod_name = pv.get("name", "Locket & Spotify Premium")
     uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
 
-    dns_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
+    if prod_key in ("combo", "locket_spotify"):
+        dns_link = latest.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+    elif prod_key == "locket_ai":
+        dns_link = latest.get("vip_download_url") or latest.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+    else:
+        dns_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
     profile_bytes = None
     try:
         import httpx
@@ -562,7 +589,16 @@ async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
         is_spotify = (prod_key == "spotify")
         svc_label = "Spotify" if is_spotify else "Locket"
-        target_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
+        if prod_key in ("combo", "locket_spotify"):
+            target_link = latest.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+            prod_name = "Combo Duo VIP"
+            svc_label = "Combo Duo"
+        elif prod_key == "locket_ai":
+            target_link = latest.get("vip_download_url") or latest.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+            prod_name = "VIP ALL-IN-ONE"
+            svc_label = "VIP"
+        else:
+            target_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
     else:
         latest = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
         prod_key = latest.get("product", "locket")
@@ -571,7 +607,16 @@ async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
         is_spotify = (prod_key == "spotify")
         svc_label = "Spotify" if is_spotify else "Locket"
-        target_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
+        if prod_key in ("combo", "locket_spotify"):
+            target_link = latest.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+            prod_name = "Combo Duo VIP"
+            svc_label = "Combo Duo"
+        elif prod_key == "locket_ai":
+            target_link = latest.get("vip_download_url") or latest.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+            prod_name = "VIP ALL-IN-ONE"
+            svc_label = "VIP"
+        else:
+            target_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
 
     try:
         qr_buf = utils.generate_qr_code(target_link)

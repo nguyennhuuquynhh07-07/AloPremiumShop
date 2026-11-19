@@ -64,8 +64,22 @@ def check_ip_rate_limit(ip: str, max_requests: int = 60, window_secs: int = 60) 
     return True, ""
 
 
+_RECENT_DISPATCHED_ALERTS = {}  # order_id -> (timestamp, price)
+
 def dispatch_admin_order_alert(order_id: str, pv: dict, plnv: dict, display_name: str, identifier: str, price: int, orig_price: int, applied_code: str = "", discount_amount: int = 0):
-    """Gửi thông báo đơn hàng mới từ Web sang Bot Telegram siêu tốc (< 0.2s, đa kênh dự phòng)"""
+    """Gửi thông báo đơn hàng mới từ Web sang Bot Telegram siêu tốc (< 0.2s, đa kênh dự phòng, chống spam tin nhắn trùng mã đơn)"""
+    import time
+    now = time.time()
+    # Chống spam thông báo trùng: Nếu mã đơn này đã gửi trong vòng 5 phút (300s) với cùng giá tiền -> bỏ qua
+    last_alert = _RECENT_DISPATCHED_ALERTS.get(order_id)
+    if last_alert:
+        last_time, last_price = last_alert
+        if (now - last_time < 300) and (last_price == price):
+            logger.info(f"Skipping duplicate admin order alert for order {order_id} (already alerted {int(now - last_time)}s ago)")
+            return
+
+    _RECENT_DISPATCHED_ALERTS[order_id] = (now, price)
+
     def _worker():
         if applied_code and discount_amount > 0:
             price_line = (
@@ -439,12 +453,22 @@ class WebAppHandler(BaseHTTPRequestHandler):
             is_done = order.get("status") == "done"
             prod_key = order.get("product")
             is_locket_ai = (prod_key == "locket_ai")
+            is_combo = prod_key in ("combo", "locket_spotify")
             has_studio = order.get("has_studio", False) or (prod_key == "studio_caption")
             username_target = utils.clean_input(str(order.get("uid") or order.get("username") or order.get("account_target") or order.get("display_name") or "")).lstrip("@")
             studio_url = f"https://locket.jayteam.click/caption.html?u={username_target}" if has_studio else None
-            vip_download_url = None
 
-            download_url = None if is_locket_ai else (f"/api/download_profile?order_id={order_id}" if is_done else None)
+            # Xác định chuẩn xác link DNS theo từng gói cước
+            if is_locket_ai:
+                exact_dns = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+                download_url = None
+            elif is_combo:
+                exact_dns = order.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+                download_url = f"/api/download_profile?order_id={order_id}" if is_done else None
+            else:
+                exact_dns = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+                download_url = f"/api/download_profile?order_id={order_id}" if is_done else None
+
             self._send_json(200, {
                 "ok": True,
                 "order_id": order_id,
@@ -456,6 +480,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "uid": order.get("uid"),
                 "display_name": order.get("display_name"),
                 "download_url": download_url,
+                "dns_link": exact_dns if is_done else None,
+                "direct_safari_url": exact_dns if is_done else None,
                 "created_at": order.get("created_at"),
                 "is_locket_ai": is_locket_ai,
                 "contact_admin": is_locket_ai,
@@ -516,15 +542,23 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             product_key = order.get("product", "locket")
             if product_key == "locket_ai":
-                vip_url = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+                vip_url = order.get("vip_download_url") or order.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
                 self.send_response(302)
                 self.send_header("Location", vip_url)
                 self._send_cors_headers()
                 self.end_headers()
                 return
 
-            # Chuyển hướng trực tiếp về hồ sơ chính chủ AloPremiumShop trên server CTV (https://doh.2707226.xyz/alopremiumshop)
-            official_dns_url = f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+            if product_key in ("combo", "locket_spotify"):
+                combo_dns = order.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+                self.send_response(302)
+                self.send_header("Location", combo_dns)
+                self._send_cors_headers()
+                self.end_headers()
+                return
+
+            # Chuyển hướng trực tiếp về hồ sơ chính chủ AloPremiumShop trên server CTV cho Locket và Spotify
+            official_dns_url = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
             self.send_response(302)
             self.send_header("Location", official_dns_url)
             self._send_cors_headers()
@@ -569,6 +603,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     is_ai = (prod_k == "locket_ai")
                     u_disp = od.get("display_name") or od.get("username") or od.get("identifier") or "Khách VIP"
                     u_clean = utils.clean_input(str(u_disp)).lstrip("@")
+                    if is_ai:
+                        exact_safari = None
+                        exact_dl = None
+                    elif prod_k in ("combo", "locket_spotify"):
+                        exact_safari = od.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj") if is_done else None
+                        exact_dl = f"/api/download_profile?order_id={oid}" if is_done else None
+                    else:
+                        exact_safari = od.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}" if is_done else None
+                        exact_dl = f"/api/download_profile?order_id={oid}" if is_done else None
+
                     results.append({
                         "order_id": oid,
                         "product": prod_k,
@@ -579,8 +623,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "display_name": u_disp,
                         "avatar": od.get("avatar"),
                         "created_at": od.get("created_at"),
-                        "download_url": None if is_ai else (f"/api/download_profile?order_id={oid}" if is_done else None),
-                        "direct_safari_url": None if is_ai else (f"{config.DNS_BASE_URL}/{config.DNS_SLUG}" if is_done else None),
+                        "download_url": exact_dl,
+                        "direct_safari_url": exact_safari,
+                        "dns_link": exact_safari,
                         "studio_url": None,
                         "contact_admin": is_ai
                     })
@@ -1404,10 +1449,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     p_price = price if applied_code else pending_same_order.get("price", price)
                     p_code = applied_code or pending_same_order.get("discount_code", "")
                     p_disc = discount_amount if applied_code else pending_same_order.get("discount_amount", 0)
+                    price_changed = False
                     if applied_code and pending_same_order.get("discount_code") != applied_code:
                         db.update_order(p_id, price=p_price, discount_code=p_code, discount_amount=p_disc)
+                        price_changed = True
                     qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
-                    dispatch_admin_order_alert(p_id, pv, plnv, display_name, clean_ident or identifier, p_price, orig_price, p_code, p_disc)
+                    # Chống spam thông báo Admin: Chỉ dispatch alert nếu có thay đổi về giá/mã giảm giá
+                    if price_changed:
+                        dispatch_admin_order_alert(p_id, pv, plnv, display_name, clean_ident or identifier, p_price, orig_price, p_code, p_disc)
                     self._send_json(200, {
                         "ok": True,
                         "order_id": p_id,
