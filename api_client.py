@@ -1,4 +1,4 @@
-﻿"""
+"""
 api_client.py – Gọi API locket.2707226.xyz
 Tích hợp bảng tra cứu và phân loại mã lỗi HTTP chuẩn:
   400, 401, 402, 403, 404, 409, 429

@@ -1,5 +1,7 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,65 +10,82 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #030712;
         }
+
         .font-mono {
             font-family: 'JetBrains Mono', monospace;
         }
+
         .gold-gradient-text {
             background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         .gold-border-glow {
             box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);
         }
+
         .custom-scrollbar::-webkit-scrollbar {
             height: 6px;
             width: 6px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-track {
             background: rgba(15, 23, 42, 0.6);
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: rgba(245, 158, 11, 0.3);
             border-radius: 9999px;
         }
     </style>
 </head>
+
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
 
     <!-- TOP HEADER -->
     <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-xl shadow-lg border border-amber-400/40 shrink-0">
+                <div
+                    class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-xl shadow-lg border border-amber-400/40 shrink-0">
                     👑
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="font-extrabold text-base tracking-tight text-white">AloPremium<span class="text-amber-400">.Shop</span></span>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-black border border-red-500/30">ADMIN MASTER</span>
+                        <span class="font-extrabold text-base tracking-tight text-white">AloPremium<span
+                                class="text-amber-400">.Shop</span></span>
+                        <span
+                            class="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-black border border-red-500/30">ADMIN
+                            MASTER</span>
                     </div>
                     <p class="text-[11px] text-slate-400">Trung Tâm Điều Hành Doanh Thu & Hệ Thống 24/7</p>
                 </div>
             </div>
 
             <div id="headerActions" class="flex items-center gap-2.5 hidden">
-                <a href="/" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+                <a href="/" target="_blank"
+                    class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
                     🌐 Xem Website
                 </a>
-                <a href="https://t.me/AloPremiumShop_Bot" target="_blank" class="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 text-xs font-bold transition-all flex items-center gap-1.5">
+                <a href="https://t.me/AloPremiumShop_Bot" target="_blank"
+                    class="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 text-xs font-bold transition-all flex items-center gap-1.5">
                     🤖 Bot Telegram
                 </a>
-                <button onclick="refreshCurrentTab()" title="Làm mới dữ liệu" class="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer">
+                <button onclick="refreshCurrentTab()" title="Làm mới dữ liệu"
+                    class="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer">
                     🔄
                 </button>
-                <button onclick="logoutAdmin()" class="px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-xs font-semibold text-red-400 transition-all cursor-pointer">
+                <button onclick="logoutAdmin()"
+                    class="px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-xs font-semibold text-red-400 transition-all cursor-pointer">
                     🚪 Đăng xuất
                 </button>
             </div>
@@ -75,24 +94,29 @@
 
     <!-- LOGIN SCREEN (KHI CHƯA XÁC THỰC MÃ PIN) -->
     <div id="loginSection" class="flex-1 flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl gold-border-glow">
+        <div
+            class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl gold-border-glow">
             <div class="text-center mb-6">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-3xl">
+                <div
+                    class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-3xl">
                     🔐
                 </div>
                 <h2 class="text-xl font-black text-white">Xác Thực Quản Trị Viên</h2>
-                <p class="text-xs text-slate-400 mt-1">Vui lòng nhập mã PIN quản trị để mở bảng điều khiển AloPremium.Shop</p>
+                <p class="text-xs text-slate-400 mt-1">Vui lòng nhập mã PIN quản trị để mở bảng điều khiển
+                    AloPremium.Shop</p>
             </div>
 
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-2">Mã PIN Quản Trị Viên:</label>
                     <input type="password" id="pinInput" placeholder="••••" required autofocus
-                           class="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-700 text-center text-2xl tracking-[0.3em] text-amber-400 font-mono font-bold focus:outline-none focus:border-amber-400 transition-all">
+                        class="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-700 text-center text-2xl tracking-[0.3em] text-amber-400 font-mono font-bold focus:outline-none focus:border-amber-400 transition-all">
                 </div>
-                <div id="loginError" class="hidden text-xs text-red-400 font-semibold text-center p-2.5 rounded-xl bg-red-500/10 border border-red-500/20"></div>
+                <div id="loginError"
+                    class="hidden text-xs text-red-400 font-semibold text-center p-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
+                </div>
                 <button type="submit" id="btnLogin"
-                        class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
+                    class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
                     Xác Nhận Đăng Nhập ➔
                 </button>
             </form>
@@ -101,36 +125,38 @@
 
     <!-- MAIN ADMIN DASHBOARD -->
     <main id="dashboardSection" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 hidden">
-        
+
         <!-- NAVIGATION TABS -->
-        <div class="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 overflow-x-auto custom-scrollbar">
+        <div
+            class="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 overflow-x-auto custom-scrollbar">
             <button onclick="switchTab('analytics')" id="tabBtn_analytics"
-                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md">
+                class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md">
                 📊 Thống Kê & Doanh Thu
             </button>
             <button onclick="switchTab('orders')" id="tabBtn_orders"
-                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white flex items-center gap-1.5">
+                class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white flex items-center gap-1.5">
                 <span>📦 Quản Lý Đơn Hàng</span>
-                <span id="pendingBadgeHeader" class="hidden px-1.5 py-0.2 rounded-full bg-red-500 text-white text-[10px] font-black">0</span>
+                <span id="pendingBadgeHeader"
+                    class="hidden px-1.5 py-0.2 rounded-full bg-red-500 text-white text-[10px] font-black">0</span>
             </button>
             <button onclick="switchTab('users')" id="tabBtn_users"
-                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
+                class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
                 👥 Khách Hàng (CRM)
             </button>
             <button onclick="switchTab('codes')" id="tabBtn_codes"
-                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
+                class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
                 🎟 Mã Giảm Giá
             </button>
             <button onclick="switchTab('prices')" id="tabBtn_prices"
-                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white flex items-center gap-1.5">
+                class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white flex items-center gap-1.5">
                 <span>💰</span> Bảng Giá (Web & Bot)
             </button>
             <button onclick="switchTab('api')" id="tabBtn_api"
-                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
+                class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
                 🔗 API CTV & Coin
             </button>
             <button onclick="switchTab('system')" id="tabBtn_system"
-                    class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
+                class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
                 ⚙️ Cấu Hình Hệ Thống
             </button>
         </div>
@@ -142,7 +168,8 @@
             <!-- 4 STAT CARDS -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Card 1: Tổng Doanh Thu -->
-                <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 rounded-3xl p-5 shadow-xl relative overflow-hidden gold-border-glow">
+                <div
+                    class="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 rounded-3xl p-5 shadow-xl relative overflow-hidden gold-border-glow">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Tổng Doanh Thu</span>
                         <span class="text-2xl">💰</span>
@@ -156,7 +183,8 @@
                 <!-- Card 2: Doanh Thu Hôm Nay -->
                 <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Doanh Thu Hôm Nay</span>
+                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Doanh Thu Hôm
+                            Nay</span>
                         <span class="text-2xl">⚡</span>
                     </div>
                     <div class="text-2xl sm:text-3xl font-black text-emerald-400" id="statTodayRevenue">0 đ</div>
@@ -171,7 +199,8 @@
                     </div>
                     <div class="text-2xl sm:text-3xl font-black text-amber-400" id="statPendingOrdersCount">0</div>
                     <p class="text-xs text-slate-400 mt-2">
-                        <button onclick="switchTab('orders', 'pending')" class="text-amber-400 underline font-semibold hover:text-amber-300">
+                        <button onclick="switchTab('orders', 'pending')"
+                            class="text-amber-400 underline font-semibold hover:text-amber-300">
                             Xem & duyệt nhanh ➔
                         </button>
                     </p>
@@ -200,7 +229,9 @@
                                 <p class="text-[11px] text-slate-400">DNS Profile iOS 1 Chạm</p>
                             </div>
                         </div>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20" id="statLocketCount">0 đơn</span>
+                        <span
+                            class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            id="statLocketCount">0 đơn</span>
                     </div>
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs">
@@ -224,7 +255,9 @@
                                 <p class="text-[11px] text-slate-400">Nâng Cấp Bản Quyền Chính Hãng</p>
                             </div>
                         </div>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" id="statSpotifyCount">0 đơn</span>
+                        <span
+                            class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            id="statSpotifyCount">0 đơn</span>
                     </div>
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs">
@@ -270,20 +303,31 @@
         <!-- ============================================================ -->
         <div id="tabContent_orders" class="space-y-6 hidden">
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-                
+
                 <!-- FILTER BAR & SEARCH -->
                 <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-                    <div class="flex items-center gap-1.5 p-1 bg-slate-950 rounded-2xl border border-slate-800 overflow-x-auto custom-scrollbar">
-                        <button onclick="filterOrders('all')" id="orderFilter_all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950">Tất Cả</button>
-                        <button onclick="filterOrders('pending')" id="orderFilter_pending" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">⏳ Chờ Duyệt</button>
-                        <button onclick="filterOrders('done')" id="orderFilter_done" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">✅ Đã Kích Hoạt</button>
-                        <button onclick="filterOrders('rejected')" id="orderFilter_rejected" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">🚫 Đã Hủy</button>
+                    <div
+                        class="flex items-center gap-1.5 p-1 bg-slate-950 rounded-2xl border border-slate-800 overflow-x-auto custom-scrollbar">
+                        <button onclick="filterOrders('all')" id="orderFilter_all"
+                            class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950">Tất
+                            Cả</button>
+                        <button onclick="filterOrders('pending')" id="orderFilter_pending"
+                            class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">⏳ Chờ
+                            Duyệt</button>
+                        <button onclick="filterOrders('done')" id="orderFilter_done"
+                            class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">✅ Đã Kích
+                            Hoạt</button>
+                        <button onclick="filterOrders('rejected')" id="orderFilter_rejected"
+                            class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">🚫 Đã
+                            Hủy</button>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <input type="text" id="orderSearchInput" oninput="searchOrders()" placeholder="🔍 Tìm theo mã đơn, khách, UID..."
-                               class="px-4 py-2 rounded-2xl bg-slate-950 border border-slate-700 text-xs font-semibold text-white focus:outline-none focus:border-amber-400 w-full md:w-64">
-                        <button onclick="loadOrders()" class="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-all cursor-pointer shrink-0">
+                        <input type="text" id="orderSearchInput" oninput="searchOrders()"
+                            placeholder="🔍 Tìm theo mã đơn, khách, UID..."
+                            class="px-4 py-2 rounded-2xl bg-slate-950 border border-slate-700 text-xs font-semibold text-white focus:outline-none focus:border-amber-400 w-full md:w-64">
+                        <button onclick="loadOrders()"
+                            class="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-all cursor-pointer shrink-0">
                             🔄 Làm Mới
                         </button>
                     </div>
@@ -293,7 +337,8 @@
                 <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-800/80">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                            <tr
+                                class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                                 <th class="py-3.5 px-4">Mã Đơn</th>
                                 <th class="py-3.5 px-4">Khách Hàng & UID</th>
                                 <th class="py-3.5 px-4">Dịch Vụ & Gói</th>
@@ -305,7 +350,8 @@
                         </thead>
                         <tbody id="ordersTableBody" class="divide-y divide-slate-800/60 font-medium">
                             <tr>
-                                <td colspan="7" class="py-12 text-center text-slate-500">Đang tải danh sách đơn hàng...</td>
+                                <td colspan="7" class="py-12 text-center text-slate-500">Đang tải danh sách đơn hàng...
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -324,12 +370,15 @@
                         <h3 class="text-base font-black text-white flex items-center gap-2">
                             <span>👥</span> Danh Sách Khách Hàng (CRM)
                         </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Khách hàng từng bấm /start trên Bot hoặc tạo đơn hàng</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Khách hàng từng bấm /start trên Bot hoặc tạo đơn hàng
+                        </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <input type="text" id="userSearchInput" oninput="searchUsers()" placeholder="🔍 Tìm theo ID, Username, Tên..."
-                               class="px-4 py-2 rounded-2xl bg-slate-950 border border-slate-700 text-xs font-semibold text-white focus:outline-none focus:border-amber-400 w-full sm:w-60">
-                        <button onclick="loadUsers()" class="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-all cursor-pointer shrink-0">
+                        <input type="text" id="userSearchInput" oninput="searchUsers()"
+                            placeholder="🔍 Tìm theo ID, Username, Tên..."
+                            class="px-4 py-2 rounded-2xl bg-slate-950 border border-slate-700 text-xs font-semibold text-white focus:outline-none focus:border-amber-400 w-full sm:w-60">
+                        <button onclick="loadUsers()"
+                            class="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-all cursor-pointer shrink-0">
                             🔄 Làm Mới
                         </button>
                     </div>
@@ -338,7 +387,8 @@
                 <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-800/80">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                            <tr
+                                class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                                 <th class="py-3.5 px-4">User ID Telegram</th>
                                 <th class="py-3.5 px-4">Tên Hiển Thị</th>
                                 <th class="py-3.5 px-4">Username Telegram</th>
@@ -350,7 +400,8 @@
                         </thead>
                         <tbody id="usersTableBody" class="divide-y divide-slate-800/60 font-medium">
                             <tr>
-                                <td colspan="7" class="py-12 text-center text-slate-500">Đang tải danh sách người dùng...</td>
+                                <td colspan="7" class="py-12 text-center text-slate-500">Đang tải danh sách người
+                                    dùng...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -368,32 +419,38 @@
                     <h3 class="text-lg font-black text-white flex items-center gap-2">
                         <span>🏷</span> Tạo Mã Giảm Giá Mới
                     </h3>
-                    <p class="text-xs text-slate-400 mt-1">Mã giảm giá sẽ áp dụng tự động khi khách thanh toán qua Web hoặc Bot</p>
+                    <p class="text-xs text-slate-400 mt-1">Mã giảm giá sẽ áp dụng tự động khi khách thanh toán qua Web
+                        hoặc Bot</p>
                 </div>
 
                 <form onsubmit="handleCreateCode(event)" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
                         <div class="sm:col-span-5">
                             <div class="flex items-center justify-between mb-2">
-                                <label class="block text-xs font-bold text-slate-300">Mã Khuyến Mãi (Nhập nhiều mã cách nhau bằng dấu phẩy):</label>
-                                <button type="button" onclick="generateRandomCodes()" class="text-[11px] text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer">⚡ Tạo Tự Động 5 Mã</button>
+                                <label class="block text-xs font-bold text-slate-300">Mã Khuyến Mãi (Nhập nhiều mã cách
+                                    nhau bằng dấu phẩy):</label>
+                                <button type="button" onclick="generateRandomCodes()"
+                                    class="text-[11px] text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer">⚡
+                                    Tạo Tự Động 5 Mã</button>
                             </div>
-                            <input type="text" id="newCodeInput" placeholder="VD: TET2026, QUYNH20, VIP15, SALE50" required
-                                   class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-black uppercase tracking-wider focus:outline-none focus:border-amber-400">
+                            <input type="text" id="newCodeInput" placeholder="VD: TET2026, QUYNH20, VIP15, SALE50"
+                                required
+                                class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-black uppercase tracking-wider focus:outline-none focus:border-amber-400">
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-bold text-slate-300 mb-2">Mức Giảm (%):</label>
-                            <input type="number" id="newDiscountInput" min="1" max="90" placeholder="VD: 15" value="15" required
-                                   class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-bold focus:outline-none focus:border-amber-400">
+                            <input type="number" id="newDiscountInput" min="1" max="90" placeholder="VD: 15" value="15"
+                                required
+                                class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-bold focus:outline-none focus:border-amber-400">
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-bold text-slate-300 mb-2">Lượt Dùng Tối Đa:</label>
                             <input type="number" id="newLimitInput" min="0" placeholder="0 = Vô hạn" value="10"
-                                   class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-semibold focus:outline-none focus:border-amber-400">
+                                class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-sm font-semibold focus:outline-none focus:border-amber-400">
                         </div>
                         <div class="sm:col-span-3">
                             <button type="submit" id="btnCreateCode"
-                                    class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
+                                class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg transition-all cursor-pointer">
                                 ➕ Tạo Mã Ngay
                             </button>
                         </div>
@@ -411,13 +468,15 @@
                         </h3>
                         <p class="text-xs text-slate-400 mt-0.5">Quản lý và theo dõi số lượt sử dụng thực tế</p>
                     </div>
-                    <button onclick="loadCodes()" class="text-xs text-amber-400 hover:underline font-bold">Làm mới</button>
+                    <button onclick="loadCodes()" class="text-xs text-amber-400 hover:underline font-bold">Làm
+                        mới</button>
                 </div>
 
                 <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-800/80">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                            <tr
+                                class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                                 <th class="py-3.5 px-4">Mã Code</th>
                                 <th class="py-3.5 px-4">Mức Giảm</th>
                                 <th class="py-3.5 px-4">Lượt Đã Dùng / Giới Hạn</th>
@@ -440,20 +499,24 @@
         <!-- ============================================================ -->
         <div id="tabContent_prices" class="space-y-6 hidden">
             <!-- Header bar with Save All button & Reset button -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl">
+            <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl">
                 <div>
                     <h3 class="text-base font-black text-white flex items-center gap-2">
                         <span>💰</span> Quản Lý Bảng Giá (Đồng Bộ Web & Bot Telegram)
                     </h3>
                     <p class="text-xs text-slate-400 mt-1">
-                        Sửa giá tại đây sẽ tự động cập nhật ngay lập tức lên toàn bộ giao diện Web Khách và Menu mua hàng của Bot Telegram!
+                        Sửa giá tại đây sẽ tự động cập nhật ngay lập tức lên toàn bộ giao diện Web Khách và Menu mua
+                        hàng của Bot Telegram!
                     </p>
                 </div>
                 <div class="flex items-center gap-2.5">
-                    <button onclick="resetDefaultPrices()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all cursor-pointer">
+                    <button onclick="resetDefaultPrices()"
+                        class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all cursor-pointer">
                         🔄 Giá Mặc Định
                     </button>
-                    <button onclick="saveAllPrices()" id="btnSaveAllPrices" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs shadow-lg hover:shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-1.5">
+                    <button onclick="saveAllPrices()" id="btnSaveAllPrices"
+                        class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs shadow-lg hover:shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-1.5">
                         <span>💾</span> Lưu Toàn Bộ Bảng Giá
                     </button>
                 </div>
@@ -466,11 +529,13 @@
                         <span class="text-xl">📢</span>
                         <div>
                             <h3 class="text-base font-black text-white">Banner Thông Báo Ưu Đãi Đầu Trang Web</h3>
-                            <p class="text-xs text-slate-400">Hiển thị thanh chữ chạy / thông báo ưu đãi nổi bật trên cùng của Website</p>
+                            <p class="text-xs text-slate-400">Hiển thị thanh chữ chạy / thông báo ưu đãi nổi bật trên
+                                cùng của Website</p>
                         </div>
                     </div>
                     <label class="flex items-center gap-2 cursor-pointer select-none">
-                        <input type="checkbox" id="adminBannerEnabled" checked class="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 cursor-pointer">
+                        <input type="checkbox" id="adminBannerEnabled" checked
+                            class="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 cursor-pointer">
                         <span class="text-xs font-bold text-slate-300">Bật hiển thị Banner</span>
                     </label>
                 </div>
@@ -479,14 +544,17 @@
                     <div class="md:col-span-1">
                         <label class="block text-xs font-bold text-slate-300 mb-1">Thẻ nhãn (Badge):</label>
                         <input type="text" id="adminBannerTag" value="🔥 HOT ƯU ĐÃI" placeholder="VD: 🔥 HOT ƯU ĐÃI"
-                               class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
                     </div>
                     <div class="md:col-span-3">
                         <label class="block text-xs font-bold text-slate-300 mb-1">Nội dung thông báo:</label>
                         <div class="flex items-center gap-2">
-                            <input type="text" id="adminBannerText" value="Ra mắt VIP ALL-IN-ONE: Mở khóa trọn bộ Locket Gold, AI Filters, Spotify, YouTube Premium & Tặng kèm Studio Cá Nhân!" placeholder="Nhập câu thông báo ưu đãi..."
-                                   class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
-                            <button onclick="saveAdminBanner()" id="btnSaveBanner" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shrink-0 cursor-pointer shadow-md transition-all">
+                            <input type="text" id="adminBannerText"
+                                value="Ra mắt VIP ALL-IN-ONE: Mở khóa trọn bộ Locket Gold, AI Filters, Spotify, YouTube Premium & Tặng kèm Studio Cá Nhân!"
+                                placeholder="Nhập câu thông báo ưu đãi..."
+                                class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+                            <button onclick="saveAdminBanner()" id="btnSaveBanner"
+                                class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shrink-0 cursor-pointer shadow-md transition-all">
                                 💾 Lưu Banner
                             </button>
                         </div>
@@ -506,9 +574,11 @@
         <div id="tabContent_api" class="space-y-6 hidden">
             <!-- 3 STAT CARDS -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/40 rounded-3xl p-6 shadow-xl relative overflow-hidden gold-border-glow">
+                <div
+                    class="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/40 rounded-3xl p-6 shadow-xl relative overflow-hidden gold-border-glow">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Số Dư Coin Hiện Tại</span>
+                        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Số Dư Coin Hiện
+                            Tại</span>
                         <span class="text-2xl">🪙</span>
                     </div>
                     <div class="text-4xl font-black text-white" id="statBalanceCoin">---</div>
@@ -523,8 +593,11 @@
                     <div class="text-xl font-black text-white" id="statUsername">---</div>
                     <p class="text-xs text-slate-400 mt-1" id="statEmail">---</p>
                     <div class="mt-3 flex items-center gap-2">
-                        <span id="statRoleBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">CTV</span>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Đã kích hoạt</span>
+                        <span id="statRoleBadge"
+                            class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">CTV</span>
+                        <span
+                            class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Đã
+                            kích hoạt</span>
                     </div>
                 </div>
 
@@ -540,10 +613,11 @@
                     <p class="text-xs font-mono text-slate-400 mt-2 truncate">https://locket.2707226.xyz</p>
                     <div class="flex items-center gap-2 mt-3 flex-wrap">
                         <button onclick="syncApiData()" id="btnSyncApi"
-                                class="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+                            class="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
                             🔄 Đồng Bộ Lại Dữ Liệu
                         </button>
-                        <span id="serverSyncBadge" class="hidden px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold"></span>
+                        <span id="serverSyncBadge"
+                            class="hidden px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold"></span>
                     </div>
                 </div>
             </div>
@@ -554,29 +628,34 @@
                     <h3 class="text-base font-black text-white flex items-center gap-2">
                         <span>🔍 Tra Cứu & Kiểm Tra Tài Khoản Trên Máy Chủ API</span>
                     </h3>
-                    <p class="text-xs text-slate-400 mt-0.5">Kiểm tra thông tin chi tiết gói, UID hoặc giải mã link Locket/Spotify qua API CTV</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Kiểm tra thông tin chi tiết gói, UID hoặc giải mã link
+                        Locket/Spotify qua API CTV</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <div class="sm:col-span-1">
-                        <select id="checkServiceSelect" class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs font-bold focus:outline-none focus:border-amber-400">
+                        <select id="checkServiceSelect"
+                            class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs font-bold focus:outline-none focus:border-amber-400">
                             <option value="locket">💛 Locket Gold</option>
                             <option value="spotify">🎵 Spotify Premium</option>
                         </select>
                     </div>
                     <div class="sm:col-span-2">
-                        <input type="text" id="checkIdentifierInput" placeholder="Nhập Username, Link Profile hoặc UID..."
-                               class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:border-amber-400">
+                        <input type="text" id="checkIdentifierInput"
+                            placeholder="Nhập Username, Link Profile hoặc UID..."
+                            class="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:border-amber-400">
                     </div>
                     <div class="sm:col-span-1">
                         <button onclick="performCheckUid()" id="btnPerformCheck"
-                                class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs shadow-md transition-all cursor-pointer">
+                            class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs shadow-md transition-all cursor-pointer">
                             Kiểm Tra API ➔
                         </button>
                     </div>
                 </div>
 
-                <div id="checkUidResult" class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs font-mono space-y-2"></div>
+                <div id="checkUidResult"
+                    class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs font-mono space-y-2">
+                </div>
             </div>
 
             <!-- BẢNG DANH SÁCH GÓI CƯỚC TỪ API -->
@@ -588,13 +667,15 @@
                         </h3>
                         <p class="text-xs text-slate-400 mt-0.5">Giá gốc tính theo Coin trên máy chủ CTV</p>
                     </div>
-                    <span id="packageCountBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300">0 gói</span>
+                    <span id="packageCountBadge"
+                        class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300">0 gói</span>
                 </div>
 
                 <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-800/80">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                            <tr
+                                class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                                 <th class="py-3 px-4">Dịch Vụ</th>
                                 <th class="py-3 px-4">Mã Gói (packageCode)</th>
                                 <th class="py-3 px-4">Tên Gói Cước</th>
@@ -603,7 +684,8 @@
                         </thead>
                         <tbody id="packagesTableBody" class="divide-y divide-slate-800/60 font-medium">
                             <tr>
-                                <td colspan="4" class="py-8 text-center text-slate-500">Đang tải danh sách gói cước từ API...</td>
+                                <td colspan="4" class="py-8 text-center text-slate-500">Đang tải danh sách gói cước từ
+                                    API...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -628,7 +710,8 @@
                         </div>
                         <div class="flex justify-between py-2 border-b border-slate-800/50">
                             <span class="text-slate-400">Số tài khoản:</span>
-                            <span class="font-mono font-bold text-amber-400 text-sm" id="sysBankAccount">34528022007</span>
+                            <span class="font-mono font-bold text-amber-400 text-sm"
+                                id="sysBankAccount">34528022007</span>
                         </div>
                         <div class="flex justify-between py-2 border-b border-slate-800/50">
                             <span class="text-slate-400">Chủ tài khoản:</span>
@@ -649,19 +732,23 @@
                     <div class="space-y-3 text-xs">
                         <div class="flex justify-between py-2 border-b border-slate-800/50">
                             <span class="text-slate-400">Tên miền chính:</span>
-                            <a href="https://alopremium.shop" target="_blank" class="text-amber-400 underline font-mono font-bold">https://alopremium.shop</a>
+                            <a href="https://alopremium.shop" target="_blank"
+                                class="text-amber-400 underline font-mono font-bold">https://alopremium.shop</a>
                         </div>
                         <div class="flex justify-between py-2 border-b border-slate-800/50">
                             <span class="text-slate-400">Bot Telegram:</span>
-                            <a href="https://t.me/AloPremiumShop_Bot" target="_blank" class="text-amber-400 underline font-mono font-bold">@AloPremiumShop_Bot</a>
+                            <a href="https://t.me/AloPremiumShop_Bot" target="_blank"
+                                class="text-amber-400 underline font-mono font-bold">@AloPremiumShop_Bot</a>
                         </div>
                         <div class="flex justify-between py-2 border-b border-slate-800/50">
                             <span class="text-slate-400">Hỗ trợ CSKH:</span>
-                            <a href="https://t.me/nguyennhuquynh28" target="_blank" class="text-cyan-400 underline font-bold">@nguyennhuquynh28 (Zalo: 0345222802)</a>
+                            <a href="https://t.me/nguyennhuquynh28" target="_blank"
+                                class="text-cyan-400 underline font-bold">@nguyennhuquynh28 (Zalo: 0345222802)</a>
                         </div>
                         <div class="flex justify-between py-2">
                             <span class="text-slate-400">Mã PIN Admin Web:</span>
-                            <span class="font-mono text-slate-300 font-bold">•••• (Cài đặt trong file .env: ADMIN_PIN)</span>
+                            <span class="font-mono text-slate-300 font-bold">•••• (Cài đặt trong file .env:
+                                ADMIN_PIN)</span>
                         </div>
                     </div>
                 </div>
@@ -671,15 +758,18 @@
     </main>
 
     <!-- MODAL CHI TIẾT ĐƠN HÀNG -->
-    <div id="orderDetailModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+    <div id="orderDetailModal"
+        class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div
+            class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="font-black text-white text-base flex items-center gap-2">
                     <span>🧾</span> Chi Tiết Đơn Hàng <span id="modalOrderId" class="text-amber-400 font-mono"></span>
                 </h3>
-                <button onclick="closeOrderModal()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
+                <button onclick="closeOrderModal()"
+                    class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
             </div>
-            
+
             <div id="modalOrderBody" class="space-y-3 text-xs">
                 <!-- Nội dung được điền động -->
             </div>
@@ -723,7 +813,7 @@
             try {
                 const res = await fetch('/api/admin/login', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin })
                 });
                 const data = await res.json();
@@ -746,7 +836,7 @@
             try {
                 const res = await fetch('/api/admin/login', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin })
                 });
                 const data = await res.json();
@@ -777,7 +867,7 @@
         function switchTab(tab, subFilter) {
             currentTab = tab;
             const tabs = ['analytics', 'orders', 'users', 'codes', 'prices', 'api', 'system'];
-            
+
             tabs.forEach(t => {
                 const btn = document.getElementById(`tabBtn_${t}`);
                 const content = document.getElementById(`tabContent_${t}`);
@@ -906,9 +996,9 @@
             if (search) {
                 filtered = filtered.filter(o => {
                     return String(o.order_id || '').toLowerCase().includes(search) ||
-                           String(o.username || '').toLowerCase().includes(search) ||
-                           String(o.display_name || '').toLowerCase().includes(search) ||
-                           String(o.uid || '').toLowerCase().includes(search);
+                        String(o.username || '').toLowerCase().includes(search) ||
+                        String(o.display_name || '').toLowerCase().includes(search) ||
+                        String(o.uid || '').toLowerCase().includes(search);
                 });
             }
 
@@ -920,7 +1010,7 @@
             tbody.innerHTML = filtered.map(o => {
                 const isPending = ['pending', 'waiting_payment', 'pending_approval'].includes(o.status);
                 const isDone = o.status === 'done';
-                
+
                 let statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">Khác</span>';
                 if (isDone) {
                     statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✅ Đã Kích Hoạt</span>';
@@ -985,7 +1075,7 @@
             try {
                 const res = await fetch('/api/admin/approve_order', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: currentPin, order_id: orderId })
                 });
                 const data = await res.json();
@@ -1009,7 +1099,7 @@
             try {
                 const res = await fetch('/api/admin/reject_order', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: currentPin, order_id: orderId, reason })
                 });
                 const data = await res.json();
@@ -1032,7 +1122,7 @@
 
             document.getElementById('modalOrderId').textContent = `ORDER_${order.order_id}`;
             const isPending = ['pending', 'waiting_payment', 'pending_approval'].includes(order.status);
-            
+
             const body = document.getElementById('modalOrderBody');
             body.innerHTML = `
                 <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
@@ -1129,8 +1219,8 @@
             if (search) {
                 filtered = filtered.filter(u => {
                     return String(u.user_id || '').toLowerCase().includes(search) ||
-                           String(u.username || '').toLowerCase().includes(search) ||
-                           String(u.first_name || '').toLowerCase().includes(search);
+                        String(u.username || '').toLowerCase().includes(search) ||
+                        String(u.first_name || '').toLowerCase().includes(search);
                 });
             }
 
@@ -1141,7 +1231,7 @@
 
             tbody.innerHTML = filtered.map(u => {
                 const isBanned = u.is_banned;
-                const statusBadge = isBanned 
+                const statusBadge = isBanned
                     ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">Bị Khóa</span>'
                     : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Bình Thường</span>';
 
@@ -1170,7 +1260,7 @@
             try {
                 const res = await fetch('/api/admin/toggle_ban', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: currentPin, user_id: userId, ban: shouldBan })
                 });
                 const data = await res.json();
@@ -1222,7 +1312,7 @@
             }
         }
 
-                function generateRandomCodes() {
+        function generateRandomCodes() {
             const prefix = prompt('Nhập tiền tố cho mã (ví dụ: VIP, TET, QUYNH):', 'VIP');
             if (prefix === null) return;
             const count = parseInt(prompt('Bạn muốn tạo bao nhiêu mã ngẫu nhiên?', '5')) || 5;
@@ -1252,7 +1342,7 @@
             try {
                 const res = await fetch('/api/admin/add_code', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: currentPin, code, discount_pct: discount, max_uses: limit })
                 });
                 const data = await res.json();
@@ -1287,7 +1377,7 @@
             try {
                 const res = await fetch('/api/admin/del_code', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: currentPin, code })
                 });
                 const data = await res.json();
@@ -1301,7 +1391,7 @@
             }
         }
 
-        
+
         // ==========================================
         // 4.5. QUẢN LÝ BẢNG GIÁ (PRICES)
         // ==========================================
@@ -1447,7 +1537,7 @@
             try {
                 const res = await fetch('/api/admin/update_price', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         pin: currentPin,
                         product: prodKey,
@@ -1497,7 +1587,7 @@
             try {
                 const res = await fetch('/api/admin/update_all_prices', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         pin: currentPin,
                         prices: pricesMap
@@ -1529,7 +1619,7 @@
                 showAdminToast('⏳ Đang khôi phục bảng giá mặc định...');
                 const res = await fetch('/api/admin/reset_prices', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: currentPin })
                 });
                 const data = await res.json();
@@ -1562,7 +1652,7 @@
             try {
                 const res = await fetch('/api/admin/update_banner', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         pin: currentPin,
                         enabled: enabled,
@@ -1683,7 +1773,7 @@
             try {
                 const res = await fetch('/api/admin/check_uid', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: currentPin, identifier: ident, service: svc })
                 });
                 const data = await res.json();
@@ -1778,7 +1868,7 @@
                 showAdminToast('⏳ Đang gửi yêu cầu kích hoạt lên máy chủ CTV...');
                 const res = await fetch('/api/admin/manual_activate', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         pin: currentPin,
                         username: username,
@@ -1820,12 +1910,12 @@
 
     <!-- BẢO VỆ ADMIN: CHỐNG F12 & BẢO VỆ MÃ NGUỒN -->
     <script>
-        (function() {
+        (function () {
             'use strict';
             try {
-                const noop = function() {};
+                const noop = function () { };
                 ['log', 'debug', 'info', 'warn', 'error', 'table'].forEach(m => window.console[m] = noop);
-            } catch(e) {}
+            } catch (e) { }
             document.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
             document.addEventListener('keydown', e => {
                 if (e.keyCode === 123 || e.key === 'F12') { e.preventDefault(); return false; }
@@ -1836,4 +1926,5 @@
     </script>
 
 </body>
+
 </html>

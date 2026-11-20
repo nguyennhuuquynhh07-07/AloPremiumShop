@@ -1,4 +1,4 @@
-﻿# Telegram Bot & Web Kích Hoạt Locket Gold VIP + Spotify Premium
+# Telegram Bot & Web Kích Hoạt Locket Gold VIP + Spotify Premium
 
 Dự án chuyển đổi toàn bộ tính năng của giao diện Web kích hoạt DNS Locket Gold thành **Telegram Bot** tự động hóa 100%.
 
@@ -11,7 +11,6 @@ Dự án chuyển đổi toàn bộ tính năng của giao diện Web kích ho�
 * **Nguyên lý thực tế:** Đây là phương pháp **Bypass phía thiết bị (Client-Side MITM Proxy qua DNS-over-HTTPS)**.
   1. **Với Locket:** Ứng dụng Locket dùng dịch vụ của bên thứ ba là RevenueCat (`api.revenuecat.com`) để kiểm tra thuê bao Gold. Khi cài cấu hình DNS và chứng chỉ Root CA (`Locket Gold Root CA`), lưu lượng mạng tới `api.revenuecat.com` bị chuyển hướng qua máy chủ proxy (`160.191.242.70`). Máy chủ này chặn yêu cầu và giả lập (spoofing) một phản hồi JSON khẳng định rằng tài khoản của bạn đã mua gói Gold VIP vĩnh viễn đến năm 2099. Nhờ đó, ứng dụng Locket trên máy mở khóa toàn bộ tính năng Gold.
   2. **Với Spotify:** Cấu hình DNS chặn các domain máy chủ quảng cáo của Spotify (`spclient.wg.spotify.com`,...) giúp hạn chế quảng cáo và can thiệp một số tính năng phát nhạc.
-  3. **Với YouTube:** Cấu hình DNS chặn các máy chủ phân phối quảng cáo của Google/YouTube (`googleads.g.doubleclick.net`, `ad.youtube.com`, `static.doubleclick.net`), đồng thời hỗ trợ xem PiP (Picture-in-Picture) và nghe nhạc khi tắt màn hình ngay trên app iOS.
 
 ### 2. Ưu và nhược điểm
 * **Ưu điểm:**

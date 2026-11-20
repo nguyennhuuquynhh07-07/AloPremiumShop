@@ -1,8 +1,8 @@
-@echo off
+﻿@echo off
 chcp 65001 > nul
-title Telegram Bot - Kích Hoạt Locket Gold 3-in-1
+title Telegram Bot - Kích Hoạt Locket Gold & Spotify
 echo ========================================================
-echo   BOT TELEGRAM KÍCH HOẠT LOCKET GOLD + SPOTIFY + YOUTUBE
+echo   BOT TELEGRAM KÍCH HOẠT LOCKET GOLD + SPOTIFY PREMIUM
 echo ========================================================
 echo.
 

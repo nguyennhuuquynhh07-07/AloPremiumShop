@@ -1062,11 +1062,16 @@ async def cb_admin_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
     else:
         from keyboards import admin_approval_kb
+        acc_info = order.get('display_name') or order.get('uid') or 'Không rõ'
         await query.edit_message_text(
             f"❌ <b>Duyệt đơn thất bại (Lỗi API)!</b>\n\n"
-            f"Mã đơn: <code>ORDER_{order_id}</code>\n"
-            f"Lỗi: <code>{act_msg}</code>\n\n"
-            f"Vui lòng kiểm tra lại số dư coin CTV hoặc kết nối API.",
+            f"🧾 Mã đơn: <code>ORDER_{order_id}</code>\n"
+            f"👤 Khách: @{order.get('username', 'N/A')}\n"
+            f"🎯 Tài khoản khách đã gửi: <code>{acc_info}</code>\n"
+            f"⚠️ Chi tiết lỗi: <code>{act_msg}</code>\n\n"
+            f"💡 <b>Cách xử lý nếu khách nhập sai Username:</b>\n"
+            f"Nhắn khách gửi lại Username/Link chuẩn, sau đó gửi lệnh:\n"
+            f"<code>/duyet {order_id} &lt;username_đúng&gt;</code> để hệ thống sửa và tự động duyệt lại!",
             parse_mode=ParseMode.HTML,
             reply_markup=admin_approval_kb(order_id)
         )
@@ -1163,11 +1168,16 @@ async def packages_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # ── /duyet: Lệnh duyệt đơn hàng bằng tay cho Admin ───────────────────────────
 
 async def duyet_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Admin duyệt đơn bằng lệnh: /duyet <order_id>"""
+    """Admin duyệt đơn bằng lệnh: /duyet <order_id> [username_mới]"""
     if not is_admin(update.effective_user.id):
         return
     if not ctx.args:
-        await update.message.reply_text("⚠️ Vui lòng nhập mã đơn hàng.\nVí dụ: <code>/duyet ORDER_VIP1234</code>", parse_mode=ParseMode.HTML)
+        await update.message.reply_text(
+            "⚠️ <b>Cú pháp duyệt đơn:</b>\n"
+            "• Duyệt theo mã: <code>/duyet NZ9408B5</code>\n"
+            "• Sửa username sai & duyệt lại ngay: <code>/duyet NZ9408B5 username_đúng</code>",
+            parse_mode=ParseMode.HTML
+        )
         return
 
     raw_id = ctx.args[0].upper().replace("ORDER_", "").strip()
@@ -1176,13 +1186,27 @@ async def duyet_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Không tìm thấy đơn hàng <code>ORDER_{raw_id}</code>.", parse_mode=ParseMode.HTML)
         return
 
+    # Nếu admin truyền kèm username mới để sửa lỗi khách gõ sai
+    if len(ctx.args) >= 2:
+        new_acc = utils.clean_input(ctx.args[1])
+        db.update_order(raw_id, uid=new_acc, account_target=new_acc, display_name=new_acc)
+        order["uid"] = new_acc
+        order["account_target"] = new_acc
+        order["display_name"] = new_acc
+        await update.message.reply_text(f"📝 <b>Đã sửa tài khoản đơn ORDER_{raw_id} thành:</b> <code>{new_acc}</code>", parse_mode=ParseMode.HTML)
+
     from order_service import execute_order_activation
     msg = await update.message.reply_text(f"⏳ Đang kích hoạt đơn <code>ORDER_{raw_id}</code>...", parse_mode=ParseMode.HTML)
     ok, res = await execute_order_activation(ctx.bot, raw_id)
     if ok:
-        await msg.edit_text(f"✅ Đã duyệt thành công đơn <code>ORDER_{raw_id}</code> cho @{order['username']}!", parse_mode=ParseMode.HTML)
+        await msg.edit_text(f"✅ Đã duyệt thành công đơn <code>ORDER_{raw_id}</code> cho @{order.get('username', 'khách')}!", parse_mode=ParseMode.HTML)
     else:
-        await msg.edit_text(f"❌ Kích hoạt thất bại: <code>{res}</code>", parse_mode=ParseMode.HTML)
+        await msg.edit_text(
+            f"❌ <b>Kích hoạt thất bại:</b> <code>{res}</code>\n\n"
+            f"💡 Nếu khách gửi sai username, bạn sửa lại bằng cú pháp:\n"
+            f"<code>/duyet {raw_id} &lt;username_đúng&gt;</code>",
+            parse_mode=ParseMode.HTML
+        )
 
 
 async def setprice_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1228,3 +1252,19 @@ async def setprice_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "<code>/setprice locket test 10000</code>"
     )
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=admin_prices_overview_kb())
+
+
+async def sync_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin gõ /sync để đồng bộ ngay lập tức toàn bộ đơn hàng từ máy chủ CTV (web chủ)"""
+    if not is_admin(update.effective_user.id):
+        return
+    msg = await update.message.reply_text("⏳ Đang đồng bộ tài khoản từ máy chủ CTV (web chủ)...", parse_mode=ParseMode.HTML)
+    from order_service import sync_upstream_orders
+    cnt = await asyncio.to_thread(sync_upstream_orders)
+    await msg.edit_text(
+        f"✅ <b>ĐỒNG BỘ HOÀN TẤT TỪ WEB CHỦ!</b>\n\n"
+        f"📦 Đã đồng bộ <b>{cnt}</b> tài khoản kích hoạt từ máy chủ CTV vào hệ thống.\n"
+        f"🎉 Khách hàng giờ đây có thể nhập Username hoặc UID trên trang web để tra cứu và tải lại cấu hình DNS trọn đời!",
+        parse_mode=ParseMode.HTML
+    )
+
