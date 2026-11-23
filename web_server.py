@@ -28,6 +28,26 @@ import utils
 
 logger = logging.getLogger("web_server")
 
+MIME_TYPES = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".webmanifest": "application/manifest+json; charset=utf-8",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+    ".ttf": "font/ttf",
+    ".mp4": "video/mp4",
+    ".mobileconfig": "application/x-apple-aspen-config",
+}
+
+
 BOT_INSTANCE = None
 BOT_LOOP = None
 
@@ -202,12 +222,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
-        path = parsed.path
+        path = urllib.parse.unquote(parsed.path)
         params = parse_qs(parsed.query)
         client_ip = self._get_client_ip()
 
-        # Kiểm tra Rate Limit (ngoại trừ ping keep-alive và ảnh)
-        if not path.startswith(("/health", "/ping")) and not path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4")):
+        # Miễn trừ Rate Limit cho static assets, ping và tài liệu
+        static_exts = (".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4", ".js", ".css", ".woff", ".woff2", ".ttf", ".webmanifest", ".mobileconfig")
+        if not path.startswith(("/health", "/ping")) and not path.endswith(static_exts):
             allowed, reason = check_ip_rate_limit(client_ip, max_requests=60, window_secs=60)
             if not allowed:
                 self._send_json(429, {"ok": False, "error": reason})
@@ -222,33 +243,70 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Bot Locket Gold + Spotify is running 24/7!")
             return
 
-        # 1.1 Phục vụ Static Images, Videos, Assets & Logo trang web
-        if path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4", ".js", ".css")) and ".." not in path:
+        # 1.2 Phục vụ Tải file Profile DNS FREE trực tiếp (.mobileconfig)
+        if path in ("/Free.mobileconfig", "/LocketGold.mobileconfig", "/download-profile"):
+            cfg_name = "Free.mobileconfig"
+            cfg_path = os.path.join(os.path.dirname(__file__), cfg_name)
+            if not os.path.exists(cfg_path):
+                cfg_path = os.path.join(os.path.dirname(__file__), "LocketGold.mobileconfig")
+            if os.path.exists(cfg_path):
+                with open(cfg_path, "rb") as f:
+                    cfg_bytes = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/x-apple-aspen-config")
+                self.send_header("Content-Disposition", 'attachment; filename="Free.mobileconfig"')
+                self.send_header("Content-Length", str(len(cfg_bytes)))
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(cfg_bytes)
+                return
+
+        # 1.3 Phục vụ Trang hướng dẫn cài DNS (huong-dan.html / cai-dns.html)
+        if path in ("/huong-dan", "/huong-dan.html", "/cai-dns", "/cai-dns.html"):
+            hd_path = os.path.join(os.path.dirname(__file__), "huong-dan.html")
+            if not os.path.exists(hd_path):
+                hd_path = os.path.join(os.path.dirname(__file__), "cai-dns.html")
+            if os.path.exists(hd_path):
+                with open(hd_path, "rb") as f:
+                    hd_bytes = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(hd_bytes)))
+                self.send_header("Cache-Control", "no-cache, must-revalidate")
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(hd_bytes)
+                return
+
+        # 1.4 Phục vụ site.webmanifest
+        if path == "/site.webmanifest":
+            sm_path = os.path.join(os.path.dirname(__file__), "site.webmanifest")
+            if os.path.exists(sm_path):
+                with open(sm_path, "rb") as f:
+                    sm_bytes = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/manifest+json; charset=utf-8")
+                self.send_header("Content-Length", str(len(sm_bytes)))
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(sm_bytes)
+                return
+
+        # 1.1 Phục vụ Static Images, Videos, Assets, Fonts & Next.js Chunks
+        if path.endswith(static_exts) and ".." not in path:
             file_name = os.path.basename(path)
-            if file_name == "favicon.ico":
-                file_name = "favicon.png"
             clean_rel = path.lstrip("/")
             file_path = os.path.join(os.path.dirname(__file__), clean_rel)
             if not os.path.exists(file_path):
                 file_path = os.path.join(os.path.dirname(__file__), file_name)
             if os.path.exists(file_path) and os.path.isfile(file_path):
-                ext = file_name.rsplit(".", 1)[-1].lower()
-                if ext == "mp4":
-                    mime = "video/mp4"
-                elif ext == "ico":
-                    mime = "image/x-icon"
-                elif ext == "svg":
-                    mime = "image/svg+xml"
-                elif ext == "js":
-                    mime = "application/javascript; charset=utf-8"
-                elif ext == "css":
-                    mime = "text/css; charset=utf-8"
-                else:
-                    mime = f"image/{ext}"
-
+                ext = os.path.splitext(file_path)[1].lower()
+                mime = MIME_TYPES.get(ext, "application/octet-stream")
                 file_size = os.path.getsize(file_path)
+
                 range_header = self.headers.get("Range")
-                if range_header and ext == "mp4":
+                if range_header and ext == ".mp4":
                     try:
                         range_val = range_header.replace("bytes=", "").strip()
                         parts = range_val.split("-")
@@ -394,6 +452,26 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # 5. API Tải file .mobileconfig (BẢO VỆ CHẶT CHẼ: CHỈ CHO ĐƠN ĐÃ THANH TOÁN THẬT)
         if path == "/api/download_profile" or path.endswith(".mobileconfig"):
+            order_id = params.get("order_id", [""])[0].strip()
+            username = params.get("username", [""])[0].strip() or params.get("uid", [""])[0].strip()
+            is_free = params.get("free", [""])[0].strip().lower() in ("1", "true") or order_id.lower() in ("free", "locket_free")
+
+            if is_free or path in ("/Free.mobileconfig", "/LocketGold.mobileconfig", "/download-profile"):
+                cfg_path = os.path.join(os.path.dirname(__file__), "Free.mobileconfig")
+                if not os.path.exists(cfg_path):
+                    cfg_path = os.path.join(os.path.dirname(__file__), "LocketGold.mobileconfig")
+                if os.path.exists(cfg_path):
+                    with open(cfg_path, "rb") as f:
+                        cfg_bytes = f.read()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/x-apple-aspen-config")
+                    self.send_header("Content-Disposition", 'attachment; filename="Free.mobileconfig"')
+                    self.send_header("Content-Length", str(len(cfg_bytes)))
+                    self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    self._send_cors_headers()
+                    self.end_headers()
+                    self.wfile.write(cfg_bytes)
+                    return
             order_id = params.get("order_id", [""])[0].strip()
             username = params.get("username", [""])[0].strip() or params.get("uid", [""])[0].strip()
 
@@ -1671,3 +1749,25 @@ def start_web_server(bot=None, loop=None, port=None):
         logger.warning(f"Initial upstream sync failed: {e_sync}")
     return server
 
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+    port = int(os.environ.get("PORT", 8080))
+    server = ThreadedHTTPServer(("0.0.0.0", port), WebAppHandler)
+    print(f"\n======================================================")
+    print(f"🚀 MÁY CHỦ HỢP NHẤT WEB BÁN HÀNG & API ĐANG CHẠY:")
+    print(f"👉 Trang Chủ & Mua Hàng: http://localhost:{port}")
+    print(f"👉 Hướng Dẫn DNS 15 Bước: http://localhost:{port}/huong-dan")
+    print(f"👉 Bảng Quản Trị Admin:  http://localhost:{port}/admin (PIN: 2802)")
+    print(f"👉 Tải Hồ Sơ DNS Free:   http://localhost:{port}/Free.mobileconfig")
+    print(f"======================================================\n")
+    try:
+        from order_service import sync_upstream_orders
+        threading.Thread(target=sync_upstream_orders, daemon=True).start()
+    except Exception as e_sync:
+        logger.warning(f"Initial upstream sync failed: {e_sync}")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nĐã tắt máy chủ.")

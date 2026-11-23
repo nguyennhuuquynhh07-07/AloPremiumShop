@@ -99,17 +99,6 @@ PRODUCTS = {
             "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "SPVV",      "price": 180000},
         },
     },
-    "combo": {
-        "name": "Combo Duo VIP (Locket + Spotify)",
-        "emoji": "👑",
-        "service": "combo",
-        "description": "Trọn bộ Locket Gold VIP & Spotify Premium – Tiết kiệm tới 81.000đ, kích hoạt đồng thời cả hai dịch vụ.",
-        "plans": {
-            "6m":   {"label": "6 Tháng",     "packageCode": "COMBO6M",  "price": 65000},
-            "1y":   {"label": "1 Năm",       "packageCode": "COMBO1Y",  "price": 99000},
-            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "COMBOVV",  "price": 259000},
-        },
-    },
     "locket_spotify": {
         "name": "Combo Duo VIP (Locket + Spotify)",
         "emoji": "👑",

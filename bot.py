@@ -40,7 +40,7 @@ from handlers.user_handlers import (
     cb_my_orders, cb_order_details, cb_support, cb_my_account,
     cb_cmd_setlang, cb_lang, cb_apidocs, cb_get_mobileconfig,
     cb_back_main, cb_back_products, cb_show_qr,
-    receive_identifier, cancel_conv, resetspotify_user_cmd, guide_cmd, cb_show_guide, cb_user_reset_spotify_menu,
+    receive_identifier, cancel_conv, resetspotify_user_cmd, guide_cmd, cb_show_guide, cb_free_locket, cb_user_reset_spotify_menu,
     cb_coupon, cb_coupon_info, coupon_cmd, handle_user_coupon_text,
     WAITING_IDENTIFIER,
 )
@@ -296,6 +296,7 @@ def main():
             CallbackQueryHandler(cb_support, pattern=r"^support$"),
             CallbackQueryHandler(cb_zalo_group, pattern=r"^zalo_group$"),
             CallbackQueryHandler(cb_show_guide, pattern=r"^show_guide$"),
+            CallbackQueryHandler(cb_free_locket, pattern=r"^free_locket$"),
             CallbackQueryHandler(cb_my_orders, pattern=r"^my_orders$"),
             CallbackQueryHandler(cb_my_account, pattern=r"^my_account$"),
         ],
@@ -353,6 +354,7 @@ def main():
 
     # ── Callback người dùng ──────────────────────────────────────────────────
     app.add_handler(CallbackQueryHandler(cb_show_guide,   pattern=r"^show_guide$"))
+    app.add_handler(CallbackQueryHandler(cb_free_locket,  pattern=r"^free_locket$"))
     app.add_handler(CallbackQueryHandler(cb_user_reset_spotify_menu, pattern=r"^user_reset_spotify_menu$"))
     app.add_handler(CallbackQueryHandler(cb_coupon,        pattern=r"^coupon:"))
     app.add_handler(CallbackQueryHandler(cb_coupon_info,   pattern=r"^coupon_info:"))

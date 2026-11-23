@@ -1,0 +1,7 @@
+/*.mobileconfig
+  Content-Type: application/x-apple-aspen-config
+  Content-Disposition: attachment; filename="Free.mobileconfig"
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/*
+  X-Robots-Tag: index, follow
