@@ -15,10 +15,7 @@ def main_menu_kb() -> InlineKeyboardMarkup:
     prods = getattr(utils, "get_dynamic_products", lambda: PRODUCTS)()
     web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop")
     rows = [
-        [
-            InlineKeyboardButton("🌐 Mở Website Mua Hàng", url=web_url),
-            InlineKeyboardButton("🎁 Gói FREE (0đ)", callback_data="free_locket")
-        ]
+        [InlineKeyboardButton("🌐 Mở Website Mua Hàng & Tra Cứu", url=web_url)]
     ]
     for pk, pv in prods.items():
         if pk == "combo":
