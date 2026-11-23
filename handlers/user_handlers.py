@@ -1745,6 +1745,51 @@ async def guide_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(GUIDE_TEXT, parse_mode=ParseMode.HTML, reply_markup=back_main_kb())
 
 
+async def cb_free_locket(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Xử lý tải hồ sơ DNS Free trực tiếp trong Telegram Bot"""
+    query = update.callback_query
+    await query.answer()
+    web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop").rstrip("/")
+    guide_url = f"{web_url}/huong-dan"
+    free_config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Free.mobileconfig")
+
+    caption = (
+        "🎁 <b>HỒ SƠ CẤU HÌNH DNS LOCKET GOLD MIỄN PHÍ (0đ)</b>\n\n"
+        "✨ <b>Đặc quyền bản thử nghiệm FREE:</b>\n"
+        "• Quay video 30s dài nhất\n"
+        "• Xem ai xem lén ảnh của bạn\n"
+        "• Đăng ảnh & video từ thư viện\n"
+        "• Caption dài hơn, không quảng cáo\n"
+        "• Cài đặt DNS iOS hoàn toàn miễn phí\n\n"
+        f"📖 <b>Xem hướng dẫn 15 bước cài đặt chi tiết tại:</b>\n"
+        f"👉 <a href='{guide_url}'>{guide_url}</a>\n\n"
+        "<i>File cấu hình .mobileconfig được đính kèm ngay bên dưới. Chúc bạn trải nghiệm vui vẻ!</i>"
+    )
+
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("📖 Xem Hướng Dẫn 15 Bước (Web)", url=guide_url)],
+        [InlineKeyboardButton("⚡ Nâng Cấp Locket VIP 1 Năm / Vĩnh Viễn", callback_data="product:locket_spotify")],
+        [InlineKeyboardButton("🏠 Menu Chính", callback_data="back_main")]
+    ])
+
+    if os.path.exists(free_config_path):
+        with open(free_config_path, "rb") as f:
+            await ctx.bot.send_document(
+                chat_id=update.effective_user.id,
+                document=f,
+                filename="Free.mobileconfig",
+                caption=caption,
+                parse_mode=ParseMode.HTML,
+                reply_markup=kb
+            )
+    else:
+        await query.message.reply_text(
+            caption + f"\n\n🔗 Tải trực tiếp qua trình duyệt: {web_url}/Free.mobileconfig",
+            parse_mode=ParseMode.HTML,
+            reply_markup=kb
+        )
+
+
 async def cb_show_guide(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Callback bấm nút xem Hướng dẫn cài đặt iOS."""
     query = update.callback_query

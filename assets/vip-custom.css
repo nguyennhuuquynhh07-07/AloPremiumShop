@@ -1,0 +1,694 @@
+/**
+ * vip-custom.css - Giao diện thuần cho các tính năng VIP, Form đặt hàng, Modal VietQR & Tra cứu
+ * Sử dụng 100% CSS thuần kế thừa biến màu, hiệu ứng kính mờ và font chữ hệ thống SF Pro Rounded của Locket
+ */
+
+:root {
+  --cream: #fffbf1;
+  --cream2: #fff3d6;
+  --card: #fff8e9;
+  --card2: #fffdf6;
+  --line: #f0e3c3;
+  --amber: #ffb000;
+  --amber-d: #e89a00;
+  --amber-dd: #b97e00;
+  --gold: #ffc132;
+  --ink: #241a07;
+  --ink2: #3a3121;
+  --muted: #9a8c72;
+  --faint: #b6ab93;
+  --font: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ============================================================
+   1. TOP PROMO BANNER BAR
+   ============================================================ */
+.vip-top-promo-banner {
+  background: linear-gradient(90deg, #ffb000 0%, #ff8a3d 50%, #e85d04 100%);
+  color: #ffffff;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  text-align: center;
+  position: relative;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.vip-top-promo-banner .vip-tag {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.vip-top-promo-banner .vip-close {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ============================================================
+   2. VIP SECTION & PRODUCT SELECTOR
+   ============================================================ */
+.vip-section {
+  max-width: 1140px;
+  margin: 36px auto 60px;
+  padding: 0 22px;
+  font-family: var(--font);
+}
+
+.vip-sec-head {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.vip-sec-head .vip-kicker {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--amber-d);
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+
+.vip-sec-head h2 {
+  font-size: clamp(26px, 5vw, 36px);
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.vip-sec-head p {
+  color: var(--muted);
+  font-size: 15px;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+/* Tabs chọn 4 sản phẩm (Pill tabs) */
+.vip-product-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.vip-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1.5px solid var(--line);
+  color: var(--ink2);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 6px rgba(36, 26, 7, 0.03);
+}
+
+.vip-tab-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--amber);
+}
+
+.vip-tab-btn.active {
+  background: var(--amber);
+  border-color: var(--amber-d);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(255, 176, 0, 0.35);
+}
+
+/* Khối chu kỳ gói (Pills: 1M, 6M, 1Y, LTM) */
+.vip-plan-pills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.vip-plan-pill {
+  background: var(--card2);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  padding: 14px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vip-plan-pill:hover {
+  border-color: var(--amber);
+  background: var(--cream2);
+}
+
+.vip-plan-pill.active {
+  border-color: var(--amber);
+  background: #ffffff;
+  box-shadow: 0 0 0 2px var(--amber), 0 8px 20px rgba(255, 176, 0, 0.15);
+}
+
+.vip-plan-pill .vip-pill-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.vip-plan-pill .vip-pill-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* Banner dùng thử 5k */
+.vip-trial-banner {
+  background: linear-gradient(90deg, #fff7e6 0%, #ffedd5 100%);
+  border: 1.5px dashed var(--amber);
+  border-radius: 18px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #9a3412;
+}
+
+.vip-trial-btn {
+  background: var(--amber);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   3. ORDER CARD & FORM
+   ============================================================ */
+.vip-order-card {
+  background: #ffffff;
+  border: 2px solid var(--line);
+  border-radius: 32px;
+  padding: 28px 24px;
+  box-shadow: 0 16px 36px rgba(36, 26, 7, 0.04);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.vip-product-badge {
+  display: inline-block;
+  background: var(--cream2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--amber-d);
+  margin-bottom: 14px;
+}
+
+.vip-input-group {
+  margin-bottom: 16px;
+}
+
+.vip-input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.vip-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.vip-input {
+  width: 100%;
+  padding: 14px 16px;
+  padding-right: 90px;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 18px;
+  border: 1.5px solid var(--line);
+  background: var(--cream);
+  color: var(--ink);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.vip-input:focus {
+  border-color: var(--amber);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 176, 0, 0.2);
+}
+
+.vip-btn-check {
+  position: absolute;
+  right: 6px;
+  background: var(--amber);
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 8px 14px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vip-btn-check:hover {
+  background: var(--amber-d);
+}
+
+/* Avatar result box */
+.vip-account-preview {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: var(--cream2);
+  border: 1.5px solid var(--line);
+  margin-top: 12px;
+}
+
+.vip-account-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--amber);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.vip-account-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.vip-account-uid {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.vip-error-msg {
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 6px;
+  display: none;
+}
+
+/* Studio Addon Box */
+.vip-addon-box {
+  background: var(--card2);
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.vip-addon-box input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--amber);
+  cursor: pointer;
+}
+
+/* Coupon Box */
+.vip-coupon-wrap {
+  display: flex;
+  gap: 8px;
+  position: relative;
+}
+
+.vip-btn-apply {
+  background: var(--ink);
+  color: #ffffff;
+  border: none;
+  border-radius: 16px;
+  padding: 0 18px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vip-btn-clear-coupon {
+  position: absolute;
+  right: 90px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: none;
+}
+
+.vip-coupon-badge {
+  display: none;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+/* Nút đặt hàng CTA lớn */
+.vip-btn-submit {
+  width: 100%;
+  padding: 16px;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(180deg, var(--amber) 0%, var(--amber-d) 100%);
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(255, 176, 0, 0.4);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.vip-btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(255, 176, 0, 0.55);
+}
+
+.vip-resume-btn {
+  display: none;
+  width: 100%;
+  background: transparent;
+  border: 1.5px solid var(--line);
+  color: var(--ink2);
+  border-radius: 16px;
+  padding: 10px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+/* ============================================================
+   4. VIETQR PAYMENT MODAL (GLASSMORPHISM)
+   ============================================================ */
+.vip-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(36, 26, 7, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.vip-modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.vip-modal-card {
+  background: #ffffff;
+  border-radius: 32px;
+  width: 100%;
+  max-width: 440px;
+  padding: 28px 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  position: relative;
+  font-family: var(--font);
+  transform: translateY(20px) scale(0.96);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.vip-modal-backdrop.open .vip-modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.vip-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vip-qr-img {
+  width: 220px;
+  height: 220px;
+  border-radius: 16px;
+  margin: 12px auto;
+  display: block;
+  border: 1px solid var(--line);
+}
+
+.vip-bank-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--cream);
+  border-radius: 12px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.vip-btn-copy {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--amber-d);
+  cursor: pointer;
+}
+
+.vip-countdown {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e85d04;
+  margin-top: 10px;
+}
+
+/* Nút Safari & Download Profile Thành Công */
+.vip-btn-safari {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: #0284c7;
+  color: #ffffff;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 800;
+  border-radius: 16px;
+  text-align: center;
+  margin-top: 12px;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+}
+
+.vip-btn-download {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: var(--amber);
+  color: #ffffff;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 800;
+  border-radius: 16px;
+  text-align: center;
+  margin-top: 8px;
+  box-shadow: 0 4px 14px rgba(255, 176, 0, 0.35);
+}
+
+/* ============================================================
+   5. LOOKUP & RESET MODALS
+   ============================================================ */
+.vip-modal-head {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.vip-modal-head h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.vip-modal-head p {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.vip-lookup-result {
+  margin-top: 16px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* ============================================================
+   6. GLOBAL TOAST NOTIFICATION
+   ============================================================ */
+.vip-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(40px);
+  background: var(--ink);
+  color: #ffffff;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+
+.vip-toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ============================================================
+   7. NAV PILLS FOR HEADER
+   ============================================================ */
+.vip-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vip-nav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--line);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.vip-nav-pill:hover {
+  background: #ffffff;
+  border-color: var(--amber);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .vip-nav-pill {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+/* --- Free Plan Card Centering & Style Polish --- */
+#pricing .sec-head {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+#pricing .plans {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 16px 20px !important;
+  margin: 0 auto !important;
+  max-width: 600px !important;
+}
+
+#pricing .plan {
+  width: 100% !important;
+  max-width: 340px !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+

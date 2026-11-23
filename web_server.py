@@ -203,11 +203,28 @@ class WebAppHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
+        raw_path = urllib.parse.unquote(path)
         params = parse_qs(parsed.query)
         client_ip = self._get_client_ip()
 
-        # Kiểm tra Rate Limit (ngoại trừ ping keep-alive và ảnh)
-        if not path.startswith(("/health", "/ping")) and not path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4")):
+        # 0. Chặn Path Traversal và các ký tự nguy hiểm
+        if ".." in raw_path or "%2e" in self.path.lower() or "\\." in raw_path:
+            self._send_json(403, {"ok": False, "error": "Access denied"})
+            return
+
+        # 0.1 Chặn tuyệt đối truy cập các file nhạy cảm (.py, .json, .env, .bat, .sh, .git, v.v.)
+        lower_raw = raw_path.lower()
+        forbidden_exts = (".py", ".json", ".env", ".bat", ".sh", ".git", ".yaml", ".yml", ".md", ".lock")
+        if any(lower_raw.endswith(ext) or (ext + "/") in lower_raw for ext in forbidden_exts):
+            self._send_json(403, {"ok": False, "error": "Access denied"})
+            return
+
+        # Kiểm tra Rate Limit (ngoại trừ ping keep-alive và tài nguyên tĩnh)
+        static_exts_check = (
+            ".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4",
+            ".js", ".css", ".woff", ".woff2", ".ttf", ".webmanifest", ".mobileconfig"
+        )
+        if not path.startswith(("/health", "/ping")) and not lower_raw.endswith(static_exts_check):
             allowed, reason = check_ip_rate_limit(client_ip, max_requests=60, window_secs=60)
             if not allowed:
                 self._send_json(429, {"ok": False, "error": reason})
@@ -222,29 +239,105 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Bot Locket Gold + Spotify is running 24/7!")
             return
 
-        # 1.1 Phục vụ Static Images, Videos, Assets & Logo trang web
-        if path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4", ".js", ".css")) and ".." not in path:
-            file_name = os.path.basename(path)
-            if file_name == "favicon.ico":
-                file_name = "favicon.png"
-            clean_rel = path.lstrip("/")
-            file_path = os.path.join(os.path.dirname(__file__), clean_rel)
-            if not os.path.exists(file_path):
-                file_path = os.path.join(os.path.dirname(__file__), file_name)
+        # 1.1 Phục vụ file cấu hình Free.mobileconfig cho iOS Safari (Gói miễn phí)
+        if raw_path in ("/Free.mobileconfig", "/LocketNgon.mobileconfig"):
+            cfg_name = os.path.basename(raw_path) if os.path.exists(os.path.join(os.path.dirname(__file__), os.path.basename(raw_path))) else "Free.mobileconfig"
+            cfg_path = os.path.join(os.path.dirname(__file__), cfg_name)
+            if os.path.exists(cfg_path) and os.path.isfile(cfg_path):
+                with open(cfg_path, "rb") as f:
+                    cfg_data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/x-apple-aspen-config")
+                self.send_header("Content-Disposition", f'attachment; filename="{cfg_name}"')
+                self.send_header("Content-Length", str(len(cfg_data)))
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(cfg_data)
+                return
+            else:
+                self._send_json(404, {"ok": False, "error": f"{cfg_name} not found"})
+                return
+
+        # 1.2 Phục vụ trang Hướng dẫn cài đặt DNS (Clean URL)
+        if raw_path in ("/huong-dan", "/huong-dan.html", "/cai-dns", "/cai-dns.html"):
+            guide_path = os.path.join(os.path.dirname(__file__), "huong-dan.html")
+            if not os.path.exists(guide_path):
+                guide_path = os.path.join(os.path.dirname(__file__), "cai-dns.html")
+            if os.path.exists(guide_path) and os.path.isfile(guide_path):
+                with open(guide_path, "rb") as f:
+                    guide_bytes = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(guide_bytes)))
+                self.send_header("Cache-Control", "public, max-age=3600")
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(guide_bytes)
+                return
+            else:
+                self._send_json(404, {"ok": False, "error": "huong-dan.html not found"})
+                return
+
+        # 1.3 Phục vụ Static Files trong danh sách thư mục cho phép (Bảo mật Whitelist & Path Traversal)
+        ALLOWED_STATIC_DIRS = ("_next", "fonts", "assets", "huong dan image", "seo")
+        ALLOWED_ROOT_FILES = (
+            "favicon.ico", "favicon.png", "site.webmanifest", "robots.txt", "vip-custom.css",
+            "logo.png", "spotify-icon.png", "locket-icon.png", "zalo_group_qr.png", "huong_dan_cai_dat.mp4"
+        )
+        STATIC_EXTENSIONS = (
+            ".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4",
+            ".js", ".css", ".woff", ".woff2", ".ttf", ".webmanifest"
+        )
+
+        clean_rel = raw_path.lstrip("/").replace("\\", "/")
+        is_static_ext = any(lower_raw.endswith(ext) for ext in STATIC_EXTENSIONS)
+
+        if is_static_ext:
+            base_dir = os.path.abspath(os.path.dirname(__file__))
+            file_path = os.path.abspath(os.path.join(base_dir, clean_rel))
+
+            # Chặn Path Traversal
+            try:
+                if os.path.commonpath([base_dir, file_path]) != base_dir:
+                    self._send_json(403, {"ok": False, "error": "Access denied"})
+                    return
+            except Exception:
+                self._send_json(403, {"ok": False, "error": "Access denied"})
+                return
+
+            # Kiểm tra Whitelist thư mục cho phép hoặc file gốc cho phép
+            rel_parts = clean_rel.split("/", 1)
+            is_permitted = False
+            if len(rel_parts) > 1 and rel_parts[0] in ALLOWED_STATIC_DIRS:
+                is_permitted = True
+            elif len(rel_parts) == 1 and rel_parts[0] in ALLOWED_ROOT_FILES:
+                is_permitted = True
+
+            if not is_permitted:
+                self._send_json(403, {"ok": False, "error": "Access to this path is not permitted"})
+                return
+
             if os.path.exists(file_path) and os.path.isfile(file_path):
-                ext = file_name.rsplit(".", 1)[-1].lower()
-                if ext == "mp4":
-                    mime = "video/mp4"
-                elif ext == "ico":
-                    mime = "image/x-icon"
-                elif ext == "svg":
-                    mime = "image/svg+xml"
-                elif ext == "js":
-                    mime = "application/javascript; charset=utf-8"
-                elif ext == "css":
-                    mime = "text/css; charset=utf-8"
-                else:
-                    mime = f"image/{ext}"
+                file_name = os.path.basename(file_path)
+                ext = file_name.rsplit(".", 1)[-1].lower() if "." in file_name else ""
+
+                mime_map = {
+                    "mp4": "video/mp4",
+                    "ico": "image/x-icon",
+                    "svg": "image/svg+xml",
+                    "png": "image/png",
+                    "jpg": "image/jpeg",
+                    "jpeg": "image/jpeg",
+                    "webp": "image/webp",
+                    "js": "application/javascript; charset=utf-8",
+                    "css": "text/css; charset=utf-8",
+                    "woff": "font/woff",
+                    "woff2": "font/woff2",
+                    "ttf": "font/ttf",
+                    "webmanifest": "application/manifest+json; charset=utf-8"
+                }
+                mime = mime_map.get(ext, "application/octet-stream")
 
                 file_size = os.path.getsize(file_path)
                 range_header = self.headers.get("Range")
@@ -280,6 +373,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_cors_headers()
                 self.end_headers()
                 self.wfile.write(data)
+                return
+            else:
+                self._send_json(404, {"ok": False, "error": f"File not found: {clean_rel}"})
                 return
 
         # 2. API Cấu hình ngân hàng & thông tin hệ thống
@@ -393,7 +489,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             return
 
         # 5. API Tải file .mobileconfig (BẢO VỆ CHẶT CHẼ: CHỈ CHO ĐƠN ĐÃ THANH TOÁN THẬT)
-        if path == "/api/download_profile" or path.endswith(".mobileconfig"):
+        if path == "/api/download_profile" or (path.endswith(".mobileconfig") and not path.endswith("Free.mobileconfig") and not path.endswith("LocketNgon.mobileconfig")):
             order_id = params.get("order_id", [""])[0].strip()
             username = params.get("username", [""])[0].strip() or params.get("uid", [""])[0].strip()
 
@@ -853,7 +949,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             return
 
         # 7. Phục vụ Trang chủ Web App (index.html)
-        if path in ("/", "/index.html"):
+        if path in ("/", "/index.html", "/LocketNgon", "/LocketNgon.html"):
             index_path = os.path.join(os.path.dirname(__file__), "index.html")
             if os.path.exists(index_path):
                 with open(index_path, "rb") as f:
@@ -1670,4 +1766,21 @@ def start_web_server(bot=None, loop=None, port=None):
     except Exception as e_sync:
         logger.warning(f"Initial upstream sync failed: {e_sync}")
     return server
+
+
+if __name__ == "__main__":
+    import time
+    port = int(os.environ.get("PORT", 8080))
+    srv = start_web_server(port=port)
+    print(f"\n=======================================================")
+    print(f"🚀 Web Server đang chạy tại: http://localhost:{port}")
+    print(f"Nhấn Ctrl + C để dừng server.")
+    print(f"=======================================================\n")
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nĐang tắt Web Server...")
+        srv.shutdown()
+
 
