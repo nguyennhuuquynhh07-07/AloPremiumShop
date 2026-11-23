@@ -4,6 +4,7 @@
   ],
   "python.autoComplete.extraPaths": [
     "${workspaceFolder}"
-  ]
+  ],
+  "python.terminal.useEnvFile": true
 }
 

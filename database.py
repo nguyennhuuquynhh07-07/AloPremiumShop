@@ -4,10 +4,12 @@ database.py – Quản lý dữ liệu JSON (đơn hàng, thống kê, người 
 
 import json
 import os
+import tempfile
 import threading
 from datetime import datetime
 
-_db_lock = threading.Lock()
+_db_lock = threading.RLock()
+UNPAID_ORDER_STATUSES = ("pending", "waiting_payment", "pending_approval")
 
 from config import DB_ORDERS, DB_STATS
 
@@ -24,21 +26,29 @@ def _ensure(path: str):
 
 
 def _load(path: str, default):
-    _ensure(path)
-    if not os.path.exists(path):
-        return default
-    with open(path, "r", encoding="utf-8") as f:
+    with _db_lock:
         try:
-            return json.load(f)
-        except json.JSONDecodeError:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except FileNotFoundError:
             return default
 
 
 def _save(path: str, data):
     _ensure(path)
     with _db_lock:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=os.path.dirname(path), delete=False
+        ) as f:
+            temp_path = f.name
+            try:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+                f.close()
+                os.replace(temp_path, path)
+            finally:
+                f.close()
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
 
 
 # ── ORDERS ────────────────────────────────────────────────────────────────────
@@ -51,10 +61,20 @@ def save_orders(orders: dict):
     _save(DB_ORDERS, orders)
 
 
+def save_synced_orders(changes: dict) -> None:
+    if not changes:
+        return
+    with _db_lock:
+        orders = get_orders()
+        for order_id, order in changes.items():
+            if order_id not in orders or orders[order_id].get("status") == "done":
+                orders[order_id] = order
+        save_orders(orders)
+
+
 def create_order(order_id: str, user_id: int, username: str,
                  product: str, plan: str, price: int,
                  uid: str = "", display_name: str = "", **kwargs) -> dict:
-    orders = get_orders()
     order = {
         "order_id":    order_id,
         "user_id":     user_id,
@@ -69,18 +89,24 @@ def create_order(order_id: str, user_id: int, username: str,
         "done_at":     None,
     }
     order.update(kwargs)
-    orders[order_id] = order
-    save_orders(orders)
+    with _db_lock:
+        orders = get_orders()
+        orders[order_id] = order
+        save_orders(orders)
     return order
 
 
-def update_order(order_id: str, **kwargs):
-    orders = get_orders()
-    if order_id in orders:
-        orders[order_id].update(kwargs)
-    else:
-        orders[order_id] = {"order_id": order_id, **kwargs}
-    save_orders(orders)
+def update_order(order_id: str, *, expected_statuses=None, **kwargs) -> bool:
+    with _db_lock:
+        orders = get_orders()
+        order = orders.get(order_id)
+        if not order or (
+            expected_statuses is not None and order.get("status") not in expected_statuses
+        ):
+            return False
+        order.update(kwargs)
+        save_orders(orders)
+        return True
 
 
 def get_order(order_id: str) -> dict | None:
@@ -88,7 +114,7 @@ def get_order(order_id: str) -> dict | None:
 
 
 def get_user_orders(user_id: int) -> list:
-    return [o for o in get_orders().values() if o["user_id"] == user_id]
+    return [o for o in get_orders().values() if o.get("user_id") == user_id]
 
 
 # ── STATS ─────────────────────────────────────────────────────────────────────
@@ -351,6 +377,40 @@ def mark_tx_used(tx_id: str, order_id: str):
         "used_at": datetime.now().isoformat()
     }
     _save(DB_TX, txs)
+
+
+def register_order_payment(order_id: str, tx_id: str, amount: float, *, on_time: bool) -> str | None:
+    """Persist verified payment before handing a new, on-time order off for processing."""
+    if not tx_id:
+        return None
+    with _db_lock:
+        order = get_order(order_id)
+        if not order or not (0 < order.get("price", 0) <= amount):
+            return None
+        status = order.get("status")
+        if status not in (*UNPAID_ORDER_STATUSES, "cancelled", "rejected"):
+            return None
+        existing = get_used_tx_ids().get(tx_id)
+        if existing and existing.get("order_id") != order_id:
+            return None
+        if not existing:
+            mark_tx_used(tx_id, order_id)
+        update_order(order_id, status="paid_review")
+        return "process" if not existing and on_time and status in UNPAID_ORDER_STATUSES else "review"
+
+
+def recover_order_payments() -> None:
+    """Restore paid status from the existing ledger after an interrupted write or older failure."""
+    with _db_lock:
+        orders = get_orders()
+        changed = False
+        for payment in get_used_tx_ids().values():
+            order = orders.get(payment.get("order_id"))
+            if order and order.get("status") in (*UNPAID_ORDER_STATUSES, "cancelled", "rejected"):
+                order["status"] = "paid_review"
+                changed = True
+        if changed:
+            save_orders(orders)
 
 
 

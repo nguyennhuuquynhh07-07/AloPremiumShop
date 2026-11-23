@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -319,7 +319,6 @@
 
     </style>
     <!-- Lenis Smooth Scroll Engine (Official Locket Experience) -->
-    <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#FFB800] selection:text-black">
 
@@ -700,7 +699,7 @@
                             </div>
                             <div class="my-4 pb-4 border-b border-[#F0E4C8]">
                                 <div class="font-fredoka text-3xl font-black text-purple-700" id="price_display_locket_ai">250.000đ</div>
-                                <div class="text-xs text-[#6E6659] font-medium mt-1">Gói Vĩnh Viễn • Trọn bộ 6 dịch vụ cao cấp</div>
+                                <div class="text-xs text-[#6E6659] font-medium mt-1">Gói DNS • Trọn bộ 6 dịch vụ</div>
                             </div>
                             <ul class="space-y-2 text-xs text-[#1E1B18]">
                                 <li class="flex items-center gap-2.5">
@@ -791,7 +790,7 @@
                                 Nhập Username Locket của bạn (Chỉ điền User, không dán link):
                             </label>
                             <div class="relative">
-                                <input type="text" id="accountInput" 
+                                <input type="text" id="accountInput" oninput="invalidateAccountCheck()"
                                        onkeydown="if(event.key === 'Enter') checkAccount();"
                                        onpaste="handleAccountInputPaste(event)"
                                        placeholder="VD: conlaigii (Chỉ nhập tên người dùng Locket)"
@@ -808,7 +807,7 @@
                                 2️⃣ Dán Link Profile Spotify của bạn (Chỉ nhận Link Spotify):
                             </label>
                             <div class="relative">
-                                <input type="text" id="spotifyAccountInput" 
+                                <input type="text" id="spotifyAccountInput" oninput="invalidateAccountCheck()"
                                        onkeydown="if(event.key === 'Enter') checkAccount();"
                                        placeholder="VD: https://open.spotify.com/user/31xxxxxxxxxx..."
                                        class="w-full px-4 py-3.5 pr-20 rounded-2xl bg-[#FFFDF8] border-2 border-[#E8D8B0] text-[#1E1B18] text-sm font-semibold focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-400/30 transition-all placeholder-[#A09685]">
@@ -863,6 +862,14 @@
                             </div>
                         </div>
                     </div>
+
+                    <button type="button" id="resumePaymentButton" onclick="resumePayment()" class="hidden w-full rounded-xl border border-[#E8D8B0] px-4 py-3 text-sm font-bold text-[#1E1B18]">
+                        Xem lại đơn gần nhất
+                    </button>
+                    <p class="text-xs leading-relaxed text-[#6E6659]">
+                        Các gói DNS dành cho iPhone và phụ thuộc máy chủ bên thứ ba. Hồ sơ có thể yêu cầu tin cậy chứng chỉ gốc.
+                        Thời hạn gói áp dụng cho dịch vụ DNS, tách biệt với thuê bao của ứng dụng. Hãy <a href="https://zalo.me/0345222802" target="_blank" rel="noopener" class="font-bold underline">hỏi hỗ trợ</a> về khả năng tương thích và điều kiện hoàn tiền trước khi chuyển khoản.
+                    </p>
 
                     <!-- Ô NHẬP MÃ GIẢM GIÁ (COUPON) -->
                     <div class="pt-3 border-t border-[#F0E4C8]">
@@ -1039,7 +1046,7 @@
                 </div>
                 <div class="flex items-center gap-4 shrink-0 z-10">
                     <div class="bg-white p-2 rounded-2xl shadow-lg border border-white/30 hidden sm:block cursor-pointer hover:scale-105 transition-all text-center" onclick="switchMainTab('zalo_group')" title="Bấm để xem mã QR phóng to">
-                        <img src="/zalo_group_qr.png" alt="Mã QR Nhóm Zalo" class="w-20 h-20 object-contain rounded-xl select-none" />
+                        <img src="/zalo_group_qr.png" loading="lazy" alt="Mã QR Nhóm Zalo" class="w-20 h-20 object-contain rounded-xl select-none" />
                         <span class="text-[9px] font-bold text-blue-800 block mt-0.5">Quét bằng Zalo</span>
                     </div>
                     <div class="flex flex-col gap-2">
@@ -1247,14 +1254,14 @@
                 <!-- CẤU HÌNH DNS BẢO MẬT THEO ĐƠN HÀNG -->
                 <div class="mb-8 p-5 sm:p-7 rounded-[32px] bg-gradient-to-br from-[#FFF9ED] via-white to-[#FFF2D6] border-2 border-[#FFB800] shadow-xl relative overflow-hidden">
                     <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-[#FFB800] to-emerald-600 text-white text-[11px] font-fredoka font-black uppercase px-4 py-1 rounded-full shadow-md">
-                        🔒 Bảo Mật Bản Quyền
+                        Hồ sơ DNS
                     </div>
                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div class="space-y-2 flex-1">
                             <div class="flex items-center gap-3">
                                 <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFB800] via-[#F59E0B] to-[#10B981] flex items-center justify-center text-2xl shadow-md border-2 border-amber-300 shrink-0">🛡️</div>
                                 <div>
-                                    <h3 class="font-fredoka text-xl sm:text-2xl font-black text-[#1E1B18]">Link DNS Bản Quyền Cho Từng Gói</h3>
+                                    <h3 class="font-fredoka text-xl sm:text-2xl font-black text-[#1E1B18]">Hồ sơ DNS theo gói</h3>
                                     <p class="text-xs text-[#D97706] font-bold">Mỗi gói dịch vụ có link cấu hình DNS riêng biệt</p>
                                 </div>
                             </div>
@@ -1287,7 +1294,7 @@
                     </div>
                     
                     <div class="max-w-2xl mx-auto rounded-2xl overflow-hidden shadow-lg border-2 border-[#F0E0B8] bg-black">
-                        <video controls playsinline preload="metadata" class="w-full max-h-[460px] object-contain bg-black mx-auto">
+                        <video controls playsinline preload="none" class="w-full max-h-[460px] object-contain bg-black mx-auto">
                             <source src="/huong_dan_cai_dat.mp4" type="video/mp4">
                             Trình duyệt của bạn không hỗ trợ thẻ video HTML5.
                         </video>
@@ -1355,7 +1362,7 @@
                     <div class="lg:col-span-5 flex flex-col items-center">
                         <div class="p-5 bg-gradient-to-b from-[#FFF5DC] to-[#FFECC0] rounded-[32px] border-2 border-[#FFD24C] shadow-xl text-center relative group w-full max-w-xs">
                             <div class="bg-white p-3 rounded-2xl shadow-inner border border-[#E8D8B0] inline-block w-full">
-                                <img id="zaloGroupQrImg" src="/zalo_group_qr.png" alt="Mã QR Nhóm Zalo AloPremium" class="w-full aspect-square object-contain rounded-xl mx-auto select-none" />
+                                <img id="zaloGroupQrImg" src="/zalo_group_qr.png" loading="lazy" alt="Mã QR Nhóm Zalo AloPremium" class="w-full aspect-square object-contain rounded-xl mx-auto select-none" />
                             </div>
                             <div class="mt-3.5 flex items-center justify-center gap-1.5 text-xs font-bold text-[#1E1B18]">
                                 <span class="text-blue-600 font-black">Zalo</span> • Quét mã để vào nhóm
@@ -1422,10 +1429,10 @@
     <!-- ============================================================ -->
     <!-- MODAL THANH TOÁN VIETQR & TỰ ĐỘNG KÍCH HOẠT                  -->
     <!-- ============================================================ -->
-    <div id="paymentModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div id="paymentModal" role="dialog" aria-modal="true" aria-label="Thanh toán và trạng thái đơn hàng" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md hidden flex items-center justify-center p-4">
         <div class="bg-white border-2 border-[#FFE29A] rounded-[32px] max-w-md w-full max-h-[92vh] overflow-y-auto p-6 sm:p-7 relative shadow-2xl text-center">
             
-            <button onclick="closePaymentModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#FFF5DC] hover:bg-[#FFECC0] text-[#1E1B18] flex items-center justify-center text-sm cursor-pointer border border-[#E8D8B0]">
+            <button type="button" id="closePaymentButton" aria-label="Đóng thanh toán" onclick="closePaymentModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#FFF5DC] hover:bg-[#FFECC0] text-[#1E1B18] flex items-center justify-center text-sm cursor-pointer border border-[#E8D8B0]">
                 ✕
             </button>
 
@@ -1441,7 +1448,8 @@
                     </div>
                 </div>
                 <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]" id="modalProductName">Locket Gold VIP</h3>
-                <p class="text-xs text-[#6E6659] mt-1 font-medium">Quét mã VietQR hoặc bấm mở thẳng App Ngân Hàng bên dưới</p>
+                <p id="paymentAccount" class="text-xs text-[#6E6659] mt-1 font-medium"></p>
+                <p class="text-xs text-[#6E6659] mt-1 font-medium">Quét mã VietQR hoặc mở ứng dụng ngân hàng.</p>
 
                 <!-- ẢNH VIETQR -->
                 <div class="my-4 p-3 rounded-2xl bg-white max-w-[220px] mx-auto shadow-lg border-2 border-[#FFB800]/50">
@@ -1514,8 +1522,17 @@
 
                 <div class="mt-4 text-[11px] text-[#6E6659] flex items-center justify-center gap-2 font-medium">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                    <span>Hệ thống tự động kích hoạt ngay khi nhận tiền (không cần gửi bill)</span>
+                    <span>Sau khi chuyển khoản, hãy quay lại đây để kiểm tra trạng thái đơn.</span>
                 </div>
+            </div>
+
+            <div id="paymentFeedback" class="mb-3 mt-4 space-y-2 text-sm">
+                <p id="paymentStatusText" role="status" aria-live="polite" class="font-semibold text-[#1E1B18]"></p>
+                <p id="paymentOrderCode" class="text-xs text-[#6E6659]"></p>
+                <button type="button" id="refreshPaymentButton" onclick="refreshPaymentStatus()" class="rounded-xl border border-[#E8D8B0] px-4 py-2 font-bold text-[#1E1B18]">
+                    Kiểm tra giao dịch
+                </button>
+                <a id="paymentSupportLink" class="hidden rounded-xl px-4 py-2 font-bold underline" target="_blank" rel="noopener" href="https://zalo.me/0345222802">Liên hệ hỗ trợ</a>
             </div>
 
             <!-- TRẠNG THÁI 2: THANH TOÁN THÀNH CÔNG -->
@@ -1719,21 +1736,6 @@
         </button>
     </div>
 
-    <!-- LIVE RECENT ORDERS POPUP (SOCIAL PROOF TOAST) -->
-    <div id="liveOrderToast" class="fixed bottom-5 left-5 z-40 max-w-xs sm:max-w-sm bg-white/95 backdrop-blur-md border-2 border-[#FFE29A] rounded-2xl p-3.5 shadow-2xl transition-all duration-500 transform translate-y-32 opacity-0 flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFD24C] to-[#FF9B00] flex items-center justify-center text-xl shrink-0 shadow-sm">
-            💛
-        </div>
-        <div class="flex-1 min-w-0">
-            <p class="text-[10px] text-[#D97706] font-bold uppercase tracking-wider flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Vừa kích hoạt thành công
-            </p>
-            <p class="text-xs font-bold text-[#1E1B18] truncate mt-0.5" id="toastCustomerText">Khách hàng conlai***</p>
-            <p class="text-[10px] text-[#A09685] mt-0.5" id="toastProductText">Locket Gold VIP • Cách đây 2 phút</p>
-        </div>
-        <button onclick="dismissLiveToast()" class="text-zinc-400 hover:text-zinc-600 text-xs p-1">✕</button>
-    </div>
-
     <!-- GLOBAL TOAST NOTIFICATION -->
     <div id="globalToast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#1E1B18] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl opacity-0 pointer-events-none transition-all duration-300">
         Đã sao chép vào bộ nhớ tạm ✓
@@ -1755,7 +1757,14 @@
         let selectedPlan = 'ltm';
         let verifiedAccountData = null;
         let currentOrderData = null;
+        let checkoutSummary = null;
         let pollTimer = null;
+        let countdownInterval = null;
+        let paymentPollVersion = 0;
+        let paymentCheckPending = false;
+        let paymentFocusReturn = null;
+        let accountCheckVersion = 0;
+        const checkoutStorageKey = 'alopremium_checkout';
         let activeDownloadUrl = '';
         let appliedCouponData = null;
 
@@ -2015,8 +2024,7 @@
             }
 
             // Reset verification card
-            verifiedAccountData = null;
-            document.getElementById('accountProfileCard')?.classList.add('hidden');
+            invalidateAccountCheck();
             document.getElementById('accountErrorMsg')?.classList.add('hidden');
             updatePayAmount();
         }
@@ -2212,6 +2220,7 @@
                     return;
                 }
                 document.getElementById('accountInput').value = text;
+                invalidateAccountCheck();
             } catch (e) {
                 alert('Vui lòng cấp quyền dán hoặc dán thủ công bằng tay.');
             }
@@ -2226,13 +2235,24 @@
                     return;
                 }
                 document.getElementById('spotifyAccountInput').value = text;
+                invalidateAccountCheck();
             } catch (e) {
                 alert('Vui lòng cấp quyền dán hoặc dán thủ công bằng tay.');
             }
         }
 
         // Kiểm tra tài khoản Locket / Spotify trực tiếp (Tách biệt hoàn toàn: Locket chỉ điền User, Spotify chỉ điền Link)
+        function invalidateAccountCheck() {
+            accountCheckVersion++;
+            verifiedAccountData = null;
+            document.getElementById('accountProfileCard').classList.add('hidden');
+            document.getElementById('btnCheckAccountText').textContent = '⚡ Kiểm Tra Tài Khoản';
+        }
+
         async function checkAccount() {
+            invalidateAccountCheck();
+            const version = accountCheckVersion;
+            const product = selectedProduct;
             const rawId = document.getElementById('accountInput').value.trim();
             const rawSpId = (document.getElementById('spotifyAccountInput')?.value || '').trim();
             const btnText = document.getElementById('btnCheckAccountText');
@@ -2243,16 +2263,16 @@
             profileCard.classList.add('hidden');
 
             if (!rawId) {
-                const msgEmpty = selectedProduct === 'spotify'
+                const msgEmpty = product === 'spotify'
                     ? 'Vui lòng dán Link Profile Spotify của bạn!'
-                    : (selectedProduct === 'combo' ? 'Vui lòng nhập Dòng 1: Username Locket của bạn!' : 'Vui lòng nhập Username Locket của bạn!');
+                    : (product === 'combo' ? 'Vui lòng nhập Dòng 1: Username Locket của bạn!' : 'Vui lòng nhập Username Locket của bạn!');
                 errBox.textContent = '❌ ' + msgEmpty;
                 errBox.classList.remove('hidden');
                 return;
             }
 
             // Kiểm tra tách biệt nghiêm ngặt giữa Locket và Spotify
-            if (selectedProduct === 'spotify') {
+            if (product === 'spotify') {
                 if (!/spotify\.com\/user\/[a-zA-Z0-9._-]+/i.test(rawId)) {
                     errBox.textContent = '❌ Phần Spotify chỉ được dán Link Profile Spotify (VD: https://open.spotify.com/user/...), không điền Username!';
                     errBox.classList.remove('hidden');
@@ -2267,7 +2287,7 @@
                 }
             }
 
-            if (selectedProduct === 'combo') {
+            if (product === 'combo') {
                 if (!rawSpId) {
                     errBox.textContent = '❌ Vui lòng dán thêm Dòng 2: Link Profile Spotify của bạn!';
                     errBox.classList.remove('hidden');
@@ -2289,7 +2309,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        service: (selectedProduct === 'combo' || selectedProduct === 'locket_spotify') ? 'locket' : selectedProduct,
+                        service: (product === 'combo' || product === 'locket_spotify') ? 'locket' : product,
                         identifier: rawId
                     })
                 });
@@ -2300,7 +2320,7 @@
                 }
 
                 // Nếu là gói Combo, kiểm tra luôn dòng 2 (Spotify Link / UID)
-                if (selectedProduct === 'combo') {
+                if (product === 'combo') {
                     const resSp = await fetch('/api/check_account', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -2317,6 +2337,7 @@
                     data.spotify_display = dataSp.display_name || dataSp.uid || rawSpId;
                 }
 
+                if (version !== accountCheckVersion) return;
                 verifiedAccountData = data;
                 
                 // Show profile
@@ -2324,7 +2345,7 @@
                 document.getElementById('profileDisplayName').textContent = '@' + String(data.display_name || data.uid).replace(/^@/, '');
                 
                 let detailTxt = `UID: ${data.uid}`;
-                if (selectedProduct === 'combo' && data.spotify_uid) {
+                if (product === 'combo' && data.spotify_uid) {
                     detailTxt = `💛 Locket: @${String(data.display_name || data.uid).replace(/^@/, '')} • 🎵 Spotify: ${data.spotify_display} (${data.spotify_uid})`;
                 } else {
                     if (data.plan) detailTxt += ` • Gói: ${data.plan}`;
@@ -2335,10 +2356,11 @@
                 profileCard.classList.remove('hidden');
                 profileCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (err) {
+                if (version !== accountCheckVersion) return;
                 errBox.textContent = '❌ ' + err.message;
                 errBox.classList.remove('hidden');
             } finally {
-                btnText.textContent = '⚡ Kiểm Tra Tài Khoản';
+                if (version === accountCheckVersion) btnText.textContent = '⚡ Kiểm Tra Tài Khoản';
             }
         }
 
@@ -2357,8 +2379,7 @@
                 btnPay.style.pointerEvents = 'none';
             }
 
-            const pv = systemProducts[selectedProduct];
-            const planInfo = pv?.plans?.[selectedPlan] || { price: 200000, label: 'Vĩnh Viễn' };
+            const account = verifiedAccountData;
             const hasStudio = (selectedProduct === 'locket_ai');
 
             try {
@@ -2369,11 +2390,11 @@
                     body: JSON.stringify({
                         product: selectedProduct,
                         plan: selectedPlan,
-                        identifier: ((selectedProduct === 'locket' || selectedProduct === 'locket_ai' || selectedProduct === 'combo' || selectedProduct === 'locket_spotify') && verifiedAccountData.display_name) ? verifiedAccountData.display_name : (verifiedAccountData.uid || verifiedAccountData.display_name),
-                        display_name: verifiedAccountData.display_name,
-                        spotify_uid: verifiedAccountData.spotify_uid || '',
-                        avatar: verifiedAccountData.avatar,
-                        token: verifiedAccountData.token || '',
+                        identifier: ((selectedProduct === 'locket' || selectedProduct === 'locket_ai' || selectedProduct === 'combo' || selectedProduct === 'locket_spotify') && account.display_name) ? account.display_name : (account.uid || account.display_name),
+                        display_name: account.display_name,
+                        spotify_uid: account.spotify_uid || '',
+                        avatar: account.avatar,
+                        token: account.token || '',
                         has_studio: hasStudio,
                         discount_code: appliedCouponData ? appliedCouponData.code : ''
                     })
@@ -2387,27 +2408,11 @@
                 }
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Không thể tạo đơn hàng');
 
-                currentOrderData = data;
-
-                // Điền thông tin vào Modal
-                document.getElementById('modalProductName').textContent = `${data.product_name} (${data.plan_label})`;
-                document.getElementById('modalQrImg').src = data.qr_url;
-                document.getElementById('modalBankName').textContent = data.bank_name;
-                document.getElementById('modalAccountNo').textContent = data.bank_account;
-                document.getElementById('modalAccountHolder').textContent = data.account_holder;
-                document.getElementById('modalAmount').textContent = data.price.toLocaleString() + 'đ';
-                document.getElementById('modalMemo').textContent = data.memo;
-
-                // Reset view sang waiting
-                document.getElementById('modalWaitingPayment').classList.remove('hidden');
-                document.getElementById('modalSuccessPayment').classList.add('hidden');
-                document.getElementById('paymentModal').classList.remove('hidden');
-
-                // Bắt đầu đếm ngược thời gian giữ đơn 5 phút (300 giây)
-                startCountdownTimer(300, data.order_id);
-
-                // Bắt đầu Polling kiểm tra SePay
-                startPollingOrder(data.order_id);
+                showCheckout({
+                    ...data,
+                    display_name: account.display_name || account.uid,
+                    spotify_display: account.spotify_display || '',
+                });
             } catch (err) {
                 alert('Lỗi tạo đơn: ' + err.message);
             } finally {
@@ -2419,36 +2424,142 @@
             }
         }
 
-        function closePaymentModal() {
-            if (pollTimer) clearInterval(pollTimer);
-            if (countdownInterval) clearInterval(countdownInterval);
-            document.getElementById('paymentModal').classList.add('hidden');
+        function saveCheckout(data) {
+            try {
+                sessionStorage.setItem(checkoutStorageKey, JSON.stringify(data));
+            } catch (error) {
+                console.warn('Cannot store checkout', error);
+            }
+            document.getElementById('resumePaymentButton').classList.remove('hidden');
         }
 
-        // Vòng lặp kiểm tra trạng thái đơn hàng siêu tốc (Kiểm tra ngay + lặp mỗi 2 giây)
-        function startPollingOrder(orderId) {
-            if (pollTimer) clearInterval(pollTimer);
-            const checkStatus = async () => {
-                try {
-                    const res = await fetch('/api/order_status?order_id=' + encodeURIComponent(orderId));
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.is_paid || data.status === 'done') {
-                            clearInterval(pollTimer);
-                            if (countdownInterval) clearInterval(countdownInterval);
-                            showPaymentSuccess(orderId, data.download_url, data.product);
-                        } else if (data.status === 'cancelled' || data.status === 'rejected') {
-                            clearInterval(pollTimer);
-                            if (countdownInterval) clearInterval(countdownInterval);
-                            showOrderExpired();
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Poll error:', e);
-                }
+        function restoreCheckout() {
+            try {
+                return JSON.parse(sessionStorage.getItem(checkoutStorageKey) || 'null');
+            } catch {
+                return null;
+            }
+        }
+
+        function resumePayment() {
+            const order = checkoutSummary || restoreCheckout();
+            if (order?.order_id) showCheckout(order);
+        }
+
+        function showCheckout(order) {
+            stopPaymentChecks();
+            currentOrderData = order;
+            checkoutSummary = order;
+            saveCheckout(order);
+            const modal = document.getElementById('paymentModal');
+            if (modal.classList.contains('hidden')) paymentFocusReturn = document.activeElement;
+            document.getElementById('modalProductName').textContent = [order.product_name, order.plan_label].filter(Boolean).join(' · ');
+            const accounts = [order.display_name, order.spotify_display].filter(Boolean);
+            document.getElementById('paymentAccount').textContent = accounts.length ? 'Tài khoản nhận gói: ' + accounts.join(' · ') : '';
+            document.getElementById('modalQrImg').src = order.qr_url;
+            document.getElementById('modalBankName').textContent = order.bank_name;
+            document.getElementById('modalAccountNo').textContent = order.bank_account;
+            document.getElementById('modalAccountHolder').textContent = order.account_holder;
+            document.getElementById('modalAmount').textContent = order.price.toLocaleString('vi-VN') + 'đ';
+            document.getElementById('modalMemo').textContent = order.memo;
+            document.getElementById('paymentOrderCode').textContent = 'Mã đơn ' + order.memo;
+            document.getElementById('modalSuccessPayment').classList.add('hidden');
+            document.getElementById('paymentFeedback').classList.remove('hidden');
+            renderPaymentStatus('checking');
+            modal.classList.remove('hidden');
+            document.getElementById('closePaymentButton').focus();
+            updatePaymentCountdown();
+            countdownInterval = setInterval(updatePaymentCountdown, 1000);
+            refreshPaymentStatus();
+        }
+
+        function stopPaymentChecks() {
+            paymentPollVersion++;
+            paymentCheckPending = false;
+            clearTimeout(pollTimer);
+            clearInterval(countdownInterval);
+        }
+
+        function closePaymentModal() {
+            stopPaymentChecks();
+            document.getElementById('paymentModal').classList.add('hidden');
+            if (paymentFocusReturn && paymentFocusReturn.getClientRects().length) {
+                paymentFocusReturn.focus();
+            } else {
+                document.getElementById('resumePaymentButton').focus();
+            }
+        }
+
+        function renderPaymentStatus(status, overrideMessage) {
+            const canTransfer = ['pending', 'waiting_payment'].includes(status)
+                && currentOrderData.expires_at_ms > Date.now();
+            const messages = {
+                checking: 'Đang kiểm tra đơn hàng…',
+                pending_approval: 'Đang kiểm tra giao dịch. Hãy giữ mã đơn để đối soát.',
+                paid_review: 'Đã nhận tiền. Đơn đang được đối soát. Vui lòng không chuyển khoản lại.',
+                expired: 'Đã hết hạn chuyển khoản. Nếu đã trả tiền, hãy kiểm tra giao dịch hoặc gửi mã đơn cho hỗ trợ.',
+                cancelled: 'Đơn đã hủy. Nếu đã trả tiền, hãy gửi mã đơn cho hỗ trợ.',
+                rejected: 'Đơn đã bị từ chối. Nếu đã trả tiền, hãy gửi mã đơn cho hỗ trợ.',
+                failed: 'Đơn cần được hỗ trợ. Vui lòng gửi kèm mã đơn.',
             };
-            checkStatus();
-            pollTimer = setInterval(checkStatus, 2000);
+            document.getElementById('modalWaitingPayment').classList.toggle('hidden', !canTransfer);
+            document.getElementById('paymentStatusText').textContent = overrideMessage || messages[status] || '';
+            document.getElementById('paymentSupportLink').classList.toggle('hidden', canTransfer || status === 'checking');
+        }
+
+        function updatePaymentCountdown() {
+            const remain = Math.max(0, Math.ceil((currentOrderData.expires_at_ms - Date.now()) / 1000));
+            const timer = document.getElementById('paymentCountdownTimer');
+            timer.textContent = Number.isFinite(remain)
+                ? [Math.floor(remain / 60), remain % 60].map(n => String(n).padStart(2, '0')).join(':')
+                : '—';
+            if (remain === 0 && ['pending', 'waiting_payment'].includes(currentOrderData.status)) {
+                document.getElementById('modalWaitingPayment').classList.add('hidden');
+                document.getElementById('paymentSupportLink').classList.remove('hidden');
+                document.getElementById('paymentStatusText').textContent = 'Đang kiểm tra trạng thái giao dịch…';
+            }
+        }
+
+        async function refreshPaymentStatus() {
+            if (paymentCheckPending || !currentOrderData || document.getElementById('paymentModal').classList.contains('hidden')) return;
+            clearTimeout(pollTimer);
+            paymentCheckPending = true;
+            const version = paymentPollVersion;
+            const orderId = currentOrderData.order_id;
+            const button = document.getElementById('refreshPaymentButton');
+            button.disabled = true;
+            try {
+                const response = await fetch('/api/order_status?order_id=' + encodeURIComponent(orderId), {
+                    signal: AbortSignal.timeout(7000),
+                });
+                if (!response.ok) throw new Error('Cannot read order status');
+                const data = await response.json();
+                if (version !== paymentPollVersion) return;
+                currentOrderData = { ...currentOrderData, ...data };
+                checkoutSummary = { ...checkoutSummary, status: data.status, expires_at_ms: data.expires_at_ms };
+                saveCheckout(checkoutSummary);
+
+                if (data.status === 'done') {
+                    stopPaymentChecks();
+                    document.getElementById('paymentFeedback').classList.add('hidden');
+                    showPaymentSuccess(orderId, data.download_url, data.product);
+                    return;
+                }
+                renderPaymentStatus(data.status);
+                updatePaymentCountdown();
+            } catch (error) {
+                if (version === paymentPollVersion) {
+                    if (currentOrderData.status !== 'paid_review') {
+                        renderPaymentStatus('failed', 'Kết nối gián đoạn. Vui lòng kiểm tra lại trạng thái đơn.');
+                    }
+                }
+            } finally {
+                if (version === paymentPollVersion) {
+                    paymentCheckPending = false;
+                    button.disabled = false;
+                    pollTimer = setTimeout(refreshPaymentStatus, 4500);
+                }
+            }
         }
 
         // Hiển thị màn hình Thanh Toán Thành Công
@@ -2499,7 +2610,7 @@
                 if (guideBox) guideBox.classList.add('hidden');
                 if (modalSubtitle) modalSubtitle.textContent = 'Gói VIP ALL-IN-ONE đã thanh toán thành công! Vui lòng liên hệ Admin để được hỗ trợ kích hoạt ngay.';
 
-                const uTarget = (verifiedAccountData?.display_name || verifiedAccountData?.uid || (currentOrderData && (currentOrderData.display_name || currentOrderData.uid)) || '').replace(/^@/, '');
+                const uTarget = (currentOrderData?.display_name || currentOrderData?.uid || '').replace(/^@/, '');
                 const rawOrderCode = currentOrderData?.order_id || orderId || 'VIP';
                 const formattedCode = String(rawOrderCode).startsWith('ORDER_') ? rawOrderCode : `ORDER_${rawOrderCode}`;
                 const priceVal = (currentOrderData?.price || 250000).toLocaleString() + 'đ';
@@ -2599,7 +2710,7 @@
             // Lưu thông tin hồ sơ vào thiết bị để Cài Lại bất cứ lúc nào kể cả khi server khởi động lại
             saveProfileLocally({
                 order_id: orderId,
-                display_name: verifiedAccountData?.display_name || currentOrderData?.display_name || orderId,
+                display_name: currentOrderData?.display_name || orderId,
                 product: prod,
                 plan: currentOrderData?.plan_label || selectedPlan || 'VIP',
                 avatar: verifiedAccountData?.avatar || 'logo.png',
@@ -2616,7 +2727,7 @@
         }
 
         function copyStudioLink() {
-            const uTarget = (verifiedAccountData?.display_name || verifiedAccountData?.uid || '').replace(/^@/, '');
+            const uTarget = (currentOrderData.display_name || currentOrderData.uid || '').replace(/^@/, '');
             const url = "https://locket.jayteam.click/caption.html?u=" + encodeURIComponent(uTarget || 'vip');
             navigator.clipboard.writeText(url).then(() => {
                 alert("✅ Đã sao chép link Studio Chỉnh Chú Thích & Khung Viền: " + url);
@@ -2639,22 +2750,7 @@
                 const data = await res.json();
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Không thể tạo đơn nâng cấp Studio');
 
-                // Chuyển sang chờ thanh toán 10.000đ cho đơn phụ Studio
-                currentOrderData = data;
-                document.getElementById('modalProductName').textContent = "Studio Chỉnh Chú Thích & Khung Viền (+10.000đ)";
-                document.getElementById('modalQrImg').src = data.qr_url;
-                document.getElementById('modalBankName').textContent = data.bank_name;
-                document.getElementById('modalAccountNo').textContent = data.bank_account;
-                document.getElementById('modalAccountHolder').textContent = data.account_holder;
-                document.getElementById('modalAmount').textContent = data.price.toLocaleString() + 'đ';
-                document.getElementById('modalMemo').textContent = data.memo;
-
-                document.getElementById('modalWaitingPayment').classList.remove('hidden');
-                document.getElementById('modalSuccessPayment').classList.add('hidden');
-
-                // Bắt đầu đếm ngược và Polling đơn phụ này (5 phút)
-                startCountdownTimer(300, data.order_id);
-                startPollingOrder(data.order_id);
+                showCheckout({ ...data, display_name: uTarget });
             } catch (e) {
                 alert("Lỗi tạo đơn nâng cấp Studio: " + e.message);
             }
@@ -2711,7 +2807,7 @@
         function copyAiAdminMsg() {
             const rawOrderCode = currentOrderData?.order_id || 'VIP';
             const formattedCode = String(rawOrderCode).startsWith('ORDER_') ? rawOrderCode : `ORDER_${rawOrderCode}`;
-            const user = (verifiedAccountData?.display_name || verifiedAccountData?.uid || (currentOrderData && (currentOrderData.display_name || currentOrderData.uid)) || '').replace(/^@/, '');
+            const user = (currentOrderData?.display_name || currentOrderData?.uid || '').replace(/^@/, '');
             const price = (currentOrderData?.price || 250000).toLocaleString();
             const msg = `Chào Admin, mình vừa thanh toán thành công đơn hàng ${formattedCode} (${price}đ) gói VIP ALL-IN-ONE cho tài khoản @${user}. Nhờ Admin hỗ trợ kích hoạt giúp mình với ạ!`;
             navigator.clipboard.writeText(msg).then(() => {
@@ -3138,50 +3234,6 @@
         // ============================================================
         // TIỆN ÍCH TRẢI NGHIỆM NGƯỜI DÙNG & TƯƠNG TÁC THÔNG MINH
         // ============================================================
-        let countdownInterval = null;
-        function showOrderExpired() {
-            const waitingDiv = document.getElementById('modalWaitingPayment');
-            if (waitingDiv) {
-                waitingDiv.innerHTML = `
-                    <div class="py-6 text-center">
-                        <div class="w-16 h-16 rounded-full bg-rose-100 text-rose-600 text-3xl flex items-center justify-center mx-auto mb-3 shadow-inner font-bold">
-                            ✕
-                        </div>
-                        <h3 class="font-fredoka text-2xl font-black text-[#1E1B18]">Đơn Hàng Đã Hết Hạn</h3>
-                        <p class="text-xs text-[#6E6659] mt-2 mb-6 max-w-xs mx-auto">Thời gian giữ đơn 5 phút đã kết thúc và đơn hàng đã tự động hủy. Vui lòng tạo lại đơn hàng mới để thanh toán.</p>
-                        <button onclick="closePaymentModal(); location.reload();" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-fredoka font-bold text-sm shadow-md transition-all">
-                            Tạo Đơn Hàng Mới
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        function startCountdownTimer(seconds = 300, orderId = null) {
-            if (countdownInterval) clearInterval(countdownInterval);
-            let remain = seconds;
-            const timerEl = document.getElementById('paymentCountdownTimer');
-            function updateDisplay() {
-                const m = Math.floor(remain / 60);
-                const s = remain % 60;
-                if (timerEl) {
-                    timerEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-                }
-                if (remain <= 0) {
-                    clearInterval(countdownInterval);
-                    if (timerEl) timerEl.textContent = '00:00';
-                    if (pollTimer) clearInterval(pollTimer);
-                    // Hủy đơn và hiển thị giao diện hết hạn
-                    showOrderExpired();
-                    return;
-                }
-                remain--;
-            }
-            updateDisplay();
-            countdownInterval = setInterval(updateDisplay, 1000);
-        }
-
-        
         function switchCompareTab(prodKey) {
             const isSpotify = prodKey === 'spotify';
             const btnLocket = document.getElementById('btnCompareTab_locket');
@@ -3235,197 +3287,21 @@
             }
         }
 
-        // Live recent orders social proof toast (Kết nối dữ liệu đơn THẬT từ Database)
-        const SAMPLE_RECENT_ORDERS = [
-            { user: "conlai***", pkg: "Locket Gold Vĩnh Viễn", time: "2 phút trước" },
-            { user: "huyquang***", pkg: "Spotify Premium 1 Năm", time: "4 phút trước" },
-            { user: "ngocmai***", pkg: "Locket Gold Vĩnh Viễn", time: "5 phút trước" },
-            { user: "minhduc***", pkg: "Spotify Premium Vĩnh Viễn", time: "7 phút trước" },
-            { user: "quynh***", pkg: "Locket Gold VIP 1 Năm", time: "9 phút trước" },
-            { user: "hoanganh***", pkg: "Locket Gold Vĩnh Viễn", time: "11 phút trước" }
-        ];
-        let liveToastOrders = [...SAMPLE_RECENT_ORDERS];
-        let toastIdx = 0;
-
-        async function loadRealRecentPurchases() {
-            try {
-                const res = await fetch('/api/recent_purchases');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.ok && Array.isArray(data.purchases) && data.purchases.length > 0) {
-                        // Ưu tiên hiển thị danh sách người mua THẬT từ hệ thống
-                        liveToastOrders = [...data.purchases, ...SAMPLE_RECENT_ORDERS];
-                    }
-                }
-            } catch (e) {
-                console.warn('Cannot fetch recent purchases:', e);
-            }
-        }
-
-        function showLiveToast() {
-            const toast = document.getElementById('liveOrderToast');
-            if (!toast) return;
-            const item = liveToastOrders[toastIdx % liveToastOrders.length];
-            toastIdx++;
-
-            const custEl = document.getElementById('toastCustomerText');
-            const prodEl = document.getElementById('toastProductText');
-            if (custEl) custEl.textContent = `Khách hàng ${item.user}`;
-            if (prodEl) prodEl.textContent = `${item.pkg} • ${item.time}`;
-
-            const imgEl = document.getElementById('toastAvatarImg');
-            const emojiEl = document.getElementById('toastAvatarEmoji');
-            if (imgEl && emojiEl) {
-                if (item.avatar) {
-                    imgEl.src = item.avatar;
-                    imgEl.classList.remove('hidden');
-                    emojiEl.classList.add('hidden');
-                } else {
-                    imgEl.classList.add('hidden');
-                    emojiEl.classList.remove('hidden');
-                }
-            }
-
-            toast.classList.remove('translate-y-32', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-32', 'opacity-0');
-            }, 6000);
-        }
-
-        function dismissLiveToast() {
-            const toast = document.getElementById('liveOrderToast');
-            if (toast) {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-32', 'opacity-0');
-            }
-        }
-
-        function initLiveOrderToasts() {
-            loadRealRecentPurchases();
-            setTimeout(showLiveToast, 3500);
-            setInterval(showLiveToast, 16000);
-            setInterval(loadRealRecentPurchases, 60000);
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             initSystem();
-            initLiveOrderToasts();
+            if (restoreCheckout()?.order_id) document.getElementById('resumePaymentButton').classList.remove('hidden');
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) refreshPaymentStatus();
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !document.getElementById('paymentModal').classList.contains('hidden')) {
+                closePaymentModal();
+            }
         });
     </script>
 
-    <!-- ============================================================ -->
-    <!-- BẢO VỆ MÃ NGUỒN, CHỐNG F12, CHỐNG DEVTOOLS & XÓA COOKIE        -->
-    <!-- ============================================================ -->
     <script>
-        (function() {
-            'use strict';
-
-            // 1. Vô hiệu hoá console log / info / warn / error để bảo vệ dữ liệu
-            try {
-                const noop = function() {};
-                const methods = ['log', 'debug', 'info', 'warn', 'error', 'table', 'trace', 'dir', 'dirxml'];
-                for (let i = 0; i < methods.length; i++) {
-                    window.console[methods[i]] = noop;
-                }
-            } catch (e) {}
-
-            // 2. Tự động xóa sạch toàn bộ cookie và chặn cookie theo dõi
-            function purgeAllCookies() {
-                try {
-                    const cookies = document.cookie.split(";");
-                    for (let i = 0; i < cookies.length; i++) {
-                        const eqPos = cookies[i].indexOf("=");
-                        const name = eqPos > -1 ? cookies[i].substr(0, eqPos).trim() : cookies[i].trim();
-                        if (name) {
-                            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Strict;Secure";
-                            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=;domain=" + window.location.hostname;
-                        }
-                    }
-                } catch (e) {}
-            }
-            purgeAllCookies();
-            setInterval(purgeAllCookies, 3000);
-
-            // 3. Chặn chuột phải (Context Menu)
-            document.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                return false;
-            }, { capture: true });
-
-            // 4. Chặn phím tắt mở DevTools, View Source, Lưu trang
-            document.addEventListener('keydown', function(e) {
-                // F12
-                if (e.keyCode === 123 || e.key === 'F12') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
-                // Ctrl+Shift+I / J / C (Inspect Element)
-                if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67 || ['i', 'j', 'c'].includes(e.key.toLowerCase()))) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
-                // Ctrl+U (Xem mã nguồn)
-                if (e.ctrlKey && (e.keyCode === 85 || e.key.toLowerCase() === 'u')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
-                // Ctrl+S (Lưu trang web)
-                if (e.ctrlKey && (e.keyCode === 83 || e.key.toLowerCase() === 's')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
-            }, { capture: true });
-
-            // 5. Bẫy Anti-Debugger: Tự động đóng băng nếu phát hiện mở Developer Tools
-            setInterval(function() {
-                const start = performance.now();
-                (function() { return false; }["constructor"]("debugger")());
-                if (performance.now() - start > 100) {
-                    window.location.reload();
-                }
-            }, 1200);
-        })();
-    </script>
-
-
-    <!-- INITIALIZE LENIS SMOOTH SCROLL & SCROLL REVEAL OBSERVER -->
-    <script>
-        // 1. Lenis Smooth Scroll Engine
-        let lenisInstance = null;
-        try {
-            if (typeof Lenis !== 'undefined') {
-                lenisInstance = new Lenis({
-                    duration: 1.15,
-                    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-                    smoothWheel: true,
-                    smoothTouch: false,
-                    wheelMultiplier: 1.05,
-                });
-
-                function raf(time) {
-                    lenisInstance.raf(time);
-                    requestAnimationFrame(raf);
-                }
-                requestAnimationFrame(raf);
-
-                // Update scroll progress bar on scroll
-                lenisInstance.on('scroll', (e) => {
-                    const scrollH = document.documentElement.scrollHeight - window.innerHeight;
-                    const progress = scrollH > 0 ? (e.scroll / scrollH) : 0;
-                    document.documentElement.style.setProperty('--sp', Math.min(1, Math.max(0, progress)));
-                });
-            }
-        } catch (e) {
-            console.warn('Lenis init error:', e);
-        }
-
         // Fallback progress bar listener
         window.addEventListener('scroll', () => {
             const scrollH = document.documentElement.scrollHeight - window.innerHeight;

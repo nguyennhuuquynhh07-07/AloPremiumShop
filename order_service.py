@@ -5,7 +5,10 @@ Tự động kích hoạt bản quyền qua API CTV, cấp DNS profile và thôn
 
 import io
 import logging
+import math
 import asyncio
+import re
+import threading
 from datetime import datetime
 try:
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -23,9 +26,41 @@ import config
 from config import PRODUCTS, DNS_BASE_URL, DNS_SLUG
 
 logger = logging.getLogger(__name__)
+PAYMENT_WINDOW_SECONDS = 300
+_processing_orders = set()
+_processing_lock = threading.Lock()
+
+
+def payment_deadline(order: dict) -> float | None:
+    try:
+        return datetime.fromisoformat(order["created_at"].replace("Z", "+00:00")).timestamp() + PAYMENT_WINDOW_SECONDS
+    except (KeyError, ValueError, TypeError, AttributeError):
+        return None
+
+
+def payment_matches_order(order: dict, account: str, content: str, amount: float) -> bool:
+    shop_account = str(getattr(config, "ACCOUNT_NO", "")).strip()
+    order_id = re.escape(order["order_id"].upper())
+    return (
+        bool(shop_account) and account == shop_account
+        and math.isfinite(amount) and 0 < order.get("price", 0) <= amount
+        and bool(re.search(rf"(?<![A-Z0-9]){order_id}(?![A-Z0-9])", content.upper()))
+    )
 
 
 async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
+    with _processing_lock:
+        if order_id in _processing_orders:
+            return False, "Đơn hàng đang được xử lý."
+        _processing_orders.add(order_id)
+    try:
+        return await _execute_order_activation(bot, order_id)
+    finally:
+        with _processing_lock:
+            _processing_orders.discard(order_id)
+
+
+async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
     """
     Thực hiện kích hoạt gói và giao hàng tự động cho khách:
     - Gọi API locket.2707226.xyz trừ Coin CTV và cấp DNS Profile Locket/Spotify
@@ -139,6 +174,9 @@ async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     err_str = str(e_act).lower()
                     if "404" not in err_str and "không tồn tại" not in err_str:
                         break
+
+            if not act_success:
+                return False, str(last_err or "Kích hoạt thất bại")
 
             db.update_order(
                 order_id, 
@@ -397,170 +435,86 @@ def fetch_sepay_transactions(force_refresh: bool = False) -> list:
     return _SEPAY_CACHE.get("transactions", [])
 
 
-def check_and_activate_sepay_order(order_id: str, bot=None) -> tuple[bool, str]:
-    """
-    Kiểm tra nhanh giao dịch SePay cho một đơn hàng cụ thể.
-    Nếu tiền đã về tài khoản TPBank -> Tự động kích hoạt ngay lập tức!
-    """
+def register_verified_payment(order: dict, tx_id: str, amount: float) -> str | None:
+    deadline = payment_deadline(order)
+    return db.register_order_payment(
+        order["order_id"], tx_id, amount, on_time=deadline is not None and time.time() < deadline
+    )
+
+
+async def process_registered_payment(bot, order_id: str, action: str) -> None:
+    if action == "process":
+        ok, _ = await execute_order_activation(bot, order_id)
+        if ok:
+            return
+    if not bot:
+        return
+
     order = db.get_order(order_id)
-    if not order:
-        return False, "Không tìm thấy đơn hàng"
-    if order.get("status") == "done":
-        return True, "Đơn hàng đã hoàn thành"
+    recipients = list(getattr(config, "ADMIN_IDS", []))
+    if order and order.get("user_id", 0) > 0:
+        recipients.append(order["user_id"])
+    for chat_id in recipients:
+        try:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=f"Đã nhận tiền cho đơn ORDER_{order_id}. Đơn đang chờ đối soát. "
+                     "Vui lòng giữ mã đơn và không chuyển khoản lại.",
+            )
+        except Exception:
+            logger.warning("Could not send payment review alert for %s", order_id)
 
-    transactions = fetch_sepay_transactions()
-    if not transactions:
-        return False, "Chưa tìm thấy giao dịch nào"
 
-    req_amount = float(order.get("price", 0))
-    clean_oid = order_id.upper().replace("ORDER_", "")
-    shop_acc = str(getattr(config, "ACCOUNT_NO", "")).strip()
+async def check_sepay_payments(bot=None, order_id=None) -> None:
+    db.recover_order_payments()
+    orders = db.get_orders()
+    if order_id and orders.get(order_id, {}).get("status") in ("done", "paid_review"):
+        return
+    candidates = [
+        order for order in orders.values()
+        if order and order.get("status") in (*db.UNPAID_ORDER_STATUSES, "cancelled", "rejected")
+    ]
+    if not candidates:
+        return
 
+    transactions = await asyncio.to_thread(fetch_sepay_transactions)
+    used_ids = db.get_used_tx_ids()
     for tx in transactions:
         tx_id = str(tx.get("id", "")).strip()
-        if not tx_id or db.is_tx_used(tx_id):
+        try:
+            amount = float(tx.get("amount_in") or 0)
+        except (ValueError, TypeError):
             continue
-
-        tx_acc = str(tx.get("account_number", "")).strip()
-        if shop_acc and tx_acc and tx_acc != shop_acc:
+        if not tx_id or tx_id in used_ids:
             continue
-
-        content = str(tx.get("transaction_content", "")).upper()
-        amount_in = float(tx.get("amount_in", 0) or 0)
-
-        # Khớp mã đơn: "976RF6B3", "ORDER_976RF6B3", "ORDER 976RF6B3"
-        matched = (clean_oid in content or f"ORDER_{clean_oid}" in content or f"ORDER {clean_oid}" in content)
-        if matched and amount_in >= req_amount:
-            logger.info(f"⚡ [SEPAY AUTO-DETECT] Khớp đơn {order_id} ({amount_in}đ, TX: {tx_id})!")
-            db.mark_tx_used(tx_id, order_id)
-            
-            # Kích hoạt đơn hàng
-            import web_server
-            active_bot = bot or getattr(web_server, "BOT_INSTANCE", None)
-            active_loop = getattr(web_server, "BOT_LOOP", None)
-
-            if active_loop and active_loop.is_running():
-                future = asyncio.run_coroutine_threadsafe(
-                    execute_order_activation(active_bot, order_id),
-                    active_loop
-                )
-                try:
-                    ok, msg = future.result(timeout=15)
-                except Exception as e_wait:
-                    logger.warning(f"Threadsafe future wait error: {e_wait}")
-                    ok, msg = True, "Kích hoạt đang xử lý ngầm"
-            else:
-                try:
-                    loop = asyncio.new_event_loop()
-                    ok, msg = loop.run_until_complete(execute_order_activation(active_bot, order_id))
-                    loop.close()
-                except Exception as e_ev:
-                    ok, msg = False, str(e_ev)
-
-            return ok, msg
-
-    return False, "Chưa nhận được giao dịch khớp mã đơn"
+        matches = [
+            order for order in candidates if payment_matches_order(
+                order, str(tx.get("account_number", "")).strip(),
+                str(tx.get("transaction_content", "")), amount
+            )
+        ]
+        if len(matches) == 1 and (order_id is None or matches[0]["order_id"] == order_id):
+            order = matches[0]
+            action = register_verified_payment(order, tx_id, amount)
+            if action:
+                used_ids[tx_id] = order["order_id"]
+                await process_registered_payment(bot, order["order_id"], action)
 
 
-async def check_all_sepay_pending_payments(bot=None) -> list[str]:
-    """Quét tất cả các đơn hàng đang chờ và tự động duyệt nếu tiền đã về"""
-    orders = db.get_orders()
-    pending = [
-        o for o in orders.values() 
-        if o.get("status") in ("waiting_payment", "pending_approval", "pending")
-    ]
-    if not pending:
-        return []
+def cancel_expired_pending_orders() -> list[str]:
+    expired_ids = []
+    now = time.time()
+    for order_id, order in db.get_orders().items():
+        if order.get("status") not in ("waiting_payment", "pending"):
+            continue
+        deadline = payment_deadline(order)
+        if deadline is not None and now >= deadline and db.update_order(
+            order_id, expected_statuses=("waiting_payment", "pending"),
+            status="cancelled", cancel_reason="Hết thời gian thanh toán (5 phút)",
+        ):
+            expired_ids.append(order_id)
+    return expired_ids
 
-    activated_list = []
-    transactions = await asyncio.to_thread(fetch_sepay_transactions, True)
-    if not transactions:
-        return []
-
-    shop_acc = str(getattr(config, "ACCOUNT_NO", "")).strip()
-
-    for order in pending:
-        order_id = order["order_id"]
-        clean_oid = order_id.upper().replace("ORDER_", "")
-        req_amount = float(order.get("price", 0))
-
-        for tx in transactions:
-            tx_id = str(tx.get("id", "")).strip()
-            if not tx_id or db.is_tx_used(tx_id):
-                continue
-
-            tx_acc = str(tx.get("account_number", "")).strip()
-            if shop_acc and tx_acc and tx_acc != shop_acc:
-                continue
-
-            content = str(tx.get("transaction_content", "")).upper()
-            amount_in = float(tx.get("amount_in", 0) or 0)
-
-            if (clean_oid in content or f"ORDER_{clean_oid}" in content or f"ORDER {clean_oid}" in content) and amount_in >= req_amount:
-                logger.info(f"✅ SePay tự động phát hiện thanh toán cho đơn ORDER_{order_id} ({amount_in}đ, TX: {tx_id})!")
-                db.mark_tx_used(tx_id, order_id)
-                ok, msg = await execute_order_activation(bot, order_id)
-                if ok:
-                    activated_list.append(order_id)
-                    if isinstance(order.get("user_id"), int) and order.get("user_id") > 0:
-                        try:
-                            await bot.send_message(
-                                chat_id=order["user_id"],
-                                text=(
-                                    f"🔔 <b>HỆ THỐNG ĐÃ TỰ ĐỘNG NHẬN ĐƯỢC THANH TOÁN {utils.fmt_price(int(amount_in))}!</b>\n"
-                                    f"Gói dịch vụ <b>{order['product']}</b> đã được kích hoạt thành công."
-                                ),
-                                parse_mode="HTML"
-                            )
-                        except Exception:
-                            pass
-                break
-
-    return activated_list
-
-
-def cancel_expired_pending_orders(max_age_seconds: int = 300) -> list[str]:
-    """
-    Quét và tự động hủy các đơn hàng đang chờ thanh toán quá 5 phút (300s).
-    Tránh tình trạng đơn hàng treo mãi và giải phóng phiên cho khách hàng.
-    """
-    from datetime import datetime, timezone
-    orders = db.get_orders()
-    now_utc = datetime.now(timezone.utc)
-    now_local = datetime.now()
-    cancelled_ids = []
-
-    for oid, o in list(orders.items()):
-        if o.get("status") in ("waiting_payment", "pending"):
-            created_str = o.get("created_at")
-            if not created_str:
-                continue
-            try:
-                # Hỗ trợ cả định dạng ISO có Z/UTC và ISO local
-                dt_str = created_str.replace("Z", "+00:00")
-                parsed_dt = datetime.fromisoformat(dt_str)
-                if parsed_dt.tzinfo is not None:
-                    age = (now_utc - parsed_dt).total_seconds()
-                else:
-                    age = (now_local - parsed_dt).total_seconds()
-
-                if age > max_age_seconds:
-                    o["status"] = "cancelled"
-                    o["cancel_reason"] = f"Hết thời gian thanh toán ({int(max_age_seconds/60)} phút)"
-                    cancelled_ids.append(oid)
-                    logger.info(f"⏳ [TIMEOUT] Đơn hàng ORDER_{oid} đã quá 5 phút chưa thanh toán -> Tự động hủy.")
-            except Exception as e_time:
-                logger.warning(f"Error parsing date for order {oid}: {e_time}")
-
-    if cancelled_ids:
-        db.save_orders(orders)
-
-    return cancelled_ids
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-#  ĐỒNG BỘ ĐƠN HÀNG TỪ MÁY CHỦ API CTV (WEB CHỦ) VỀ WEB & BOT NỘI BỘ
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def sync_upstream_orders() -> int:
     """
@@ -575,6 +529,7 @@ def sync_upstream_orders() -> int:
 
         orders = db.get_orders()
         synced_count = 0
+        changes = {}
 
         for item in uids:
             username = str(item.get("username") or "").strip()
@@ -601,6 +556,8 @@ def sync_upstream_orders() -> int:
             matched_oid = None
 
             for oid, od in orders.items():
+                if od.get("status") != "done":
+                    continue
                 od_u = str(od.get("username", "")).lower().lstrip("@")
                 od_disp = str(od.get("display_name", "")).lower().lstrip("@")
                 od_uid = str(od.get("uid", "")).lower()
@@ -629,6 +586,7 @@ def sync_upstream_orders() -> int:
                     orders[matched_oid]["avatar"] = avatar_url
                 if not orders[matched_oid].get("uid"):
                     orders[matched_oid]["uid"] = uid_str
+                changes[matched_oid] = orders[matched_oid]
             else:
                 safe_oid_suffix = (uid_str[:8] if len(uid_str) >= 8 else username[:8]).upper()
                 new_oid = f"CTV_{safe_oid_suffix}"
@@ -651,9 +609,10 @@ def sync_upstream_orders() -> int:
                     "dns_link": dns_link,
                     "source": "web_chu"
                 }
+                changes[new_oid] = orders[new_oid]
                 synced_count += 1
 
-        db.save_orders(orders)
+        db.save_synced_orders(changes)
         logger.info(f"🔄 [SYNC WEB CHỦ] Đã đồng bộ thành công {len(uids)} tài khoản ({synced_count} đơn mới)!")
         return len(uids)
     except Exception as e:

@@ -15,6 +15,7 @@ import json
 import logging
 import threading
 import asyncio
+import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
@@ -328,91 +329,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # 3.1 API Danh sách đơn hàng vừa kích hoạt thành công (Đồng bộ máy chủ CTV + Đơn nội bộ)
         if path == "/api/recent_purchases":
-            recent_list = []
-            
-            # 1. Đơn hàng nội bộ đã hoàn tất
-            orders = list(db.get_orders().values())
-            done_orders = [o for o in orders if o.get("status") == "done"]
-            done_orders.sort(key=lambda x: x.get("done_at") or x.get("created_at") or "", reverse=True)
-
-            for o in done_orders[:10]:
-                raw_name = str(o.get("display_name") or o.get("username") or o.get("uid") or "Khách").strip()
-                if raw_name.startswith("web_"):
-                    raw_name = raw_name[4:]
-                masked_name = raw_name[:4] + "***" if len(raw_name) > 4 else raw_name + "***"
-
-                prod = config.PRODUCTS.get(o.get("product"), {})
-                prod_name = prod.get("name", "Gói VIP")
-                plan = prod.get("plans", {}).get(o.get("plan"), {})
-                plan_label = plan.get("label", "")
-                full_pkg = f"{prod_name} {plan_label}".strip()
-
-                t_str = o.get("done_at") or o.get("created_at")
-                time_ago = "Vừa xong"
-                if t_str:
-                    try:
-                        from datetime import datetime
-                        dt = datetime.fromisoformat(t_str.replace("Z", "+00:00"))
-                        mins = max(1, int((datetime.now().astimezone() - dt).total_seconds() / 60))
-                        if mins < 60:
-                            time_ago = f"{mins} phút trước"
-                        elif mins < 1440:
-                            time_ago = f"{mins // 60} giờ trước"
-                        else:
-                            time_ago = f"{mins // 1440} ngày trước"
-                    except Exception:
-                        pass
-
-                recent_list.append({
-                    "user": masked_name,
-                    "pkg": full_pkg,
-                    "time": time_ago,
-                    "avatar": o.get("avatar"),
-                    "is_real": True
-                })
-
-            # 2. Đồng bộ TẤT CẢ người đã kích hoạt từ Máy chủ API CTV (/api/uid/list)
-            try:
-                server_uids = api.get_activated_uids()
-                for item in server_uids:
-                    u_name = str(item.get("username") or item.get("uidString") or "VIP").strip()
-                    masked_u = u_name[:4] + "***" if len(u_name) > 4 else u_name + "***"
-
-                    pkg_obj = item.get("package") or {}
-                    pkg_name = pkg_obj.get("name") or "Locket Gold VIP"
-                    if "test" in pkg_name.lower():
-                        pkg_name = "Locket Gold VIP"
-
-                    created_at = item.get("createdAt")
-                    time_ago = "Vừa xong"
-                    if created_at:
-                        try:
-                            from datetime import datetime
-                            dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-                            mins = max(1, int((datetime.now().astimezone() - dt).total_seconds() / 60))
-                            if mins < 60:
-                                time_ago = f"{mins} phút trước"
-                            elif mins < 1440:
-                                time_ago = f"{mins // 60} giờ trước"
-                            else:
-                                time_ago = f"{mins // 1440} ngày trước"
-                        except Exception:
-                            pass
-
-                    recent_list.append({
-                        "user": masked_u,
-                        "pkg": pkg_name,
-                        "time": time_ago,
-                        "avatar": item.get("avatarUrl"),
-                        "is_real": True
-                    })
-            except Exception as e_srv:
-                logger.warning(f"Error syncing server UIDs to recent purchases: {e_srv}")
-
-            self._send_json(200, {"ok": True, "purchases": recent_list})
+            self._send_json(200, {"ok": True, "purchases": []})
             return
 
-        # 4. API Tra cứu trạng thái đơn hàng (Polling từ Web)
         if path == "/api/order_status":
             order_id = params.get("order_id", [""])[0].strip()
             if not order_id:
@@ -423,32 +342,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(404, {"ok": False, "error": "Không tìm thấy đơn hàng"})
                 return
 
-            # Tự động quét giao dịch SePay trong luồng phụ (không làm nghẽn phản hồi HTTP của Web)
-            if order.get("status") in ("pending", "waiting_payment", "pending_approval"):
-                # Kiểm tra nếu đơn hàng đã quá 5 phút (300 giây) chưa thanh toán -> Tự động hủy
-                created_str = order.get("created_at")
-                if created_str:
-                    try:
-                        from datetime import datetime, timezone
-                        dt_str = created_str.replace("Z", "+00:00")
-                        parsed_dt = datetime.fromisoformat(dt_str)
-                        if parsed_dt.tzinfo is not None:
-                            age = (datetime.now(timezone.utc) - parsed_dt).total_seconds()
-                        else:
-                            age = (datetime.now() - parsed_dt).total_seconds()
-
-                        if age > 300:
-                            db.update_order(order_id, status="cancelled", cancel_reason="Hết thời gian thanh toán (5 phút)")
-                            order["status"] = "cancelled"
-                    except Exception as e_expire_chk:
-                        logger.warning(f"Error checking expire for order {order_id}: {e_expire_chk}")
-
-                if order.get("status") in ("pending", "waiting_payment", "pending_approval"):
-                    try:
-                        from order_service import check_and_activate_sepay_order
-                        threading.Thread(target=check_and_activate_sepay_order, args=(order_id, BOT_INSTANCE), daemon=True).start()
-                    except Exception as e_poll_sp:
-                        logger.warning(f"Error checking SePay during order_status: {e_poll_sp}")
+            from order_service import payment_deadline
+            deadline = payment_deadline(order)
+            status = order.get("status", "waiting_payment")
+            if status in ("pending", "waiting_payment") and deadline is not None and time.time() >= deadline:
+                status = "expired"
+            elif status == "cancelled" and order.get("cancel_reason"):
+                status = "expired"
 
             is_done = order.get("status") == "done"
             prod_key = order.get("product")
@@ -472,8 +372,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {
                 "ok": True,
                 "order_id": order_id,
-                "status": order.get("status", "waiting_payment"),
+                "status": status,
                 "is_paid": is_done,
+                "expires_at_ms": int(deadline * 1000) if deadline is not None else None,
                 "product": order.get("product"),
                 "plan": order.get("plan"),
                 "price": order.get("price"),
@@ -851,7 +752,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             orders = list(db.get_orders().values())
             users = db.get_users()
             done_orders = [o for o in orders if o.get("status") == "done"]
-            pending_orders = [o for o in orders if o.get("status") in ("waiting_payment", "pending", "pending_approval")]
+            pending_orders = [o for o in orders if o.get("status") in (*db.UNPAID_ORDER_STATUSES, "paid_review")]
             rejected_orders = [o for o in orders if o.get("status") in ("cancelled", "rejected", "failed")]
             
             total_revenue = sum(o.get("price", 0) for o in done_orders)
@@ -1222,7 +1123,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 return
             
             from datetime import datetime
-            db.update_order(order_id, status="rejected", rejected_reason=reason, rejected_at=datetime.now().isoformat())
+            if not db.update_order(
+                order_id, expected_statuses=db.UNPAID_ORDER_STATUSES,
+                status="rejected", rejected_reason=reason, rejected_at=datetime.now().isoformat(),
+            ):
+                self._send_json(409, {"ok": False, "error": "Đơn không còn chờ thanh toán hoặc duyệt. Hãy kiểm tra lại giao dịch trước khi xử lý."})
+                return
             try:
                 if BOT_INSTANCE and order.get("user_id"):
                     coro = BOT_INSTANCE.send_message(
@@ -1427,12 +1333,20 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 pending_same_order = None
                 pending_count_user = 0
 
+                from order_service import payment_deadline
                 for od in existing_orders.values():
-                    if od.get("status") in ("waiting_payment", "pending"):
+                    deadline = payment_deadline(od)
+                    if (od.get("status") in ("waiting_payment", "pending")
+                            and deadline is not None and time.time() < deadline):
                         od_ident = str(od.get("uid", "")).lower()
                         if od_ident == clean_ident or od_ident == identifier.lower():
                             pending_count_user += 1
-                            if od.get("product") == product and od.get("plan") == plan:
+                            if (
+                                od.get("product") == product and od.get("plan") == plan
+                                and od.get("source") == "web"
+                                and (od.get("spotify_uid") or "") == spotify_uid
+                                and (od.get("discount_code") or "") == applied_code
+                            ):
                                 pending_same_order = od
 
                 # Nếu tài khoản này đã tạo từ 5 đơn trở lên mà chưa thanh toán đơn nào -> Chặn spam
@@ -1443,20 +1357,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     })
                     return
 
-                # Nếu khách vừa tạo đơn cho cùng gói này -> Tái sử dụng đơn cũ, cập nhật lại giá nếu có mã giảm giá
                 if pending_same_order:
                     p_id = pending_same_order["order_id"]
-                    p_price = price if applied_code else pending_same_order.get("price", price)
-                    p_code = applied_code or pending_same_order.get("discount_code", "")
-                    p_disc = discount_amount if applied_code else pending_same_order.get("discount_amount", 0)
-                    price_changed = False
-                    if applied_code and pending_same_order.get("discount_code") != applied_code:
-                        db.update_order(p_id, price=p_price, discount_code=p_code, discount_amount=p_disc)
-                        price_changed = True
+                    p_price = pending_same_order["price"]
                     qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
-                    # Chống spam thông báo Admin: Chỉ dispatch alert nếu có thay đổi về giá/mã giảm giá
-                    if price_changed:
-                        dispatch_admin_order_alert(p_id, pv, plnv, display_name, clean_ident or identifier, p_price, orig_price, p_code, p_disc)
                     self._send_json(200, {
                         "ok": True,
                         "order_id": p_id,
@@ -1471,7 +1375,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "plan": plan,
                         "product_name": pv["name"],
                         "plan_label": plnv["label"],
-                        "is_reused": True
+                        "is_reused": True,
+                        "expires_at_ms": int(payment_deadline(pending_same_order) * 1000)
                     })
                     return
 
@@ -1494,7 +1399,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     "has_studio": has_studio,
                 }
 
-                db.create_order(
+                order = db.create_order(
                     order_id=order_id,
                     user_id=0,
                     username=f"web_{identifier[:15]}",
@@ -1526,6 +1431,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     "plan": plan,
                     "product_name": pv["name"],
                     "plan_label": plnv["label"],
+                    "expires_at_ms": int(payment_deadline(order) * 1000),
                 })
                 return
             except Exception as e_create:
@@ -1548,10 +1454,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": "Thiếu tài khoản Locket cần mở Studio"})
                 return
 
+            from order_service import payment_deadline
             sub_order_id = utils.gen_order_id()
             studio_price = getattr(config, "STUDIO_CAPTION_PRICE", 10000)
 
-            db.create_order(
+            order = db.create_order(
                 order_id=sub_order_id,
                 user_id=0,
                 username=f"web_{identifier[:15]}",
@@ -1579,7 +1486,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
                 "product": "studio_caption",
                 "product_name": "Studio Chỉnh Chú Thích & Khung Viền",
-                "plan_label": "Bản Quyền Vĩnh Viễn"
+                "plan_label": "Gói Studio",
+                "expires_at_ms": int(payment_deadline(order) * 1000)
             })
             return
 
@@ -1652,7 +1560,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
             expected_token = getattr(config, "SEPAY_API_TOKEN", "").strip()
 
             # Lớp 1: Bắt buộc xác thực bí mật SePay API Token trong Header Authorization
-            if expected_token and expected_token not in auth_header:
+            import hmac
+            accepted_headers = (f"Apikey {expected_token}", f"Bearer {expected_token}", expected_token)
+            if not expected_token or not any(
+                hmac.compare_digest(auth_header.encode(), value.encode()) for value in accepted_headers
+            ):
                 logger.warning(f"🚨 [CẢNH BÁO BẢO MẬT] Phát hiện request giả mạo webhook SePay từ IP: {client_ip}!")
                 self._send_json(401, {"ok": False, "error": "Unauthorized: Invalid SePay authentication token"})
                 return
@@ -1671,81 +1583,68 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"success": True, "message": "Ignored outgoing transfer"})
                 return
 
-            # Lớp 4: Chống Replay Attack (Mỗi mã giao dịch tx_id của ngân hàng chỉ được dùng đúng 1 lần)
+            from order_service import payment_matches_order, register_verified_payment, process_registered_payment
             tx_id = str(body.get("id", "")).strip()
-            if tx_id and db.is_tx_used(tx_id):
-                logger.warning(f"🚨 Giao dịch SePay {tx_id} đã được sử dụng trước đó (Replay Attack). Bỏ qua!")
-                self._send_json(200, {"success": True, "message": "Transaction already processed"})
+            if not tx_id or not tx_id.isascii() or not tx_id.isdecimal():
+                self._send_json(400, {"ok": False, "error": "Invalid transaction ID"})
+                return
+            if db.is_tx_used(tx_id):
+                db.recover_order_payments()
+                self._send_json(200, {"success": True, "message": "Transaction already recorded"})
+                return
+            try:
+                amount_in = float(body.get("transferAmount") or 0)
+            except (ValueError, TypeError):
+                self._send_json(400, {"ok": False, "error": "Invalid transfer amount"})
                 return
 
-            tx_content = str(body.get("content", "")).upper()
-            amount_in = float(body.get("transferAmount", 0) or 0)
-
-            # Khớp đơn hàng trong database
-            orders = db.get_orders()
-            matched_order_id = None
-            matched_order = None
-            for oid, od in orders.items():
-                if (oid.upper() in tx_content or f"ORDER_{oid.upper()}" in tx_content) and od.get("status") != "done":
-                    if amount_in >= float(od.get("price", 0)):
-                        matched_order_id = oid
-                        matched_order = od
-                        break
-
-            if not matched_order_id:
-                self._send_json(200, {"success": True, "message": "Ignored or no matching pending order"})
+            matches = [
+                order for order in db.get_orders().values()
+                if payment_matches_order(order, account_num, str(body.get("content", "")), amount_in)
+            ]
+            if len(matches) != 1:
+                self._send_json(200, {"success": True, "message": "No unique matching order"})
                 return
+            matched_order = matches[0]
+            matched_order_id = matched_order["order_id"]
 
             # Lớp 5: XÁC THỰC 2 CHIỀU ĐỘC LẬP VỚI SEPAY API SERVER
             # Gọi trực tiếp SePay API để kiểm tra xem TPBank thực sự có tiền về hay không!
-            if tx_id and expected_token:
-                try:
-                    import urllib.request
-                    v_url = f"https://my.sepay.vn/userapi/transactions/details/{tx_id}"
-                    v_req = urllib.request.Request(
-                        v_url,
-                        headers={"Authorization": f"Bearer {expected_token}", "User-Agent": "Mozilla/5.0"}
-                    )
-                    with urllib.request.urlopen(v_req, timeout=8) as v_res:
-                        if v_res.status == 200:
-                            v_json = json.loads(v_res.read().decode("utf-8"))
-                            real_tx = v_json.get("transaction") or {}
-                            real_acc = str(real_tx.get("account_number", "")).strip()
-                            real_amount = float(real_tx.get("amount_in", 0) or 0)
-                            real_content = str(real_tx.get("transaction_content", "")).upper()
-
-                            # Kiểm tra chéo: Số tài khoản, số tiền và nội dung đơn phải trùng khớp
-                            if real_acc != shop_acc or real_amount < float(matched_order.get("price", 0)):
-                                logger.error(f"🚨 [GIAN LẬN PHÁT HIỆN] Dữ liệu SePay API không khớp! SePay: {real_acc}, {real_amount}")
-                                self._send_json(403, {"ok": False, "error": "Verification failed: Bank data mismatch"})
-                                return
-                            if matched_order_id.upper() not in real_content and f"ORDER_{matched_order_id.upper()}" not in real_content:
-                                logger.error(f"🚨 [GIAN LẬN PHÁT HIỆN] Nội dung SePay API không chứa mã đơn: {real_content}")
-                                self._send_json(403, {"ok": False, "error": "Verification failed: Order ID mismatch"})
-                                return
-                        else:
-                            logger.error(f"🚨 Giao dịch {tx_id} không tìm thấy trên SePay API (Status {v_res.status})")
-                            self._send_json(403, {"ok": False, "error": "Transaction not verified by SePay API"})
-                            return
-                except Exception as e_verify:
-                    logger.error(f"🚨 Lỗi gọi SePay API verify: {e_verify}. Chặn kích hoạt để bảo vệ shop!")
-                    self._send_json(403, {"ok": False, "error": f"Verification error: {e_verify}"})
-                    return
-
-            # Đánh dấu transaction đã sử dụng
-            if tx_id:
-                db.mark_tx_used(tx_id, matched_order_id)
-
-            logger.info(f"✅ Giao dịch hợp lệ 100% từ SePay! Tiến hành kích hoạt đơn ORDER_{matched_order_id}")
-            from order_service import execute_order_activation
-            if BOT_LOOP:
-                asyncio.run_coroutine_threadsafe(
-                    execute_order_activation(BOT_INSTANCE, matched_order_id),
-                    BOT_LOOP
+            try:
+                import urllib.request
+                v_url = f"https://my.sepay.vn/userapi/transactions/details/{tx_id}"
+                v_req = urllib.request.Request(
+                    v_url,
+                    headers={"Authorization": f"Bearer {expected_token}", "User-Agent": "Mozilla/5.0"}
                 )
-            else:
-                asyncio.run(execute_order_activation(BOT_INSTANCE, matched_order_id))
-            self._send_json(200, {"success": True, "message": f"Activated order {matched_order_id}"})
+                with urllib.request.urlopen(v_req, timeout=8) as v_res:
+                    if v_res.status == 200:
+                        v_json = json.loads(v_res.read().decode("utf-8"))
+                        real_tx = v_json.get("transaction") or {}
+                        real_acc = str(real_tx.get("account_number", "")).strip()
+                        real_amount = float(real_tx.get("amount_in", 0) or 0)
+                        real_content = str(real_tx.get("transaction_content", "")).upper()
+
+                        if not payment_matches_order(matched_order, real_acc, real_content, real_amount):
+                            self._send_json(403, {"ok": False, "error": "Verification failed: Bank data mismatch"})
+                            return
+                    else:
+                        logger.error(f"🚨 Giao dịch {tx_id} không tìm thấy trên SePay API (Status {v_res.status})")
+                        self._send_json(403, {"ok": False, "error": "Transaction not verified by SePay API"})
+                        return
+            except Exception as e_verify:
+                logger.error(f"🚨 Lỗi gọi SePay API verify: {e_verify}. Chặn kích hoạt để bảo vệ shop!")
+                self._send_json(503, {"ok": False, "error": "Could not verify payment with SePay"})
+                return
+
+            action = register_verified_payment(matched_order, tx_id, real_amount)
+            if action:
+                processing = process_registered_payment(BOT_INSTANCE, matched_order_id, action)
+                if BOT_LOOP and BOT_LOOP.is_running():
+                    asyncio.run_coroutine_threadsafe(processing, BOT_LOOP)
+                else:
+                    asyncio.run(processing)
+            self._send_json(200, {"success": True, "message": "Payment checked"})
             return
 
         self._send_json(404, {"ok": False, "error": "Endpoint not found"})

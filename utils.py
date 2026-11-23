@@ -154,6 +154,7 @@ def status_emoji(status: str) -> str:
     return {
         "waiting_payment":  "💳",
         "pending_approval": "⏳",
+        "paid_review":      "🧾",
         "pending":          "⏳",
         "done":             "✅",
         "failed":           "❌",

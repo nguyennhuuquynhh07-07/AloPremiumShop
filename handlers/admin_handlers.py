@@ -51,7 +51,7 @@ def build_admin_menu_text() -> tuple[str, int]:
         pass
 
     all_orders = db.get_orders()
-    pending_orders = [o for o in all_orders.values() if o.get("status") in ("waiting_payment", "pending", "pending_approval")]
+    pending_orders = [o for o in all_orders.values() if o.get("status") in (*db.UNPAID_ORDER_STATUSES, "paid_review")]
     pending_count = len(pending_orders)
     if pending_count > 0:
         header += f"🔔 <b>Đang có {pending_count} đơn hàng chờ xử lý!</b> Bấm nút 'Duyệt đơn chờ' để kích hoạt ngay.\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -103,7 +103,7 @@ async def stats_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     users = db.get_users()
     total_orders = len(orders)
     done_orders = [o for o in orders if o.get("status") == "done"]
-    pending_orders = [o for o in orders if o.get("status") in ("pending", "waiting_payment", "pending_approval")]
+    pending_orders = [o for o in orders if o.get("status") in (*db.UNPAID_ORDER_STATUSES, "paid_review")]
     rejected_orders = [o for o in orders if o.get("status") in ("rejected", "cancelled", "failed")]
     total_revenue = sum(o.get("price", 0) for o in done_orders)
 
@@ -165,13 +165,13 @@ async def orders_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE, filter_type
     all_orders = list(db.get_orders().values())
     total_count = len(all_orders)
     done_count = sum(1 for o in all_orders if o.get("status") == "done")
-    pending_count = sum(1 for o in all_orders if o.get("status") in ("waiting_payment", "pending", "pending_approval"))
+    pending_count = sum(1 for o in all_orders if o.get("status") in (*db.UNPAID_ORDER_STATUSES, "paid_review"))
 
     if filter_type == "done":
         filtered = [o for o in all_orders if o.get("status") == "done"]
         title_filter = "ĐÃ DUYỆT / HOÀN TẤT (✅)"
     elif filter_type == "pending":
-        filtered = [o for o in all_orders if o.get("status") in ("waiting_payment", "pending", "pending_approval")]
+        filtered = [o for o in all_orders if o.get("status") in (*db.UNPAID_ORDER_STATUSES, "paid_review")]
         title_filter = "CHỜ THANH TOÁN / DUYỆT (💳)"
     else:
         filtered = all_orders
@@ -1090,7 +1090,9 @@ async def cb_admin_reject(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("❌ Không tìm thấy đơn hàng.")
         return
 
-    db.update_order(order_id, status="rejected")
+    if not db.update_order(order_id, expected_statuses=db.UNPAID_ORDER_STATUSES, status="rejected"):
+        await query.message.reply_text("Đơn đã chuyển trạng thái. Hãy kiểm tra giao dịch trước khi xử lý.")
+        return
     await query.edit_message_text(
         f"🚫 Đã <b>TỪ CHỐI</b> đơn hàng <code>ORDER_{order_id}</code> của @{order['username']}.",
         parse_mode=ParseMode.HTML

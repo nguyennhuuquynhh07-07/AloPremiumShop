@@ -13,7 +13,8 @@ if _root not in sys.path:
     sys.path.insert(0, _root)
 
 import logging
-from telegram import Update
+from html import escape
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes, ConversationHandler
 from telegram.constants import ParseMode
 
@@ -891,7 +892,7 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             display_name=display,
             **extra_order_fields
         )
-        db.update_order(order_id, status="waiting_payment")
+        db.update_order(order_id, expected_statuses=("pending",), status="waiting_payment")
         ctx.user_data["order_id"] = order_id
 
         await checking_msg.delete()
@@ -950,15 +951,14 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
 
     except Exception as e:
-        logger.error(f"API verify error: {e}")
+        logger.warning("Account check failed for %s: %s", product_key, type(e).__name__)
+        message = str(e) if isinstance(e, ValueError) else "Chưa thể kiểm tra tài khoản. Vui lòng thử lại."
         await checking_msg.edit_text(
-            f"❌ <b>Không thể tìm thấy tài khoản!</b>\n\n"
-            f"Chi tiết lỗi: <code>{e}</code>\n\n"
-            f"Vui lòng kiểm tra lại Link/UID Spotify hoặc Username Locket xem đã chính xác chưa.",
+            f"❌ {escape(message)}\n\nHãy gửi lại thông tin tài khoản cho gói đã chọn.",
             parse_mode=ParseMode.HTML,
-            reply_markup=back_to_plan_kb(product_key)
+            reply_markup=back_to_plan_kb(product_key),
         )
-        return ConversationHandler.END
+        return WAITING_IDENTIFIER
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -967,60 +967,29 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def cb_paid(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()
     order_id = query.data.split(":")[1]
     order = db.get_order(order_id)
-
-    if not order:
-        await query.answer("❌ Không tìm thấy thông tin đơn hàng!", show_alert=True)
+    if not order or order.get("user_id") != query.from_user.id:
+        await query.answer("Không tìm thấy đơn hàng của bạn.", show_alert=True)
         return
-    if order["status"] == "done":
-        await query.answer("Đơn hàng này đã được duyệt hoàn thành trước đó!", show_alert=True)
-        return
-    if order["status"] == "pending_approval":
-        await query.answer("Đơn hàng đang chờ Admin duyệt, bạn vui lòng không bấm lại!", show_alert=True)
-        return
+    await query.answer("Đang kiểm tra giao dịch…")
 
-    if order["product"] == "studio_caption":
-        pv = {"name": "Studio Chỉnh Chú Thích & Khung Viền", "emoji": "🎨"}
-        plnv = {"label": "Bản Quyền Vĩnh Viễn"}
-    else:
-        pv = PRODUCTS.get(order["product"], {"name": "Gói VIP", "emoji": "💎"})
-        plnv = pv.get("plans", {}).get(order["plan"], {"label": "VIP"})
-
-    # 1. Quét ngay SePay API xem tiền đã vào tài khoản TPBank chưa (Phản hồi tức thì trong 1 giây!)
-    from order_service import check_and_activate_sepay_order
+    from order_service import check_sepay_payments
     try:
-        ok_sp, msg_sp = await asyncio.to_thread(check_and_activate_sepay_order, order_id, ctx.bot)
-        if ok_sp:
-            await query.answer("🎉 Đã nhận được thanh toán thành công! Hồ sơ đã được kích hoạt.", show_alert=True)
-            return
-    except Exception as e_sp:
-        logger.warning(f"Error checking SePay in cb_paid: {e_sp}")
+        await check_sepay_payments(ctx.bot, order_id)
+    except Exception:
+        logger.warning("Could not check payment for %s", order_id)
+    order = db.get_order(order_id)
+    status = order.get("status")
+    if status in ("paid_review", "done", "cancelled", "rejected", "pending_approval"):
+        await show_order_details(query.message, order)
+        return
+    if not db.update_order(order_id, expected_statuses=("pending", "waiting_payment"), status="pending_approval"):
+        await show_order_details(query.message, db.get_order(order_id))
+        return
 
-    if getattr(config, "AUTO_APPROVE", False):
-        from order_service import execute_order_activation
-        ok, act_msg = await execute_order_activation(ctx.bot, order_id)
-        if ok:
-            from config import ADMIN_IDS
-            for admin_id in ADMIN_IDS:
-                try:
-                    await ctx.bot.send_message(
-                        admin_id,
-                        f"⚡ <b>[AUTO-APPROVE] ĐƠN HÀNG ĐÃ DUYỆT TỰ ĐỘNG!</b>\n\n"
-                        f"🧾 Mã đơn: <code>ORDER_{order_id}</code>\n"
-                        f"👤 Khách: @{order['username']} (ID: <code>{order['user_id']}</code>)\n"
-                        f"📦 Gói: {pv['emoji']} {pv['name']} — {plnv['label']}\n"
-                        f"💰 Số tiền: <b>{utils.fmt_price(order['price'])}</b>\n"
-                        f"🎯 Tài khoản: <b>{order['display_name']}</b>",
-                        parse_mode=ParseMode.HTML
-                    )
-                except Exception:
-                    pass
-            return
-
-    db.update_order(order_id, status="pending_approval")
-
+    pv = PRODUCTS.get(order["product"], {"name": "Studio", "emoji": "🎨"})
+    plnv = pv.get("plans", {}).get(order["plan"], {"label": "Studio"})
     customer_msg = (
         f"⏳ <b>XÁC NHẬN THANH TOÁN ĐÃ ĐƯỢC GỬI!</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -1029,8 +998,7 @@ async def cb_paid(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"👤 <b>Tài khoản:</b> <b>{order['display_name']}</b>\n"
         f"💰 <b>Số tiền:</b> <b>{utils.fmt_price(order['price'])}</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"Admin đang kiểm tra giao dịch và sẽ duyệt đơn cho bạn ngay lập tức.\n"
-        f"🚀 <i>Link cấu hình DNS Profile sẽ tự động gửi tới đây ngay sau khi duyệt!</i>"
+        "Hệ thống chưa xác nhận được giao dịch. Hãy giữ mã đơn để đối soát."
     )
     try:
         await query.edit_message_caption(customer_msg, parse_mode=ParseMode.HTML, reply_markup=pending_approval_kb())
@@ -1165,7 +1133,7 @@ async def cb_buy_studio(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         display_name=parent_order.get("display_name"),
         parent_order_id=order_id
     )
-    db.update_order(sub_order_id, status="waiting_payment")
+    db.update_order(sub_order_id, expected_statuses=("pending",), status="waiting_payment")
 
     transfer_memo = f"ORDER_{sub_order_id}"
     qr_url = utils.get_vietqr_url(studio_price, transfer_memo)
@@ -1291,9 +1259,15 @@ async def cb_buy(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def cb_cancel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()
     order_id = query.data.split(":")[1]
-    db.update_order(order_id, status="cancelled")
+    order = db.get_order(order_id)
+    if not order or order.get("user_id") != query.from_user.id:
+        await query.answer("Không tìm thấy đơn hàng của bạn.", show_alert=True)
+        return
+    if not db.update_order(order_id, expected_statuses=("pending", "waiting_payment"), status="cancelled"):
+        await query.answer("Đơn đã chuyển trạng thái. Hãy mở Đơn hàng của tôi để kiểm tra.", show_alert=True)
+        return
+    await query.answer()
     cancel_text = (
         f"❌ <b>ĐÃ HUỶ ĐƠN HÀNG</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -1326,79 +1300,104 @@ async def cb_cancel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 #  ĐƠN HÀNG CỦA TÔI
 # ═══════════════════════════════════════════════════════════════════════════════
 
-async def myorders_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    orders = db.get_user_orders(update.effective_user.id)
+def render_customer_orders(user_id: int):
+    orders = sorted(db.get_user_orders(user_id), key=lambda o: o.get("created_at") or "", reverse=True)[:10]
     if not orders:
-        await update.message.reply_text(
-            "📦 <b>LỊCH SỬ ĐƠN HÀNG</b>\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "Bạn chưa có đơn hàng nào trong hệ thống.\n\n"
-            "Hãy khám phá các gói dịch vụ hấp dẫn của chúng tôi ngay hôm nay!",
-            parse_mode=ParseMode.HTML,
-            reply_markup=orders_kb()
-        )
-        return
+        return "Bạn chưa có đơn hàng nào.", orders_kb()
 
-    lines = [
-        "📦 <b>LỊCH SỬ ĐƠN HÀNG CỦA BẠN (Gần nhất)</b>",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━"
-    ]
-    for o in sorted(orders, key=lambda x: x["created_at"], reverse=True)[:10]:
-        prod = PRODUCTS.get(o["product"], {}).get("name", o["product"])
-        plan = PRODUCTS.get(o["product"], {}).get("plans", {}).get(o["plan"], {}).get("label", o["plan"])
+    lines = ["📦 <b>ĐƠN HÀNG CỦA TÔI</b>"]
+    rows = []
+    for order in orders:
+        order_id = order["order_id"]
+        product = PRODUCTS.get(order.get("product"), {})
+        name = product.get("name", "Studio" if order.get("product") == "studio_caption" else "Dịch vụ")
         lines.append(
-            f"{utils.status_emoji(o['status'])} <b>Mã:</b> <code>ORDER_{o['order_id']}</code>\n"
-            f"   └ {prod} ({plan}) — {utils.fmt_price(o['price'])}\n"
-            f"   └ <i>Ngày đặt: {utils.fmt_datetime(o['created_at'])}</i>\n"
+            f"<b>ORDER_{escape(order_id)}</b> · {escape(name)} · {utils.fmt_price(order.get('price', 0))}\n"
+            f"{customer_order_status(order)}"
         )
-    lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 <i>Ghi chú: ✅ Đã duyệt | ⏳ Chờ duyệt | 💳 Chờ thanh toán</i>")
+        rows.append([InlineKeyboardButton(f"Xem đơn {order_id}", callback_data=f"order_details:{order_id}")])
     has_done = any(o.get("status") == "done" for o in orders)
-    has_sp = any("spotify" in str(o.get("product", "")).lower() for o in orders)
-    await update.message.reply_text(
-        "\n".join(lines), parse_mode=ParseMode.HTML,
-        reply_markup=orders_kb(has_done_order=has_done, has_spotify=has_sp)
+    has_spotify = any("spotify" in o.get("product", "") for o in orders)
+    rows.extend(orders_kb(has_done_order=has_done, has_spotify=has_spotify).inline_keyboard)
+    return "\n\n".join(lines), InlineKeyboardMarkup(rows)
+
+
+def customer_order_status(order: dict) -> str:
+    from order_service import payment_deadline
+    import time
+
+    status = order.get("status")
+    if status in ("pending", "waiting_payment"):
+        deadline = payment_deadline(order)
+        if deadline is not None and time.time() >= deadline:
+            return "Hết hạn chuyển khoản"
+    if status == "cancelled" and order.get("cancel_reason"):
+        return "Hết hạn chuyển khoản"
+    return {
+        "done": "Hoàn tất", "pending_approval": "Đang kiểm tra giao dịch",
+        "paid_review": "Đã nhận tiền · đang đối soát", "cancelled": "Đã hủy",
+        "rejected": "Đã từ chối", "failed": "Cần hỗ trợ",
+    }.get(status, "Chờ chuyển khoản")
+
+
+async def show_order_details(message, order: dict):
+    order_id = order["order_id"]
+    status_text = customer_order_status(order)
+    text = (
+        f"<b>ORDER_{escape(order_id)}</b>\n{status_text}\n"
+        f"Số tiền: <b>{utils.fmt_price(order.get('price', 0))}</b>"
     )
+    if status_text == "Chờ chuyển khoản":
+        memo = f"ORDER_{order_id}"
+        text += (
+            f"\nNgân hàng: {escape(str(getattr(config, 'BANK_NAME', 'TPBank')))}"
+            f"\nSố tài khoản: <code>{escape(str(config.ACCOUNT_NO))}</code>"
+            f"\nChủ tài khoản: {escape(str(config.ACCOUNT_NAME))}"
+            f"\nNội dung: <code>{escape(memo)}</code>"
+        )
+        markup = payment_kb(order_id, applied_coupon=order.get("discount_code"))
+        try:
+            await message.reply_photo(
+                utils.get_vietqr_url(order["price"], memo), caption=text,
+                parse_mode=ParseMode.HTML, reply_markup=markup,
+            )
+            return
+        except Exception:
+            logger.warning("Could not send payment QR for %s", order_id)
+    else:
+        text += "\nNếu cần hỗ trợ, gửi kèm mã đơn ở trên."
+        rows = [[InlineKeyboardButton("Liên hệ hỗ trợ", callback_data="support")]]
+        if order.get("status") in ("cancelled", "pending", "waiting_payment", "pending_approval"):
+            rows.insert(0, [InlineKeyboardButton("Kiểm tra giao dịch", callback_data=f"paid:{order_id}")])
+        rows.append([InlineKeyboardButton("Đơn hàng của tôi", callback_data="my_orders")])
+        markup = InlineKeyboardMarkup(rows)
+    await message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=markup)
+
+
+async def cb_order_details(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    order = db.get_order(query.data.split(":", 1)[1])
+    if not order or order.get("user_id") != query.from_user.id:
+        await query.answer("Không tìm thấy đơn hàng của bạn.", show_alert=True)
+        return
+    await query.answer()
+    await show_order_details(query.message, order)
+
+
+async def myorders_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    text, markup = render_customer_orders(update.effective_user.id)
+    await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=markup)
 
 
 async def cb_my_orders(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    orders = db.get_user_orders(query.from_user.id)
-    if not orders:
-        await query.edit_message_text(
-            "📦 <b>LỊCH SỬ ĐƠN HÀNG</b>\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "Bạn chưa có đơn hàng nào trong hệ thống.\n\n"
-            "Hãy khám phá các gói dịch vụ hấp dẫn của chúng tôi ngay hôm nay!",
-            parse_mode=ParseMode.HTML,
-            reply_markup=orders_kb(has_done_order=False, has_spotify=False)
-        )
-        return
+    text, markup = render_customer_orders(query.from_user.id)
+    if query.message.text is None:
+        await query.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=markup)
+    else:
+        await query.edit_message_text(text, parse_mode=ParseMode.HTML, reply_markup=markup)
 
-    lines = [
-        "📦 <b>LỊCH SỬ ĐƠN HÀNG CỦA BẠN (Gần nhất)</b>",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━"
-    ]
-    for o in sorted(orders, key=lambda x: x["created_at"], reverse=True)[:10]:
-        prod = PRODUCTS.get(o["product"], {}).get("name", o["product"])
-        plan = PRODUCTS.get(o["product"], {}).get("plans", {}).get(o["plan"], {}).get("label", o["plan"])
-        lines.append(
-            f"{utils.status_emoji(o['status'])} <b>Mã:</b> <code>ORDER_{o['order_id']}</code>\n"
-            f"   └ {prod} ({plan}) — {utils.fmt_price(o['price'])}\n"
-            f"   └ <i>Ngày đặt: {utils.fmt_datetime(o['created_at'])}</i>\n"
-        )
-    lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 <i>Ghi chú: ✅ Đã duyệt | ⏳ Chờ duyệt | 💳 Chờ thanh toán</i>")
-    has_done = any(o.get("status") == "done" for o in orders)
-    has_sp = any("spotify" in str(o.get("product", "")).lower() for o in orders)
-    await query.edit_message_text(
-        "\n".join(lines), parse_mode=ParseMode.HTML,
-        reply_markup=orders_kb(has_done_order=has_done, has_spotify=has_sp)
-    )
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-#  HỖ TRỢ CSKH
-# ═══════════════════════════════════════════════════════════════════════════════
 
 async def support_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     support_text = (

@@ -37,7 +37,7 @@ from handlers.user_handlers import (
     help_cmd, account_cmd, apidocs_cmd, apierrors_cmd, setlang_cmd,
     cb_product, cb_plan,
     cb_paid, cb_buy, cb_cancel,
-    cb_my_orders, cb_support, cb_my_account,
+    cb_my_orders, cb_order_details, cb_support, cb_my_account,
     cb_cmd_setlang, cb_lang, cb_apidocs, cb_get_mobileconfig,
     cb_back_main, cb_back_products, cb_show_qr,
     receive_identifier, cancel_conv, resetspotify_user_cmd, guide_cmd, cb_show_guide, cb_user_reset_spotify_menu,
@@ -150,88 +150,6 @@ logger = logging.getLogger(__name__)
 
 # ── Luồng quét tự động số dư ngân hàng qua SePay (Techcombank) ───────────────
 
-async def check_sepay_auto_payments(bot):
-    token = getattr(config, "SEPAY_API_TOKEN", "")
-    if not token:
-        return
-
-    import database as db
-    orders = db.get_orders()
-    pending = [o for o in orders.values() if o.get("status") in ("waiting_payment", "pending_approval", "pending")]
-    if not pending:
-        return
-
-    url = "https://my.sepay.vn/userapi/transactions/list?limit=20"
-    headers = {"Authorization": f"Bearer {token}"}
-
-    try:
-        import httpx
-        async with httpx.AsyncClient(timeout=8) as client:
-            r = await client.get(url, headers=headers)
-            if r.status_code != 200:
-                return
-            data = r.json()
-            transactions = data.get("transactions", [])
-            if not transactions:
-                return
-
-            from order_service import execute_order_activation
-            import utils
-            for order in pending:
-                order_id = order["order_id"].upper()
-                req_amount = float(order.get("price", 0))
-
-                for tx in transactions:
-                    tx_id = str(tx.get("id", ""))
-                    if not tx_id or db.is_tx_used(tx_id):
-                        continue
-
-                    # Bắt buộc đúng tài khoản thụ hưởng
-                    tx_acc = str(tx.get("account_number", "")).strip()
-                    if tx_acc and tx_acc != str(config.ACCOUNT_NO).strip():
-                        continue
-
-                    content = str(tx.get("transaction_content", "")).upper()
-                    amount_in = float(tx.get("amount_in", 0) or 0)
-
-                    # Khớp mã đơn ORDER_XXXX hoặc XXXX và số tiền >= giá gói
-                    if (order_id in content or f"ORDER_{order_id}" in content) and amount_in >= req_amount:
-                        logger.info(f"✅ SePay tự động phát hiện thanh toán cho đơn ORDER_{order_id} ({amount_in}đ, TX: {tx_id})!")
-                        ok, msg = await execute_order_activation(bot, order["order_id"])
-                        if ok:
-                            db.mark_tx_used(tx_id, order["order_id"])
-                            try:
-                                await bot.send_message(
-                                    chat_id=order["user_id"],
-                                    text=(
-                                        f"🔔 <b>HỆ THỐNG ĐÃ TỰ ĐỘNG NHẬN ĐƯỢC THANH TOÁN {utils.fmt_price(int(amount_in))}!</b>\n"
-                                        f"Gói dịch vụ <b>{order['product']}</b> đã được kích hoạt thành công."
-                                    ),
-                                    parse_mode="HTML"
-                                )
-                            except Exception:
-                                pass
-
-                            for aid in config.ADMIN_IDS:
-                                try:
-                                    await bot.send_message(
-                                        chat_id=aid,
-                                        text=(
-                                            f"💰 <b>[SEPAY AUTO] NHẬN TIỀN THÀNH CÔNG!</b>\n\n"
-                                            f"• Mã đơn: <code>ORDER_{order_id}</code>\n"
-                                            f"• Khách: @{order['username']}\n"
-                                            f"• Số tiền: <b>{utils.fmt_price(int(amount_in))}</b>\n"
-                                            f"• Hệ thống đã tự động kích hoạt và giao hồ sơ cho khách!"
-                                        ),
-                                        parse_mode="HTML"
-                                    )
-                                except Exception:
-                                    pass
-                        break
-    except Exception as e:
-        logger.warning(f"SePay worker error: {e}")
-
-
 async def sepay_worker(bot):
     """Vòng lặp chạy ngầm quét biến động số dư TPBank mỗi 4 giây và tự động hủy đơn hết hạn 5 phút"""
     logger.info("🚀 Luồng SePay worker đã khởi động (quét TPBank tự động mỗi 4s)...")
@@ -239,14 +157,12 @@ async def sepay_worker(bot):
     cancel_counter = 0
     while True:
         try:
-            await order_service.check_all_sepay_pending_payments(bot)
+            await order_service.check_sepay_payments(bot)
             # Quét và hủy các đơn hàng quá hạn 5 phút (kiểm tra mỗi 20 giây ~ 5 chu kỳ)
             cancel_counter += 1
             if cancel_counter >= 5:
                 cancel_counter = 0
-                cancel_fn = getattr(order_service, "cancel_expired_pending_orders", None)
-                if cancel_fn:
-                    await asyncio.to_thread(cancel_fn, 300)
+                await asyncio.to_thread(order_service.cancel_expired_pending_orders)
         except Exception as e:
             logger.warning(f"SePay worker loop error: {e}")
         await asyncio.sleep(4)
@@ -446,6 +362,7 @@ def main():
     app.add_handler(CallbackQueryHandler(cb_paid,          pattern=r"^paid:"))
     app.add_handler(CallbackQueryHandler(cb_buy,           pattern=r"^buy:"))
     app.add_handler(CallbackQueryHandler(cb_cancel,        pattern=r"^cancel:"))
+    app.add_handler(CallbackQueryHandler(cb_order_details, pattern=r"^order_details:"))
     app.add_handler(CallbackQueryHandler(cb_my_orders,     pattern=r"^my_orders$"))
     app.add_handler(CallbackQueryHandler(cb_my_account,    pattern=r"^my_account$"))
     app.add_handler(CallbackQueryHandler(cb_cmd_setlang,   pattern=r"^cmd_setlang$"))

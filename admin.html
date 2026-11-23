@@ -984,7 +984,7 @@
 
             let filtered = cachedOrders.filter(o => {
                 if (currentOrderFilter === 'pending') {
-                    return ['pending', 'waiting_payment', 'pending_approval'].includes(o.status);
+                    return ['pending', 'waiting_payment', 'pending_approval', 'paid_review'].includes(o.status);
                 } else if (currentOrderFilter === 'done') {
                     return o.status === 'done';
                 } else if (currentOrderFilter === 'rejected') {
@@ -1008,12 +1008,14 @@
             }
 
             tbody.innerHTML = filtered.map(o => {
-                const isPending = ['pending', 'waiting_payment', 'pending_approval'].includes(o.status);
+                const isPending = ['pending', 'waiting_payment', 'pending_approval', 'paid_review'].includes(o.status);
                 const isDone = o.status === 'done';
 
                 let statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">Khác</span>';
                 if (isDone) {
                     statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✅ Đã Kích Hoạt</span>';
+                } else if (o.status === 'paid_review') {
+                    statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400">Đã nhận tiền · Đối soát</span>';
                 } else if (isPending) {
                     statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">⏳ Chờ Duyệt</span>';
                 } else {
@@ -1037,9 +1039,7 @@
                             <button onclick="approveOrder('${o.order_id}')" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1">
                                 ⚡ Duyệt
                             </button>
-                            <button onclick="rejectOrder('${o.order_id}')" class="px-2 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">
-                                ✕
-                            </button>
+                            ${o.status === 'paid_review' ? '' : `<button onclick="rejectOrder('${o.order_id}')" class="px-2 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">✕</button>`}
                             <button onclick="viewOrderDetail('${o.order_id}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all cursor-pointer">
                                 👁
                             </button>
@@ -1121,7 +1121,7 @@
             if (!order) return;
 
             document.getElementById('modalOrderId').textContent = `ORDER_${order.order_id}`;
-            const isPending = ['pending', 'waiting_payment', 'pending_approval'].includes(order.status);
+            const isPending = ['pending', 'waiting_payment', 'pending_approval', 'paid_review'].includes(order.status);
 
             const body = document.getElementById('modalOrderBody');
             body.innerHTML = `
