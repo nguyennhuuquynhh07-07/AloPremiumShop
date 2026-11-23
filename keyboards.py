@@ -148,7 +148,7 @@ def studio_success_kb(studio_url: str) -> InlineKeyboardMarkup:
 
 
 def dns_combo_kb() -> InlineKeyboardMarkup:
-    dns_url = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+    dns_url = getattr(config, "DNS_COMBO_URL", f"{config.DNS_BASE_URL}/{config.DNS_SLUG}")
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🌐 Cài Đặt Safari (Locket & Spotify)", url=dns_url)],
         [
@@ -161,7 +161,7 @@ def dns_combo_kb() -> InlineKeyboardMarkup:
 
 
 def combo_success_kb(dns_locket: str = None, dns_spotify: str = None) -> InlineKeyboardMarkup:
-    dns_target = dns_locket or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+    dns_target = dns_locket or getattr(config, "DNS_COMBO_URL", f"{config.DNS_BASE_URL}/{config.DNS_SLUG}")
     rows = [
         [
             InlineKeyboardButton("🌐 Cài Đặt Safari", url=dns_target)

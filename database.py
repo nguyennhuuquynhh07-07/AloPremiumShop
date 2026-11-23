@@ -419,7 +419,8 @@ def recover_order_payments() -> None:
 DEFAULT_PRICES = {
     "locket": {"test": 5000, "6m": 40000, "1y": 60000, "ltm": 160000},
     "spotify": {"test": 5000, "6m": 40000, "1y": 60000, "ltm": 180000},
-    "locket_spotify": {"ltm": 230000},
+    "combo": {"6m": 65000, "1y": 99000, "ltm": 259000},
+    "locket_spotify": {"6m": 65000, "1y": 99000, "ltm": 259000},
     "locket_ai": {"ltm": 250000},
 }
 

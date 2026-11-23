@@ -69,7 +69,7 @@ API_BASE_URL = os.getenv("API_BASE_URL", "").strip()
 
 DNS_BASE_URL = os.getenv("DNS_BASE_URL", "").strip()
 DNS_SLUG = os.getenv("DNS_SLUG", "").strip()
-DNS_COMBO_URL = os.getenv("DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj").strip()
+DNS_COMBO_URL = os.getenv("DNS_COMBO_URL", f"{DNS_BASE_URL}/{DNS_SLUG}" if DNS_BASE_URL and DNS_SLUG else "https://doh.2707226.xyz/alopremiumshop").strip()
 
 # ============================================================
 #  4. DANH SÁCH DỊCH VỤ & BẢNG GIÁ (LOCKET & SPOTIFY)
@@ -99,14 +99,26 @@ PRODUCTS = {
             "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "SPVV",      "price": 180000},
         },
     },
-    "locket_spotify": {
-        "name": "Combo Duo VIP",
+    "combo": {
+        "name": "Combo Duo VIP (Locket + Spotify)",
         "emoji": "👑",
-        "service": "locket_spotify",
-        "dns_link": "https://dns3.is-cool.dev/g/ECXI6NSHgj",
-        "description": "Trọn bộ tính năng của Locket Gold, Quay 30s và âm thanh, Tính năng Photobooth rất nhiều đa dạng, Filter thú vị, Khung viền shin cute, Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao... (Thiên về PhotoBooth nhiều hơn).",
+        "service": "combo",
+        "description": "Trọn bộ Locket Gold VIP & Spotify Premium – Tiết kiệm tới 81.000đ, kích hoạt đồng thời cả hai dịch vụ.",
         "plans": {
-            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "LKGVV",    "price": 230000},
+            "6m":   {"label": "6 Tháng",     "packageCode": "COMBO6M",  "price": 65000},
+            "1y":   {"label": "1 Năm",       "packageCode": "COMBO1Y",  "price": 99000},
+            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "COMBOVV",  "price": 259000},
+        },
+    },
+    "locket_spotify": {
+        "name": "Combo Duo VIP (Locket + Spotify)",
+        "emoji": "👑",
+        "service": "combo",
+        "description": "Trọn bộ Locket Gold VIP & Spotify Premium – Tiết kiệm tới 81.000đ, kích hoạt đồng thời cả hai dịch vụ.",
+        "plans": {
+            "6m":   {"label": "6 Tháng",     "packageCode": "COMBO6M",  "price": 65000},
+            "1y":   {"label": "1 Năm",       "packageCode": "COMBO1Y",  "price": 99000},
+            "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "COMBOVV",  "price": 259000},
         },
     },
     "locket_ai": {

@@ -363,7 +363,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 exact_dns = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
                 download_url = None
             elif is_combo:
-                exact_dns = order.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+                exact_dns = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
                 download_url = f"/api/download_profile?order_id={order_id}" if is_done else None
             else:
                 exact_dns = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
@@ -451,7 +451,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 return
 
             if product_key in ("combo", "locket_spotify"):
-                combo_dns = order.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+                combo_dns = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
                 self.send_response(302)
                 self.send_header("Location", combo_dns)
                 self._send_cors_headers()
@@ -508,7 +508,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         exact_safari = None
                         exact_dl = None
                     elif prod_k in ("combo", "locket_spotify"):
-                        exact_safari = od.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj") if is_done else None
+                        exact_safari = od.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}" if is_done else None
                         exact_dl = f"/api/download_profile?order_id={oid}" if is_done else None
                     else:
                         exact_safari = od.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}" if is_done else None

@@ -146,45 +146,84 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 studio_link=studio_url
             )
         elif product_key in ("combo", "locket_spotify"):
-            # GÓI COMBO DUO VIP: LOCKET & SPOTIFY (DÙNG DNS https://dns3.is-cool.dev/g/ECXI6NSHgj, CHỈ CẦN KÍCH HOẠT USER LOCKET)
-            dns_vip = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
-            dns_link = dns_vip
-            dns_link_locket = dns_vip
-            dns_link_spotify = dns_vip
+            # GÓI COMBO DUO CHÍNH CHỦ (LOCKET + SPOTIFY QUA API CTV locket.2707226.xyz)
+            dns_base = f"{DNS_BASE_URL}/{DNS_SLUG}" if DNS_BASE_URL and DNS_SLUG else "https://doh.2707226.xyz/alopremiumshop"
+            dns_link = dns_base
+            dns_link_locket = dns_base
+            dns_link_spotify = dns_base
 
-            act_success = False
-            last_err = None
-            pkg_code = plnv.get("packageCode", "LKGVV")
+            # Tách biệt 2 mã API cho Locket (dùng Username Locket) và Spotify (dùng UID Spotify)
+            combo_map = {
+                "6m":  {"locket": "LKG6M",  "spotify": "SP6M"},
+                "1y":  {"locket": "LKG1Y",  "spotify": "SPOTIFY1Y"},
+                "ltm": {"locket": "LKGVV",  "spotify": "SPVV"},
+            }
+            pkg_map = combo_map.get(plan_key, {"locket": "LKGVV", "spotify": "SPVV"})
+
+            # 1. Kích hoạt Locket trên web chính
+            locket_ok = False
+            last_lk_err = None
             for acc in candidate_accounts:
                 try:
-                    result = await asyncio.to_thread(
+                    await asyncio.to_thread(
                         api.create_subscription,
                         uid=acc,
-                        package_code=pkg_code,
+                        package_code=pkg_map["locket"],
                         service="locket",
-                        note=f"Order {order_id} Combo Duo DNS"
+                        note=f"Combo {order_id} Locket"
                     )
-                    act_success = True
+                    locket_ok = True
                     target_account = acc
-                    if acc != order.get("uid"):
-                        db.update_order(order_id, uid=acc, account_target=acc)
                     break
-                except Exception as e_act:
-                    last_err = e_act
-                    err_str = str(e_act).lower()
-                    if "404" not in err_str and "không tồn tại" not in err_str:
-                        break
+                except Exception as e_lk:
+                    last_lk_err = e_lk
+                    logger.warning(f"Combo Locket API ({acc}): {e_lk}")
 
-            if not act_success:
-                return False, str(last_err or "Kích hoạt thất bại")
+            # 2. Kích hoạt Spotify trên web chính (ưu tiên spotify_uid khách điền ở dòng 2)
+            sp_raw = str(order.get("spotify_uid") or "").strip()
+            sp_candidates = []
+            if sp_raw:
+                try:
+                    clean_sp = utils.extract_spotify_uid(sp_raw)
+                except Exception:
+                    clean_sp = sp_raw
+                if clean_sp:
+                    sp_candidates.append(clean_sp)
+                if sp_raw not in sp_candidates:
+                    sp_candidates.append(sp_raw)
+            for c in candidate_accounts:
+                if c not in sp_candidates:
+                    sp_candidates.append(c)
+
+            spotify_ok = False
+            last_sp_err = None
+            for sp_acc in sp_candidates:
+                try:
+                    await asyncio.to_thread(
+                        api.create_subscription,
+                        uid=sp_acc,
+                        package_code=pkg_map["spotify"],
+                        service="spotify",
+                        note=f"Combo {order_id} Spotify"
+                    )
+                    spotify_ok = True
+                    break
+                except Exception as e_sp:
+                    last_sp_err = e_sp
+                    logger.warning(f"Combo Spotify API ({sp_acc}): {e_sp}")
+
+            if not locket_ok and last_lk_err:
+                logger.error(f"Combo Locket activation failed: {last_lk_err}")
+                if not spotify_ok:
+                    return False, str(last_lk_err or "Kích hoạt Combo thất bại")
 
             db.update_order(
                 order_id, 
                 status="done", 
                 done_at=datetime.now().isoformat(), 
-                dns_link=dns_vip,
-                dns_link_locket=dns_vip,
-                dns_link_spotify=dns_vip
+                dns_link=dns_base,
+                dns_link_locket=dns_base,
+                dns_link_spotify=dns_base
             )
         else:
             # Gói Locket hoặc Spotify đơn lẻ: tự động fallback các candidate nếu dính 404
@@ -280,13 +319,12 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     logger.error(f"Error sending Studio delivery: {e_st_send}")
 
             elif product_key in ("combo", "locket_spotify"):
-                # GÓI COMBO DUO VIP: DÙNG DNS https://dns3.is-cool.dev/g/ECXI6NSHgj
-                dns_vip = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+                dns_base = f"{DNS_BASE_URL}/{DNS_SLUG}" if DNS_BASE_URL and DNS_SLUG else "https://doh.2707226.xyz/alopremiumshop"
                 try:
-                    qr_vip = utils.generate_qr_code(dns_vip)
+                    qr_combo = utils.generate_qr_code(dns_base)
                     await bot.send_photo(
                         chat_id=order["user_id"],
-                        photo=qr_vip,
+                        photo=qr_combo,
                         caption=(
                             f"👑 <b>MÃ QR CẤU HÌNH: COMBO DUO VIP</b>\n"
                             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -306,7 +344,7 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                         chat_id=order["user_id"],
                         text=success_text,
                         parse_mode=ParseMode.HTML,
-                        reply_markup=combo_success_kb(dns_vip, dns_vip)
+                        reply_markup=combo_success_kb(dns_base, dns_base)
                     )
                 except Exception as e:
                     logger.error(f"Error sending Combo Duo delivery: {e}")
@@ -576,10 +614,7 @@ def sync_upstream_orders() -> int:
             if matched_oid:
                 orders[matched_oid]["status"] = "done"
                 if not orders[matched_oid].get("dns_link"):
-                    if orders[matched_oid].get("product") in ("combo", "locket_spotify"):
-                        orders[matched_oid]["dns_link"] = getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
-                    else:
-                        orders[matched_oid]["dns_link"] = dns_link
+                    orders[matched_oid]["dns_link"] = dns_link
                 if expires_at:
                     orders[matched_oid]["expires_at"] = expires_at
                 if avatar_url and not orders[matched_oid].get("avatar"):

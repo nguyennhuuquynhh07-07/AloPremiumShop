@@ -209,7 +209,7 @@ async def account_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         latest_done = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
         prod_k = latest_done.get("product")
         if prod_k in ("combo", "locket_spotify"):
-            dns_link = latest_done.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+            dns_link = latest_done.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
             link_label = "👑 <b>Link DNS Combo Duo VIP (Locket & Spotify):</b>"
         elif prod_k == "locket_ai":
             dns_link = latest_done.get("vip_download_url") or latest_done.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
@@ -391,7 +391,7 @@ async def cb_my_account(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         latest_done = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
         prod_k = latest_done.get("product")
         if prod_k in ("combo", "locket_spotify"):
-            dns_link = latest_done.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+            dns_link = latest_done.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
             link_label = "👑 <b>Link DNS Combo Duo VIP (Locket & Spotify):</b>"
         elif prod_k == "locket_ai":
             dns_link = latest_done.get("vip_download_url") or latest_done.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
@@ -489,7 +489,7 @@ async def cb_get_mobileconfig(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
 
     if prod_key in ("combo", "locket_spotify"):
-        dns_link = latest.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+        dns_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
     elif prod_key == "locket_ai":
         dns_link = latest.get("vip_download_url") or latest.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
     else:
@@ -578,7 +578,7 @@ async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await query.answer("⚠️ Bạn chưa mua hoặc chưa thanh toán gói này!", show_alert=True)
             return
         latest = sorted(matching, key=lambda x: x.get("created_at") or "", reverse=True)[0]
-        target_link = latest.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+        target_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
         prod_name = "Combo Duo VIP"
         uid_name = latest.get("display_name") or latest.get("uid") or user.first_name
     elif target_service:
@@ -591,7 +591,7 @@ async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         is_spotify = (prod_key == "spotify")
         svc_label = "Spotify" if is_spotify else "Locket"
         if prod_key in ("combo", "locket_spotify"):
-            target_link = latest.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+            target_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
             prod_name = "Combo Duo VIP"
             svc_label = "Combo Duo"
         elif prod_key == "locket_ai":
@@ -609,7 +609,7 @@ async def cb_show_qr(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         is_spotify = (prod_key == "spotify")
         svc_label = "Spotify" if is_spotify else "Locket"
         if prod_key in ("combo", "locket_spotify"):
-            target_link = latest.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+            target_link = latest.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
             prod_name = "Combo Duo VIP"
             svc_label = "Combo Duo"
         elif prod_key == "locket_ai":
@@ -726,20 +726,20 @@ async def cb_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif product_key in ("combo", "locket_spotify"):
         prompt = (
             f"📦 <b>DỊCH VỤ ĐÃ CHỌN:</b> 👑 <b>Combo Duo VIP — {plnv['label']}</b>\n"
-            f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code> <i>(Rẻ hơn 110.000đ so với mua lẻ)</i>\n"
+            f"💰 <b>Giá thanh toán:</b> <code>{utils.fmt_price(plnv['price'])}</code> <i>(Tiết kiệm tới 81.000đ)</i>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"✨ <b>TÍNH NĂNG NỔI BẬT:</b>\n"
-            f"• Trọn bộ tính năng của Locket Gold VIP, Quay 30s và âm thanh\n"
-            f"• Tính năng Photobooth rất nhiều đa dạng, Filter thú vị, Khung viền Shin cute\n"
-            f"• Spotify nghe nhạc không quảng cáo, tua nhanh nghe nhạc tốc độ cao ...\n"
-            f"• Kích hoạt đồng thời cả 2 bằng 1 DNS duy nhất (Không cần Link Spotify)!\n\n"
-            f"📸 <b>LƯU Ý:</b> <i>Gói này thiên về tính năng PhotoBooth nhiều hơn!</i>\n\n"
-            f"📌 <b>BƯỚC 1: GỬI USERNAME LOCKET CỦA BẠN (CHỈ CẦN USER LOCKET)</b>\n\n"
-            f"<b>Hướng dẫn:</b>\n"
-            f"  Mở app Locket → Bấm Avatar góc trên → Xem phần <b>@username</b>\n\n"
-            f"<i>Ví dụ:</i> <code>conlaigii</code>\n\n"
-            f"👇 <b>Gửi Username Locket của bạn vào ô chat bên dưới:</b>\n"
-            f"💡 <i>(Nếu có mã giảm giá, bạn có thể gửi kèm, ví dụ: <code>username MÃ_GIẢM_GIÁ</code>)</i>"
+            f"• Trọn bộ tính năng Locket Gold VIP (Viền vàng, 60s, 4K gốc)\n"
+            f"• Spotify nghe nhạc không quảng cáo, Lossless 320kbps\n"
+            f"• Chuyển bài không giới hạn, phát nhạc theo thứ tự tuỳ thích\n"
+            f"• Kích hoạt đồng thời cả 2 tài khoản qua 1 DNS chính chủ duy nhất!\n\n"
+            f"📌 <b>BƯỚC 1: GỬI THÔNG TIN 2 DÒNG (LOCKET & SPOTIFY)</b>\n\n"
+            f"<b>Vui lòng gửi tin nhắn gồm 2 dòng:</b>\n"
+            f"1️⃣ <b>Dòng 1:</b> Username Locket (Chỉ điền Username, không dán link — VD: <code>conlaigii</code>)\n"
+            f"2️⃣ <b>Dòng 2:</b> Link Profile Spotify (Bắt buộc dạng Link — VD: <code>https://open.spotify.com/user/...</code>)\n\n"
+            f"<i>Ví dụ gửi đúng mẫu:</i>\n"
+            f"<pre>conlaigii\nhttps://open.spotify.com/user/31xxxxxxxxxx</pre>\n\n"
+            f"👇 <b>Gửi 2 dòng thông tin vào ô chat bên dưới:</b>"
         )
     else:  # locket
         prompt = (
@@ -820,7 +820,77 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
         extra_order_fields = {}
         import re
-        if product_key == "spotify":
+        if product_key in ("combo", "locket_spotify"):
+            # Yêu cầu gửi cả 2 thông tin: Dòng 1 Locket Username, Dòng 2 Link Profile Spotify
+            lines = [l.strip() for l in raw_identifier.splitlines() if l.strip()]
+            locket_part = ""
+            spotify_part = ""
+
+            if len(lines) >= 2:
+                if re.search(r"spotify\.com", lines[1], re.I):
+                    locket_part = lines[0]
+                    spotify_part = lines[1]
+                elif re.search(r"spotify\.com", lines[0], re.I):
+                    spotify_part = lines[0]
+                    locket_part = lines[1]
+                else:
+                    locket_part = lines[0]
+                    spotify_part = lines[1]
+            else:
+                parts = raw_identifier.split()
+                if len(parts) >= 2:
+                    if re.search(r"spotify\.com", parts[1], re.I):
+                        locket_part = parts[0]
+                        spotify_part = parts[1]
+                    elif re.search(r"spotify\.com", parts[0], re.I):
+                        spotify_part = parts[0]
+                        locket_part = parts[1]
+                    else:
+                        locket_part = parts[0]
+                        spotify_part = parts[1]
+                else:
+                    raise ValueError(
+                        "Gói Combo Duo VIP yêu cầu gửi đủ 2 dòng thông tin:\n"
+                        "• Dòng 1: Username Locket (chỉ điền User, không dán link)\n"
+                        "• Dòng 2: Link Profile Spotify (VD: https://open.spotify.com/user/...)\n\n"
+                        "Vui lòng gửi lại đúng theo cú pháp 2 dòng trên!"
+                    )
+
+            # 1. Xác thực Locket
+            if re.search(r"(https?://|/|spotify\.com|locket\.cam)", locket_part, re.I):
+                raise ValueError("Dòng 1 (Locket) chỉ được điền Username Locket (VD: conlaigii), tuyệt đối không dán đường link!")
+            cleaned_username = utils.clean_input(locket_part)
+            res_lk = await asyncio.to_thread(api.locket_resolve, cleaned_username)
+            data_lk = res_lk.get("data") if isinstance(res_lk.get("data"), dict) else res_lk
+            locket_username = data_lk.get("username") or cleaned_username
+            locket_avatar = data_lk.get("avatar") or data_lk.get("avatarUrl")
+
+            # 2. Xác thực Spotify
+            if not re.search(r"spotify\.com/user/[a-zA-Z0-9._-]+", spotify_part, re.I):
+                raise ValueError("Dòng 2 (Spotify) bắt buộc phải dán đúng Link Profile Spotify (VD: https://open.spotify.com/user/...)!")
+            cleaned_sp = utils.extract_spotify_uid(spotify_part)
+            res_sp = await asyncio.to_thread(api.spotify_check, spotify_part)
+            data_sp = res_sp.get("data") if isinstance(res_sp.get("data"), dict) else res_sp
+            sp_uid = data_sp.get("uid") or data_sp.get("id") or cleaned_sp
+            sp_display = data_sp.get("displayName") or data_sp.get("username") or data_sp.get("name") or sp_uid
+            sp_avatar = data_sp.get("avatar") or data_sp.get("image") or data_sp.get("avatarUrl")
+            sp_plan = data_sp.get("plan") or data_sp.get("product") or "Free"
+
+            uid = f"{locket_username} | {sp_uid}"
+            display = f"Locket: @{locket_username} | Spotify: {sp_display}"
+            avatar_url = locket_avatar or sp_avatar
+            spotify_extra_info = (
+                f"🟡 <b>Locket Username:</b> <code>@{locket_username}</code>\n"
+                f"🎵 <b>Spotify Profile:</b> <code>{sp_display}</code> (UID: <code>{sp_uid}</code>)\n"
+                f"🏷 <b>Gói Spotify hiện tại:</b> <code>{sp_plan}</code>\n"
+            )
+            extra_order_fields = {
+                "account_target": locket_username,
+                "locket_username": locket_username,
+                "spotify_uid": sp_uid,
+                "avatar": avatar_url,
+            }
+        elif product_key == "spotify":
             if not re.search(r"spotify\.com/user/[a-zA-Z0-9._-]+", raw_identifier, re.I):
                 raise ValueError("Phần Spotify chỉ nhận Link Profile Spotify (VD: https://open.spotify.com/user/...). Vui lòng sao chép liên kết hồ sơ từ ứng dụng Spotify!")
             cleaned_sp = utils.extract_spotify_uid(raw_identifier)
@@ -1187,7 +1257,7 @@ def _build_success_message(order, pv, plnv, dns_link: str) -> str:
         duration_note = f"💡 <i>Chỉ cần cài 1 lần là dùng theo thời hạn gói. Nếu đổi thiết bị hãy nhắn Admin để reset.</i>"
 
     if order["product"] in ("combo", "locket_spotify"):
-        dns_vip = order.get("dns_link") or getattr(config, "DNS_COMBO_URL", "https://dns3.is-cool.dev/g/ECXI6NSHgj")
+        dns_vip = order.get("dns_link") or getattr(config, "DNS_COMBO_URL", f"{config.DNS_BASE_URL}/{config.DNS_SLUG}")
         step4 = (
             f"📌 <b>BƯỚC CÀI ĐẶT CẤU HÌNH COMBO DUO VIP (LOCKET & SPOTIFY):</b>\n"
             f"1️⃣ Mở trình duyệt <b>Safari</b> trên iPhone và truy cập link DNS:\n"
@@ -1195,7 +1265,7 @@ def _build_success_message(order, pv, plnv, dns_link: str) -> str:
             f"2️⃣ Bấm <b>Cho phép (Allow)</b> khi thông báo tải hồ sơ xuất hiện\n"
             f"3️⃣ Mở <b>Cài đặt iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>\n"
             f"4️⃣ Vào <b>Cài đặt chung</b> → <b>Giới thiệu</b> → Kéo xuống cuối → <b>Cài đặt tin cậy chứng nhận</b> → Bật xanh <b>LocketGold</b>\n"
-            f"5️⃣ Mở đồng thời cả Locket và Spotify lên và tận hưởng trọn bộ tính năng VIP (Locket Gold, Photobooth, Khung Shin cute, Spotify không quảng cáo)! 🎉\n\n"
+            f"5️⃣ Mở đồng thời cả Locket và Spotify lên và tận hưởng trọn bộ tính năng VIP (Locket Gold 4K gốc, video 60s, Spotify nghe nhạc không quảng cáo)! 🎉\n\n"
             f"{duration_note}"
         )
 
