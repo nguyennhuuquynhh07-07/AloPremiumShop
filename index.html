@@ -395,8 +395,9 @@
             <button onclick="switchMainTab('store')" id="tabBtn_store" class="tab-btn active locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold whitespace-nowrap cursor-pointer">
                 👑 Mua Gói VIP
             </button>
-            <button onclick="switchMainTab('free')" id="tabBtn_free" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-[#6E6659] hover:text-[#1E1B18] hover:bg-white/80 whitespace-nowrap cursor-pointer">
-                🎁 Gói Free (0đ)
+            <button onclick="switchMainTab('free')" id="tabBtn_free" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-[#6E6659] hover:text-[#1E1B18] hover:bg-white/80 whitespace-nowrap cursor-pointer flex items-center gap-1.5">
+                <span class="line-through decoration-rose-500 decoration-2 opacity-75">🎁 Gói Free (0đ)</span>
+                <span class="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase">Tạm đóng</span>
             </button>
             <button onclick="switchMainTab('lookup')" id="tabBtn_lookup" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-[#6E6659] hover:text-[#1E1B18] hover:bg-white/80 whitespace-nowrap cursor-pointer">
                 🔍 Tra Cứu
@@ -545,16 +546,19 @@
                 <!-- CAROUSEL CUỘN NGANG TRÊN MOBILE / GRID 4 CỘT TRÊN DESKTOP -->
                 
                 <!-- BANNER NHAN GOI FREE 0D -->
-                <div class="mb-4 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                <div class="mb-4 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-zinc-50 via-rose-50/40 to-zinc-50 border border-rose-200 flex flex-wrap items-center justify-between gap-3 shadow-xs">
                     <div class="flex items-center gap-3">
-                        <span class="text-2xl">🎁</span>
+                        <span class="text-2xl">🚫</span>
                         <div>
-                            <p class="text-xs sm:text-sm font-bold text-[#1E1B18]">Bạn muốn trải nghiệm Locket Gold hoàn toàn miễn phí?</p>
-                            <p class="text-[11px] sm:text-xs text-[#6E6659]">Cài đặt cấu hình DNS Free 0đ, trải nghiệm ngay các tính năng VIP cơ bản</p>
+                            <p class="text-xs sm:text-sm font-bold text-[#1E1B18] flex items-center gap-2">
+                                <span class="line-through decoration-rose-500 decoration-2">🎁 Gói Dùng Thử Free 0đ</span>
+                                <span class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black uppercase">ĐÃ TẮT / TẠM DỪNG</span>
+                            </p>
+                            <p class="text-[11px] sm:text-xs text-[#6E6659]">Hệ thống tạm ngưng cung cấp gói DNS Free. Quý khách vui lòng chọn các gói VIP bản quyền bên dưới!</p>
                         </div>
                     </div>
-                    <button type="button" onclick="switchMainTab('free')" class="px-4 py-2 rounded-xl bg-white hover:bg-amber-100 text-[#1E1B18] font-fredoka font-bold text-xs border border-amber-300 shadow-xs transition-all shrink-0 cursor-pointer">
-                        Bấm Nhận Gói Free 0đ →
+                    <button type="button" onclick="switchMainTab('free')" class="px-3.5 py-1.5 rounded-xl bg-zinc-200 hover:bg-zinc-300 text-zinc-600 font-fredoka font-bold text-xs border border-zinc-300 shadow-xs transition-all shrink-0 cursor-pointer line-through decoration-rose-500">
+                        Xem thông báo →
                     </button>
                 </div>
 
@@ -1162,27 +1166,32 @@
 
                 <!-- THE EXACT FREE PRICING CARD -->
                 <div class="flex justify-center my-6">
-                    <div class="w-full max-w-[340px] bg-[#FFFDF6] rounded-[36px] border-2 border-[#F0E3C3] p-6 sm:p-7 shadow-[0_14px_34px_-24px_rgba(150,110,30,0.5)] relative transition-all hover:-translate-y-1">
+                    <div class="w-full max-w-[340px] bg-[#FFFDF6] rounded-[36px] border-2 border-rose-300 p-6 sm:p-7 shadow-[0_14px_34px_-24px_rgba(239,68,68,0.3)] relative transition-all">
+                        <!-- Red Notice Badge -->
+                        <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-red-600 to-rose-600 text-white text-[11px] font-fredoka font-black uppercase px-3.5 py-1 rounded-full shadow-md flex items-center gap-1">
+                            <span>🚫</span> ĐÃ TẮT / TẠM NGƯNG
+                        </div>
+
                         <!-- Free Badge -->
                         <div class="text-center mb-3">
-                            <span class="inline-block bg-[#1A1200] text-[#FFFBF1] text-xs font-fredoka font-black px-4 py-1 rounded-full">FREE</span>
+                            <span class="inline-block bg-rose-600 text-white text-xs font-fredoka font-black px-4 py-1 rounded-full uppercase tracking-wider">ĐÃ TẮT GÓI FREE</span>
                         </div>
 
                         <!-- Product Top -->
-                        <div class="flex items-center gap-3 mb-4">
-                            <img src="/assets/logos/flat_yellow.webp" alt="Locket Gold" class="w-12 h-12 rounded-2xl shadow-md shrink-0">
+                        <div class="flex items-center gap-3 mb-4 opacity-70">
+                            <img src="/assets/logos/flat_yellow.webp" alt="Locket Gold" class="w-12 h-12 rounded-2xl shadow-md shrink-0 grayscale">
                             <div>
-                                <div class="font-fredoka font-black text-lg text-[#1E1B18]">Locket Gold FREE</div>
-                                <div class="text-xs text-[#9A8C72] font-semibold">Bản quyền thử nghiệm</div>
+                                <div class="font-fredoka font-black text-lg text-[#1E1B18] line-through decoration-rose-500">Locket Gold FREE</div>
+                                <div class="text-xs text-rose-600 font-bold">Tạm ngưng phục vụ</div>
                             </div>
                         </div>
 
                         <!-- Price -->
                         <div class="mb-2">
-                            <div class="font-fredoka font-black text-3xl sm:text-4xl text-[#1E1B18]">Miễn phí</div>
+                            <div class="font-fredoka font-black text-3xl sm:text-4xl text-zinc-400 line-through decoration-rose-500 decoration-3">Miễn phí</div>
                             <div class="flex items-center gap-2 mt-1">
                                 <s class="text-xs text-[#9A8C72] font-semibold">79.000đ</s>
-                                <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">-100%</span>
+                                <span class="text-xs font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-md">Đã đóng</span>
                             </div>
                         </div>
 
@@ -1190,30 +1199,34 @@
                         <div class="border-t border-dashed border-[#E6D6B0] my-4"></div>
 
                         <!-- Perks List -->
-                        <ul class="space-y-3 mb-6 text-xs sm:text-sm font-semibold text-[#3A3121]">
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-5 h-5 rounded-full bg-[#FFB000] text-[#2A1D00] flex items-center justify-center font-black text-xs shrink-0">✓</span>
+                        <ul class="space-y-3 mb-6 text-xs sm:text-sm font-semibold text-[#8C8270] opacity-60">
+                            <li class="flex items-center gap-2.5 line-through">
+                                <span class="w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
                                 <span>Quay video 30s</span>
                             </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-5 h-5 rounded-full bg-[#FFB000] text-[#2A1D00] flex items-center justify-center font-black text-xs shrink-0">✓</span>
+                            <li class="flex items-center gap-2.5 line-through">
+                                <span class="w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
                                 <span>Đầy đủ 7 đặc quyền VIP Locket Gold cao cấp</span>
                             </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-5 h-5 rounded-full bg-[#FFB000] text-[#2A1D00] flex items-center justify-center font-black text-xs shrink-0">✓</span>
+                            <li class="flex items-center gap-2.5 line-through">
+                                <span class="w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
                                 <span>Đăng ảnh/video thư viện, xem ai xem, bạn bè vô hạn</span>
                             </li>
-                            <li class="flex items-center gap-2.5">
-                                <span class="w-5 h-5 rounded-full bg-[#FFB000] text-[#2A1D00] flex items-center justify-center font-black text-xs shrink-0">✓</span>
+                            <li class="flex items-center gap-2.5 line-through">
+                                <span class="w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
                                 <span>Caption dài hơn, không quảng cáo</span>
                             </li>
                         </ul>
 
-                        <!-- Button Cài Đặt Ngay -->
-                        <a href="/Free.mobileconfig" download="Free.mobileconfig"
-                           class="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-amber-50 text-[#1E1B18] font-fredoka font-black text-center border-2 border-[#E8D8B0] shadow-md transition-all block text-sm">
-                            📥 Nâng cấp ngay (Tải DNS Free.mobileconfig)
-                        </a>
+                        <!-- Button Cài Đặt Ngay -> Disabled Notice Box -->
+                        <div class="w-full py-3.5 px-4 rounded-2xl bg-zinc-100 text-zinc-400 font-fredoka font-black text-center border-2 border-zinc-300 shadow-sm block text-sm select-none">
+                            <span class="line-through decoration-rose-500 decoration-2">📥 Nâng cấp ngay (Tải DNS Free)</span>
+                            <div class="text-[11px] text-rose-600 font-bold mt-1">⚠️ Gói Free đã tạm ngưng phát hành</div>
+                        </div>
+
+                        <button type="button" onclick="switchMainTab('store')" class="w-full mt-3 py-3 px-4 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-center shadow-md transition-all block text-xs cursor-pointer">
+                            👉 Xem Các Gói VIP Bản Quyền (Từ 5K) →
+                        </button>
                     </div>
                 </div>
 
