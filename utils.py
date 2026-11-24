@@ -30,8 +30,8 @@ def extract_spotify_uid(raw: str) -> str:
 
 
 def gen_order_id() -> str:
-    """Tạo mã đơn hàng ngẫu nhiên 8 ký tự chữ hoa + số."""
-    chars = string.ascii_uppercase + string.digits
+    """Tạo mã đơn hàng ngẫu nhiên 8 ký tự dễ đọc (loại bỏ 0/O, 1/I/L tránh nhầm khi chuyển khoản)."""
+    chars = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
     return "".join(random.choices(chars, k=8))
 
 

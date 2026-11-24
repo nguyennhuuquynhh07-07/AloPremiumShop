@@ -185,8 +185,8 @@ async def orders_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE, filter_type
         for o in recent[:3]:
             oid = o.get("order_id")
             kb_rows.append([
-                InlineKeyboardButton(f"⚡ Duyệt #{oid}", callback_data=f"adm_app:{oid}"),
-                InlineKeyboardButton(f"❌ Hủy #{oid}", callback_data=f"adm_rej:{oid}")
+                InlineKeyboardButton(f"⚡ Duyệt #{oid}", callback_data=f"admin_approve:{oid}"),
+                InlineKeyboardButton(f"❌ Hủy #{oid}", callback_data=f"admin_reject:{oid}")
             ])
     for row in admin_orders_kb(filter_type).inline_keyboard:
         kb_rows.append(row)
@@ -1039,15 +1039,14 @@ async def cb_admin_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await query.answer("Đơn này đã được duyệt rồi!", show_alert=True)
         return
 
-    pv   = PRODUCTS[order["product"]]
-    plnv = pv["plans"][order["plan"]]
+    from order_service import execute_order_activation, resolve_order_product_meta
+    pv, plnv = resolve_order_product_meta(order)
 
     await query.edit_message_text(
         f"⏳ Đang kích hoạt gói cho đơn <code>ORDER_{order_id}</code>…",
         parse_mode=ParseMode.HTML
     )
 
-    from order_service import execute_order_activation
     ok, act_msg = await execute_order_activation(ctx.bot, order_id)
     if ok:
         await query.edit_message_text(

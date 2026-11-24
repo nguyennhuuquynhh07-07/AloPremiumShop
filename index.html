@@ -2395,7 +2395,7 @@
             <div id="paymentFeedback" class="mb-3 mt-4 space-y-2 text-sm">
                 <p id="paymentStatusText" role="status" aria-live="polite" class="font-semibold text-[#1E1B18]"></p>
                 <p id="paymentOrderCode" class="text-xs text-[#6E6659]"></p>
-                <button type="button" id="refreshPaymentButton" onclick="refreshPaymentStatus()" class="rounded-xl border border-[#E8D8B0] px-4 py-2 font-bold text-[#1E1B18]">
+                <button type="button" id="refreshPaymentButton" onclick="refreshPaymentStatus(true)" class="rounded-xl border border-[#E8D8B0] px-4 py-2 font-bold text-[#1E1B18] cursor-pointer hover:bg-[#FFF8E5]">
                     Kiểm tra giao dịch
                 </button>
                 <a id="paymentSupportLink" class="hidden rounded-xl px-4 py-2 font-bold underline" target="_blank" rel="noopener" href="https://zalo.me/0345222802">Liên hệ hỗ trợ</a>
@@ -4586,7 +4586,7 @@
             }
         }
 
-        async function refreshPaymentStatus() {
+        async function refreshPaymentStatus(forceCheck = false) {
             if (paymentCheckPending || !currentOrderData || document.getElementById('paymentModal').classList.contains('hidden')) return;
             clearTimeout(pollTimer);
             paymentCheckPending = true;
@@ -4595,8 +4595,9 @@
             const button = document.getElementById('refreshPaymentButton');
             button.disabled = true;
             try {
-                const response = await fetch('/api/order_status?order_id=' + encodeURIComponent(orderId), {
-                    signal: AbortSignal.timeout(7000),
+                const statusUrl = '/api/order_status?order_id=' + encodeURIComponent(orderId) + (forceCheck ? '&force=1' : '');
+                const response = await fetch(statusUrl, {
+                    signal: AbortSignal.timeout(9000),
                 });
                 if (!response.ok) throw new Error('Cannot read order status');
                 const data = await response.json();

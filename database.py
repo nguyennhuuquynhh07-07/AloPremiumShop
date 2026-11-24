@@ -380,7 +380,7 @@ def mark_tx_used(tx_id: str, order_id: str):
 
 
 def register_order_payment(order_id: str, tx_id: str, amount: float, *, on_time: bool) -> str | None:
-    """Persist verified payment before handing a new, on-time order off for processing."""
+    """Persist verified payment before handing a new, on-time or grace-period order off for processing."""
     if not tx_id:
         return None
     with _db_lock:
@@ -395,8 +395,10 @@ def register_order_payment(order_id: str, tx_id: str, amount: float, *, on_time:
             return None
         if not existing:
             mark_tx_used(tx_id, order_id)
-        update_order(order_id, status="paid_review")
-        return "process" if not existing and on_time and status in UNPAID_ORDER_STATUSES else "review"
+        update_order(order_id, status="paid_review", payment_tx_id=str(tx_id), paid_amount=amount)
+        # Đơn quá hạn 5 phút nhưng chưa bị Admin từ chối (tự hủy timeout) vẫn cho phép autobank kích hoạt tự động trong cửa sổ ân hạn
+        eligible_statuses = (*UNPAID_ORDER_STATUSES, "cancelled")
+        return "process" if not existing and on_time and status in eligible_statuses else "review"
 
 
 def recover_order_payments() -> None:

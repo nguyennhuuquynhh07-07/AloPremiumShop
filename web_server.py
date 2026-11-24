@@ -651,6 +651,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         if path == "/api/order_status":
             order_id = params.get("order_id", [""])[0].strip()
+            force_check = params.get("force", ["0"])[0].strip() == "1"
             if not order_id:
                 self._send_json(400, {"ok": False, "error": "Thiếu mã đơn hàng order_id"})
                 return
@@ -659,7 +660,26 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(404, {"ok": False, "error": "Không tìm thấy đơn hàng"})
                 return
 
-            from order_service import payment_deadline
+            from order_service import payment_deadline, auto_activate_deadline, check_sepay_payments
+            auto_dl = auto_activate_deadline(order)
+            if (
+                order.get("status") in (*db.UNPAID_ORDER_STATUSES, "cancelled")
+                and getattr(config, "SEPAY_API_TOKEN", "")
+                and (force_check or (auto_dl is not None and time.time() < auto_dl))
+            ):
+                try:
+                    if BOT_LOOP and BOT_LOOP.is_running():
+                        fut = asyncio.run_coroutine_threadsafe(
+                            check_sepay_payments(BOT_INSTANCE, order_id=order_id, force_refresh=force_check),
+                            BOT_LOOP,
+                        )
+                        fut.result(timeout=7)
+                    else:
+                        asyncio.run(check_sepay_payments(BOT_INSTANCE, order_id=order_id, force_refresh=force_check))
+                except Exception as e_chk:
+                    logger.warning(f"On-demand SePay check for {order_id} error: {e_chk}")
+                order = db.get_order(order_id) or order
+
             deadline = payment_deadline(order)
             status = order.get("status", "waiting_payment")
             if status in ("pending", "waiting_payment") and deadline is not None and time.time() >= deadline:
@@ -2544,6 +2564,23 @@ def start_web_server(bot=None, loop=None, port=None):
         threading.Thread(target=sync_upstream_orders, daemon=True).start()
     except Exception as e_sync:
         logger.warning(f"Initial upstream sync failed: {e_sync}")
+    # Nếu chạy web server độc lập không qua bot.py, tự khởi chạy luồng SePay autobank dự phòng
+    if bot is None and getattr(config, "SEPAY_API_TOKEN", ""):
+        def _standalone_sepay_worker():
+            from order_service import check_sepay_payments, cancel_expired_pending_orders
+            cnt = 0
+            while True:
+                try:
+                    asyncio.run(check_sepay_payments(BOT_INSTANCE))
+                    cnt += 1
+                    if cnt >= 5:
+                        cnt = 0
+                        cancel_expired_pending_orders()
+                except Exception as e_sp:
+                    logger.warning(f"Standalone SePay worker error: {e_sp}")
+                time.sleep(4)
+        threading.Thread(target=_standalone_sepay_worker, daemon=True).start()
+        logger.info("⚡ Đã khởi chạy SePay autobank worker dự phòng trên Web Server.")
     return server
 
 

@@ -27,8 +27,33 @@ from config import PRODUCTS, DNS_BASE_URL, DNS_SLUG
 
 logger = logging.getLogger(__name__)
 PAYMENT_WINDOW_SECONDS = 300
+AUTO_ACTIVATE_WINDOW_SECONDS = 1800  # 30 phút ân hạn tự động kích hoạt nếu khách chuyển chậm vài phút
 _processing_orders = set()
 _processing_lock = threading.Lock()
+_sepay_fetch_lock = threading.Lock()
+_sepay_scan_lock = threading.Lock()
+
+
+def resolve_order_product_meta(order: dict) -> tuple[dict, dict]:
+    """Lấy metadata (name, emoji, label, price) an toàn cho mọi loại đơn (bao gồm studio_caption, filter_topup)."""
+    product_key = order.get("product", "")
+    plan_key = order.get("plan", "")
+    if product_key == "studio_caption":
+        return (
+            {"name": "Studio Chỉnh Chú Thích & Khung Viền", "emoji": "🎨", "service": "studio"},
+            {"label": "Bản Quyền Vĩnh Viễn", "packageCode": "STUDIO", "price": order.get("price", 10000)},
+        )
+    if product_key == "filter_topup":
+        pack_info = getattr(config, "FILTER_TOPUP_PACKS", {}).get(str(plan_key), {})
+        turns = pack_info.get("turns") or (int(plan_key) if str(plan_key).isdigit() else 20)
+        label = order.get("plan_label") or pack_info.get("label") or f"Gói {turns} Lượt Filter AI"
+        return (
+            {"name": "Nạp Lượt Filter AI", "emoji": "🎭", "service": "filter_topup"},
+            {"label": label, "packageCode": f"FILTER_{plan_key}", "price": order.get("price", pack_info.get("price", 7000))},
+        )
+    pv = PRODUCTS.get(product_key, {"name": str(product_key or "Dịch vụ VIP"), "emoji": "📦", "plans": {}})
+    plnv = pv.get("plans", {}).get(plan_key, {"label": order.get("plan_label") or str(plan_key or "VIP"), "price": order.get("price", 0)})
+    return pv, plnv
 
 
 def payment_deadline(order: dict) -> float | None:
@@ -38,14 +63,36 @@ def payment_deadline(order: dict) -> float | None:
         return None
 
 
+def auto_activate_deadline(order: dict) -> float | None:
+    try:
+        return datetime.fromisoformat(order["created_at"].replace("Z", "+00:00")).timestamp() + AUTO_ACTIVATE_WINDOW_SECONDS
+    except (KeyError, ValueError, TypeError, AttributeError):
+        return None
+
+
 def payment_matches_order(order: dict, account: str, content: str, amount: float) -> bool:
     shop_account = str(getattr(config, "ACCOUNT_NO", "")).strip()
-    order_id = re.escape(order["order_id"].upper())
-    return (
-        bool(shop_account) and account == shop_account
-        and math.isfinite(amount) and 0 < order.get("price", 0) <= amount
-        and bool(re.search(rf"(?<![A-Z0-9]){order_id}(?![A-Z0-9])", content.upper()))
-    )
+    raw_oid = str(order.get("order_id") or "").upper().strip()
+    if not raw_oid or not shop_account or str(account or "").strip() != shop_account:
+        return False
+    if not (math.isfinite(amount) and 0 < order.get("price", 0) <= amount):
+        return False
+
+    norm_content = re.sub(r"\s+", " ", str(content or "").upper()).strip()
+    escaped_oid = re.escape(raw_oid)
+    # TPBank / VietQR hay bỏ dấu gạch dưới "_" (ORDER_KIENI1D7 -> ORDERKIENI1D7) hoặc thay bằng dấu cách
+    if re.search(rf"(?<![A-Z0-9])(?:ORDER[_\s-]?)?{escaped_oid}(?![A-Z0-9])", norm_content):
+        return True
+
+    # Hỗ trợ thêm các mã đơn cũ từng sinh ký tự 0/O hoặc 1/I nếu ngân hàng/khách gõ nhầm
+    if len(raw_oid) >= 6:
+        fuzzy_oid = "".join(
+            "[0O]" if ch in ("0", "O") else ("[1I]" if ch in ("1", "I") else re.escape(ch))
+            for ch in raw_oid
+        )
+        if re.search(rf"(?<![A-Z0-9])(?:ORDER[_\s-]?)?{fuzzy_oid}(?![A-Z0-9])", norm_content):
+            return True
+    return False
 
 
 async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
@@ -486,95 +533,133 @@ _SEPAY_CACHE = {
 }
 
 def fetch_sepay_transactions(force_refresh: bool = False) -> list:
-    """Tải danh sách 20 giao dịch mới nhất từ SePay API, có bộ nhớ đệm 3s chống quá tải"""
+    """Tải danh sách 20 giao dịch mới nhất từ SePay API, có bộ nhớ đệm 3s và khóa chống gọi trùng"""
     token = getattr(config, "SEPAY_API_TOKEN", "")
     if not token:
         return []
 
-    now = time.time()
-    if not force_refresh and (now - _SEPAY_CACHE["timestamp"] < 3.0):
-        return _SEPAY_CACHE["transactions"]
+    with _sepay_fetch_lock:
+        now = time.time()
+        if not force_refresh and (now - _SEPAY_CACHE["timestamp"] < 3.0):
+            return _SEPAY_CACHE["transactions"]
 
-    url = "https://my.sepay.vn/userapi/transactions/list?limit=20"
-    headers = {"Authorization": f"Bearer {token}", "User-Agent": "AloPremiumEngine/2.0"}
+        url = "https://my.sepay.vn/userapi/transactions/list?limit=20"
+        headers = {"Authorization": f"Bearer {token}", "User-Agent": "AloPremiumEngine/2.0"}
 
-    try:
-        with httpx.Client(timeout=6.0) as client:
-            r = client.get(url, headers=headers)
-            if r.status_code == 200:
-                txs = r.json().get("transactions", [])
-                _SEPAY_CACHE["timestamp"] = now
-                _SEPAY_CACHE["transactions"] = txs
-                return txs
-    except Exception as e:
-        logger.warning(f"Error fetching SePay transactions: {e}")
-    return _SEPAY_CACHE.get("transactions", [])
+        try:
+            with httpx.Client(timeout=6.0) as client:
+                r = client.get(url, headers=headers)
+                if r.status_code == 200:
+                    txs = r.json().get("transactions", [])
+                    _SEPAY_CACHE["timestamp"] = time.time()
+                    _SEPAY_CACHE["transactions"] = txs
+                    return txs
+                logger.warning(f"SePay API returned HTTP {r.status_code}: {r.text[:200]}")
+        except Exception as e:
+            logger.warning(f"Error fetching SePay transactions: {e}")
+        return _SEPAY_CACHE.get("transactions", [])
 
 
 def register_verified_payment(order: dict, tx_id: str, amount: float) -> str | None:
-    deadline = payment_deadline(order)
+    deadline = auto_activate_deadline(order)
     return db.register_order_payment(
         order["order_id"], tx_id, amount, on_time=deadline is not None and time.time() < deadline
     )
 
 
 async def process_registered_payment(bot, order_id: str, action: str) -> None:
+    err_detail = ""
     if action == "process":
-        ok, _ = await execute_order_activation(bot, order_id)
+        ok, err_detail = await execute_order_activation(bot, order_id)
         if ok:
             return
     if not bot:
         return
 
     order = db.get_order(order_id)
-    recipients = list(getattr(config, "ADMIN_IDS", []))
-    if order and order.get("user_id", 0) > 0:
-        recipients.append(order["user_id"])
-    for chat_id in recipients:
+    if not order:
+        return
+    try:
+        from keyboards import admin_approval_kb
+        adm_kb = admin_approval_kb(order_id)
+    except Exception:
+        adm_kb = None
+
+    reason_line = f"\n⚠️ Lý do chưa tự kích hoạt: <code>{err_detail}</code>" if err_detail else ""
+    for aid in getattr(config, "ADMIN_IDS", []):
         try:
             await bot.send_message(
-                chat_id=chat_id,
+                chat_id=aid,
+                text=(
+                    f"💳 <b>ĐÃ NHẬN TIỀN ĐƠN <code>ORDER_{order_id}</code> (CẦN KIỂM TRA)</b>\n"
+                    f"• Tài khoản: <b>{order.get('display_name') or order.get('uid')}</b>\n"
+                    f"• Số tiền: <b>{utils.fmt_price(order.get('price', 0))}</b>{reason_line}\n"
+                    f"👉 Bấm nút bên dưới để kích hoạt lại nếu cần."
+                ),
+                parse_mode=ParseMode.HTML,
+                reply_markup=adm_kb,
+            )
+        except Exception:
+            logger.warning("Could not send admin payment review alert for %s", order_id)
+
+    if order.get("user_id", 0) > 0:
+        try:
+            await bot.send_message(
+                chat_id=order["user_id"],
                 text=f"Đã nhận tiền cho đơn ORDER_{order_id}. Đơn đang chờ đối soát. "
                      "Vui lòng giữ mã đơn và không chuyển khoản lại.",
             )
         except Exception:
-            logger.warning("Could not send payment review alert for %s", order_id)
+            logger.warning("Could not send buyer payment review alert for %s", order_id)
 
 
-async def check_sepay_payments(bot=None, order_id=None) -> None:
-    db.recover_order_payments()
-    orders = db.get_orders()
-    if order_id and orders.get(order_id, {}).get("status") in ("done", "paid_review"):
-        return
-    candidates = [
-        order for order in orders.values()
-        if order and order.get("status") in (*db.UNPAID_ORDER_STATUSES, "cancelled", "rejected")
-    ]
-    if not candidates:
-        return
-
-    transactions = await asyncio.to_thread(fetch_sepay_transactions)
-    used_ids = db.get_used_tx_ids()
-    for tx in transactions:
-        tx_id = str(tx.get("id", "")).strip()
-        try:
-            amount = float(tx.get("amount_in") or 0)
-        except (ValueError, TypeError):
-            continue
-        if not tx_id or tx_id in used_ids:
-            continue
-        matches = [
-            order for order in candidates if payment_matches_order(
-                order, str(tx.get("account_number", "")).strip(),
-                str(tx.get("transaction_content", "")), amount
-            )
+def _scan_and_register_sepay_sync(force_refresh: bool = False) -> list[tuple[str, str]]:
+    """Quét SePay và ghi nhận giao dịch đồng bộ dưới khóa luồng (không giữ khóa qua await)."""
+    with _sepay_scan_lock:
+        db.recover_order_payments()
+        orders = db.get_orders()
+        candidates = [
+            order for order in orders.values()
+            if order and order.get("status") in (*db.UNPAID_ORDER_STATUSES, "cancelled", "rejected")
         ]
-        if len(matches) == 1 and (order_id is None or matches[0]["order_id"] == order_id):
-            order = matches[0]
-            action = register_verified_payment(order, tx_id, amount)
-            if action:
-                used_ids[tx_id] = order["order_id"]
-                await process_registered_payment(bot, order["order_id"], action)
+        if not candidates:
+            return []
+
+        transactions = fetch_sepay_transactions(force_refresh=force_refresh)
+        used_ids = db.get_used_tx_ids()
+        matched_actions = []
+        for tx in transactions:
+            tx_id = str(tx.get("id", "")).strip()
+            try:
+                amount = float(tx.get("amount_in") or 0)
+            except (ValueError, TypeError):
+                continue
+            if not tx_id or tx_id in used_ids:
+                continue
+            matches = [
+                order for order in candidates if payment_matches_order(
+                    order, str(tx.get("account_number", "")).strip(),
+                    str(tx.get("transaction_content", "")), amount
+                )
+            ]
+            if len(matches) == 1:
+                order = matches[0]
+                action = register_verified_payment(order, tx_id, amount)
+                if action:
+                    used_ids[tx_id] = {"order_id": order["order_id"]}
+                    matched_actions.append((order["order_id"], action))
+        return matched_actions
+
+
+async def check_sepay_payments(bot=None, order_id=None, force_refresh: bool = False) -> None:
+    if order_id:
+        cur_order = db.get_order(order_id)
+        if cur_order and cur_order.get("status") in ("done", "paid_review"):
+            return
+
+    matched_actions = await asyncio.to_thread(_scan_and_register_sepay_sync, force_refresh)
+    for matched_oid, act in matched_actions:
+        await process_registered_payment(bot, matched_oid, act)
 
 
 def cancel_expired_pending_orders() -> list[str]:
