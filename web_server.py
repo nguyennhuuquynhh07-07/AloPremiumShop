@@ -555,12 +555,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
                                 seen_urls.add(u_img)
                                 all_frames.append({
                                     "id": fr.get("id") or f"ctv_{len(all_frames)}",
-                                    "name": fr.get("name") or "Khung CTV VIP",
-                                    "category": "Khung Độc Quyền CTV",
+                                    "name": fr.get("name") or "Khung Độc Quyền VIP",
+                                    "category": "Khung Nổi Bật",
                                     "group": "ctv_live",
                                     "image": u_img,
                                     "rawImage": u_img,
-                                    "badge": "CTV Live",
+                                    "badge": "Nổi Bật",
                                     "source": "ctv_live",
                                 })
             except Exception as e_ctv_fr:
@@ -597,7 +597,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 sym_data = api.ctv_get_symbols(category=category, q=q_kw)
                 self._send_json(200, sym_data)
             except Exception as e_sym:
-                self._send_json(502, {"ok": False, "error": f"Không tải được kho SF Symbols từ máy chủ CTV: {e_sym}"})
+                self._send_json(502, {"ok": False, "error": f"Không tải được kho SF Symbols từ máy chủ Locket: {e_sym}"})
             return
 
         # 3.03 API Bộ Lọc Màu 3D LUT (Kết nối locket.2707226.xyz/api/v1/ctv/filters)
@@ -616,7 +616,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     "total": len(sample_luts) + len(custom_luts),
                 })
             except Exception as e_flt:
-                self._send_json(502, {"ok": False, "error": f"Không tải được bộ lọc LUT từ máy chủ CTV: {e_flt}"})
+                self._send_json(502, {"ok": False, "error": f"Không tải được bộ lọc LUT từ máy chủ Locket: {e_flt}"})
             return
 
         # 3.04 API Brand Captions đang hoạt động của Shop (ẩn dữ liệu riêng tư)
@@ -670,6 +670,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             is_done = order.get("status") == "done"
             prod_key = order.get("product")
             is_locket_ai = (prod_key == "locket_ai")
+            is_filter_topup = (prod_key == "filter_topup")
             is_combo = prod_key in ("combo", "locket_spotify")
             has_studio = order.get("has_studio", False) or (prod_key == "studio_caption")
             username_target = utils.clean_input(str(order.get("uid") or order.get("username") or order.get("account_target") or order.get("display_name") or "")).lstrip("@")
@@ -678,6 +679,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
             # Xác định chuẩn xác link DNS theo từng gói cước
             if is_locket_ai:
                 exact_dns = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+                download_url = None
+            elif is_filter_topup:
+                exact_dns = None
                 download_url = None
             elif is_combo:
                 exact_dns = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
@@ -694,6 +698,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "expires_at_ms": int(deadline * 1000) if deadline is not None else None,
                 "product": order.get("product"),
                 "plan": order.get("plan"),
+                "plan_label": order.get("plan_label"),
                 "price": order.get("price"),
                 "uid": order.get("uid"),
                 "display_name": order.get("display_name"),
@@ -702,7 +707,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "direct_safari_url": exact_dns if is_done else None,
                 "created_at": order.get("created_at"),
                 "is_locket_ai": is_locket_ai,
-                "contact_admin": is_locket_ai,
+                "contact_admin": is_locket_ai or is_filter_topup,
                 "has_studio": has_studio,
                 "studio_url": studio_url if is_done else None,
                 "vip_download_url": None,
@@ -819,9 +824,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     is_done = od.get("status") == "done"
                     prod_k = od.get("product") or "locket"
                     is_ai = (prod_k == "locket_ai")
+                    is_filter = (prod_k == "filter_topup")
                     u_disp = od.get("display_name") or od.get("username") or od.get("identifier") or "Khách VIP"
                     u_clean = utils.clean_input(str(u_disp)).lstrip("@")
-                    if is_ai:
+                    if is_ai or is_filter:
                         exact_safari = None
                         exact_dl = None
                     elif prod_k in ("combo", "locket_spotify"):
@@ -835,6 +841,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "order_id": oid,
                         "product": prod_k,
                         "plan": od.get("plan") or "VIP",
+                        "plan_label": od.get("plan_label"),
                         "price": od.get("price", 0),
                         "status": od.get("status"),
                         "uid": od.get("uid"),
@@ -845,7 +852,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "direct_safari_url": exact_safari,
                         "dns_link": exact_safari,
                         "studio_url": None,
-                        "contact_admin": is_ai
+                        "contact_admin": is_ai or is_filter
                     })
 
             # Nếu chưa thấy trong database local nhưng tài khoản đã kích hoạt trên máy chủ API CTV (web chủ)
@@ -2222,6 +2229,139 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "product": "studio_caption",
                 "product_name": "Studio Chỉnh Chú Thích & Khung Viền",
                 "plan_label": "Gói Studio",
+                "expires_at_ms": int(payment_deadline(order) * 1000)
+            })
+            return
+
+        # 2.2 API Tạo đơn Nạp Lượt Filter AI cho người dùng cuối (20: 7.000đ, 50: 17.000đ, 100: 33.000đ)
+        if path == "/api/create_filter_order":
+            import re
+            pack = str(body.get("pack") or body.get("plan") or "").strip()
+            raw_ident = str(body.get("identifier") or body.get("username") or body.get("uid") or "").strip()
+            packs_map = getattr(config, "FILTER_TOPUP_PACKS", {})
+            pack_cfg = packs_map.get(pack)
+            if not pack_cfg:
+                self._send_json(400, {"ok": False, "error": "Gói lượt Filter AI không hợp lệ (hỗ trợ 20, 50 hoặc 100 lượt)."})
+                return
+            if not raw_ident:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập Username Locket của bạn!"})
+                return
+            if re.search(r"(https?://|/|spotify\.com|locket\.cam)", raw_ident, re.I):
+                self._send_json(400, {"ok": False, "error": "Chỉ điền Username Locket (ví dụ: camsitup), không dán đường link!"})
+                return
+
+            cleaned = utils.clean_input(raw_ident).lstrip("@")
+            if not cleaned or len(cleaned) < 2 or " " in cleaned:
+                self._send_json(400, {"ok": False, "error": "Username Locket không hợp lệ! Vui lòng kiểm tra lại."})
+                return
+
+            try:
+                res = api.locket_resolve(cleaned)
+                data = res.get("data") if isinstance(res.get("data"), dict) else res
+                if not isinstance(data, dict) or (not data.get("uid") and not data.get("id") and not data.get("username")):
+                    self._send_json(400, {
+                        "ok": False,
+                        "error": f"Không tìm thấy tài khoản Locket '@{cleaned}'! Vui lòng kiểm tra lại đúng Username trên app Locket."
+                    })
+                    return
+                locket_username = str(data.get("username") or cleaned).lstrip("@")
+                locket_uid = str(data.get("uid") or data.get("id") or locket_username)
+                avatar = data.get("avatar") or data.get("avatarUrl") or ""
+            except Exception as e_res:
+                self._send_json(400, {"ok": False, "error": f"Không kiểm tra được tài khoản Locket '@{cleaned}': {e_res}"})
+                return
+
+            from order_service import payment_deadline
+            clean_ident = locket_username.lower()
+            existing_orders = db.get_orders()
+            pending_same_order = None
+            pending_count_user = 0
+            for od in existing_orders.values():
+                deadline = payment_deadline(od)
+                if (od.get("status") in ("waiting_payment", "pending")
+                        and deadline is not None and time.time() < deadline):
+                    od_ident = str(od.get("uid", "")).lower().lstrip("@")
+                    od_target = str(od.get("account_target", "")).lower().lstrip("@")
+                    if clean_ident in (od_ident, od_target):
+                        pending_count_user += 1
+                        if od.get("product") == "filter_topup" and od.get("plan") == pack and od.get("source") == "web":
+                            pending_same_order = od
+
+            if pending_count_user >= 5 and not pending_same_order:
+                self._send_json(429, {
+                    "ok": False,
+                    "error": "Bạn đang có nhiều đơn hàng chưa thanh toán! Vui lòng hoàn tất chuyển khoản đơn trước đó hoặc chờ 5 phút."
+                })
+                return
+
+            price = int(pack_cfg["price"])
+            if pending_same_order:
+                p_id = pending_same_order["order_id"]
+                p_price = pending_same_order["price"]
+                qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
+                self._send_json(200, {
+                    "ok": True,
+                    "order_id": p_id,
+                    "memo": f"ORDER_{p_id}",
+                    "price": p_price,
+                    "qr_url": qr_url,
+                    "bank_id": getattr(config, "BANK_ID", "TPB"),
+                    "bank_name": getattr(config, "BANK_NAME", "TPBank"),
+                    "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
+                    "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
+                    "product": "filter_topup",
+                    "plan": pack,
+                    "product_name": "Nạp Lượt Filter AI",
+                    "plan_label": pack_cfg["label"],
+                    "display_name": locket_username,
+                    "is_reused": True,
+                    "expires_at_ms": int(payment_deadline(pending_same_order) * 1000)
+                })
+                return
+
+            sub_order_id = utils.gen_order_id()
+            order = db.create_order(
+                order_id=sub_order_id,
+                user_id=0,
+                username=f"web_{locket_username[:15]}",
+                product="filter_topup",
+                plan=pack,
+                plan_label=pack_cfg["label"],
+                price=price,
+                uid=locket_username,
+                display_name=locket_username,
+                account_target=locket_username,
+                locket_uid=locket_uid,
+                filter_turns=pack_cfg["turns"],
+                avatar=avatar,
+                source="web",
+                status="waiting_payment"
+            )
+            dispatch_admin_order_alert(
+                sub_order_id,
+                {"name": "Nạp Lượt Filter AI"},
+                {"label": pack_cfg["label"]},
+                locket_username,
+                locket_username,
+                price,
+                price
+            )
+            qr_url = utils.get_vietqr_url(amount=price, add_info=f"ORDER_{sub_order_id}")
+            self._send_json(200, {
+                "ok": True,
+                "order_id": sub_order_id,
+                "memo": f"ORDER_{sub_order_id}",
+                "price": price,
+                "qr_url": qr_url,
+                "bank_id": getattr(config, "BANK_ID", "TPB"),
+                "bank_name": getattr(config, "BANK_NAME", "TPBank"),
+                "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
+                "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
+                "product": "filter_topup",
+                "plan": pack,
+                "product_name": "Nạp Lượt Filter AI",
+                "plan_label": pack_cfg["label"],
+                "display_name": locket_username,
                 "expires_at_ms": int(payment_deadline(order) * 1000)
             })
             return

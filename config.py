@@ -124,6 +124,11 @@ PRODUCTS = {
 VIP_DOWNLOAD_URL = "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1"
 STUDIO_CAPTION_BASE_URL = "https://locket.jayteam.click/caption.html?u="
 STUDIO_CAPTION_PRICE = 10000
+FILTER_TOPUP_PACKS = {
+    "20":  {"label": "Gói 20 Lượt Filter AI",  "turns": 20,  "price": 7000},
+    "50":  {"label": "Gói 50 Lượt Filter AI",  "turns": 50,  "price": 17000},
+    "100": {"label": "Gói 100 Lượt Filter AI", "turns": 100, "price": 33000},
+}
 
 # ============================================================
 #  6. ĐƯỜNG DẪN DỮ LIỆU

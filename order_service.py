@@ -78,6 +78,12 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
     if product_key == "studio_caption":
         pv = {"name": "Studio Chỉnh Chú Thích & Khung Viền", "emoji": "🎨", "service": "studio"}
         plnv = {"label": "Bản Quyền Vĩnh Viễn", "packageCode": "STUDIO", "price": 10000}
+    elif product_key == "filter_topup":
+        pack_info = getattr(config, "FILTER_TOPUP_PACKS", {}).get(str(plan_key), {})
+        turns = pack_info.get("turns") or (int(plan_key) if str(plan_key).isdigit() else 20)
+        label = pack_info.get("label") or f"Gói {turns} Lượt Filter AI"
+        pv = {"name": "Nạp Lượt Filter AI", "emoji": "🎭", "service": "filter_topup"}
+        plnv = {"label": label, "packageCode": f"FILTER_{plan_key}", "price": order.get("price", pack_info.get("price", 7000))}
     else:
         pv = PRODUCTS.get(product_key)
         if not pv:
@@ -144,6 +150,13 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 status="done", 
                 done_at=datetime.now().isoformat(), 
                 studio_link=studio_url
+            )
+        elif product_key == "filter_topup":
+            # Gói nạp thêm lượt Filter AI (7k/17k/33k) - đối soát tự động SePay và Admin cộng lượt trực tiếp
+            db.update_order(
+                order_id,
+                status="done",
+                done_at=datetime.now().isoformat(),
             )
         elif product_key in ("combo", "locket_spotify"):
             # GÓI COMBO DUO CHÍNH CHỦ (LOCKET + SPOTIFY QUA API CTV locket.2707226.xyz)
@@ -318,6 +331,28 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 except Exception as e_st_send:
                     logger.error(f"Error sending Studio delivery: {e_st_send}")
 
+            elif product_key == "filter_topup":
+                from keyboards import locket_ai_success_kb
+                username_target = utils.clean_input(str(order.get("uid") or order.get("username") or order.get("account_target") or order.get("display_name") or "")).lstrip("@")
+                filter_msg = (
+                    f"🎭 <b>THANH TOÁN THÀNH CÔNG GÓI NẠP LƯỢT FILTER AI!</b>\n"
+                    f"━━━━━━━━━━━━━━━━━━\n"
+                    f"📦 <b>Gói:</b> {plnv['label']}\n"
+                    f"👤 <b>Tài khoản Locket:</b> @{username_target}\n"
+                    f"🆔 <b>Mã đơn hàng:</b> <code>ORDER_{order.get('order_id')}</code>\n"
+                    f"💵 <b>Số tiền đã thanh toán:</b> {utils.fmt_price(order['price'])}\n"
+                    f"⚡ <i>Hệ thống đã ghi nhận thanh toán. Admin sẽ cộng lượt chụp Filter AI vào tài khoản cho bạn ngay!</i>"
+                )
+                try:
+                    await bot.send_message(
+                        chat_id=order["user_id"],
+                        text=filter_msg,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=locket_ai_success_kb(order_id=order.get('order_id'))
+                    )
+                except Exception as e_ft_send:
+                    logger.error(f"Error sending Filter Topup delivery: {e_ft_send}")
+
             elif product_key in ("combo", "locket_spotify"):
                 dns_base = f"{DNS_BASE_URL}/{DNS_SLUG}" if DNS_BASE_URL and DNS_SLUG else "https://doh.2707226.xyz/alopremiumshop"
                 try:
@@ -411,12 +446,13 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 except Exception as e:
                     logger.error(f"Error sending Locket delivery: {e}")
         if bot:
+            admin_header = "🎭 <b>[CẦN CỘNG LƯỢT FILTER AI — ĐÃ THANH TOÁN]</b>" if product_key == "filter_topup" else "💰 <b>[KÍCH HOẠT THÀNH CÔNG]</b>"
             for aid in config.ADMIN_IDS:
                 try:
                     await bot.send_message(
                         chat_id=aid,
                         text=(
-                            f"💰 <b>[KÍCH HOẠT THÀNH CÔNG]</b>\n"
+                            f"{admin_header}\n"
                             f"• Mã đơn: <code>ORDER_{order_id}</code>\n"
                             f"• Gói: <b>{pv['name']} ({plnv['label']})</b>\n"
                             f"• Khách: {order.get('display_name')} (<code>@{order.get('uid')}</code>)\n"
@@ -428,6 +464,8 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 except Exception:
                     pass
 
+        if product_key == "filter_topup":
+            return True, "Đã xác nhận thanh toán gói Nạp Lượt Filter AI!"
         return True, "Kích hoạt API CTV thành công!"
 
     except Exception as e:

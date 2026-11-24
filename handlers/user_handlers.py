@@ -1284,6 +1284,13 @@ def _build_success_message(order, pv, plnv, dns_link: str) -> str:
             f"• <i>Nếu cần giải phóng phiên gấp khi đổi máy ngay lập tức, gõ lệnh <code>/resetspotify</code> hoặc liên hệ CSKH.</i>\n\n"
             f"{duration_note}"
         )
+    elif order["product"] == "filter_topup":
+        step4 = (
+            f"🎭 <b>TRẠNG THÁI NẠP LƯỢT FILTER AI:</b>\n"
+            f"• Hệ thống đã xác nhận thanh toán tự động cho gói <b>{plnv['label']}</b>.\n"
+            f"• Admin đang cộng lượt chụp AI Filter trực tiếp vào tài khoản Locket của bạn (thường xong trong 1–3 phút).\n"
+            f"• Mọi lượt mua thêm sẽ được cộng dồn trực tiếp và không bị reset theo tháng."
+        )
     else:
         step4 = (
             f"📌 <b>BƯỚC CÀI ĐẶT CẤU HÌNH DNS PROFILE:</b>\n"
