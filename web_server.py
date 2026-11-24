@@ -423,6 +423,21 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
+        # 3.01 API Danh sách Khung Widget Locket (Frames)
+        if path == "/api/frames":
+            frames_path = os.path.join(os.path.dirname(__file__), "data", "frames.json")
+            if os.path.exists(frames_path):
+                try:
+                    with open(frames_path, "r", encoding="utf-8") as f:
+                        f_data = json.load(f)
+                    self._send_json(200, f_data)
+                    return
+                except Exception as e_f:
+                    self._send_json(500, {"ok": False, "error": str(e_f)})
+                    return
+            self._send_json(404, {"ok": False, "error": "Frames data not found"})
+            return
+
         # 3.1 API Danh sách đơn hàng vừa kích hoạt thành công (Đồng bộ máy chủ CTV + Đơn nội bộ)
         if path == "/api/recent_purchases":
             self._send_json(200, {"ok": True, "purchases": []})

@@ -1,0 +1,718 @@
+{
+  "success": true,
+  "count": 79,
+  "frames": [
+    {
+      "id": "frame_l_y_c__1794576929449",
+      "name": "Lạy Cụ",
+      "category": "Lạy cụ",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1794576827869-IMG_5725_s96_sx114_sy116_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1794576827869-IMG_5725_s96_sx114_sy116_ox0_oy0.png",
+      "badge": "Lạy cụ"
+    },
+    {
+      "id": "frame_killua_1793908565754",
+      "name": "Killua",
+      "category": "Hunter x Hunter",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793907872670-IMG_5230_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793907872670-IMG_5230_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Hunter x Hunter"
+    },
+    {
+      "id": "frame_shin_v4_1793908463397",
+      "name": "Shin v4",
+      "category": "Shin cậu bé bút chì",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793907866600-IMG_5231_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793907866600-IMG_5231_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Shin cậu bé bút chì"
+    },
+    {
+      "id": "frame_shin_v3_1793908429074",
+      "name": "Shin v3",
+      "category": "Shin cậu bé bút chì",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793907865215-IMG_5232_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793907865215-IMG_5232_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Shin cậu bé bút chì"
+    },
+    {
+      "id": "frame_shin_v__hello_kitty_1793908354535",
+      "name": "Shin và Hello kitty",
+      "category": "Nhân vật hư cấu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793907871287-IMG_5233_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793907871287-IMG_5233_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Nhân vật hư cấu"
+    },
+    {
+      "id": "frame_hello_kitty_v3_1793908277967",
+      "name": "Hello kitty v3",
+      "category": "Nhân vật hư cấu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793907872211-IMG_5234_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793907872211-IMG_5234_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Nhân vật hư cấu"
+    },
+    {
+      "id": "frame_doraemon_1793908217354",
+      "name": "Doraemon",
+      "category": "Nhân vật hư cấu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793907867495-IMG_5235_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793907867495-IMG_5235_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Nhân vật hư cấu"
+    },
+    {
+      "id": "frame_s__th____ng_y_u_1793908148596",
+      "name": "Sở thú đáng yêu",
+      "category": "Sở thú đáng yêu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793907870268-IMG_5236_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793907870268-IMG_5236_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Sở thú đáng yêu"
+    },
+    {
+      "id": "frame_dragon_ball_1793908073552",
+      "name": "Dragon ball",
+      "category": "Bảy viên ngọc rồng",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793907868504-IMG_5238_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793907868504-IMG_5238_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Bảy viên ngọc rồng"
+    },
+    {
+      "id": "frame_heo_h_ng_1793907985477",
+      "name": "Heo hồng",
+      "category": "Heo hồng",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793907869691-IMG_5239_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793907869691-IMG_5239_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Heo hồng"
+    },
+    {
+      "id": "frame_masha_1793889392732",
+      "name": "Masha",
+      "category": "Cô bé Masha và chú gấu xiếc",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793889169820-IMG_5176_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793889169820-IMG_5176_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Cô bé Masha và chú gấu xiếc"
+    },
+    {
+      "id": "frame_melody_1793888473304",
+      "name": "Melody",
+      "category": "Nhân vật hư cấu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793888381678-IMG_5174_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793888381678-IMG_5174_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Nhân vật hư cấu"
+    },
+    {
+      "id": "frame_c_o_m_a_thu_1793790480849",
+      "name": "Cáo mùa thu",
+      "category": "Cáo mùa thu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793790134567-IMG_5056_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793790134567-IMG_5056_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Cáo mùa thu"
+    },
+    {
+      "id": "frame_g_u_n_u_1793788971693",
+      "name": "Gấu nâu",
+      "category": "Gấu nâu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793788928178-IMG_5049_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793788928178-IMG_5049_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Gấu nâu"
+    },
+    {
+      "id": "frame_th__tr_ng_1793788697209",
+      "name": "Thỏ trắng",
+      "category": "Thỏ trắng",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793788600721-IMG_5048_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793788600721-IMG_5048_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Thỏ trắng"
+    },
+    {
+      "id": "frame_sukuna_1793763789604",
+      "name": "Sukuna",
+      "category": "Nhân vật hư cấu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793533807172-IMG_4880_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793533807172-IMG_4880_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Nhân vật hư cấu"
+    },
+    {
+      "id": "frame_v_t_con_1793762744282",
+      "name": "Vịt con",
+      "category": "Vịt con",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793760485305-IMG_5018_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793760485305-IMG_5018_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Vịt con"
+    },
+    {
+      "id": "frame_g_u_1793762579053",
+      "name": "Gấu",
+      "category": "Chúng tôi đơn giản là Gấu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793760488205-IMG_5014_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793760488205-IMG_5014_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Chúng tôi đơn giản là Gấu"
+    },
+    {
+      "id": "frame_b__kh__1793762497265",
+      "name": "Bá khí",
+      "category": "Trường Giang bá khí",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793760489801-IMG_5012_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793760489801-IMG_5012_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Trường Giang bá khí"
+    },
+    {
+      "id": "frame_shin_1793762381190",
+      "name": "Shin v2",
+      "category": "Shin cậu bé bút chì",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793533606909-IMG_4887_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793533606909-IMG_4887_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Shin cậu bé bút chì"
+    },
+    {
+      "id": "frame_conan_1793762336423",
+      "name": "Conan",
+      "category": "Thám tử lừng danh Conan",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793760487396-IMG_5015_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793760487396-IMG_5015_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Thám tử lừng danh Conan"
+    },
+    {
+      "id": "frame_hello_kitty_v2_1793762296092",
+      "name": "Hello kitty v2",
+      "category": "Nhân vật hư cấu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793760486281-IMG_5016_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793760486281-IMG_5016_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Nhân vật hư cấu"
+    },
+    {
+      "id": "frame_hello_kitty_v1_1793762265660",
+      "name": "Hello kitty v1",
+      "category": "Nhân vật hư cấu",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793533686709-IMG_4884_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793533686709-IMG_4884_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Nhân vật hư cấu"
+    },
+    {
+      "id": "frame_ng_y_ph__n__vi_t_nam_1793762182526",
+      "name": "Ngày phụ Nữ Việt Nam",
+      "category": "Ngày phụ Nữ Việt Nam 20/10",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793528672775-frame_b6e49957-1bee-4127-b041-3c8bb1fd1bfa_1792459958_s101_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793528672775-frame_b6e49957-1bee-4127-b041-3c8bb1fd1bfa_1792459958_s101_sx100_sy100_ox0_oy0.png",
+      "badge": "Ngày phụ Nữ Việt Nam 20/10"
+    },
+    {
+      "id": "frame_conan_1793762097084",
+      "name": "Conan",
+      "category": "Thám tử lừng danh Conan",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793528845105-IMG_4862_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793528845105-IMG_4862_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Thám tử lừng danh Conan"
+    },
+    {
+      "id": "frame_shin_1793760861274",
+      "name": "Shin",
+      "category": "Shin cậu bé bút chì",
+      "group": "community",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fctv%2Fbaked_1793760484083-IMG_5019_s100_sx100_sy100_ox0_oy0.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/ctv/baked_1793760484083-IMG_5019_s100_sx100_sy100_ox0_oy0.png",
+      "badge": "Shin cậu bé bút chì"
+    },
+    {
+      "id": "frame_killua_zoldyck",
+      "name": "Killua Zoldyck Anime",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_killua_zoldyck.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_killua_zoldyck.png",
+      "badge": "Anime Hot"
+    },
+    {
+      "id": "frame_cute_teddy_bear",
+      "name": "Gấu Teddy Dễ Thương",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_cute_teddy_bear.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_cute_teddy_bear.png",
+      "badge": "Cute"
+    },
+    {
+      "id": "frame_shin_chan_chocobi",
+      "name": "Shin Bút Chì Chocobi",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_shin_chan_chocobi.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_shin_chan_chocobi.png",
+      "badge": "Hài Hước"
+    },
+    {
+      "id": "frame_sweet_bunny_rabbit",
+      "name": "Thỏ Trắng Ngọt Ngào",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_sweet_bunny_rabbit.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_sweet_bunny_rabbit.png",
+      "badge": "Ngọt Ngào"
+    },
+    {
+      "id": "frame_easter_egg_sweets",
+      "name": "Trứng Phục Sinh & Kẹo Ngọt",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_easter_egg_sweets.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_easter_egg_sweets.png",
+      "badge": "Pastel"
+    },
+    {
+      "id": "frame_love_yourself",
+      "name": "Hãy Yêu Bản Thân",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_love_yourself.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_love_yourself.png",
+      "badge": "Thông Điệp"
+    },
+    {
+      "id": "frame_galaxy_night_sky",
+      "name": "Dải Ngân Hà Đêm",
+      "category": "Sang Trọng",
+      "group": "luxury",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_galaxy_night_sky.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_galaxy_night_sky.png",
+      "badge": "Huyền Bí"
+    },
+    {
+      "id": "frame_conan_detective",
+      "name": "Thám Tử Conan",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_conan_detective.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_conan_detective.png",
+      "badge": "Anime"
+    },
+    {
+      "id": "frame_celebration_balloons",
+      "name": "Bóng Bay Lễ Hội",
+      "category": "Lễ Hội",
+      "group": "holiday",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_celebration_balloons.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_celebration_balloons.png",
+      "badge": "Tiệc Tùng"
+    },
+    {
+      "id": "frame_twilight_stars",
+      "name": "Sao Chạng Vạng",
+      "category": "Sang Trọng",
+      "group": "luxury",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_twilight_stars.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_twilight_stars.png",
+      "badge": "Mộng Mơ"
+    },
+    {
+      "id": "frame_lotso_bear",
+      "name": "Gấu Dâu Lotso",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_lotso_bear.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_lotso_bear.png",
+      "badge": "Hot Trend"
+    },
+    {
+      "id": "frame_inferno_flame",
+      "name": "Ngọn Lửa Inferno",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_inferno_flame.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_inferno_flame.png",
+      "badge": "Bốc Lửa"
+    },
+    {
+      "id": "frame_pink_polka_dots",
+      "name": "Nơ Hồng Chấm Bi",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_pink_polka_dots.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_pink_polka_dots.png",
+      "badge": "Công Chúa"
+    },
+    {
+      "id": "frame_pastel_kitten",
+      "name": "Mèo Con Pastel",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_pastel_kitten.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_pastel_kitten.png",
+      "badge": "Mèo Yêu"
+    },
+    {
+      "id": "frame_cr7_ronaldo",
+      "name": "Cristiano Ronaldo CR7",
+      "category": "Sang Trọng",
+      "group": "luxury",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_cr7_ronaldo.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_cr7_ronaldo.png",
+      "badge": "Huyền Thoại"
+    },
+    {
+      "id": "frame_manga_lightning_power",
+      "name": "Bá Khí Sấm Sét",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_manga_lightning_power.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_manga_lightning_power.png",
+      "badge": "Chiến Binh"
+    },
+    {
+      "id": "frame_sao_kirito_asuna_pastel",
+      "name": "SAO Kirito & Asuna Pastel",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_sao_kirito_asuna_pastel.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_sao_kirito_asuna_pastel.png",
+      "badge": "Anime"
+    },
+    {
+      "id": "frame_pompompurin_golden",
+      "name": "Pompompurin Vàng Dễ Thương",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_pompompurin_golden.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_pompompurin_golden.png",
+      "badge": "Sanrio"
+    },
+    {
+      "id": "frame_chiikawa_white_friends",
+      "name": "Chiikawa & Những Người Bạn",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_chiikawa_white_friends.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_chiikawa_white_friends.png",
+      "badge": "Kawaii"
+    },
+    {
+      "id": "frame_halloween_pumpkin_night",
+      "name": "Halloween Bí Ngô Dạ Tiệc",
+      "category": "Lễ Hội",
+      "group": "holiday",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_halloween_pumpkin_night.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_halloween_pumpkin_night.png",
+      "badge": "Halloween"
+    },
+    {
+      "id": "frame_kuromi_purple_star",
+      "name": "Kuromi Tím Cá Tính",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_kuromi_purple_star.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_kuromi_purple_star.png",
+      "badge": "Sanrio Hot"
+    },
+    {
+      "id": "frame_keroppi_green_lily",
+      "name": "Keroppi Ếch Xanh Vui Nhộn",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_keroppi_green_lily.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_keroppi_green_lily.png",
+      "badge": "Sanrio"
+    },
+    {
+      "id": "frame_pochacco_blue_sky",
+      "name": "Pochacco Chó Đốm Xanh",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_pochacco_blue_sky.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_pochacco_blue_sky.png",
+      "badge": "Sanrio"
+    },
+    {
+      "id": "frame_hachiware_blue_cat",
+      "name": "Hachiware Xanh Lam Chiikawa",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_hachiware_blue_cat.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_hachiware_blue_cat.png",
+      "badge": "Chiikawa"
+    },
+    {
+      "id": "frame_conan_kaito_kid_night",
+      "name": "Conan & Kaito Kid",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_conan_kaito_kid_night.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_conan_kaito_kid_night.png",
+      "badge": "Anime Hot"
+    },
+    {
+      "id": "frame_doraemon_nobita_friends",
+      "name": "Doraemon & Đội Bạn Tuổi Thơ",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_doraemon_nobita_friends.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_doraemon_nobita_friends.png",
+      "badge": "Tuổi Thơ"
+    },
+    {
+      "id": "frame_kuromi_halloween_witch",
+      "name": "Kuromi Phù Thủy Halloween",
+      "category": "Lễ Hội",
+      "group": "holiday",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_kuromi_halloween_witch.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_kuromi_halloween_witch.png",
+      "badge": "Halloween"
+    },
+    {
+      "id": "frame_shin_chan_expressions",
+      "name": "Shin Biểu Cảm Vui Nhộn",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_shin_chan_expressions.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_shin_chan_expressions.png",
+      "badge": "Hài Hước"
+    },
+    {
+      "id": "frame_keroppi_lotus_pond",
+      "name": "Keroppi Vườn Sen Xanh",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_keroppi_lotus_pond.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_keroppi_lotus_pond.png",
+      "badge": "Cute"
+    },
+    {
+      "id": "frame_demon_slayer_tanjiro_nezuko",
+      "name": "Kimetsu Tanjiro & Nezuko",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_demon_slayer_tanjiro_nezuko.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_demon_slayer_tanjiro_nezuko.png",
+      "badge": "Kimetsu"
+    },
+    {
+      "id": "frame_cinnamoroll_pastel_clouds",
+      "name": "Cinnamoroll Mây Trời Pastel",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_cinnamoroll_pastel_clouds.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_cinnamoroll_pastel_clouds.png",
+      "badge": "Pastel"
+    },
+    {
+      "id": "frame_gojo_satoru_limitless",
+      "name": "Gojo Satoru Vô Hạ Hạn",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_gojo_satoru_limitless.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_gojo_satoru_limitless.png",
+      "badge": "Jujutsu Hot"
+    },
+    {
+      "id": "frame_usagi_chiikawa_yaha",
+      "name": "Thỏ Vàng Usagi Chiikawa",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_usagi_chiikawa_yaha.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_usagi_chiikawa_yaha.png",
+      "badge": "Chiikawa"
+    },
+    {
+      "id": "frame_sao_kirito_asuna_duel",
+      "name": "SAO Song Kiếm Hợp Bích",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_sao_kirito_asuna_duel.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_sao_kirito_asuna_duel.png",
+      "badge": "SAO Hot"
+    },
+    {
+      "id": "frame_zenitsu_thunder_clap",
+      "name": "Zenitsu Hơi Thở Của Sấm",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_zenitsu_thunder_clap.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_zenitsu_thunder_clap.png",
+      "badge": "Kimetsu Hot"
+    },
+    {
+      "id": "frame_one_piece_luffy_gear5",
+      "name": "Luffy Gear 5 One Piece",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_one_piece_luffy_gear5.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_one_piece_luffy_gear5.png",
+      "badge": "One Piece Hot"
+    },
+    {
+      "id": "frame_pororo_penguin_friends",
+      "name": "Pororo & Những Người Bạn",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_pororo_penguin_friends.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_pororo_penguin_friends.png",
+      "badge": "Cute"
+    },
+    {
+      "id": "frame_sanrio_all_stars_wreath",
+      "name": "Sanrio All Stars Hội Ngộ",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_sanrio_all_stars_wreath.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_sanrio_all_stars_wreath.png",
+      "badge": "Sanrio VIP"
+    },
+    {
+      "id": "frame_doraemon_golden_bell",
+      "name": "Doraemon Chuông Vàng",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_doraemon_golden_bell.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_doraemon_golden_bell.png",
+      "badge": "Tuổi Thơ"
+    },
+    {
+      "id": "frame_kitty_kuromi_strawberry_pink",
+      "name": "Kitty & Kuromi Dâu Hồng",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_kitty_kuromi_strawberry_pink.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_kitty_kuromi_strawberry_pink.png",
+      "badge": "Sweet Pink"
+    },
+    {
+      "id": "frame_cinnamoroll_blue_ribbon",
+      "name": "Cinnamoroll Nơ Xanh Biển",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_cinnamoroll_blue_ribbon.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_cinnamoroll_blue_ribbon.png",
+      "badge": "Pastel"
+    },
+    {
+      "id": "frame_pompompurin_joyful_yellow",
+      "name": "Pompompurin Vàng Tươi",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_pompompurin_joyful_yellow.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_pompompurin_joyful_yellow.png",
+      "badge": "Cute"
+    },
+    {
+      "id": "frame_smurfs_mushroom_village",
+      "name": "Xì Trum Làng Nấm Đỏ",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_smurfs_mushroom_village.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_smurfs_mushroom_village.png",
+      "badge": "Hoạt Hình"
+    },
+    {
+      "id": "frame_merry_christmas_santa_bells",
+      "name": "Giáng Sinh Noel Ấm Áp",
+      "category": "Lễ Hội",
+      "group": "holiday",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_merry_christmas_santa_bells.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_merry_christmas_santa_bells.png",
+      "badge": "Christmas"
+    },
+    {
+      "id": "frame_vietnam_women_day_2010",
+      "name": "Mừng Phụ Nữ VN 20/10",
+      "category": "Lễ Hội",
+      "group": "holiday",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_vietnam_women_day_2010.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_vietnam_women_day_2010.png",
+      "badge": "20/10 Đặc Biệt"
+    },
+    {
+      "id": "frame_chiikawa_starlight_party",
+      "name": "Chiikawa Dạ Tiệc Ánh Sao",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_chiikawa_starlight_party.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_chiikawa_starlight_party.png",
+      "badge": "Kawaii"
+    },
+    {
+      "id": "frame_usagi_carrot_crown",
+      "name": "Usagi Hoàng Gia Cà Rốt",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_usagi_carrot_crown.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_usagi_carrot_crown.png",
+      "badge": "Chiikawa"
+    },
+    {
+      "id": "frame_shin_chan_sunny_yellow",
+      "name": "Shin Cậu Bé Bút Chì Nắng Vàng",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_shin_chan_sunny_yellow.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_shin_chan_sunny_yellow.png",
+      "badge": "Hài Hước"
+    },
+    {
+      "id": "frame_sanrio_pastel_candy_ribbon",
+      "name": "Sanrio Dải Lụa Kẹo Ngọt",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_sanrio_pastel_candy_ribbon.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_sanrio_pastel_candy_ribbon.png",
+      "badge": "Sweet"
+    },
+    {
+      "id": "frame_bear_bunny_boba_good_day",
+      "name": "Gấu & Thỏ Trà Sữa Trân Châu",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_bear_bunny_boba_good_day.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_bear_bunny_boba_good_day.png",
+      "badge": "Good Day"
+    },
+    {
+      "id": "frame_one_piece_straw_hat_crew",
+      "name": "Băng Hải Tặc Mũ Rơm One Piece",
+      "category": "Cyber / Game",
+      "group": "cyber",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_one_piece_straw_hat_crew.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_one_piece_straw_hat_crew.png",
+      "badge": "One Piece"
+    },
+    {
+      "id": "frame_winter_bear_puppy_snow",
+      "name": "Gấu Bắc Cực & Chó Tuyết",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_winter_bear_puppy_snow.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_winter_bear_puppy_snow.png",
+      "badge": "Mùa Đông"
+    },
+    {
+      "id": "frame_grizzy_and_the_lemmings",
+      "name": "Grizzy & Bầy Chuột Lemmings",
+      "category": "Dễ Thương",
+      "group": "cute",
+      "image": "https://nhuquynh.store/api.php?r=widget/proxy-img&u=https%3A%2F%2Fheylocket.xyz%2Fuploads%2Fframes%2Fframe_grizzy_and_the_lemmings.png",
+      "rawImage": "https://heylocket.xyz/uploads/frames/frame_grizzy_and_the_lemmings.png",
+      "badge": "Hoạt Hình"
+    }
+  ],
+  "syncedAt": "2026-11-24T15:27:49+00:00"
+}
