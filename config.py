@@ -65,7 +65,7 @@ SEPAY_API_TOKEN = _required_env("SEPAY_API_TOKEN")
 SECRET_KEY = _required_env("SECRET_KEY")
 PUBLIC_KEY = _required_env("PUBLIC_KEY")
 API_KEY = SECRET_KEY
-API_BASE_URL = os.getenv("API_BASE_URL", "").strip()
+API_BASE_URL = (os.getenv("API_BASE_URL", "https://locket.2707226.xyz") or "https://locket.2707226.xyz").strip().rstrip("/")
 
 DNS_BASE_URL = os.getenv("DNS_BASE_URL", "").strip()
 DNS_SLUG = os.getenv("DNS_SLUG", "").strip()

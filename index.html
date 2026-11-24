@@ -1257,91 +1257,129 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- TAB 3: TÍNH NĂNG VIP (KHUNG WIDGET, CAPTION, BỘ LỌC LUT)     -->
+        <!-- TAB 3: TÍNH NĂNG VIP (KẾT NỐI LIVE API locket.2707226.xyz)    -->
         <!-- ============================================================ -->
-        <div id="section_features" class="hidden space-y-8">
-            <!-- HEADER TÍNH NĂNG -->
-            <div class="bg-gradient-to-br from-amber-50 via-yellow-50/60 to-orange-50/50 rounded-[32px] p-6 sm:p-8 border-2 border-[#FFE29A] shadow-xl text-center relative overflow-hidden">
-                <div class="inline-flex items-center gap-2 bg-[#FFB800]/20 text-[#925B00] border border-[#FFB800]/40 px-3.5 py-1 rounded-full text-xs font-fredoka font-black uppercase tracking-wider mb-3">
-                    <span>✨</span> KHO TÍNH NĂNG & ĐẶC QUYỀN LOCKET GOLD VIP
+        <div id="section_features" class="hidden space-y-6">
+            <!-- HEADER TÍNH NĂNG & THANH KẾT NỐI TÀI KHOẢN LOCKET -->
+            <div class="bg-gradient-to-br from-amber-50 via-yellow-50/60 to-orange-50/50 rounded-[32px] p-5 sm:p-8 border-2 border-[#FFE29A] shadow-xl relative overflow-hidden">
+                <div class="text-center">
+                    <div class="inline-flex flex-wrap items-center justify-center gap-2 bg-[#FFB800]/20 text-[#925B00] border border-[#FFB800]/40 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-fredoka font-black uppercase tracking-wider mb-3">
+                        <span>✨ KHO TÍNH NĂNG VIP</span>
+                        <span id="ctvApiStatusPill" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold normal-case">
+                            ● Đang đồng bộ locket.2707226.xyz
+                        </span>
+                    </div>
+                    <h2 class="font-fredoka text-2xl sm:text-4xl font-black text-[#1E1B18] tracking-tight">
+                        Khung Widget • Khung Caption • Bộ Lọc LUT
+                    </h2>
+                    <p class="text-xs sm:text-sm text-[#6E6659] max-w-2xl mx-auto mt-2 font-medium">
+                        Kết nối trực tiếp máy chủ <b>locket.2707226.xyz</b>: Kho Khung Widget cộng đồng &amp; CTV, 449+ Apple SF Symbols chuẩn SVG và hệ thống 3D LUT Filter thực tế.
+                    </p>
                 </div>
-                <h2 class="font-fredoka text-2xl sm:text-4xl font-black text-[#1E1B18] tracking-tight">
-                    Khung Widget • Khung Caption • Nạp Filter LUT
-                </h2>
-                <p class="text-xs sm:text-sm text-[#6E6659] max-w-2xl mx-auto mt-2 font-medium">
-                    Trải nghiệm trọn bộ 79+ Khung Widget độc quyền, trình thiết kế Caption Apple SF Symbols và công nghệ nạp bộ lọc màu 3D LUT chân thực dành riêng cho tài khoản Locket Gold VIP.
-                </p>
+
+                <!-- THANH KẾT NỐI TÀI KHOẢN LOCKET VIP ĐỂ NẠP TRỰC TIẾP -->
+                <div class="max-w-3xl mx-auto mt-5 p-4 rounded-2xl bg-white/95 border-2 border-[#FFE29A] shadow-sm space-y-3">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                        <div class="relative flex-1">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-600 font-bold text-sm">@</span>
+                            <input type="text" id="featureUsernameInput"
+                                   placeholder="Nhập Username Locket của bạn (VD: camsitup) để nạp Khung & Caption..."
+                                   class="w-full pl-8 pr-4 py-2.5 rounded-xl border border-[#E8D8B0] bg-[#FFFDF6] text-xs sm:text-sm font-semibold text-[#1E1B18] focus:outline-none focus:border-[#FFB800]">
+                        </div>
+                        <button type="button" onclick="connectFeatureAccount()" id="btnConnectFeatureUid"
+                                class="px-5 py-2.5 rounded-xl bg-[#1E1B18] hover:bg-black text-white font-fredoka font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer shrink-0 flex items-center justify-center gap-1.5">
+                            <span>🔗</span> Kết Nối Tài Khoản
+                        </button>
+                    </div>
+                    <div id="connectedFeatureAccountBox" class="hidden p-3 rounded-xl bg-amber-50/70 border border-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <!-- Render hồ sơ Locket VIP đã kết nối -->
+                    </div>
+                </div>
 
                 <!-- SUB-TABS NAVIGATION -->
-                <div class="flex flex-wrap items-center justify-center gap-2 mt-6 pt-4 border-t border-[#F0E0B8]">
-                    <button type="button" onclick="switchFeatureSubTab('frames')" id="subTabBtn_frames" 
+                <div class="flex flex-wrap items-center justify-center gap-2 mt-5 pt-4 border-t border-[#F0E0B8]">
+                    <button type="button" onclick="switchFeatureSubTab('frames')" id="subTabBtn_frames"
                             class="px-4 py-2 rounded-2xl font-fredoka font-bold text-xs sm:text-sm bg-[#FFB800] text-[#1E1B18] shadow-md transition-all cursor-pointer flex items-center gap-1.5">
-                        <span>🖼️</span> Khung Widget (79+ Mẫu)
+                        <span>🖼️</span> Khung Widget (<span id="subTabFrameCount">79+</span>)
                     </button>
-                    <button type="button" onclick="switchFeatureSubTab('captions')" id="subTabBtn_captions" 
+                    <button type="button" onclick="switchFeatureSubTab('captions')" id="subTabBtn_captions"
                             class="px-4 py-2 rounded-2xl font-fredoka font-bold text-xs sm:text-sm bg-white text-[#6E6659] hover:bg-amber-100/60 border border-[#E8D8B0] transition-all cursor-pointer flex items-center gap-1.5">
-                        <span>💬</span> Khung Caption SF Symbol
+                        <span>💬</span> Khung Caption (<span id="subTabSymbolCount">449</span> SF Symbols)
                     </button>
-                    <button type="button" onclick="switchFeatureSubTab('filters')" id="subTabBtn_filters" 
+                    <button type="button" onclick="switchFeatureSubTab('filters')" id="subTabBtn_filters"
                             class="px-4 py-2 rounded-2xl font-fredoka font-bold text-xs sm:text-sm bg-white text-[#6E6659] hover:bg-amber-100/60 border border-[#E8D8B0] transition-all cursor-pointer flex items-center gap-1.5">
-                        <span>🌈</span> Nạp Filter & Bộ Lọc LUT
+                        <span>🌈</span> Bộ Lọc LUT (<span id="subTabFilterCount">Live</span>)
                     </button>
                 </div>
             </div>
 
             <!-- ════════════════════════════════════════════════════════ -->
-            <!-- SUB-TAB 1: KHO 79+ KHUNG WIDGET (FRAMES)                 -->
+            <!-- SUB-TAB 1: KHO KHUNG WIDGET (LIVE CTV + 79 MẪU)           -->
             <!-- ════════════════════════════════════════════════════════ -->
             <div id="subTabContent_frames" class="space-y-6">
-                <!-- BỘ LỌC DANH MỤC & THANH TÌM KIẾM -->
                 <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-lg border border-[#F0E0B8] space-y-4">
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                         <div class="relative flex-1">
                             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
-                            <input type="text" id="frameSearchInput" oninput="handleFrameSearch(this.value)" 
-                                   placeholder="Tìm kiếm khung: Shin, Kitty, Conan, Gojo, Luffy, CR7, Lạy cụ..." 
+                            <input type="text" id="frameSearchInput" oninput="handleFrameSearch(this.value)"
+                                   placeholder="Tìm kiếm khung: Kuromi, Shin, Kitty, Conan, Gojo, Luffy, CR7, Lạy cụ..."
                                    class="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-[#E8D8B0] bg-[#FFFDF6] text-xs sm:text-sm font-semibold text-[#1E1B18] focus:outline-none focus:border-[#FFB800] focus:ring-2 focus:ring-[#FFB800]/20">
                         </div>
                         <div class="flex items-center gap-2 text-xs font-bold text-[#6E6659] justify-between sm:justify-end shrink-0">
                             <span>Đang hiển thị:</span>
-                            <span id="frameCountBadge" class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-fredoka font-black">79 khung</span>
+                            <span id="frameCountBadge" class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-fredoka font-black">Đang tải...</span>
                         </div>
                     </div>
 
                     <!-- CATEGORY PILLS -->
                     <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
                         <button type="button" onclick="filterFrames('all')" class="frame-filter-btn active px-3 py-1.5 rounded-xl font-bold bg-[#1E1B18] text-white whitespace-nowrap cursor-pointer transition-all" data-cat="all">
-                            🌟 Tất Cả (79)
+                            🌟 Tất Cả
+                        </button>
+                        <button type="button" onclick="filterFrames('ctv_live')" class="frame-filter-btn px-3 py-1.5 rounded-xl font-bold bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100 whitespace-nowrap cursor-pointer transition-all" data-cat="ctv_live">
+                            👑 Live CTV &amp; Của Bạn
                         </button>
                         <button type="button" onclick="filterFrames('anime')" class="frame-filter-btn px-3 py-1.5 rounded-xl font-bold bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100 whitespace-nowrap cursor-pointer transition-all" data-cat="anime">
-                            🔥 Anime & Game (Killua, Sukuna, Conan, Gojo, Luffy)
+                            🔥 Anime &amp; Game
                         </button>
                         <button type="button" onclick="filterFrames('shin')" class="frame-filter-btn px-3 py-1.5 rounded-xl font-bold bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100 whitespace-nowrap cursor-pointer transition-all" data-cat="shin">
-                            🖍️ Shin Cậu Bé Bút Chì
+                            🖍️ Shin Bút Chì
                         </button>
                         <button type="button" onclick="filterFrames('sanrio')" class="frame-filter-btn px-3 py-1.5 rounded-xl font-bold bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100 whitespace-nowrap cursor-pointer transition-all" data-cat="sanrio">
-                            🎀 Hello Kitty & Sanrio
+                            🎀 Hello Kitty &amp; Sanrio
                         </button>
                         <button type="button" onclick="filterFrames('cute')" class="frame-filter-btn px-3 py-1.5 rounded-xl font-bold bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100 whitespace-nowrap cursor-pointer transition-all" data-cat="cute">
-                            🐾 Chiikawa & Thú Cưng
+                            🐾 Chiikawa &amp; Thú Cưng
                         </button>
                         <button type="button" onclick="filterFrames('holiday')" class="frame-filter-btn px-3 py-1.5 rounded-xl font-bold bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100 whitespace-nowrap cursor-pointer transition-all" data-cat="holiday">
-                            🎉 Lễ Hội (Giáng Sinh, Halloween, 20/10)
+                            🎉 Lễ Hội
                         </button>
                         <button type="button" onclick="filterFrames('luxury')" class="frame-filter-btn px-3 py-1.5 rounded-xl font-bold bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100 whitespace-nowrap cursor-pointer transition-all" data-cat="luxury">
-                            ⚡ Bá Khí & Sang Trọng (CR7, Dải Ngân Hà)
+                            ⚡ Bá Khí &amp; Sang Trọng
+                        </button>
+                    </div>
+
+                    <!-- KHUNG TÙY CHỈNH URL PNG RIÊNG CHO KHÁCH VIP -->
+                    <div class="pt-3 border-t border-[#F5EAD0] flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <input type="text" id="customFrameNameInput" placeholder="Tên khung riêng (VD: Khung VIP của tôi)"
+                               class="sm:w-52 px-3 py-2 rounded-xl border border-[#E8D8B0] bg-[#FFFDF6] text-xs font-semibold text-[#1E1B18] focus:outline-none focus:border-[#FFB800]">
+                        <input type="url" id="customFrameUrlInput" placeholder="Dán link ảnh khung PNG trong suốt (https://...)"
+                               class="flex-1 px-3 py-2 rounded-xl border border-[#E8D8B0] bg-[#FFFDF6] text-xs font-semibold text-[#1E1B18] focus:outline-none focus:border-[#FFB800]">
+                        <button type="button" onclick="applyCustomFrameFromInput()"
+                                class="px-4 py-2 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs shadow-xs transition-all cursor-pointer shrink-0">
+                            ⚡ Nạp Khung Này Lên Locket
                         </button>
                     </div>
                 </div>
 
                 <!-- LƯỚI KHUNG WIDGET -->
                 <div id="framesGridContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
-                    <!-- Javascript sẽ render 79 khung tại đây -->
+                    <div class="col-span-full py-12 text-center text-xs text-[#6E6659]">⏳ Đang tải danh sách khung từ máy chủ...</div>
                 </div>
             </div>
 
             <!-- ════════════════════════════════════════════════════════ -->
-            <!-- SUB-TAB 2: KHUNG CAPTION & APPLE SF SYMBOLS              -->
+            <!-- SUB-TAB 2: KHUNG CAPTION & 449 APPLE SF SYMBOLS          -->
             <!-- ════════════════════════════════════════════════════════ -->
             <div id="subTabContent_captions" class="hidden space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -1350,8 +1388,8 @@
                         <div class="flex items-center gap-2.5 pb-3 border-b border-[#F0E0B8]">
                             <span class="text-2xl">✍️</span>
                             <div>
-                                <h3 class="font-fredoka text-lg font-black text-[#1E1B18]">Trình Thiết Kế Khung Caption Locket</h3>
-                                <p class="text-xs text-[#6E6659]">Tùy biến chữ chú thích, chọn biểu tượng Apple SF Symbol và dải màu Gradient độc quyền</p>
+                                <h3 class="font-fredoka text-lg font-black text-[#1E1B18]">Tạo &amp; Nạp Caption Locket (Apple SF Symbols)</h3>
+                                <p class="text-xs text-[#6E6659]">Kết nối trực tiếp thư viện 449+ Apple SF Symbols &amp; đồng bộ lên app Locket của bạn</p>
                             </div>
                         </div>
 
@@ -1360,123 +1398,154 @@
                             <label class="block text-xs font-bold text-[#1E1B18] mb-1.5">
                                 💬 Nội dung Caption (Tối đa 100 ký tự):
                             </label>
-                            <input type="text" id="captionTextInput" maxlength="100" 
-                                   value="Hôm nay trời đẹp quá, gặp nhau nhé! ✨" 
+                            <input type="text" id="captionTextInput" maxlength="100"
+                                   value="Hôm nay trời đẹp quá, gặp nhau nhé!"
                                    oninput="updateCaptionLivePreview()"
-                                   placeholder="Nhập chú thích của bạn..." 
+                                   placeholder="Nhập chú thích của bạn..."
                                    class="w-full px-4 py-2.5 rounded-2xl border border-[#E8D8B0] bg-[#FFFDF6] text-xs sm:text-sm font-semibold text-[#1E1B18] focus:outline-none focus:border-[#FFB800] focus:ring-2 focus:ring-[#FFB800]/20">
                         </div>
 
-                        <!-- 2. Biểu tượng SF Symbols -->
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
+                        <!-- 2. Tìm kiếm & Lọc 449 Apple SF Symbols -->
+                        <div class="space-y-2.5">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
                                 <label class="text-xs font-bold text-[#1E1B18]">
-                                    ✨ Chọn Apple SF Symbol (iconType: symbol):
+                                    ✨ Thư Viện Apple SF Symbols (Live Vector SVG):
                                 </label>
-                                <span id="selectedSymbolName" class="text-[11px] font-mono text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">sparkles</span>
+                                <span id="selectedSymbolName" class="text-[11px] font-mono text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md border border-amber-300 font-bold">sparkles</span>
                             </div>
-                            <div class="grid grid-cols-4 sm:grid-cols-6 gap-2" id="symbolsPicker">
-                                <!-- Render danh sách SF Symbols -->
+
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="symbolSearchInput" oninput="searchSymbolsLive(this.value)"
+                                       placeholder="Tìm icon theo tiếng Việt/Anh (VD: gio, tim, sao, nhac, wind, heart)..."
+                                       class="flex-1 px-3.5 py-2 rounded-xl border border-[#E8D8B0] bg-[#FFFDF6] text-xs font-semibold text-[#1E1B18] focus:outline-none focus:border-[#FFB800]">
+                            </div>
+
+                            <!-- 7 Danh mục chuẩn Apple từ API -->
+                            <div id="symbolCategoriesBar" class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[11px]">
+                                <button type="button" onclick="selectSymbolCategory('all')" class="px-2.5 py-1 rounded-lg bg-[#1E1B18] text-white font-bold whitespace-nowrap cursor-pointer">Tất cả</button>
+                            </div>
+
+                            <!-- Lưới SF Symbols cuộn gọn -->
+                            <div class="max-h-60 overflow-y-auto pr-1 grid grid-cols-4 sm:grid-cols-6 gap-2" id="symbolsPicker">
+                                <div class="col-span-full py-6 text-center text-xs text-[#6E6659]">⏳ Đang tải 449+ Apple SF Symbols từ máy chủ...</div>
                             </div>
                         </div>
 
                         <!-- 3. Màu sắc Gradient -->
-                        <div>
-                            <label class="block text-xs font-bold text-[#1E1B18] mb-2">
-                                🎨 Bảng Màu Gradient Caption:
-                            </label>
-                            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="gradientPicker">
-                                <!-- Render các dải màu gradient -->
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <label class="text-xs font-bold text-[#1E1B18]">
+                                    🎨 Bảng Màu Gradient Caption (2 màu HEX):
+                                </label>
+                                <div class="flex items-center gap-2 text-[11px] font-mono">
+                                    <label class="flex items-center gap-1 cursor-pointer">
+                                        <input type="color" id="captionColorHex1" value="#FFB800" onchange="applyCustomHexColors()" class="w-6 h-6 rounded cursor-pointer border-0 bg-transparent">
+                                        <span id="captionHex1Label">#FFB800</span>
+                                    </label>
+                                    <span>→</span>
+                                    <label class="flex items-center gap-1 cursor-pointer">
+                                        <input type="color" id="captionColorHex2" value="#FF8008" onchange="applyCustomHexColors()" class="w-6 h-6 rounded cursor-pointer border-0 bg-transparent">
+                                        <span id="captionHex2Label">#FF8008</span>
+                                    </label>
+                                </div>
                             </div>
+                            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="gradientPicker"></div>
                         </div>
 
                         <!-- 4. Nút hành động -->
                         <div class="pt-3 border-t border-[#F0E0B8] flex flex-wrap gap-2.5">
-                            <button type="button" onclick="copyCaptionConfig()" 
+                            <button type="button" onclick="saveCustomerCaptionLive()" id="btnSaveCaptionLive"
                                     class="flex-1 py-3 px-4 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs sm:text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2">
-                                <span>📋</span> Sao Chép Cấu Hình Caption
+                                <span>🚀</span> Lưu &amp; Nạp Caption Lên Locket
                             </button>
-                            <button type="button" onclick="switchMainTab('store')" 
+                            <button type="button" onclick="copyCaptionConfig()"
                                     class="py-3 px-4 rounded-2xl bg-[#FFFDF6] hover:bg-amber-100 text-[#1E1B18] border border-[#E8D8B0] font-fredoka font-bold text-xs shadow-xs transition-all cursor-pointer">
-                                👑 Kích Hoạt Locket VIP →
+                                📋 Copy JSON
                             </button>
                         </div>
                     </div>
 
-                    <!-- CỘT PHẢI: LIVE PREVIEW IPHONE WIDGET LOCKET (5 CỘT) -->
-                    <div class="lg:col-span-5 bg-gradient-to-b from-[#1E1B18] to-[#12100E] rounded-3xl p-6 shadow-2xl border-2 border-amber-400/40 text-white flex flex-col items-center">
-                        <div class="w-full flex items-center justify-between text-xs text-zinc-400 mb-3 px-1">
-                            <span class="font-mono">LOCKET WIDGET</span>
-                            <span class="text-amber-400 font-bold">● LIVE PREVIEW</span>
-                        </div>
-
-                        <!-- KHUNG IPHONE WIDGET SIMULATOR -->
-                        <div class="w-full max-w-[280px] aspect-square rounded-[36px] bg-zinc-800 relative overflow-hidden shadow-2xl border-4 border-zinc-700/80 p-3 flex flex-col justify-between">
-                            <!-- Ảnh nền camera Locket -->
-                            <img src="/assets/index/stickers/bff.webp" alt="Locket Preview" class="absolute inset-0 w-full h-full object-cover opacity-85 scale-110 blur-[1px]">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30"></div>
-
-                            <!-- Header widget: Avatar & Time -->
-                            <div class="relative z-10 flex items-center justify-between">
-                                <div class="flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
-                                    <div class="w-4 h-4 rounded-full bg-amber-400 flex items-center justify-center text-[9px] font-black text-black">A</div>
-                                    <span class="text-[11px] font-bold text-white">Bạn · 2m</span>
-                                </div>
-                                <div class="w-6 h-6 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-xs">
-                                    💛
-                                </div>
+                    <!-- CỘT PHẢI: LIVE PREVIEW + DANH SÁCH CAPTION THỰC TẾ (5 CỘT) -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="bg-gradient-to-b from-[#1E1B18] to-[#12100E] rounded-3xl p-6 shadow-2xl border-2 border-amber-400/40 text-white flex flex-col items-center">
+                            <div class="w-full flex items-center justify-between text-xs text-zinc-400 mb-3 px-1">
+                                <span class="font-mono">LOCKET WIDGET</span>
+                                <span class="text-amber-400 font-bold">● LIVE PREVIEW</span>
                             </div>
 
-                            <!-- BOTTOM: KHUNG CAPTION HIỂN THỊ TRỰC TIẾP -->
-                            <div class="relative z-10">
-                                <div id="liveCaptionBadge" class="w-full p-2.5 rounded-2xl bg-black/70 backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-2 transition-all">
-                                    <span id="liveCaptionIcon" class="text-base shrink-0">✨</span>
-                                    <div class="min-w-0 flex-1">
-                                        <p id="liveCaptionText" class="text-xs font-black truncate text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">
-                                            Hôm nay trời đẹp quá, gặp nhau nhé! ✨
-                                        </p>
+                            <!-- KHUNG IPHONE WIDGET SIMULATOR -->
+                            <div class="w-full max-w-[270px] aspect-square rounded-[36px] bg-zinc-800 relative overflow-hidden shadow-2xl border-4 border-zinc-700/80 p-3 flex flex-col justify-between">
+                                <img src="/assets/index/stickers/bff.webp" alt="Locket Preview" class="absolute inset-0 w-full h-full object-cover opacity-85 scale-110 blur-[1px]">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30"></div>
+
+                                <div class="relative z-10 flex items-center justify-between">
+                                    <div class="flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+                                        <div class="w-4 h-4 rounded-full bg-amber-400 flex items-center justify-center text-[9px] font-black text-black">A</div>
+                                        <span class="text-[11px] font-bold text-white" id="previewCaptionUsername">Bạn · vừa xong</span>
+                                    </div>
+                                    <div class="w-6 h-6 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-xs">💛</div>
+                                </div>
+
+                                <!-- BOTTOM: KHUNG CAPTION HIỂN THỊ TRỰC TIẾP -->
+                                <div class="relative z-10 flex justify-center">
+                                    <div id="liveCaptionBadge" class="max-w-full px-3.5 py-2 rounded-full backdrop-blur-md border border-white/25 shadow-lg flex items-center gap-2 transition-all"
+                                         style="background: linear-gradient(135deg, #FFB800, #FF8008);">
+                                        <img id="liveCaptionSvgImg" src="" alt="" class="w-4 h-4 object-contain hidden brightness-0 invert">
+                                        <span id="liveCaptionIcon" class="text-sm shrink-0">✨</span>
+                                        <span id="liveCaptionText" class="text-xs font-black truncate text-white drop-shadow-sm">
+                                            Hôm nay trời đẹp quá, gặp nhau nhé!
+                                        </span>
                                     </div>
                                 </div>
                             </div>
+
+                            <p class="text-[11px] text-zinc-400 text-center mt-4">
+                                Kết nối Username Locket ở phía trên rồi bấm <b>Lưu &amp; Nạp Caption Lên Locket</b> để đẩy thẳng vào app Locket của bạn.
+                            </p>
                         </div>
 
-                        <p class="text-[11px] text-zinc-400 text-center mt-4">
-                            Giao diện mô phỏng 100% hiển thị trên Widget iPhone màn hình chính khi bạn áp dụng cấu hình Caption Locket Gold.
-                        </p>
+                        <!-- DANH SÁCH CAPTION ĐANG CÓ TRÊN SERVER -->
+                        <div class="bg-white rounded-3xl p-5 shadow-lg border border-[#F0E0B8] space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-fredoka font-black text-sm text-[#1E1B18]">📌 Caption Đang Hoạt Động</h4>
+                                <span id="activeCaptionsModeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">Brand Shop</span>
+                            </div>
+                            <div id="liveCaptionsList" class="space-y-2 max-h-56 overflow-y-auto pr-1 text-xs">
+                                <p class="text-[#9A8C72]">⏳ Đang tải danh sách Caption từ locket.2707226.xyz...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- ════════════════════════════════════════════════════════ -->
-            <!-- SUB-TAB 3: NẠP FILTER & BỘ LỌC MÀU LUT (3D LUT)          -->
+            <!-- SUB-TAB 3: BỘ LỌC MÀU LUT LIVE TỪ locket.2707226.xyz      -->
             <!-- ════════════════════════════════════════════════════════ -->
             <div id="subTabContent_filters" class="hidden space-y-6">
                 <!-- 1. SO SÁNH BEFORE / AFTER COLOR FILTER -->
                 <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-lg border border-[#F0E0B8]">
                     <div class="max-w-xl mx-auto text-center mb-6">
-                        <span class="text-xs font-fredoka font-black uppercase text-amber-700 bg-amber-100 px-3 py-1 rounded-full border border-amber-300">
-                            TRÌNH SO SÁNH TRỰC QUAN
+                        <span id="activeLutPreviewBadge" class="text-xs font-fredoka font-black uppercase text-amber-700 bg-amber-100 px-3 py-1 rounded-full border border-amber-300">
+                            TRÌNH SO SÁNH TRỰC QUAN • VINTAGE FILM
                         </span>
                         <h3 class="font-fredoka text-xl sm:text-2xl font-black text-[#1E1B18] mt-2">
                             Hiệu Ứng Bộ Lọc Màu 3D LUT Trên Locket
                         </h3>
                         <p class="text-xs sm:text-sm text-[#6E6659] mt-1">
-                            Kéo thanh trượt để thấy sự khác biệt rõ rệt giữa ảnh gốc và ảnh sau khi áp dụng bộ lọc màu LUT.
+                            Kéo thanh trượt hoặc chọn một bộ lọc ở bên dưới để xem mô phỏng hiệu ứng màu sắc.
                         </p>
                     </div>
 
                     <!-- BEFORE / AFTER INTERACTIVE SLIDER -->
                     <div class="max-w-md mx-auto aspect-square rounded-[36px] overflow-hidden relative shadow-2xl border-4 border-[#FFB800] select-none" id="lutSliderContainer">
-                        <!-- ẢNH AFTER (ĐÃ LỌC LUT - NỀN DƯỚI) -->
-                        <div class="absolute inset-0 w-full h-full bg-cover bg-center filter contrast-125 saturate-150 brightness-105"
+                        <div id="lutAfterLayer" class="absolute inset-0 w-full h-full bg-cover bg-center filter contrast-125 saturate-150 brightness-105"
                              style="background-image: url('/assets/index/stickers/bff.webp');">
                             <div class="absolute inset-0 bg-gradient-to-tr from-amber-500/20 via-orange-400/10 to-rose-500/20 mix-blend-color"></div>
-                            <span class="absolute top-4 right-4 bg-emerald-600 text-white font-fredoka font-black text-[11px] px-2.5 py-1 rounded-full shadow-md">
-                                ✨ AFTER (ĐÃ NẠP LUT)
+                            <span id="lutAfterTag" class="absolute top-4 right-4 bg-emerald-600 text-white font-fredoka font-black text-[11px] px-2.5 py-1 rounded-full shadow-md">
+                                ✨ AFTER (LUT)
                             </span>
                         </div>
 
-                        <!-- ẢNH BEFORE (ẢNH GỐC - LỚP TRÊN ĐƯỢC CLIP) -->
                         <div id="lutBeforeLayer" class="absolute inset-0 h-full overflow-hidden border-r-2 border-white shadow-[0_0_15px_rgba(0,0,0,0.5)]" style="width: 50%;">
                             <div class="w-full h-full min-w-[320px] sm:min-w-[440px] bg-cover bg-center filter grayscale-[30%] brightness-95"
                                  style="background-image: url('/assets/index/stickers/bff.webp'); width: 100%;">
@@ -1486,11 +1555,9 @@
                             </div>
                         </div>
 
-                        <!-- THANH TRƯỢT RANGE INPUT TRONG SUỐT -->
-                        <input type="range" min="0" max="100" value="50" id="lutRangeSlider" oninput="handleLutSlider(this.value)" 
+                        <input type="range" min="0" max="100" value="50" id="lutRangeSlider" oninput="handleLutSlider(this.value)"
                                class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20">
 
-                        <!-- ĐƯỜNG PHÂN CÁCH & TAY KÉO -->
                         <div id="lutSliderHandle" class="absolute top-0 bottom-0 pointer-events-none z-10 flex items-center justify-center -translate-x-1/2" style="left: 50%;">
                             <div class="w-8 h-8 rounded-full bg-white text-black shadow-xl flex items-center justify-center font-black text-xs border-2 border-amber-400">
                                 ⬄
@@ -1499,84 +1566,54 @@
                     </div>
                 </div>
 
-                <!-- 2. DANH SÁCH 6 BỘ LỌC LUT TIÊU BIỂU (TRONG TỔNG SỐ 68 LUT) -->
-                <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-lg border border-[#F0E0B8]">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-5 pb-3 border-b border-[#F0E0B8]">
+                <!-- 2. KHO BỘ LỌC LUT LIVE TỪ locket.2707226.xyz -->
+                <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-lg border border-[#F0E0B8] space-y-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#F0E0B8]">
                         <div>
-                            <h3 class="font-fredoka text-lg font-black text-[#1E1B18]">Bộ Sưu Tập 68+ Bộ Lọc Màu LUT Độc Quyền</h3>
-                            <p class="text-xs text-[#6E6659]">Tích hợp sẵn trong DNS Locket Gold VIP – Chọn và kích hoạt nhanh chóng</p>
+                            <h3 class="font-fredoka text-lg font-black text-[#1E1B18]">Kho Bộ Lọc Màu LUT Đang Bật Trên Máy Chủ</h3>
+                            <p class="text-xs text-[#6E6659]">Đồng bộ trực tiếp từ API <code>/api/v1/ctv/filters</code> của <b>locket.2707226.xyz</b></p>
                         </div>
-                        <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-fredoka font-bold text-xs">
-                            Đã Mở Khóa VIP
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="lutSearchInput" oninput="renderFiltersLiveList()"
+                                   placeholder="🔍 Tìm filter LUT..."
+                                   class="px-3 py-1.5 rounded-xl border border-[#E8D8B0] bg-[#FFFDF6] text-xs font-semibold focus:outline-none focus:border-[#FFB800]">
+                            <span id="liveFiltersTotalBadge" class="px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-fredoka font-bold text-xs shrink-0">
+                                Đang tải...
+                            </span>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-                        <div class="p-3.5 rounded-2xl bg-[#FFFDF6] border border-[#E8D8B0] text-center hover:shadow-md transition-all">
-                            <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-amber-600 to-yellow-400 mb-2 shadow-sm flex items-center justify-center text-xl">🎞️</div>
-                            <h4 class="font-fredoka font-bold text-xs text-[#1E1B18]">Vintage 01</h4>
-                            <p class="text-[10px] text-[#9A8C72] mt-0.5">Tone Film Cổ Điển</p>
-                            <span class="inline-block mt-2 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">Kích hoạt ✓</span>
-                        </div>
-                        <div class="p-3.5 rounded-2xl bg-[#FFFDF6] border border-[#E8D8B0] text-center hover:shadow-md transition-all">
-                            <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-yellow-500 to-orange-400 mb-2 shadow-sm flex items-center justify-center text-xl">📸</div>
-                            <h4 class="font-fredoka font-bold text-xs text-[#1E1B18]">Kodak Gold</h4>
-                            <p class="text-[10px] text-[#9A8C72] mt-0.5">Vàng Mật Ong</p>
-                            <span class="inline-block mt-2 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">Kích hoạt ✓</span>
-                        </div>
-                        <div class="p-3.5 rounded-2xl bg-[#FFFDF6] border border-[#E8D8B0] text-center hover:shadow-md transition-all">
-                            <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-pink-400 to-rose-300 mb-2 shadow-sm flex items-center justify-center text-xl">🌸</div>
-                            <h4 class="font-fredoka font-bold text-xs text-[#1E1B18]">Fuji Pastel</h4>
-                            <p class="text-[10px] text-[#9A8C72] mt-0.5">Hồng Trong Trẻo</p>
-                            <span class="inline-block mt-2 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">Kích hoạt ✓</span>
-                        </div>
-                        <div class="p-3.5 rounded-2xl bg-[#FFFDF6] border border-[#E8D8B0] text-center hover:shadow-md transition-all">
-                            <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-teal-500 to-amber-500 mb-2 shadow-sm flex items-center justify-center text-xl">🎬</div>
-                            <h4 class="font-fredoka font-bold text-xs text-[#1E1B18]">Teal & Orange</h4>
-                            <p class="text-[10px] text-[#9A8C72] mt-0.5">Điện Ảnh Hollywood</p>
-                            <span class="inline-block mt-2 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">Kích hoạt ✓</span>
-                        </div>
-                        <div class="p-3.5 rounded-2xl bg-[#FFFDF6] border border-[#E8D8B0] text-center hover:shadow-md transition-all">
-                            <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-zinc-700 to-zinc-900 mb-2 shadow-sm flex items-center justify-center text-xl text-white">🖤</div>
-                            <h4 class="font-fredoka font-bold text-xs text-[#1E1B18]">Moody B&W</h4>
-                            <p class="text-[10px] text-[#9A8C72] mt-0.5">Đen Trắng Nghệ Thuật</p>
-                            <span class="inline-block mt-2 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">Kích hoạt ✓</span>
-                        </div>
-                        <div class="p-3.5 rounded-2xl bg-[#FFFDF6] border border-[#E8D8B0] text-center hover:shadow-md transition-all">
-                            <div class="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-400 mb-2 shadow-sm flex items-center justify-center text-xl">☀️</div>
-                            <h4 class="font-fredoka font-bold text-xs text-[#1E1B18]">Golden Sunset</h4>
-                            <p class="text-[10px] text-[#9A8C72] mt-0.5">Hoàng Hôn Nắng Ấm</p>
-                            <span class="inline-block mt-2 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">Kích hoạt ✓</span>
-                        </div>
+                    <div id="lutCategoryPills" class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+                        <button type="button" onclick="selectLutCategory('all')" class="px-3 py-1.5 rounded-xl font-bold bg-[#1E1B18] text-white whitespace-nowrap cursor-pointer">Tất Cả</button>
+                    </div>
+
+                    <div id="liveFiltersGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                        <div class="col-span-full py-10 text-center text-xs text-[#6E6659]">⏳ Đang tải danh sách Bộ lọc LUT từ locket.2707226.xyz...</div>
                     </div>
                 </div>
 
-                <!-- 3. KHU VỰC NẠP FILE 3D LUT (.cube) -->
+                <!-- 3. THÔNG TIN NẠP FILE 3D LUT (.cube) -->
                 <div class="bg-gradient-to-br from-zinc-900 via-[#1E1B18] to-zinc-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl border-2 border-amber-400/30">
                     <div class="max-w-2xl mx-auto text-center space-y-4">
                         <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-400/20 text-amber-400 border border-amber-400/40 flex items-center justify-center text-2xl">
                             📤
                         </div>
                         <h3 class="font-fredoka text-xl sm:text-2xl font-black text-amber-400">
-                            Nạp File 3D LUT Tùy Biến (.cube)
+                            Nạp File 3D LUT Tùy Biến (.cube) Lên Máy Chủ
                         </h3>
                         <p class="text-xs sm:text-sm text-zinc-300">
-                            Hỗ trợ nạp file màu 3D LUT chuẩn định dạng <code>.cube</code> (tối đa 20MB). Hệ thống tự động biên dịch, sinh icon chuẩn màu và tích hợp vào nhóm Lut Filter trên app Locket.
+                            Hệ thống hỗ trợ nạp file màu 3D LUT định dạng <code>.cube</code> (tối đa 20MB) lên kho Custom LUT của cửa hàng trên <b>locket.2707226.xyz</b>. Dành cho Quản trị viên hoặc khách VIP yêu cầu nạp màu riêng.
                         </p>
 
-                        <!-- VÙNG TẢI FILE .CUBE -->
-                        <div onclick="document.getElementById('lutFileInput').click()" 
-                             class="p-6 sm:p-8 rounded-2xl border-2 border-dashed border-amber-400/50 hover:border-amber-400 bg-white/5 hover:bg-white/10 transition-all cursor-pointer">
-                            <input type="file" id="lutFileInput" accept=".cube" onchange="handleLutFileUpload(event)" class="hidden">
-                            <div class="text-3xl mb-2">📁</div>
-                            <p class="font-bold text-xs sm:text-sm text-zinc-200" id="lutFileNameLabel">
-                                Nhấp để chọn file .cube hoặc kéo thả vào đây
-                            </p>
-                            <p class="text-[11px] text-zinc-400 mt-1">Định dạng hỗ trợ: .cube (Dung lượng tối đa 20MB)</p>
-                        </div>
-
-                        <div id="lutUploadNotice" class="hidden p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-semibold">
-                            ✅ File LUT đã sẵn sàng! Khi thanh toán gói VIP ALL-IN-ONE hoặc Locket VIP, bộ lọc này sẽ được đồng bộ vào camera Locket của bạn.
+                        <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                            <a href="/admin" target="_blank"
+                               class="px-5 py-3 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs sm:text-sm shadow-lg transition-all">
+                                🔐 Mở Bảng Quản Trị Nạp File .cube →
+                            </a>
+                            <button type="button" onclick="switchMainTab('zalo_group')"
+                                    class="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-fredoka font-bold text-xs sm:text-sm transition-all cursor-pointer">
+                                💬 Gửi File .cube Nhờ Admin Nạp
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1597,32 +1634,30 @@
                     <h3 id="modalFrameTitle" class="font-fredoka text-xl font-black text-[#1E1B18] mt-1">
                         Tên Khung Widget
                     </h3>
-                    <p class="text-xs text-[#6E6659] mt-0.5">Ướm thử ảnh của bạn trực tiếp vào khung viền Locket</p>
+                    <p class="text-xs text-[#6E6659] mt-0.5">Ướm thử ảnh của bạn &amp; nạp trực tiếp lên tài khoản Locket VIP</p>
                 </div>
 
                 <!-- KHUNG CHỨA ẢNH & OVERLAY KHUNG VIỀN -->
                 <div class="w-full aspect-square rounded-[32px] overflow-hidden bg-zinc-900 relative shadow-inner border-2 border-amber-300 mx-auto">
-                    <!-- ẢNH NỀN (ẢNH NGƯỜI DÙNG HOẶC DEMO) -->
                     <img id="modalTryUserImg" src="/assets/index/stickers/bff.webp" alt="User Image" class="absolute inset-0 w-full h-full object-cover">
-                    <!-- KHUNG VIỀN OVERLAY TRONG SUỐT -->
                     <img id="modalTryFrameOverlay" src="" alt="Frame Overlay" class="absolute inset-0 w-full h-full object-cover pointer-events-none z-10">
                 </div>
 
                 <!-- CÁC NÚT ĐIỀU KHIỂN TRONG MODAL -->
                 <div class="mt-4 space-y-2.5">
                     <input type="file" id="userFramePhotoInput" accept="image/*" onchange="handleUserPhotoChange(event)" class="hidden">
-                    <button type="button" onclick="document.getElementById('userFramePhotoInput').click()" 
+                    <button type="button" onclick="document.getElementById('userFramePhotoInput').click()"
                             class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-amber-50 text-[#1E1B18] border-2 border-[#FFB800] font-fredoka font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2">
                         <span>🖼️</span> Tải Ảnh Của Bạn Lên Thử Khung
                     </button>
                     <div class="flex gap-2">
-                        <button type="button" id="modalCopyIdBtn" onclick="copyModalFrameId()" 
-                                class="flex-1 py-2.5 px-3 rounded-xl bg-[#1E1B18] hover:bg-black text-white font-fredoka font-bold text-xs shadow-sm transition-all cursor-pointer">
-                            📋 Sao Chép ID Khung
-                        </button>
-                        <button type="button" onclick="switchMainTab('store'); closeTryFrameModal();" 
+                        <button type="button" id="modalApplyLocketBtn" onclick="applyModalFrameToLocket()"
                                 class="flex-1 py-2.5 px-3 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs shadow-sm transition-all cursor-pointer">
-                            👑 Mua Gói VIP Ngay →
+                            ⚡ Nạp Vào Locket
+                        </button>
+                        <button type="button" id="modalCopyIdBtn" onclick="copyModalFrameId()"
+                                class="py-2.5 px-3 rounded-xl bg-[#1E1B18] hover:bg-black text-white font-fredoka font-bold text-xs shadow-sm transition-all cursor-pointer">
+                            📋 Copy ID
                         </button>
                     </div>
                 </div>
@@ -2305,44 +2340,58 @@
         }
 
         // ══════════════════════════════════════════════════════════════
-        // PHẦN TÍNH NĂNG: KHUNG WIDGET, KHUNG CAPTION, NẠP FILTER LUT
+        // PHẦN TÍNH NĂNG: KẾT NỐI API LIVE locket.2707226.xyz
         // ══════════════════════════════════════════════════════════════
         let allFramesData = [];
+        let baseLibraryFrames = [];
+        let connectedAccount = null;
+        let customerFramesLive = [];
+        let customerCaptionsLive = [];
+        let brandCaptionsLive = [];
         let currentFrameCategory = 'all';
         let currentFrameSearchKey = '';
         let currentModalFrame = null;
-        let selectedSymbol = { name: 'sparkles', icon: '✨' };
-        let selectedGradient = { name: 'Gold VIP', classes: 'from-amber-400 to-yellow-200', hex: ['#FFB800', '#FF8008'] };
+
+        let allSymbolsCache = [];
+        let symbolCategoriesCache = [];
+        let currentSymbolCategory = 'all';
+        let currentSymbolSearch = '';
+        let selectedSymbol = { name: 'sparkles', icon: '✨', previewUrl: '' };
+        let selectedGradient = { name: 'Gold Locket', classes: 'from-amber-400 to-yellow-200', hex: ['#FFB800', '#FF8008'] };
+
+        let allFiltersLive = [];
+        let currentLutCategory = 'all';
         let featuresInitialized = false;
 
-        const POPULAR_SF_SYMBOLS = [
-            { name: 'sparkles', icon: '✨', title: 'Lấp Lánh' },
-            { name: 'heart.fill', icon: '❤️', title: 'Trái Tim' },
-            { name: 'flame.fill', icon: '🔥', title: 'Ngọn Lửa' },
-            { name: 'star.fill', icon: '⭐', title: 'Ngôi Sao' },
-            { name: 'bolt.fill', icon: '⚡', title: 'Tia Sét' },
-            { name: 'crown.fill', icon: '👑', title: 'Vương Miện' },
-            { name: 'sun.max.fill', icon: '☀️', title: 'Mặt Trời' },
-            { name: 'wind', icon: '💨', title: 'Gió Lộng' },
-            { name: 'moon.stars.fill', icon: '🌙', title: 'Ánh Trăng' },
-            { name: 'music.note', icon: '🎵', title: 'Nốt Nhạc' },
-            { name: 'headphones', icon: '🎧', title: 'Tai Nghe' },
-            { name: 'bubble.left.fill', icon: '💬', title: 'Tin Nhắn' },
-            { name: 'camera.fill', icon: '📸', title: 'Máy Ảnh' },
-            { name: 'cup.and.saucer.fill', icon: '☕', title: 'Cà Phê' },
-            { name: 'gamecontroller.fill', icon: '🎮', title: 'Tay Game' },
-            { name: 'gift.fill', icon: '🎁', title: 'Hộp Quà' },
-            { name: 'bell.fill', icon: '🔔', title: 'Chuông' },
-            { name: 'leaf.fill', icon: '🍃', title: 'Chiếc Lá' }
+        function escapeFeatureHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        const FALLBACK_SF_SYMBOLS = [
+            { name: 'sparkles', icon: '✨', title: 'Lấp Lánh', category: 'heart_emotion', previewUrl: '' },
+            { name: 'heart.fill', icon: '❤️', title: 'Trái Tim', category: 'heart_emotion', previewUrl: '' },
+            { name: 'flame.fill', icon: '🔥', title: 'Ngọn Lửa', category: 'heart_emotion', previewUrl: '' },
+            { name: 'star.fill', icon: '⭐', title: 'Ngôi Sao', category: 'heart_emotion', previewUrl: '' },
+            { name: 'sun.max.fill', icon: '☀️', title: 'Mặt Trời', category: 'weather_nature', previewUrl: '' },
+            { name: 'wind', icon: '💨', title: 'Gió Lộng', category: 'weather_nature', previewUrl: '' },
+            { name: 'music.note', icon: '🎵', title: 'Nốt Nhạc', category: 'music_photo', previewUrl: '' },
+            { name: 'camera.fill', icon: '📸', title: 'Máy Ảnh', category: 'music_photo', previewUrl: '' },
+            { name: 'bubble.left.fill', icon: '💬', title: 'Tin Nhắn', category: 'message_connect', previewUrl: '' },
+            { name: 'cup.and.saucer.fill', icon: '☕', title: 'Cà Phê', category: 'life_work', previewUrl: '' }
         ];
 
         const GRADIENT_PALETTES = [
-            { name: 'Gold Locket', classes: 'from-amber-400 to-yellow-200', hex: ['#FFB800', '#FF8008'] },
-            { name: 'Hồng Sweet', classes: 'from-pink-400 to-rose-300', hex: ['#FF5E3A', '#FF2A68'] },
-            { name: 'Tím Dream', classes: 'from-purple-400 to-pink-300', hex: ['#8A2387', '#E94057'] },
-            { name: 'Xanh Neon', classes: 'from-cyan-400 to-blue-500', hex: ['#00c6ff', '#0072ff'] },
-            { name: 'Lục Bảo', classes: 'from-emerald-400 to-teal-300', hex: ['#11998e', '#38ef7d'] },
-            { name: 'Lửa Đỏ', classes: 'from-red-500 to-orange-400', hex: ['#f12711', '#f5af19'] }
+            { name: 'Gold Locket', hex: ['#FFB800', '#FF8008'] },
+            { name: 'Hồng Sweet', hex: ['#FF5E3A', '#FF2A68'] },
+            { name: 'Tím Dream', hex: ['#8A2387', '#E94057'] },
+            { name: 'Xanh Neon', hex: ['#00c6ff', '#0072ff'] },
+            { name: 'Lục Bảo', hex: ['#11998e', '#38ef7d'] },
+            { name: 'Hoàng Hôn', hex: ['#FE154C', '#FABD30'] }
         ];
 
         function switchFeatureSubTab(tabKey) {
@@ -2364,47 +2413,144 @@
             if (featuresInitialized) return;
             featuresInitialized = true;
 
-            // 1. Tải danh sách 79 Khung từ API hoặc data/frames.json
+            renderGradientPicker();
+            updateCaptionLivePreview();
+
+            // Khôi phục Username Locket đã lưu nếu có
+            try {
+                const savedU = localStorage.getItem('alopremium_feature_uid') || '';
+                const inp = document.getElementById('featureUsernameInput');
+                if (inp && !inp.value && savedU) {
+                    inp.value = savedU;
+                }
+            } catch (e) {}
+
+            // Tải song song: Khung (Live CTV + 79), SF Symbols (449), LUT Filters (Live), Brand Captions
+            await Promise.allSettled([
+                loadLiveFrames(),
+                loadLiveSymbols('all', ''),
+                loadLiveFilters(),
+                loadBrandCaptionsLive()
+            ]);
+        }
+
+        async function loadLiveFrames() {
+            const statusPill = document.getElementById('ctvApiStatusPill');
             try {
                 const res = await fetch('/api/frames');
                 if (res.ok) {
                     const data = await res.json();
                     if (data && Array.isArray(data.frames)) {
-                        allFramesData = data.frames;
+                        baseLibraryFrames = data.frames;
+                        mergeAllFrames();
+                        if (statusPill) {
+                            statusPill.textContent = data.ctv_connected
+                                ? '🟢 Đã kết nối Live API locket.2707226.xyz'
+                                : '🟡 Kho Offline (79 Khung)';
+                        }
                     }
                 }
             } catch (e) {
-                console.warn('Load frames API failed, will use fallback if available:', e);
+                console.warn('Load /api/frames failed:', e);
             }
+        }
 
-            // Nếu chưa có, nạp trực tiếp danh sách fallback
-            if (!allFramesData || allFramesData.length === 0) {
-                try {
-                    const resJson = await fetch('/data/frames.json');
-                    if (resJson.ok) {
-                        const dataFallback = await resJson.json();
-                        if (dataFallback && Array.isArray(dataFallback.frames)) {
-                            allFramesData = dataFallback.frames;
-                        }
-                    }
-                } catch (e2) {}
-            }
-
+        function mergeAllFrames() {
+            const merged = [];
+            const seen = new Set();
+            customerFramesLive.forEach(fr => {
+                const u = fr.rawImage || fr.image;
+                if (u && !seen.has(u)) {
+                    seen.add(u);
+                    merged.push(fr);
+                }
+            });
+            baseLibraryFrames.forEach(fr => {
+                const u = fr.rawImage || fr.image;
+                if (u && !seen.has(u)) {
+                    seen.add(u);
+                    merged.push(fr);
+                }
+            });
+            allFramesData = merged;
+            const cEl = document.getElementById('subTabFrameCount');
+            if (cEl) cEl.textContent = `${allFramesData.length}`;
             renderFramesList();
-            renderSymbolsPicker();
-            renderGradientPicker();
-            updateCaptionLivePreview();
+        }
+
+        async function connectFeatureAccount() {
+            const inp = document.getElementById('featureUsernameInput');
+            const btn = document.getElementById('btnConnectFeatureUid');
+            const box = document.getElementById('connectedFeatureAccountBox');
+            const usernameRaw = (inp ? inp.value : '').trim().replace(/^@/, '');
+            if (!usernameRaw) {
+                alert('⚠️ Vui lòng nhập Username Locket của bạn (VD: camsitup)!');
+                return;
+            }
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Đang kiểm tra...';
+            }
+            try {
+                const res = await fetch('/api/features/connect_uid', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: usernameRaw })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.error || 'Không kết nối được tài khoản');
+                }
+                connectedAccount = data.account;
+                customerFramesLive = data.customer_frames || [];
+                customerCaptionsLive = data.customer_captions || [];
+                try { localStorage.setItem('alopremium_feature_uid', connectedAccount.username); } catch (e) {}
+
+                const isVip = connectedAccount.is_vip;
+                if (box) {
+                    box.classList.remove('hidden');
+                    box.innerHTML = `
+                        <div class="flex items-center gap-2.5">
+                            <img src="${escapeFeatureHtml(connectedAccount.avatar || 'logo.png')}" onerror="this.src='logo.png'" class="w-10 h-10 rounded-full object-cover border-2 ${isVip ? 'border-emerald-500' : 'border-amber-400'}">
+                            <div>
+                                <div class="font-bold text-[#1E1B18] flex items-center gap-1.5 flex-wrap">
+                                    <span>@${escapeFeatureHtml(connectedAccount.username)}</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${isVip ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-700 border border-rose-300'}">
+                                        ${isVip ? '● VIP ĐÃ KÍCH HOẠT' : '○ CHƯA CÓ GÓI VIP'}
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-[#6E6659] font-mono">UID: ${escapeFeatureHtml(connectedAccount.uid)} · ${escapeFeatureHtml(connectedAccount.package_name)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg">${customerFramesLive.length} khung riêng · ${customerCaptionsLive.length} caption</span>
+                            ${!isVip ? `<button type="button" onclick="switchMainTab('store')" class="px-3 py-1 rounded-lg bg-[#FFB800] text-[#1E1B18] font-black text-[11px] cursor-pointer">👑 Mua VIP từ 5K</button>` : ''}
+                        </div>
+                    `;
+                }
+                const prevUserEl = document.getElementById('previewCaptionUsername');
+                if (prevUserEl) prevUserEl.textContent = `@${connectedAccount.username} · Live`;
+
+                mergeAllFrames();
+                renderActiveCaptionsList();
+                showToast(`✅ Đã kết nối Locket @${connectedAccount.username}!`);
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>🔗</span> Kết Nối Tài Khoản';
+                }
+            }
         }
 
         function filterFrames(cat) {
             currentFrameCategory = cat;
             document.querySelectorAll('.frame-filter-btn').forEach(btn => {
                 const isMatch = btn.getAttribute('data-cat') === cat;
-                if (isMatch) {
-                    btn.className = "frame-filter-btn active px-3 py-1.5 rounded-xl font-bold bg-[#1E1B18] text-white whitespace-nowrap cursor-pointer transition-all";
-                } else {
-                    btn.className = "frame-filter-btn px-3 py-1.5 rounded-xl font-bold bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100 whitespace-nowrap cursor-pointer transition-all";
-                }
+                btn.className = isMatch
+                    ? "frame-filter-btn active px-3 py-1.5 rounded-xl font-bold bg-[#1E1B18] text-white whitespace-nowrap cursor-pointer transition-all"
+                    : "frame-filter-btn px-3 py-1.5 rounded-xl font-bold bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100 whitespace-nowrap cursor-pointer transition-all";
             });
             renderFramesList();
         }
@@ -2420,31 +2566,33 @@
             if (!container) return;
 
             let filtered = allFramesData.filter(item => {
-                const matchSearch = !currentFrameSearchKey || 
+                const matchSearch = !currentFrameSearchKey ||
                     (item.name && item.name.toLowerCase().includes(currentFrameSearchKey)) ||
                     (item.category && item.category.toLowerCase().includes(currentFrameSearchKey)) ||
                     (item.badge && item.badge.toLowerCase().includes(currentFrameSearchKey));
 
                 if (!matchSearch) return false;
-
                 if (currentFrameCategory === 'all') return true;
+                if (currentFrameCategory === 'ctv_live') {
+                    return item.group === 'ctv_live' || item.group === 'my_frames' || item.source === 'ctv_live' || item.source === 'customer_assigned';
+                }
                 if (currentFrameCategory === 'anime') {
                     return item.group === 'cyber' || ['Hunter x Hunter', 'Nhân vật hư cấu', 'Bảy viên ngọc rồng', 'Thám tử lừng danh Conan'].includes(item.category) || (item.badge && item.badge.toLowerCase().includes('anime'));
                 }
                 if (currentFrameCategory === 'shin') {
-                    return item.category === 'Shin cậu bé bút chì' || item.name.toLowerCase().includes('shin');
+                    return item.category === 'Shin cậu bé bút chì' || (item.name && item.name.toLowerCase().includes('shin'));
                 }
                 if (currentFrameCategory === 'sanrio') {
-                    return (item.badge && item.badge.toLowerCase().includes('sanrio')) || item.name.toLowerCase().includes('kitty') || item.name.toLowerCase().includes('kuromi') || item.name.toLowerCase().includes('melody') || item.name.toLowerCase().includes('cinnamoroll') || item.name.toLowerCase().includes('pompompurin');
+                    return (item.badge && item.badge.toLowerCase().includes('sanrio')) || (item.name && /kitty|kuromi|melody|cinnamoroll|pompompurin/i.test(item.name));
                 }
                 if (currentFrameCategory === 'cute') {
-                    return item.group === 'cute' || (item.badge && item.badge.toLowerCase().includes('cute')) || item.name.toLowerCase().includes('chiikawa') || item.name.toLowerCase().includes('gấu') || item.name.toLowerCase().includes('thỏ') || item.name.toLowerCase().includes('mèo') || item.name.toLowerCase().includes('vịt');
+                    return item.group === 'cute' || (item.badge && item.badge.toLowerCase().includes('cute')) || (item.name && /chiikawa|gấu|thỏ|mèo|vịt/i.test(item.name));
                 }
                 if (currentFrameCategory === 'holiday') {
-                    return item.group === 'holiday' || (item.badge && (item.badge.includes('Halloween') || item.badge.includes('Christmas') || item.badge.includes('20/10')));
+                    return item.group === 'holiday' || (item.badge && /halloween|christmas|20\/10/i.test(item.badge));
                 }
                 if (currentFrameCategory === 'luxury') {
-                    return item.group === 'luxury' || (item.badge && (item.badge.includes('Huyền Thoại') || item.badge.includes('Huyền Bí') || item.badge.includes('Chiến Binh') || item.badge.includes('Bá khí')));
+                    return item.group === 'luxury' || (item.badge && /huyền thoại|huyền bí|chiến binh|bá khí/i.test(item.badge));
                 }
                 return true;
             });
@@ -2457,10 +2605,10 @@
                 container.innerHTML = `
                     <div class="col-span-full py-12 text-center text-zinc-500 font-medium">
                         <div class="text-4xl mb-2">🔍</div>
-                        <p class="text-sm">Không tìm thấy khung viền phù hợp với từ khóa "${currentFrameSearchKey}".</p>
-                        <button type="button" onclick="filterFrames('all'); document.getElementById('frameSearchInput').value='';" 
-                                class="mt-3 px-4 py-2 rounded-xl bg-amber-100 text-amber-900 font-bold text-xs hover:bg-amber-200">
-                            Xem tất cả 79 khung
+                        <p class="text-sm">Không tìm thấy khung viền phù hợp.</p>
+                        <button type="button" onclick="filterFrames('all'); document.getElementById('frameSearchInput').value='';"
+                                class="mt-3 px-4 py-2 rounded-xl bg-amber-100 text-amber-900 font-bold text-xs hover:bg-amber-200 cursor-pointer">
+                            Xem tất cả khung
                         </button>
                     </div>
                 `;
@@ -2468,35 +2616,37 @@
             }
 
             const html = filtered.map(item => {
-                const imgUrl = item.rawImage || item.image;
-                const badgeText = item.badge || item.category || 'VIP';
+                const imgUrl = escapeFeatureHtml(item.rawImage || item.image);
+                const badgeText = escapeFeatureHtml(item.badge || item.category || 'VIP');
+                const safeName = escapeFeatureHtml(item.name);
+                const safeCat = escapeFeatureHtml(item.category || 'Locket Gold');
+                const safeId = escapeFeatureHtml(item.id);
+                const isLive = item.source === 'ctv_live' || item.source === 'customer_assigned';
                 return `
-                    <div class="bg-white rounded-3xl p-3 sm:p-4 border-2 border-[#F0E0B8] shadow-sm hover:shadow-xl hover:border-[#FFB800] transition-all flex flex-col justify-between group">
+                    <div class="bg-white rounded-3xl p-3 sm:p-4 border-2 ${isLive ? 'border-amber-400 shadow-md' : 'border-[#F0E0B8] shadow-sm'} hover:shadow-xl hover:border-[#FFB800] transition-all flex flex-col justify-between group">
                         <div>
-                            <!-- KHUNG PREVIEW TỈ LỆ VUÔNG CHUẨN LOCKET -->
                             <div class="w-full aspect-square rounded-2xl bg-zinc-900 relative overflow-hidden mb-2.5 border border-amber-200/80 group-hover:scale-[1.02] transition-transform">
                                 <img src="/assets/index/stickers/bff.webp" alt="Demo BG" class="absolute inset-0 w-full h-full object-cover opacity-80 blur-[0.5px]">
-                                <img src="${imgUrl}" alt="${item.name}" loading="lazy" class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none drop-shadow-md">
-                                <span class="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-wider">
+                                <img src="${imgUrl}" alt="${safeName}" loading="lazy" class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none drop-shadow-md">
+                                <span class="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-full ${isLive ? 'bg-amber-500 text-black' : 'bg-black/65 text-white'} backdrop-blur-md text-[9px] font-black uppercase tracking-wider">
                                     ${badgeText}
                                 </span>
                             </div>
 
-                            <h4 class="font-fredoka font-black text-xs sm:text-sm text-[#1E1B18] truncate" title="${item.name}">
-                                ${item.name}
+                            <h4 class="font-fredoka font-black text-xs sm:text-sm text-[#1E1B18] truncate" title="${safeName}">
+                                ${safeName}
                             </h4>
                             <p class="text-[10px] text-[#9A8C72] font-semibold truncate mb-3">
-                                ${item.category || 'Locket Gold'}
+                                ${safeCat}
                             </p>
                         </div>
 
-                        <!-- CÁC NÚT THAO TÁC -->
                         <div class="flex gap-1.5 pt-2 border-t border-[#F5EAD0]">
-                            <button type="button" onclick="openTryFrameModal('${item.id}')" 
+                            <button type="button" onclick="openTryFrameModal('${safeId}')"
                                     class="flex-1 py-1.5 px-2 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-bold text-[11px] shadow-xs transition-all cursor-pointer">
-                                🖼️ Thử Khung
+                                🖼️ Thử &amp; Nạp
                             </button>
-                            <button type="button" onclick="copyFrameId('${item.id}')" title="Sao chép ID Khung"
+                            <button type="button" onclick="copyFrameId('${safeId}')" title="Sao chép ID Khung"
                                     class="w-7 h-7 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs flex items-center justify-center shrink-0 cursor-pointer">
                                 📋
                             </button>
@@ -2521,13 +2671,69 @@
             if (title) title.textContent = frame.name;
             if (badge) badge.textContent = frame.badge || frame.category || 'Khung Widget Locket';
             if (overlay) overlay.src = frame.rawImage || frame.image;
-
             if (modal) modal.classList.remove('hidden');
         }
 
         function closeTryFrameModal() {
             const modal = document.getElementById('frameTryModal');
             if (modal) modal.classList.add('hidden');
+        }
+
+        async function applyFrameToLocketApi(frameUrl, frameName, triggerBtn = null) {
+            let ident = connectedAccount ? connectedAccount.username : (document.getElementById('featureUsernameInput')?.value || '').trim();
+            if (!ident) {
+                closeTryFrameModal();
+                const inp = document.getElementById('featureUsernameInput');
+                if (inp) {
+                    inp.focus();
+                    inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                showToast('⚠️ Vui lòng nhập & kết nối Username Locket ở phía trên để nạp khung!');
+                return;
+            }
+            const origText = triggerBtn ? triggerBtn.innerHTML : '';
+            if (triggerBtn) {
+                triggerBtn.disabled = true;
+                triggerBtn.innerHTML = '⏳ Đang nạp...';
+            }
+            try {
+                const res = await fetch('/api/features/apply_frame', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: ident, url: frameUrl, name: frameName })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.error || 'Không thể nạp khung lên máy chủ');
+                }
+                showToast('🎉 ' + (data.message || 'Nạp khung thành công! Mở lại Locket để sử dụng.'));
+                closeTryFrameModal();
+                await connectFeatureAccount();
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (triggerBtn) {
+                    triggerBtn.disabled = false;
+                    triggerBtn.innerHTML = origText;
+                }
+            }
+        }
+
+        function applyModalFrameToLocket() {
+            if (!currentModalFrame) return;
+            const btn = document.getElementById('modalApplyLocketBtn');
+            const fUrl = currentModalFrame.rawImage || currentModalFrame.image;
+            applyFrameToLocketApi(fUrl, currentModalFrame.name, btn);
+        }
+
+        function applyCustomFrameFromInput() {
+            const fUrl = (document.getElementById('customFrameUrlInput')?.value || '').trim();
+            const fName = (document.getElementById('customFrameNameInput')?.value || '').trim() || 'Khung Tùy Chỉnh VIP';
+            if (!fUrl || !fUrl.startsWith('https://')) {
+                alert('⚠️ Vui lòng dán link ảnh PNG trong suốt hợp lệ bắt đầu bằng https://');
+                return;
+            }
+            applyFrameToLocketApi(fUrl, fName, null);
         }
 
         function handleUserPhotoChange(event) {
@@ -2537,48 +2743,109 @@
                 reader.onload = function(e) {
                     const img = document.getElementById('modalTryUserImg');
                     if (img) img.src = e.target.result;
-                    showToast('✅ Đã ướm ảnh của bạn vào khung viền Locket thành công!');
+                    showToast('✅ Đã ướm ảnh của bạn vào khung viền Locket!');
                 };
                 reader.readAsDataURL(file);
             }
         }
 
         function copyFrameId(frameId) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(frameId);
-            }
+            if (navigator.clipboard) navigator.clipboard.writeText(frameId);
             showToast('✅ Đã sao chép ID Khung: ' + frameId);
         }
 
         function copyModalFrameId() {
-            if (currentModalFrame) {
-                copyFrameId(currentModalFrame.id);
-            }
+            if (currentModalFrame) copyFrameId(currentModalFrame.id);
         }
 
         // ══════════════════════════════════════════════════════════════
-        // PHẦN CAPTION & SF SYMBOLS LOGIC
+        // PHẦN CAPTION & 449 APPLE SF SYMBOLS LIVE LOGIC
         // ══════════════════════════════════════════════════════════════
+        let symbolSearchDebounce = null;
+
+        async function loadLiveSymbols(category = 'all', q = '') {
+            try {
+                const url = `/api/features/symbols?category=${encodeURIComponent(category)}&q=${encodeURIComponent(q)}`;
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.ok) {
+                        if (Array.isArray(data.categories) && data.categories.length > 0 && symbolCategoriesCache.length === 0) {
+                            symbolCategoriesCache = data.categories;
+                            renderSymbolCategoriesBar();
+                        }
+                        allSymbolsCache = data.symbols || [];
+                        const cntEl = document.getElementById('subTabSymbolCount');
+                        if (cntEl && data.total) cntEl.textContent = `${data.total}`;
+                        renderSymbolsPicker();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Load SF symbols failed:', e);
+            }
+            allSymbolsCache = FALLBACK_SF_SYMBOLS;
+            renderSymbolsPicker();
+        }
+
+        function renderSymbolCategoriesBar() {
+            const bar = document.getElementById('symbolCategoriesBar');
+            if (!bar || symbolCategoriesCache.length === 0) return;
+            bar.innerHTML = symbolCategoriesCache.map(cat => {
+                const isAct = currentSymbolCategory === cat.id;
+                return `
+                    <button type="button" onclick="selectSymbolCategory('${escapeFeatureHtml(cat.id)}')"
+                            class="px-2.5 py-1 rounded-lg font-bold whitespace-nowrap cursor-pointer transition-all ${isAct ? 'bg-[#1E1B18] text-white' : 'bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100'}">
+                        ${escapeFeatureHtml(cat.name)} (${cat.count || 0})
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectSymbolCategory(catId) {
+            currentSymbolCategory = catId;
+            renderSymbolCategoriesBar();
+            loadLiveSymbols(catId, currentSymbolSearch);
+        }
+
+        function searchSymbolsLive(kw) {
+            currentSymbolSearch = (kw || '').trim();
+            clearTimeout(symbolSearchDebounce);
+            symbolSearchDebounce = setTimeout(() => {
+                loadLiveSymbols(currentSymbolCategory, currentSymbolSearch);
+            }, 300);
+        }
+
         function renderSymbolsPicker() {
             const container = document.getElementById('symbolsPicker');
             if (!container) return;
 
-            const html = POPULAR_SF_SYMBOLS.map(sym => {
+            const list = allSymbolsCache.slice(0, 72); // Render tối đa 72 icon mỗi khung nhìn để cuộn mượt 60fps
+            if (list.length === 0) {
+                container.innerHTML = '<div class="col-span-full py-6 text-center text-xs text-[#9A8C72]">Không tìm thấy biểu tượng phù hợp.</div>';
+                return;
+            }
+
+            container.innerHTML = list.map(sym => {
                 const isSelected = selectedSymbol.name === sym.name;
+                const safeName = escapeFeatureHtml(sym.name);
+                const safeTitle = escapeFeatureHtml(sym.title || sym.name);
+                const safePrev = escapeFeatureHtml(sym.previewUrl || '');
+                const iconHtml = safePrev
+                    ? `<img src="${safePrev}" alt="${safeName}" loading="lazy" class="w-6 h-6 object-contain">`
+                    : `<span class="text-xl">${escapeFeatureHtml(sym.icon || '✨')}</span>`;
                 return `
-                    <button type="button" onclick="selectSymbol('${sym.name}', '${sym.icon}')" 
+                    <button type="button" onclick="selectSymbol('${safeName}', '${escapeFeatureHtml(sym.icon || '✨')}', '${safePrev}')"
                             class="p-2 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${isSelected ? 'bg-amber-100 border-[#FFB800] ring-2 ring-[#FFB800]/30 shadow-xs' : 'bg-[#FFFDF6] border-[#E8D8B0] hover:bg-amber-50'}">
-                        <span class="text-xl">${sym.icon}</span>
-                        <span class="text-[9px] font-bold text-[#6E6659] truncate w-full">${sym.title}</span>
+                        ${iconHtml}
+                        <span class="text-[9px] font-bold text-[#6E6659] truncate w-full">${safeTitle}</span>
                     </button>
                 `;
             }).join('');
-
-            container.innerHTML = html;
         }
 
-        function selectSymbol(symName, symIcon) {
-            selectedSymbol = { name: symName, icon: symIcon };
+        function selectSymbol(symName, symIcon, previewUrl = '') {
+            selectedSymbol = { name: symName, icon: symIcon || '✨', previewUrl: previewUrl || '' };
             const label = document.getElementById('selectedSymbolName');
             if (label) label.textContent = symName;
             renderSymbolsPicker();
@@ -2589,38 +2856,167 @@
             const container = document.getElementById('gradientPicker');
             if (!container) return;
 
-            const html = GRADIENT_PALETTES.map((grad, idx) => {
-                const isSelected = selectedGradient.name === grad.name;
+            container.innerHTML = GRADIENT_PALETTES.map(grad => {
+                const isSelected = selectedGradient.hex[0] === grad.hex[0] && selectedGradient.hex[1] === grad.hex[1];
                 return `
-                    <button type="button" onclick="selectGradient('${grad.name}', '${grad.classes}', ['${grad.hex[0]}', '${grad.hex[1]}'])" 
+                    <button type="button" onclick="selectGradient('${grad.name}', ['${grad.hex[0]}', '${grad.hex[1]}'])"
                             class="p-2 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center gap-1.5 ${isSelected ? 'bg-amber-100 border-[#FFB800] ring-2 ring-[#FFB800]/30 shadow-xs' : 'bg-[#FFFDF6] border-[#E8D8B0] hover:bg-amber-50'}">
-                        <div class="w-full h-4 rounded-md bg-gradient-to-r ${grad.classes}"></div>
+                        <div class="w-full h-4 rounded-md" style="background: linear-gradient(135deg, ${grad.hex[0]}, ${grad.hex[1]});"></div>
                         <span class="text-[9px] font-bold text-[#6E6659] truncate w-full">${grad.name}</span>
                     </button>
                 `;
             }).join('');
-
-            container.innerHTML = html;
         }
 
-        function selectGradient(name, classes, hexArr) {
-            selectedGradient = { name, classes, hex: hexArr };
+        function selectGradient(name, hexArr) {
+            selectedGradient = { name, hex: hexArr };
+            const c1 = document.getElementById('captionColorHex1');
+            const c2 = document.getElementById('captionColorHex2');
+            const l1 = document.getElementById('captionHex1Label');
+            const l2 = document.getElementById('captionHex2Label');
+            if (c1) c1.value = hexArr[0];
+            if (c2) c2.value = hexArr[1];
+            if (l1) l1.textContent = hexArr[0];
+            if (l2) l2.textContent = hexArr[1];
             renderGradientPicker();
             updateCaptionLivePreview();
+        }
+
+        function applyCustomHexColors() {
+            const h1 = document.getElementById('captionColorHex1')?.value || '#FFB800';
+            const h2 = document.getElementById('captionColorHex2')?.value || '#FF8008';
+            selectGradient('Tùy chỉnh', [h1, h2]);
         }
 
         function updateCaptionLivePreview() {
             const input = document.getElementById('captionTextInput');
             const textEl = document.getElementById('liveCaptionText');
             const iconEl = document.getElementById('liveCaptionIcon');
+            const svgEl = document.getElementById('liveCaptionSvgImg');
+            const badgeEl = document.getElementById('liveCaptionBadge');
 
             const textVal = input ? (input.value || 'Hôm nay trời đẹp quá! ✨') : 'Hôm nay trời đẹp quá! ✨';
-
-            if (iconEl) iconEl.textContent = selectedSymbol.icon;
-            if (textEl) {
-                textEl.textContent = textVal;
-                textEl.className = `text-xs font-black truncate text-transparent bg-clip-text bg-gradient-to-r ${selectedGradient.classes}`;
+            if (selectedSymbol.previewUrl && svgEl) {
+                svgEl.src = selectedSymbol.previewUrl;
+                svgEl.classList.remove('hidden');
+                if (iconEl) iconEl.classList.add('hidden');
+            } else {
+                if (svgEl) svgEl.classList.add('hidden');
+                if (iconEl) {
+                    iconEl.classList.remove('hidden');
+                    iconEl.textContent = selectedSymbol.icon || '✨';
+                }
             }
+            if (textEl) textEl.textContent = textVal;
+            if (badgeEl) {
+                badgeEl.style.background = `linear-gradient(135deg, ${selectedGradient.hex[0]}, ${selectedGradient.hex[1]})`;
+            }
+        }
+
+        async function saveCustomerCaptionLive() {
+            const ident = connectedAccount ? connectedAccount.username : (document.getElementById('featureUsernameInput')?.value || '').trim();
+            const textVal = (document.getElementById('captionTextInput')?.value || '').trim();
+            if (!ident) {
+                const inp = document.getElementById('featureUsernameInput');
+                if (inp) {
+                    inp.focus();
+                    inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                showToast('⚠️ Vui lòng nhập & kết nối Username Locket phía trên trước khi nạp Caption!');
+                return;
+            }
+            if (!textVal) {
+                alert('⚠️ Vui lòng nhập nội dung Caption!');
+                return;
+            }
+
+            const btn = document.getElementById('btnSaveCaptionLive');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Đang gửi lên Locket...';
+            }
+            try {
+                const res = await fetch('/api/features/save_caption', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        identifier: ident,
+                        text: textVal,
+                        icon: selectedSymbol.name,
+                        iconType: 'symbol',
+                        symbolName: selectedSymbol.name,
+                        colors: selectedGradient.hex
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.error || 'Không thể lưu Caption lên máy chủ');
+                }
+                if (Array.isArray(data.customer_captions)) {
+                    customerCaptionsLive = data.customer_captions;
+                    renderActiveCaptionsList();
+                }
+                showToast('🎉 ' + (data.message || 'Đã lưu Caption thành công!'));
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>🚀</span> Lưu &amp; Nạp Caption Lên Locket';
+                }
+            }
+        }
+
+        async function loadBrandCaptionsLive() {
+            try {
+                const res = await fetch('/api/features/brand_captions');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.ok) {
+                        brandCaptionsLive = data.captions || [];
+                        renderActiveCaptionsList();
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function renderActiveCaptionsList() {
+            const listEl = document.getElementById('liveCaptionsList');
+            const badgeEl = document.getElementById('activeCaptionsModeBadge');
+            if (!listEl) return;
+
+            const isCustomerMode = connectedAccount && customerCaptionsLive.length > 0;
+            const list = isCustomerMode ? customerCaptionsLive : brandCaptionsLive;
+            if (badgeEl) {
+                badgeEl.textContent = isCustomerMode
+                    ? `Của @${connectedAccount.username} (${customerCaptionsLive.length})`
+                    : `Brand Shop (${brandCaptionsLive.length})`;
+            }
+
+            if (!list || list.length === 0) {
+                listEl.innerHTML = '<p class="text-[#9A8C72] text-xs">Chưa có Caption nào được kích hoạt.</p>';
+                return;
+            }
+
+            listEl.innerHTML = list.map(cp => {
+                const c0 = (cp.colors && cp.colors[0]) || '#FFB800';
+                const c1 = (cp.colors && cp.colors[1]) || '#FF8008';
+                const symImg = cp.symbolPreviewUrl
+                    ? `<img src="${escapeFeatureHtml(cp.symbolPreviewUrl)}" class="w-4 h-4 object-contain brightness-0 invert">`
+                    : `<span>${escapeFeatureHtml(cp.icon && cp.icon.trim() ? cp.icon : '✨')}</span>`;
+                return `
+                    <div class="p-2.5 rounded-2xl flex items-center justify-between gap-2 text-white shadow-sm"
+                         style="background: linear-gradient(135deg, ${escapeFeatureHtml(c0)}, ${escapeFeatureHtml(c1)});">
+                        <div class="flex items-center gap-2 min-w-0">
+                            ${symImg}
+                            <span class="font-bold truncate">${escapeFeatureHtml(cp.text)}</span>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full bg-black/30 text-[10px] font-bold shrink-0">
+                            ${cp.active !== false ? 'Đang bật' : 'Tắt'}
+                        </span>
+                    </div>
+                `;
+            }).join('');
         }
 
         function copyCaptionConfig() {
@@ -2635,37 +3031,119 @@
                 active: true
             };
             const jsonStr = JSON.stringify(payload, null, 2);
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(jsonStr);
-            }
-            showToast('✅ Đã sao chép cấu hình Caption SF Symbol vào Clipboard!');
+            if (navigator.clipboard) navigator.clipboard.writeText(jsonStr);
+            showToast('✅ Đã sao chép cấu hình Caption SF Symbol!');
         }
 
         // ══════════════════════════════════════════════════════════════
-        // PHẦN BỘ LỌC MÀU LUT SLIDER & UPLOAD LOGIC
+        // PHẦN BỘ LỌC MÀU LUT LIVE TỪ locket.2707226.xyz
         // ══════════════════════════════════════════════════════════════
+        async function loadLiveFilters() {
+            try {
+                const res = await fetch('/api/features/filters');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.ok) {
+                        const samples = (data.sampleLuts || []).map(x => ({ ...x, isCustom: false }));
+                        const customs = (data.customFilters || []).map(x => ({ ...x, isCustom: true, category: x.group || 'Custom LUT', iconUrl: x.iconUrl || x.icon }));
+                        allFiltersLive = [...customs, ...samples];
+
+                        const cBadge = document.getElementById('subTabFilterCount');
+                        if (cBadge) cBadge.textContent = `${allFiltersLive.length}`;
+                        renderLutCategoryPills();
+                        renderFiltersLiveList();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Load LUT filters failed:', e);
+            }
+        }
+
+        function renderLutCategoryPills() {
+            const bar = document.getElementById('lutCategoryPills');
+            if (!bar) return;
+            const cats = Array.from(new Set(allFiltersLive.map(x => (x.category || 'Khác').toUpperCase())));
+            const btns = [`<button type="button" onclick="selectLutCategory('all')" class="px-3 py-1.5 rounded-xl font-bold whitespace-nowrap cursor-pointer ${currentLutCategory === 'all' ? 'bg-[#1E1B18] text-white' : 'bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0]'}">Tất Cả (${allFiltersLive.length})</button>`];
+            cats.forEach(c => {
+                const isAct = currentLutCategory === c;
+                btns.push(`<button type="button" onclick="selectLutCategory('${escapeFeatureHtml(c)}')" class="px-3 py-1.5 rounded-xl font-bold whitespace-nowrap cursor-pointer ${isAct ? 'bg-[#1E1B18] text-white' : 'bg-[#FFFDF6] text-[#6E6659] border border-[#E8D8B0] hover:bg-amber-100'}">${escapeFeatureHtml(c)}</button>`);
+            });
+            bar.innerHTML = btns.join('');
+        }
+
+        function selectLutCategory(cat) {
+            currentLutCategory = cat;
+            renderLutCategoryPills();
+            renderFiltersLiveList();
+        }
+
+        function renderFiltersLiveList() {
+            const grid = document.getElementById('liveFiltersGrid');
+            const badge = document.getElementById('liveFiltersTotalBadge');
+            const kw = (document.getElementById('lutSearchInput')?.value || '').trim().toLowerCase();
+            if (!grid) return;
+
+            const filtered = allFiltersLive.filter(it => {
+                const matchCat = currentLutCategory === 'all' || (it.category || 'Khác').toUpperCase() === currentLutCategory;
+                const matchKw = !kw || (it.name && it.name.toLowerCase().includes(kw)) || (it.category && it.category.toLowerCase().includes(kw));
+                return matchCat && matchKw;
+            });
+
+            if (badge) badge.textContent = `${filtered.length} bộ lọc`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-full py-8 text-center text-xs text-[#9A8C72]">Không tìm thấy bộ lọc LUT phù hợp.</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(it => {
+                const safeName = escapeFeatureHtml(it.name);
+                const safeCat = escapeFeatureHtml(it.category || 'Lut Filter');
+                const safeIcon = escapeFeatureHtml(it.iconUrl || '');
+                return `
+                    <div onclick="previewLutEffect('${safeName}', '${safeCat}')"
+                         class="p-3 rounded-2xl bg-[#FFFDF6] border ${it.isCustom ? 'border-amber-400' : 'border-[#E8D8B0]'} text-center hover:shadow-md hover:border-[#FFB800] transition-all cursor-pointer">
+                        <div class="w-12 h-12 mx-auto rounded-2xl overflow-hidden bg-zinc-900 mb-2 shadow-sm flex items-center justify-center">
+                            ${safeIcon ? `<img src="${safeIcon}" alt="${safeName}" loading="lazy" class="w-full h-full object-cover">` : '<span class="text-xl">🎞️</span>'}
+                        </div>
+                        <h4 class="font-fredoka font-bold text-xs text-[#1E1B18] truncate" title="${safeName}">${safeName}</h4>
+                        <p class="text-[10px] text-[#9A8C72] mt-0.5 truncate">${safeCat}</p>
+                        <span class="inline-block mt-1.5 px-2 py-0.5 rounded-md ${it.isCustom ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'} text-[9px] font-bold">
+                            ${it.isCustom ? '✨ Custom LUT' : 'Sẵn Sàng ✓'}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function previewLutEffect(lutName, lutCat) {
+            const b = document.getElementById('activeLutPreviewBadge');
+            const tag = document.getElementById('lutAfterTag');
+            const after = document.getElementById('lutAfterLayer');
+            if (b) b.textContent = `ĐANG XEM MẪU: ${lutName.toUpperCase()} (${lutCat})`;
+            if (tag) tag.textContent = `✨ AFTER (${lutName})`;
+            if (after) {
+                const lower = lutName.toLowerCase();
+                if (lower.includes('bw') || lower.includes('black') || lower.includes('mono')) {
+                    after.style.filter = 'grayscale(100%) contrast(1.25)';
+                } else if (lower.includes('pastel') || lower.includes('pink') || lower.includes('beauty')) {
+                    after.style.filter = 'brightness(1.08) saturate(1.25) hue-rotate(-8deg)';
+                } else if (lower.includes('vintage') || lower.includes('film') || lower.includes('kodak')) {
+                    after.style.filter = 'sepia(0.28) contrast(1.18) saturate(1.35)';
+                } else {
+                    after.style.filter = 'contrast(1.22) saturate(1.45) brightness(1.05)';
+                }
+            }
+            document.getElementById('lutSliderContainer')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showToast('🌈 Đang mô phỏng tone màu: ' + lutName);
+        }
+
         function handleLutSlider(val) {
             const beforeLayer = document.getElementById('lutBeforeLayer');
             const handle = document.getElementById('lutSliderHandle');
             if (beforeLayer) beforeLayer.style.width = val + '%';
             if (handle) handle.style.left = val + '%';
-        }
-
-        function handleLutFileUpload(event) {
-            const file = event.target.files && event.target.files[0];
-            if (file) {
-                if (!file.name.toLowerCase().endsWith('.cube')) {
-                    alert('⚠️ Vui lòng chỉ chọn file 3D LUT có đuôi định dạng .cube');
-                    return;
-                }
-                const label = document.getElementById('lutFileNameLabel');
-                const notice = document.getElementById('lutUploadNotice');
-                if (label) {
-                    label.innerHTML = `✅ Đã nạp file: <b class="text-amber-400 font-mono">${file.name}</b> (${(file.size / 1024).toFixed(1)} KB)`;
-                }
-                if (notice) notice.classList.remove('hidden');
-                showToast('✅ Đã nhận file 3D LUT: ' + file.name);
-            }
         }
 
         // Chia sẻ Nhóm Zalo (Hỗ trợ Web Share API hoặc Copy link)

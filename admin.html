@@ -152,8 +152,12 @@
                 <span>💰</span> Bảng Giá (Web & Bot)
             </button>
             <button onclick="switchTab('api')" id="tabBtn_api"
-                class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
-                🔗 API CTV & Coin
+                class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white flex items-center gap-1.5">
+                <span>🔗</span> API CTV &amp; Coin
+            </button>
+            <button onclick="switchTab('ctv_features')" id="tabBtn_ctv_features"
+                class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white flex items-center gap-1.5">
+                <span>🎨</span> Tính Năng CTV (Khung/Caption/LUT)
             </button>
             <button onclick="switchTab('system')" id="tabBtn_system"
                 class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap text-slate-400 hover:text-white">
@@ -660,15 +664,22 @@
 
             <!-- BẢNG DANH SÁCH GÓI CƯỚC TỪ API -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <h3 class="text-base font-black text-white flex items-center gap-2">
-                            <span>📦 Bảng Giá & Mã Gói Cước Nhập Sỉ API</span>
+                            <span>📦 Bảng Giá &amp; Mã Gói Cước Nhập Sỉ API</span>
                         </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Giá gốc tính theo Coin trên máy chủ CTV</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Đồng bộ từ <code>GET /api/packages?service=all|spotify|locket</code> trên máy chủ CTV</p>
                     </div>
-                    <span id="packageCountBadge"
-                        class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300">0 gói</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <div class="flex items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs">
+                            <button onclick="syncApiData('all')" id="pkgFilter_all" class="px-2.5 py-1 rounded-lg font-bold bg-amber-500 text-slate-950 cursor-pointer">Tất cả</button>
+                            <button onclick="syncApiData('spotify')" id="pkgFilter_spotify" class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white cursor-pointer">🎵 Spotify</button>
+                            <button onclick="syncApiData('locket')" id="pkgFilter_locket" class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white cursor-pointer">💛 Locket Gold</button>
+                        </div>
+                        <span id="packageCountBadge"
+                            class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300">0 gói</span>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-800/80">
@@ -679,16 +690,186 @@
                                 <th class="py-3 px-4">Dịch Vụ</th>
                                 <th class="py-3 px-4">Mã Gói (packageCode)</th>
                                 <th class="py-3 px-4">Tên Gói Cước</th>
-                                <th class="py-3 px-4 text-right">Giá Nhập Coin</th>
+                                <th class="py-3 px-4 text-center">Thời Hạn</th>
+                                <th class="py-3 px-4 text-right">Giá Coin</th>
+                                <th class="py-3 px-4 text-right">Giá Sỉ Coin</th>
                             </tr>
                         </thead>
                         <tbody id="packagesTableBody" class="divide-y divide-slate-800/60 font-medium">
                             <tr>
-                                <td colspan="4" class="py-8 text-center text-slate-500">Đang tải danh sách gói cước từ
+                                <td colspan="6" class="py-8 text-center text-slate-500">Đang tải danh sách gói cước từ
                                     API...</td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 5.5: QUẢN LÝ TÍNH NĂNG CTV (FRAMES, CAPTIONS, LUTS)      -->
+        <!-- ============================================================ -->
+        <div id="tabContent_ctv_features" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-amber-500/30 rounded-3xl p-6 shadow-xl">
+                <div>
+                    <h3 class="text-base font-black text-white flex items-center gap-2">
+                        <span>🎨</span> Quản Trị Tính Năng CTV (Đồng Bộ Live locket.2707226.xyz)
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Đấu nối trực tiếp các API: <code>/api/v1/ctv/frames</code>, <code>/api/v1/ctv/captions</code>, <code>/api/v1/ctv/filters</code> &amp; Upload 3D LUT <code>.cube</code>
+                    </p>
+                </div>
+                <button onclick="loadCtvFeaturesOverview()" id="btnReloadCtvFeatures"
+                    class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow-lg transition-all cursor-pointer shrink-0">
+                    🔄 Tải Lại Dữ Liệu CTV
+                </button>
+            </div>
+
+            <!-- 1. QUẢN LÝ KHUNG WIDGET CTV -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h4 class="text-sm font-black text-white">🖼️ 1. Khung Widget CTV (GET / POST /api/v1/ctv/frames)</h4>
+                        <p class="text-xs text-slate-400 mt-0.5">Thêm hoặc chỉnh sửa khung ảnh PNG trong suốt cho Toàn Bộ Khách (ALL) hoặc theo từng UID</p>
+                    </div>
+                    <span id="adminCtvFramesCount" class="px-3 py-1 rounded-full bg-slate-800 text-amber-400 text-xs font-bold">0 khung</span>
+                </div>
+
+                <form onsubmit="adminSaveCtvFrame(event)" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+                    <div class="md:col-span-4">
+                        <label class="block text-[11px] font-bold text-slate-300 mb-1">URL Ảnh Khung PNG (*):</label>
+                        <input type="url" id="adminFrameUrl" required placeholder="https://doh.2707226.xyz/uploads/frame.png"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Tên Khung (hoặc chọn mẫu):</label>
+                        <input type="text" id="adminFrameName" placeholder="VD: Khung VIP 2026"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Target UID (ALL hoặc UID cách dấu phẩy):</label>
+                        <input type="text" id="adminFrameTargetUid" value="ALL" placeholder="ALL hoặc uid1,uid2"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="md:col-span-2 flex items-center gap-2">
+                        <label class="flex items-center gap-1.5 text-xs font-bold text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="adminFrameActive" checked class="w-4 h-4 rounded">
+                            <span>Bật</span>
+                        </label>
+                        <button type="submit" id="btnAdminSaveFrame"
+                            class="flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs cursor-pointer">
+                            💾 Lưu
+                        </button>
+                    </div>
+                </form>
+
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="text-slate-400 shrink-0">⚡ Chọn nhanh từ 79 khung mẫu:</span>
+                    <select id="adminPresetFrameSelect" onchange="pickAdminPresetFrame(this.value)"
+                        class="flex-1 max-w-md px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-200 focus:outline-none">
+                        <option value="">-- Chọn khung từ thư viện 79 mẫu để điền nhanh --</option>
+                    </select>
+                </div>
+
+                <div id="adminCtvFramesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                    <div class="col-span-full py-6 text-center text-slate-500">Đang tải danh sách khung CTV...</div>
+                </div>
+            </div>
+
+            <!-- 2. QUẢN LÝ CAPTION & APPLE SF SYMBOLS -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                    <div>
+                        <h4 class="text-sm font-black text-white">💬 2. Caption Chú Thích &amp; Apple SF Symbols (GET / POST /api/v1/ctv/captions)</h4>
+                        <p class="text-xs text-slate-400 mt-0.5">Quản lý Brand Caption (ALL) hoặc tra cứu &amp; thêm Caption riêng theo từng UID/Username khách hàng</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="adminCaptionLookupUid" placeholder="Để trống = Brand CTV, hoặc nhập UID/User..."
+                            class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400 w-56">
+                        <button onclick="adminLookupCaptions()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-amber-400 cursor-pointer">
+                            🔍 Tra Caption
+                        </button>
+                    </div>
+                </div>
+
+                <form onsubmit="adminSaveCtvCaption(event)" class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <div class="md:col-span-5">
+                            <label class="block text-[11px] font-bold text-slate-300 mb-1">Nội dung Caption (tối đa 100 ký tự) (*):</label>
+                            <input type="text" id="adminCapText" maxlength="100" required placeholder="VD: AloPremium.Shop VIP ✨"
+                                class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400">
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-[11px] font-bold text-slate-300 mb-1">UID / Username Khách (để trống nếu ALL):</label>
+                            <input type="text" id="adminCapUid" placeholder="VD: camsitup (trống = Brand ALL)"
+                                class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-[11px] font-bold text-slate-300 mb-1">SF Symbol Name:</label>
+                            <input type="text" id="adminCapSymbol" value="sparkles" placeholder="wind, heart.fill..."
+                                class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-400">
+                        </div>
+                        <div class="md:col-span-2 flex items-end gap-1.5">
+                            <input type="color" id="adminCapColor1" value="#FFB800" title="Màu Gradient 1" class="w-8 h-9 rounded bg-transparent border-0 cursor-pointer">
+                            <input type="color" id="adminCapColor2" value="#FF8008" title="Màu Gradient 2" class="w-8 h-9 rounded bg-transparent border-0 cursor-pointer">
+                            <button type="submit" id="btnAdminSaveCap"
+                                class="flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs cursor-pointer">
+                                💾 Lưu
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tìm kiếm nhanh SF Symbol -->
+                    <div class="pt-2 border-t border-slate-800/80 space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-[11px] font-bold text-slate-400">✨ Chọn nhanh Apple SF Symbol (449+ icon):</span>
+                            <input type="text" id="adminSymSearch" oninput="adminSearchSymbols(this.value)" placeholder="Tìm symbol (gio, tim, wind...)"
+                                class="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-[11px] text-white w-48">
+                        </div>
+                        <div id="adminSymbolsGrid" class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+                            <span class="text-[11px] text-slate-500">Đang tải SF Symbols...</span>
+                        </div>
+                    </div>
+                </form>
+
+                <div id="adminCtvCaptionsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                    <div class="col-span-full py-6 text-center text-slate-500">Đang tải danh sách Caption...</div>
+                </div>
+            </div>
+
+            <!-- 3. QUẢN LÝ BỘ LỌC LUT & UPLOAD .CUBE -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h4 class="text-sm font-black text-white">🌈 3. Bộ Lọc Màu LUT &amp; Upload File 3D LUT (.cube)</h4>
+                        <p class="text-xs text-slate-400 mt-0.5">Bật / Tắt từng bộ lọc LUT hoặc tải lên file <code>.cube</code> trực tiếp lên máy chủ CTV</p>
+                    </div>
+                    <span id="adminCtvFiltersCount" class="px-3 py-1 rounded-full bg-slate-800 text-amber-400 text-xs font-bold">0 LUT</span>
+                </div>
+
+                <!-- Upload .cube -->
+                <form onsubmit="adminUploadLutCube(event)" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-slate-950/60 p-4 rounded-2xl border border-amber-500/30">
+                    <div class="md:col-span-5">
+                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Chọn file 3D LUT (.cube, tối đa 20MB) (*):</label>
+                        <input type="file" id="adminLutFileInput" accept=".cube" required
+                            class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-300 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 cursor-pointer">
+                    </div>
+                    <div class="md:col-span-4">
+                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Tên hiển thị trên app Locket:</label>
+                        <input type="text" id="adminLutNameInput" placeholder="VD: Tone Mùa Hè Pastel"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="md:col-span-3">
+                        <button type="submit" id="btnAdminUploadLut"
+                            class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs cursor-pointer shadow-md">
+                            📤 Upload 3D LUT (.cube)
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Danh sách Custom Filters & Sample LUTs -->
+                <div id="adminCtvFiltersList" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
+                    <div class="col-span-full py-6 text-center text-slate-500">Đang tải danh sách bộ lọc LUT...</div>
                 </div>
             </div>
         </div>
@@ -866,7 +1047,7 @@
 
         function switchTab(tab, subFilter) {
             currentTab = tab;
-            const tabs = ['analytics', 'orders', 'users', 'codes', 'prices', 'api', 'system'];
+            const tabs = ['analytics', 'orders', 'users', 'codes', 'prices', 'api', 'ctv_features', 'system'];
 
             tabs.forEach(t => {
                 const btn = document.getElementById(`tabBtn_${t}`);
@@ -889,6 +1070,7 @@
             if (tab === 'codes') loadCodes();
             if (tab === 'prices') loadAdminPrices();
             if (tab === 'api') syncApiData();
+            if (tab === 'ctv_features') loadCtvFeaturesOverview();
             if (tab === 'system') loadSystemInfo();
         }
 
@@ -1679,7 +1861,21 @@
         // ==========================================
         // 5. CTV API & COIN
         // ==========================================
-        async function syncApiData() {
+        let currentApiSvcFilter = 'all';
+
+        async function syncApiData(serviceFilter) {
+            if (serviceFilter) {
+                currentApiSvcFilter = serviceFilter;
+                ['all', 'spotify', 'locket'].forEach(s => {
+                    const fBtn = document.getElementById('pkgFilter_' + s);
+                    if (fBtn) {
+                        fBtn.className = s === currentApiSvcFilter
+                            ? 'px-2.5 py-1 rounded-lg font-bold bg-amber-500 text-slate-950 cursor-pointer'
+                            : 'px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white cursor-pointer';
+                    }
+                });
+            }
+
             const btn = document.getElementById('btnSyncApi');
             if (btn) {
                 btn.innerHTML = '⏳ Đang đồng bộ...';
@@ -1687,7 +1883,7 @@
             }
 
             try {
-                const res = await fetch(`/api/admin/api_info?pin=${encodeURIComponent(currentPin)}`);
+                const res = await fetch(`/api/admin/api_info?pin=${encodeURIComponent(currentPin)}&service=${encodeURIComponent(currentApiSvcFilter)}`);
                 const data = await res.json();
                 if (!data.ok) return;
 
@@ -1707,7 +1903,7 @@
                     badgeSync.textContent = `Đã đồng bộ ${uids.length} tài khoản từ máy chủ`;
                     badgeSync.classList.remove('hidden');
                 }
-                showAdminToast(`✅ Đã đồng bộ thành công! Nhận ${uids.length} tài khoản từ máy chủ và nạp vào thông báo web.`);
+                showAdminToast(`✅ Đã đồng bộ thành công (${currentApiSvcFilter})! Nhận ${(data.packages || []).length} gói cước & ${uids.length} tài khoản.`);
             } catch (err) {
                 console.error(err);
                 showAdminToast(`❌ Lỗi đồng bộ: ${err.message}`);
@@ -1725,7 +1921,7 @@
             badge.textContent = `${packages.length} gói`;
 
             if (!packages || packages.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-500">Chưa có dữ liệu gói cước từ API.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-500">Chưa có dữ liệu gói cước từ API.</td></tr>';
                 return;
             }
 
@@ -1733,6 +1929,8 @@
                 const code = pkg.code || pkg.packageCode || '---';
                 const name = pkg.name || '---';
                 const price = pkg.priceCoin !== undefined ? pkg.priceCoin : '---';
+                const wholesale = pkg.wholesaleCoin !== undefined ? pkg.wholesaleCoin : '---';
+                const days = pkg.durationDays >= 9999 ? 'Vĩnh viễn' : (pkg.durationDays ? `${pkg.durationDays} ngày` : '---');
                 let svcEmoji = '💛';
                 let svcName = 'Locket';
                 if (code.startsWith('SP') || name.toLowerCase().includes('spotify')) {
@@ -1748,10 +1946,366 @@
                         </td>
                         <td class="py-3 px-4 font-mono font-bold text-amber-400">${code}</td>
                         <td class="py-3 px-4 text-slate-200 font-semibold">${name}</td>
+                        <td class="py-3 px-4 text-center text-slate-300">${days}</td>
                         <td class="py-3 px-4 text-right font-black text-amber-400">${price} Coin</td>
+                        <td class="py-3 px-4 text-right font-bold text-cyan-400">${wholesale} Coin</td>
                     </tr>
                 `;
             }).join('');
+        }
+
+        // ==========================================
+        // 5.5 CTV FEATURES (FRAMES, CAPTIONS, LUTS)
+        // ==========================================
+        let adminPresetFrames = [];
+        let adminPresetInit = false;
+
+        function escapeAdminHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function loadCtvFeaturesOverview() {
+            const btn = document.getElementById('btnReloadCtvFeatures');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Đang tải...';
+            }
+
+            if (!adminPresetInit) {
+                adminPresetInit = true;
+                loadAdminPresetFrames();
+                adminSearchSymbols('');
+            }
+
+            try {
+                const res = await fetch(`/api/admin/ctv/overview?pin=${encodeURIComponent(currentPin)}`);
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error || 'Lỗi tải dữ liệu CTV');
+
+                renderAdminCtvFrames(data.frames || []);
+                renderAdminCtvCaptions(data.captions || [], data.captionsMode || 'brand');
+                renderAdminCtvFilters(data.customFilters || [], data.sampleLuts || []);
+            } catch (err) {
+                showAdminToast('❌ ' + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '🔄 Tải Lại Dữ Liệu CTV';
+                }
+            }
+        }
+
+        async function loadAdminPresetFrames() {
+            try {
+                const res = await fetch('/api/frames');
+                const data = await res.json();
+                if (data && Array.isArray(data.frames)) {
+                    adminPresetFrames = data.frames;
+                    const sel = document.getElementById('adminPresetFrameSelect');
+                    if (sel) {
+                        sel.innerHTML = '<option value="">-- Chọn khung từ thư viện 79 mẫu để điền nhanh --</option>' +
+                            adminPresetFrames.map((fr, idx) => `<option value="${idx}">${escapeAdminHtml(fr.name)} (${escapeAdminHtml(fr.category || '')})</option>`).join('');
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function pickAdminPresetFrame(idxStr) {
+            if (idxStr === '') return;
+            const fr = adminPresetFrames[parseInt(idxStr, 10)];
+            if (!fr) return;
+            document.getElementById('adminFrameUrl').value = fr.rawImage || fr.image || '';
+            document.getElementById('adminFrameName').value = fr.name || '';
+        }
+
+        function renderAdminCtvFrames(frames) {
+            const el = document.getElementById('adminCtvFramesList');
+            const cnt = document.getElementById('adminCtvFramesCount');
+            if (cnt) cnt.textContent = `${frames.length} khung`;
+            if (!el) return;
+
+            if (!frames.length) {
+                el.innerHTML = '<div class="col-span-full py-6 text-center text-slate-500">Chưa có khung nào trên máy chủ CTV.</div>';
+                return;
+            }
+
+            el.innerHTML = frames.map(fr => {
+                const safeUrl = escapeAdminHtml(fr.url || '');
+                const safeName = escapeAdminHtml(fr.name || 'Không tên');
+                const targetTxt = escapeAdminHtml(fr.targetUid || (fr.targetUids || []).join(',') || 'ALL');
+                const active = fr.active !== false;
+                return `
+                    <div class="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center gap-3">
+                        <img src="${safeUrl}" alt="${safeName}" class="w-14 h-14 rounded-xl bg-slate-900 object-cover border border-slate-700 shrink-0">
+                        <div class="min-w-0 flex-1 space-y-1">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="font-bold text-white truncate">${safeName}</span>
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}">
+                                    ${active ? 'Bật' : 'Tắt'}
+                                </span>
+                            </div>
+                            <p class="text-[10px] text-amber-400 font-mono truncate" title="${targetTxt}">Target: ${targetTxt}</p>
+                            <button type="button" onclick="fillAdminFrameForm('${safeUrl}', '${safeName}', '${targetTxt}', ${active})"
+                                class="text-[10px] text-cyan-400 hover:underline font-bold cursor-pointer">
+                                ✏️ Sửa trong form
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function fillAdminFrameForm(url, name, targetUid, active) {
+            document.getElementById('adminFrameUrl').value = url;
+            document.getElementById('adminFrameName').value = name;
+            document.getElementById('adminFrameTargetUid').value = targetUid || 'ALL';
+            document.getElementById('adminFrameActive').checked = !!active;
+        }
+
+        async function adminSaveCtvFrame(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnAdminSaveFrame');
+            const url = document.getElementById('adminFrameUrl').value.trim();
+            const name = document.getElementById('adminFrameName').value.trim();
+            const targetUid = document.getElementById('adminFrameTargetUid').value.trim() || 'ALL';
+            const active = document.getElementById('adminFrameActive').checked;
+
+            if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+            try {
+                const payload = { pin: currentPin, url, name, targetUid, active };
+                if (targetUid.includes(',')) {
+                    payload.targetUids = targetUid.split(',').map(x => x.trim()).filter(Boolean);
+                } else {
+                    payload.targetUids = [targetUid];
+                }
+                const res = await fetch('/api/admin/ctv/frames', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Lưu khung thất bại');
+                showAdminToast('✅ ' + (data.message || 'Lưu khung thành công lên locket.2707226.xyz!'));
+                loadCtvFeaturesOverview();
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '💾 Lưu'; }
+            }
+        }
+
+        let adminSymTimer = null;
+        function adminSearchSymbols(q) {
+            clearTimeout(adminSymTimer);
+            adminSymTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/features/symbols?category=all&q=${encodeURIComponent(q || '')}`);
+                    const data = await res.json();
+                    const grid = document.getElementById('adminSymbolsGrid');
+                    if (grid && data.ok) {
+                        const syms = (data.symbols || []).slice(0, 36);
+                        grid.innerHTML = syms.map(s => `
+                            <button type="button" onclick="document.getElementById('adminCapSymbol').value='${escapeAdminHtml(s.name)}'"
+                                title="${escapeAdminHtml(s.title)} (${escapeAdminHtml(s.name)})"
+                                class="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-amber-500/20 border border-slate-700 hover:border-amber-400 flex items-center gap-1.5 shrink-0 cursor-pointer">
+                                <img src="${escapeAdminHtml(s.previewUrl)}" class="w-4 h-4 brightness-0 invert">
+                                <span class="text-[10px] text-slate-300 font-mono">${escapeAdminHtml(s.name)}</span>
+                            </button>
+                        `).join('');
+                    }
+                } catch (e) {}
+            }, 250);
+        }
+
+        async function adminLookupCaptions() {
+            const uidQ = document.getElementById('adminCaptionLookupUid').value.trim();
+            try {
+                const res = await fetch(`/api/admin/ctv/captions?pin=${encodeURIComponent(currentPin)}&uid=${encodeURIComponent(uidQ)}`);
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Tra cứu thất bại');
+                renderAdminCtvCaptions(data.captions || [], data.mode || (uidQ ? 'customer' : 'brand'));
+                showAdminToast(`✅ Tải ${(data.captions || []).length} Caption (${data.mode || 'brand'})!`);
+            } catch (err) {
+                alert('❌ ' + err.message);
+            }
+        }
+
+        function renderAdminCtvCaptions(captions, mode) {
+            const el = document.getElementById('adminCtvCaptionsList');
+            if (!el) return;
+            if (!captions.length) {
+                el.innerHTML = `<div class="col-span-full py-6 text-center text-slate-500">Không có Caption nào (${escapeAdminHtml(mode)}).</div>`;
+                return;
+            }
+            el.innerHTML = captions.map(cp => {
+                const c0 = (cp.colors && cp.colors[0]) || '#FFB800';
+                const c1 = (cp.colors && cp.colors[1]) || '#FF8008';
+                const iconHtml = cp.symbolPreviewUrl
+                    ? `<img src="${escapeAdminHtml(cp.symbolPreviewUrl)}" class="w-4 h-4 brightness-0 invert shrink-0">`
+                    : `<span class="shrink-0">${escapeAdminHtml(cp.icon && cp.icon.trim() ? cp.icon : '✨')}</span>`;
+                return `
+                    <div class="p-3 rounded-2xl border border-white/10 shadow flex items-center justify-between gap-2 text-white"
+                         style="background: linear-gradient(135deg, ${escapeAdminHtml(c0)}, ${escapeAdminHtml(c1)});">
+                        <div class="flex items-center gap-2 min-w-0">
+                            ${iconHtml}
+                            <div class="min-w-0">
+                                <div class="font-bold truncate">${escapeAdminHtml(cp.text)}</div>
+                                <div class="text-[10px] opacity-80 font-mono truncate">${escapeAdminHtml(cp.symbolName || cp.iconType || 'emoji')} · ${escapeAdminHtml(cp.targetUid || mode)}</div>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded bg-black/30 text-[10px] font-bold shrink-0">${cp.active !== false ? 'Bật' : 'Tắt'}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function adminSaveCtvCaption(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnAdminSaveCap');
+            const text = document.getElementById('adminCapText').value.trim();
+            const uid = document.getElementById('adminCapUid').value.trim();
+            const sym = document.getElementById('adminCapSymbol').value.trim() || 'sparkles';
+            const c1 = document.getElementById('adminCapColor1').value;
+            const c2 = document.getElementById('adminCapColor2').value;
+
+            if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+            try {
+                const payload = {
+                    pin: currentPin,
+                    text,
+                    uid,
+                    targetUid: uid ? '' : 'ALL',
+                    icon: sym,
+                    iconType: 'symbol',
+                    symbolName: sym,
+                    colors: [c1, c2],
+                    active: true
+                };
+                const res = await fetch('/api/admin/ctv/captions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Lưu caption thất bại');
+                showAdminToast('🎉 ' + (data.message || 'Lưu Caption thành công!'));
+                if (uid) {
+                    document.getElementById('adminCaptionLookupUid').value = uid;
+                    adminLookupCaptions();
+                } else {
+                    loadCtvFeaturesOverview();
+                }
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '💾 Lưu'; }
+            }
+        }
+
+        function renderAdminCtvFilters(customFilters, sampleLuts) {
+            const el = document.getElementById('adminCtvFiltersList');
+            const cnt = document.getElementById('adminCtvFiltersCount');
+            const combined = [
+                ...customFilters.map(x => ({ ...x, isCustom: true })),
+                ...sampleLuts.map(x => ({ ...x, isCustom: false }))
+            ];
+            if (cnt) cnt.textContent = `${combined.length} LUT`;
+            if (!el) return;
+
+            if (!combined.length) {
+                el.innerHTML = '<div class="col-span-full py-6 text-center text-slate-500">Không có bộ lọc LUT nào.</div>';
+                return;
+            }
+
+            el.innerHTML = combined.map(flt => {
+                const isEnabled = flt.enabled !== false;
+                const safeId = escapeAdminHtml(flt.id);
+                const safeName = escapeAdminHtml(flt.name || safeId);
+                const iconUrl = escapeAdminHtml(flt.iconUrl || flt.icon || '');
+                return `
+                    <div class="p-3 rounded-2xl bg-slate-950/80 border ${flt.isCustom ? 'border-amber-500/40' : 'border-slate-800'} flex flex-col justify-between gap-2 text-center">
+                        <div>
+                            <div class="w-12 h-12 mx-auto rounded-xl overflow-hidden bg-slate-900 mb-2 border border-slate-700">
+                                ${iconUrl ? `<img src="${iconUrl}" class="w-full h-full object-cover">` : '<span class="leading-[48px]">🎞️</span>'}
+                            </div>
+                            <div class="font-bold text-white truncate text-[11px]" title="${safeName}">${safeName}</div>
+                            <div class="text-[10px] text-slate-400 truncate">${escapeAdminHtml(flt.category || flt.group || 'LUT')}</div>
+                        </div>
+                        <button type="button" onclick="adminToggleLut('${safeId}', ${!isEnabled})"
+                            class="w-full py-1 px-2 rounded-lg font-bold text-[10px] cursor-pointer transition-all ${isEnabled ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30'}">
+                            ${isEnabled ? '● Đang Bật (Tắt)' : '○ Đang Tắt (Bật)'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function adminToggleLut(filterId, nextEnabled) {
+            try {
+                showAdminToast('⏳ Đang cập nhật trạng thái bộ lọc LUT...');
+                const res = await fetch('/api/admin/ctv/filters/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, filterId, enabled: nextEnabled })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Toggle thất bại');
+                showAdminToast(`✅ ${data.message || 'Đã cập nhật LUT thành công!'}`);
+                loadCtvFeaturesOverview();
+            } catch (err) {
+                alert('❌ ' + err.message);
+            }
+        }
+
+        async function adminUploadLutCube(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('adminLutFileInput');
+            const nameInput = document.getElementById('adminLutNameInput');
+            const btn = document.getElementById('btnAdminUploadLut');
+            const file = fileInput && fileInput.files && fileInput.files[0];
+            if (!file) {
+                alert('Vui lòng chọn file .cube!');
+                return;
+            }
+            if (!file.name.toLowerCase().endsWith('.cube')) {
+                alert('Chỉ hỗ trợ file định dạng .cube!');
+                return;
+            }
+            if (file.size > 20 * 1024 * 1024) {
+                alert('Dung lượng file vượt quá 20MB!');
+                return;
+            }
+
+            if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Đang upload lên locket.2707226.xyz...'; }
+            try {
+                const fd = new FormData();
+                fd.append('pin', currentPin);
+                fd.append('file', file);
+                if (nameInput && nameInput.value.trim()) {
+                    fd.append('name', nameInput.value.trim());
+                }
+
+                const res = await fetch(`/api/admin/ctv/filters/upload?pin=${encodeURIComponent(currentPin)}`, {
+                    method: 'POST',
+                    body: fd
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Upload .cube thất bại');
+
+                showAdminToast('🎉 ' + (data.message || 'Upload 3D LUT .cube thành công!'));
+                fileInput.value = '';
+                if (nameInput) nameInput.value = '';
+                loadCtvFeaturesOverview();
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = '📤 Upload 3D LUT (.cube)'; }
+            }
         }
 
         async function performCheckUid() {

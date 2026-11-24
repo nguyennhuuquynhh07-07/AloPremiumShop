@@ -159,7 +159,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
     def _send_cors_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, HEAD")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-Admin-Pin")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("X-XSS-Protection", "1; mode=block")
@@ -189,11 +189,121 @@ class WebAppHandler(BaseHTTPRequestHandler):
             content_length = int(self.headers.get("Content-Length", 0))
             if content_length <= 0:
                 return {}
+            if content_length > 28 * 1024 * 1024:
+                return {}
             raw_data = self.rfile.read(content_length).decode("utf-8")
             return json.loads(raw_data)
         except Exception as e:
             logger.warning(f"Failed to parse JSON body: {e}")
             return {}
+
+    def _read_multipart_form(self) -> tuple[dict, bytes, str]:
+        """Đọc multipart/form-data an toàn (tối đa 22MB cho file 3D LUT .cube 20MB)."""
+        ctype = self.headers.get("Content-Type", "")
+        if "multipart/form-data" not in ctype.lower():
+            return {}, b"", ""
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+        except (ValueError, TypeError):
+            content_length = 0
+        if content_length <= 0 or content_length > 22 * 1024 * 1024:
+            raise ValueError("Kích thước dữ liệu tải lên không hợp lệ (tối đa 20MB).")
+        raw_body = self.rfile.read(content_length)
+
+        from email.parser import BytesParser
+        from email.policy import default as email_policy
+        header_bytes = f"Content-Type: {ctype}\r\nMIME-Version: 1.0\r\n\r\n".encode("latin-1")
+        msg = BytesParser(policy=email_policy).parsebytes(header_bytes + raw_body)
+
+        fields = {}
+        file_bytes = b""
+        filename = ""
+        if msg.is_multipart():
+            for part in msg.iter_parts():
+                name = part.get_param("name", header="Content-Disposition")
+                fname = part.get_filename()
+                payload = part.get_payload(decode=True) or b""
+                if fname:
+                    if len(payload) <= 20 * 1024 * 1024:
+                        file_bytes = payload
+                        filename = os.path.basename(fname)
+                    else:
+                        raise ValueError("Dung lượng file vượt quá giới hạn 20MB.")
+                elif name:
+                    fields[name] = payload.decode("utf-8", errors="replace").strip()
+        return fields, file_bytes, filename
+
+    def _verify_customer_locket_vip(self, raw_identifier: str) -> tuple[bool, dict]:
+        """Kiểm tra tài khoản Locket có đang active VIP trên locket.2707226.xyz hoặc có đơn hoàn tất tại shop."""
+        cleaned = utils.clean_input(raw_identifier)
+        if not cleaned or len(cleaned) < 2 or " " in cleaned:
+            return False, {"error": "Username hoặc UID Locket không hợp lệ!"}
+
+        uid = ""
+        username = cleaned
+        avatar = ""
+        package_name = ""
+        expires_at = None
+        is_active = False
+
+        try:
+            res = api.check_uid_details(cleaned, "locket")
+            dt = res.get("data", {}) if isinstance(res, dict) and isinstance(res.get("data"), dict) else (res if isinstance(res, dict) else {})
+            if dt:
+                uid = str(dt.get("uid") or dt.get("id") or "").strip()
+                username = str(dt.get("username") or cleaned).strip()
+                avatar = dt.get("avatarUrl") or dt.get("avatar") or ""
+                pkg = dt.get("package") or {}
+                if isinstance(pkg, dict):
+                    package_name = pkg.get("name") or pkg.get("code") or ""
+                expires_at = dt.get("expiresAt")
+                if dt.get("active") is True or dt.get("status") == "ACTIVE":
+                    is_active = True
+        except Exception:
+            pass
+
+        if not uid:
+            try:
+                r_res = api.locket_resolve(cleaned)
+                r_dt = r_res.get("data", {}) if isinstance(r_res, dict) and isinstance(r_res.get("data"), dict) else (r_res if isinstance(r_res, dict) else {})
+                uid = str(r_dt.get("uid") or r_dt.get("id") or "").strip()
+                username = str(r_dt.get("username") or username).strip()
+                avatar = avatar or r_dt.get("avatar") or r_dt.get("avatarUrl") or ""
+            except Exception:
+                pass
+
+        has_paid_order = False
+        cleaned_l = cleaned.lower().lstrip("@")
+        uid_l = uid.lower()
+        uname_l = username.lower().lstrip("@")
+        for od in db.get_orders().values():
+            if od.get("status") == "done" and od.get("product") in ("locket", "combo", "locket_spotify", "locket_ai"):
+                cand = [
+                    str(od.get("identifier", "")).lower().lstrip("@"),
+                    str(od.get("uid", "")).lower(),
+                    str(od.get("display_name", "")).lower().lstrip("@"),
+                    str(od.get("account_target", "")).lower().lstrip("@"),
+                ]
+                if cleaned_l in cand or (uid_l and uid_l in cand) or (uname_l and uname_l in cand):
+                    has_paid_order = True
+                    if not package_name:
+                        package_name = od.get("plan_label") or od.get("plan") or "Locket Gold VIP"
+                    break
+
+        is_vip = bool(is_active or has_paid_order)
+        if not uid and not is_vip:
+            return False, {"error": f"Không tìm thấy tài khoản Locket '@{cleaned}' trên hệ thống!"}
+
+        return is_vip, {
+            "uid": uid or cleaned,
+            "username": username,
+            "avatar": avatar or "logo.png",
+            "is_vip": is_vip,
+            "active_on_server": is_active,
+            "has_shop_order": has_paid_order,
+            "package_name": package_name or ("Locket Gold VIP" if is_vip else "Tài khoản thường (Chưa VIP)"),
+            "expires_at": expires_at,
+        }
 
     def do_HEAD(self):
         self.send_response(200)
@@ -423,19 +533,115 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 3.01 API Danh sách Khung Widget Locket (Frames)
+        # 3.01 API Danh sách Khung Widget Locket (Hợp nhất Khung Live từ CTV locket.2707226.xyz + Kho 79 Khung)
         if path == "/api/frames":
+            all_frames = []
+            seen_urls = set()
+
+            # 1. Lấy khung Live CTV dành cho ALL (ẩn hoàn toàn UID cá nhân của khách khác)
+            ctv_connected = False
+            try:
+                ctv_res = api.ctv_get_frames()
+                if isinstance(ctv_res, dict) and ctv_res.get("ok"):
+                    ctv_connected = True
+                    for fr in ctv_res.get("frames", []):
+                        if not isinstance(fr, dict) or not fr.get("active", True):
+                            continue
+                        t_uid = str(fr.get("targetUid") or "").strip().upper()
+                        t_uids = [str(u).strip().upper() for u in (fr.get("targetUids") or [])]
+                        if t_uid == "ALL" or "ALL" in t_uids:
+                            u_img = str(fr.get("url") or "").strip()
+                            if u_img and u_img not in seen_urls:
+                                seen_urls.add(u_img)
+                                all_frames.append({
+                                    "id": fr.get("id") or f"ctv_{len(all_frames)}",
+                                    "name": fr.get("name") or "Khung CTV VIP",
+                                    "category": "Khung Độc Quyền CTV",
+                                    "group": "ctv_live",
+                                    "image": u_img,
+                                    "rawImage": u_img,
+                                    "badge": "CTV Live",
+                                    "source": "ctv_live",
+                                })
+            except Exception as e_ctv_fr:
+                logger.warning(f"Fetch CTV live frames failed: {e_ctv_fr}")
+
+            # 2. Nạp thêm 79 khung thư viện từ data/frames.json
             frames_path = os.path.join(os.path.dirname(__file__), "data", "frames.json")
             if os.path.exists(frames_path):
                 try:
                     with open(frames_path, "r", encoding="utf-8") as f:
                         f_data = json.load(f)
-                    self._send_json(200, f_data)
-                    return
+                    for fr in f_data.get("frames", []):
+                        raw_u = str(fr.get("rawImage") or fr.get("image") or "").strip()
+                        if raw_u and raw_u not in seen_urls:
+                            seen_urls.add(raw_u)
+                            all_frames.append(fr)
                 except Exception as e_f:
-                    self._send_json(500, {"ok": False, "error": str(e_f)})
-                    return
-            self._send_json(404, {"ok": False, "error": "Frames data not found"})
+                    logger.warning(f"Error reading data/frames.json: {e_f}")
+
+            self._send_json(200, {
+                "ok": True,
+                "success": True,
+                "ctv_connected": ctv_connected,
+                "count": len(all_frames),
+                "frames": all_frames,
+            })
+            return
+
+        # 3.02 API Thư viện 449 Apple SF Symbols (Kết nối locket.2707226.xyz)
+        if path == "/api/features/symbols":
+            category = params.get("category", ["all"])[0].strip()
+            q_kw = params.get("q", [""])[0].strip()
+            try:
+                sym_data = api.ctv_get_symbols(category=category, q=q_kw)
+                self._send_json(200, sym_data)
+            except Exception as e_sym:
+                self._send_json(502, {"ok": False, "error": f"Không tải được kho SF Symbols từ máy chủ CTV: {e_sym}"})
+            return
+
+        # 3.03 API Bộ Lọc Màu 3D LUT (Kết nối locket.2707226.xyz/api/v1/ctv/filters)
+        if path == "/api/features/filters":
+            try:
+                flt_data = api.ctv_get_filters()
+                sample_luts = flt_data.get("sampleLuts", []) or []
+                custom_luts = [
+                    cf for cf in (flt_data.get("customFilters", []) or [])
+                    if isinstance(cf, dict) and cf.get("enabled", True) is not False
+                ]
+                self._send_json(200, {
+                    "ok": True,
+                    "sampleLuts": sample_luts,
+                    "customFilters": custom_luts,
+                    "total": len(sample_luts) + len(custom_luts),
+                })
+            except Exception as e_flt:
+                self._send_json(502, {"ok": False, "error": f"Không tải được bộ lọc LUT từ máy chủ CTV: {e_flt}"})
+            return
+
+        # 3.04 API Brand Captions đang hoạt động của Shop (ẩn dữ liệu riêng tư)
+        if path == "/api/features/brand_captions":
+            try:
+                cap_res = api.ctv_get_captions()
+                public_caps = []
+                for cp in (cap_res.get("captions", []) or []):
+                    if not isinstance(cp, dict) or not cp.get("active", True):
+                        continue
+                    t_uid = str(cp.get("targetUid") or "").strip().upper()
+                    t_uids = [str(u).strip().upper() for u in (cp.get("targetUids") or [])]
+                    if t_uid == "ALL" or "ALL" in t_uids:
+                        public_caps.append({
+                            "id": cp.get("id"),
+                            "text": cp.get("text", ""),
+                            "icon": cp.get("icon", ""),
+                            "iconType": cp.get("iconType", "emoji"),
+                            "symbolName": cp.get("symbolName"),
+                            "symbolPreviewUrl": cp.get("symbolPreviewUrl"),
+                            "colors": cp.get("colors") or ["#FFB800", "#FF8008"],
+                        })
+                self._send_json(200, {"ok": True, "captions": public_caps, "total": len(public_caps)})
+            except Exception as e_bc:
+                self._send_json(502, {"ok": False, "error": str(e_bc)})
             return
 
         # 3.1 API Danh sách đơn hàng vừa kích hoạt thành công (Đồng bộ máy chủ CTV + Đơn nội bộ)
@@ -792,13 +998,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
             if pin != getattr(config, "ADMIN_PIN", "2802"):
                 self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
                 return
+            svc_filter = params.get("service", ["all"])[0].strip().lower()
+            if svc_filter not in ("all", "spotify", "locket"):
+                svc_filter = "all"
             try:
                 acc = api.get_account_info().get("data", {})
             except Exception as e:
                 acc = {"error": str(e), "balanceCoin": 0}
 
             try:
-                pkgs = api.get_packages("all").get("data", [])
+                pkgs = api.get_packages(svc_filter).get("data", [])
             except Exception as e:
                 pkgs = []
 
@@ -810,12 +1019,63 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             self._send_json(200, {
                 "ok": True,
+                "service": svc_filter,
                 "account": acc,
                 "packages": pkgs,
                 "codes": codes,
                 "activated_uids": activated_uids,
                 "api_base_url": config.API_BASE_URL,
             })
+            return
+
+        # API Admin: Tổng quan Tính Năng CTV (Frames, Brand Captions, Filters LUT)
+        if path == "/api/admin/ctv/overview":
+            pin = params.get("pin", [""])[0].strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            frames_data = {}
+            captions_data = {}
+            filters_data = {}
+            errors = {}
+            try:
+                frames_data = api.ctv_get_frames(force_refresh=True)
+            except Exception as e_fr:
+                errors["frames"] = str(e_fr)
+            try:
+                captions_data = api.ctv_get_captions()
+            except Exception as e_cp:
+                errors["captions"] = str(e_cp)
+            try:
+                filters_data = api.ctv_get_filters(force_refresh=True)
+            except Exception as e_fl:
+                errors["filters"] = str(e_fl)
+
+            self._send_json(200, {
+                "ok": True,
+                "frames": frames_data.get("frames", []),
+                "framesExpiresAt": frames_data.get("expiresAt"),
+                "captions": captions_data.get("captions", []),
+                "captionsMode": captions_data.get("mode", "brand"),
+                "sampleLuts": filters_data.get("sampleLuts", []),
+                "customFilters": filters_data.get("customFilters", []),
+                "filtersExpiresAt": filters_data.get("expiresAt"),
+                "errors": errors,
+            })
+            return
+
+        # API Admin: Tra cứu Caption CTV hoặc theo UID khách hàng
+        if path == "/api/admin/ctv/captions":
+            pin = params.get("pin", [""])[0].strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            uid_q = params.get("uid", [""])[0].strip()
+            try:
+                res = api.ctv_get_captions(uid=uid_q)
+                self._send_json(200, res)
+            except Exception as e_c:
+                self._send_json(400, {"ok": False, "error": str(e_c)})
             return
 
         # API Admin: Lấy danh sách đơn hàng
@@ -990,7 +1250,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         path = parsed.path
-        body = self._read_json_body()
+        params = parse_qs(parsed.query)
         client_ip = self._get_client_ip()
 
         # Kiểm tra Rate Limit cho các API POST
@@ -998,6 +1258,32 @@ class WebAppHandler(BaseHTTPRequestHandler):
         if not allowed:
             self._send_json(429, {"ok": False, "error": reason})
             return
+
+        # Xử lý riêng Upload Multipart/JSON cho file 3D LUT (.cube) trước khi đọc body JSON
+        ctype = self.headers.get("Content-Type", "")
+        if path == "/api/admin/ctv/filters/upload" and "multipart/form-data" in ctype.lower():
+            pin_header = (params.get("pin", [""])[0] or self.headers.get("X-Admin-Pin", "") or self.headers.get("X-Admin-PIN", "")).strip()
+            try:
+                fields, file_bytes, filename = self._read_multipart_form()
+            except ValueError as e_mp:
+                self._send_json(400, {"ok": False, "error": str(e_mp)})
+                return
+            pin = (fields.get("pin") or pin_header).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            if not file_bytes or not filename.lower().endswith(".cube"):
+                self._send_json(400, {"ok": False, "error": "Vui lòng tải lên file 3D LUT định dạng .cube (tối đa 20MB)."})
+                return
+            lut_name = fields.get("name", "").strip()
+            try:
+                res = api.ctv_upload_filter(file_bytes=file_bytes, filename=filename, name=lut_name)
+                self._send_json(200, res)
+            except Exception as e_up:
+                self._send_json(400, {"ok": False, "error": str(e_up)})
+            return
+
+        body = self._read_json_body()
 
         # API Admin: Đăng nhập mã PIN
         if path == "/api/admin/login":
@@ -1271,6 +1557,264 @@ class WebAppHandler(BaseHTTPRequestHandler):
             else:
                 db.unban_user(user_id)
                 self._send_json(200, {"ok": True, "message": f"Đã mở khóa người dùng {user_id}"})
+            return
+
+        # API Admin: Thêm / Cập nhật Khung Widget CTV lên locket.2707226.xyz
+        if path == "/api/admin/ctv/frames":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            url_img = str(body.get("url", "")).strip()
+            name = str(body.get("name", "")).strip()
+            target_uid = str(body.get("targetUid", "ALL")).strip() or "ALL"
+            target_uids = body.get("targetUids")
+            active = bool(body.get("active", True))
+            if not url_img or not url_img.startswith("http"):
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập URL ảnh khung PNG hợp lệ (bắt đầu bằng https://)!"})
+                return
+            try:
+                res = api.ctv_save_frame(
+                    url_img=url_img,
+                    name=name,
+                    target_uid=target_uid,
+                    target_uids=target_uids if isinstance(target_uids, list) else None,
+                    active=active,
+                )
+                self._send_json(200, res)
+            except Exception as e_fr:
+                self._send_json(400, {"ok": False, "error": str(e_fr)})
+            return
+
+        # API Admin: Thêm / Cập nhật Brand Caption hoặc Caption khách hàng lên locket.2707226.xyz
+        if path == "/api/admin/ctv/captions":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            text_val = str(body.get("text", "")).strip()
+            if not text_val:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập nội dung Caption!"})
+                return
+            uid_val = str(body.get("uid", "")).strip()
+            target_uid = str(body.get("targetUid", "")).strip()
+            if not uid_val and not target_uid:
+                target_uid = "ALL"
+            try:
+                res = api.ctv_save_caption(
+                    text=text_val,
+                    uid=uid_val,
+                    icon=str(body.get("icon", "")).strip(),
+                    icon_type=str(body.get("iconType", "")).strip(),
+                    symbol_name=str(body.get("symbolName", "")).strip(),
+                    colors=body.get("colors") if isinstance(body.get("colors"), list) else None,
+                    target_uid=target_uid,
+                    active=bool(body.get("active", True)),
+                )
+                self._send_json(200, res)
+            except Exception as e_cp:
+                self._send_json(400, {"ok": False, "error": str(e_cp)})
+            return
+
+        # API Admin: Bật / Tắt Bộ Lọc Màu LUT trên locket.2707226.xyz
+        if path == "/api/admin/ctv/filters/toggle":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            filter_id = str(body.get("filterId", "")).strip()
+            enabled = bool(body.get("enabled", True))
+            if not filter_id:
+                self._send_json(400, {"ok": False, "error": "Thiếu filterId cần bật/tắt!"})
+                return
+            try:
+                res = api.ctv_toggle_filter(filter_id=filter_id, enabled=enabled)
+                self._send_json(200, res)
+            except Exception as e_tg:
+                self._send_json(400, {"ok": False, "error": str(e_tg)})
+            return
+
+        # API Admin: Upload 3D LUT .cube dạng JSON Base64 (dự phòng khi không dùng multipart)
+        if path == "/api/admin/ctv/filters/upload":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            filename = os.path.basename(str(body.get("filename", "")).strip() or "custom.cube")
+            file_b64 = str(body.get("file_b64", "")).strip()
+            lut_name = str(body.get("name", "")).strip()
+            if not file_b64 or not filename.lower().endswith(".cube"):
+                self._send_json(400, {"ok": False, "error": "Vui lòng gửi file .cube hợp lệ!"})
+                return
+            try:
+                import base64
+                if "," in file_b64:
+                    file_b64 = file_b64.split(",", 1)[1]
+                file_bytes = base64.b64decode(file_b64)
+                if len(file_bytes) > 20 * 1024 * 1024:
+                    self._send_json(413, {"ok": False, "error": "Dung lượng file vượt quá 20MB!"})
+                    return
+                res = api.ctv_upload_filter(file_bytes=file_bytes, filename=filename, name=lut_name)
+                self._send_json(200, res)
+            except Exception as e_b64:
+                self._send_json(400, {"ok": False, "error": str(e_b64)})
+            return
+
+        # 1.1 API Khách hàng kết nối tài khoản Locket với mục Tính Năng VIP (Frames + Captions)
+        if path == "/api/features/connect_uid":
+            raw_id = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
+            if not raw_id:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập Username Locket của bạn!"})
+                return
+
+            is_vip, info = self._verify_customer_locket_vip(raw_id)
+            if "error" in info:
+                self._send_json(400, {"ok": False, "error": info["error"]})
+                return
+
+            verified_uid = info["uid"]
+            verified_uname = info["username"]
+
+            # Lấy danh sách Caption cá nhân của chính khách hàng từ locket.2707226.xyz
+            customer_captions = []
+            try:
+                cap_res = api.ctv_get_captions(uid=verified_uid)
+                if isinstance(cap_res, dict) and cap_res.get("ok"):
+                    customer_captions = cap_res.get("captions", []) or []
+            except Exception:
+                try:
+                    cap_res2 = api.ctv_get_captions(uid=verified_uname)
+                    if isinstance(cap_res2, dict) and cap_res2.get("ok"):
+                        customer_captions = cap_res2.get("captions", []) or []
+                except Exception:
+                    pass
+
+            # Lấy danh sách Khung riêng của chính khách hàng từ CTV (không để lộ UID khách khác)
+            customer_frames = []
+            try:
+                fr_res = api.ctv_get_frames()
+                for fr in (fr_res.get("frames", []) or []):
+                    if not isinstance(fr, dict) or not fr.get("active", True):
+                        continue
+                    raw_t = str(fr.get("targetUid") or "")
+                    t_list = [x.strip() for x in raw_t.split(",") if x.strip()] + [
+                        str(x).strip() for x in (fr.get("targetUids") or []) if str(x).strip()
+                    ]
+                    if verified_uid in t_list or verified_uname in t_list:
+                        customer_frames.append({
+                            "id": fr.get("id"),
+                            "name": fr.get("name") or "Khung Của Bạn",
+                            "category": "Khung Cá Nhân Đã Nạp",
+                            "group": "my_frames",
+                            "image": fr.get("url"),
+                            "rawImage": fr.get("url"),
+                            "badge": "Đã Gán Tài Khoản",
+                            "source": "customer_assigned",
+                        })
+            except Exception:
+                pass
+
+            self._send_json(200, {
+                "ok": True,
+                "account": info,
+                "customer_captions": customer_captions,
+                "customer_frames": customer_frames,
+            })
+            return
+
+        # 1.2 API Khách hàng VIP áp dụng Khung Widget trực tiếp lên tài khoản Locket của chính mình
+        if path == "/api/features/apply_frame":
+            raw_id = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
+            frame_url = str(body.get("url", "")).strip()
+            frame_name = str(body.get("name", "")).strip() or "Khung Widget VIP"
+            if not raw_id or not frame_url:
+                self._send_json(400, {"ok": False, "error": "Thiếu Username Locket hoặc URL khung viền!"})
+                return
+            if not frame_url.startswith("https://"):
+                self._send_json(400, {"ok": False, "error": "URL khung viền phải là đường dẫn https:// hợp lệ!"})
+                return
+
+            is_vip, info = self._verify_customer_locket_vip(raw_id)
+            if "error" in info:
+                self._send_json(400, {"ok": False, "error": info["error"]})
+                return
+            if not is_vip:
+                self._send_json(403, {
+                    "ok": False,
+                    "error": f"Tài khoản @{info['username']} chưa kích hoạt Locket Gold VIP tại cửa hàng! Vui lòng mua gói (chỉ từ 5.000đ) để nạp khung trực tiếp lên máy chủ.",
+                })
+                return
+
+            verified_uid = info["uid"]
+            try:
+                res = api.ctv_save_frame(
+                    url_img=frame_url,
+                    name=frame_name,
+                    target_uid=verified_uid,
+                    target_uids=[verified_uid],
+                    active=True,
+                )
+                self._send_json(200, {
+                    "ok": True,
+                    "message": f"Đã nạp khung '{frame_name}' cho tài khoản @{info['username']} thành công!",
+                    "frame": res.get("frame"),
+                })
+            except Exception as e_af:
+                self._send_json(400, {"ok": False, "error": str(e_af)})
+            return
+
+        # 1.3 API Khách hàng VIP lưu & gửi Caption SF Symbol lên tài khoản Locket của chính mình
+        if path == "/api/features/save_caption":
+            raw_id = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
+            text_val = str(body.get("text", "")).strip()
+            if not raw_id:
+                self._send_json(400, {"ok": False, "error": "Vui lòng kết nối Username Locket trước khi lưu Caption!"})
+                return
+            if not text_val or len(text_val) > 100:
+                self._send_json(400, {"ok": False, "error": "Nội dung Caption không được để trống và tối đa 100 ký tự!"})
+                return
+
+            is_vip, info = self._verify_customer_locket_vip(raw_id)
+            if "error" in info:
+                self._send_json(400, {"ok": False, "error": info["error"]})
+                return
+            if not is_vip:
+                self._send_json(403, {
+                    "ok": False,
+                    "error": f"Tài khoản @{info['username']} chưa kích hoạt Locket Gold VIP tại cửa hàng! Vui lòng nâng cấp gói (từ 5.000đ) để nạp Caption trực tiếp.",
+                })
+                return
+
+            verified_uid = info["uid"]
+            icon_val = str(body.get("icon", "")).strip()
+            icon_type = str(body.get("iconType", "symbol")).strip()
+            symbol_name = str(body.get("symbolName", "") or icon_val).strip()
+            colors = body.get("colors") if isinstance(body.get("colors"), list) else ["#FFB800", "#FF8008"]
+
+            try:
+                res = api.ctv_save_caption(
+                    text=text_val,
+                    uid=verified_uid,
+                    icon=icon_val,
+                    icon_type=icon_type,
+                    symbol_name=symbol_name if icon_type == "symbol" else "",
+                    colors=colors,
+                    active=True,
+                )
+                caps_now = []
+                try:
+                    c_res = api.ctv_get_captions(uid=verified_uid)
+                    caps_now = c_res.get("captions", []) or []
+                except Exception:
+                    pass
+                self._send_json(200, {
+                    "ok": True,
+                    "message": res.get("message") or f"Đã nạp Caption lên tài khoản @{info['username']}!",
+                    "caption": res.get("caption"),
+                    "customer_captions": caps_now,
+                })
+            except Exception as e_sc:
+                self._send_json(400, {"ok": False, "error": str(e_sc)})
             return
 
         # 1. API Kiểm tra tài khoản Locket / Spotify trước khi mua (TÁCH BIỆT NGHIÊM NGẶT)

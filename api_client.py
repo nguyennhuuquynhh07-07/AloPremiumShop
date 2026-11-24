@@ -33,6 +33,7 @@ API_ERROR_CODES = {
     403: "Tài khoản CTV mới tạo chưa nạp đủ 150.000đ kích hoạt ban đầu.",
     404: "Gói cước hoặc UID không tồn tại trên hệ thống.",
     409: "UID này đã được mua bởi CTV khác và vẫn đang còn hạn dùng.",
+    413: "Dung lượng file tải lên vượt quá giới hạn cho phép (tối đa 20MB).",
     429: "Thao tác quá nhanh, vượt quá tần suất cho phép trong 1 giờ. Vui lòng thử lại sau.",
     500: "Lỗi máy chủ API. Vui lòng liên hệ Admin để được hỗ trợ.",
 }
@@ -68,6 +69,12 @@ def _headers() -> dict:
     return {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json",
+    }
+
+
+def _auth_only_headers() -> dict:
+    return {
+        "Authorization": f"Bearer {API_KEY}",
     }
 
 
@@ -207,3 +214,213 @@ def get_activated_uids(force_refresh: bool = False) -> list:
     except Exception:
         pass
     return _uids_cache or []
+
+
+# ─── TÍNH NĂNG CTV: KHUNG WIDGET, CAPTION, SF SYMBOLS & BỘ LỌC LUT ─────────────
+
+_frames_cache = None
+_frames_cache_time = 0.0
+_filters_cache = None
+_filters_cache_time = 0.0
+_symbols_all_cache = None
+_symbols_cache_time = 0.0
+
+
+def ctv_get_frames(force_refresh: bool = False) -> dict:
+    """
+    GET /api/v1/ctv/frames
+    Lấy toàn bộ khung widget mà CTV đã cấu hình cho khách hàng hoặc cá nhân hóa theo UID.
+    """
+    global _frames_cache, _frames_cache_time
+    now = time.time()
+    if not force_refresh and _frames_cache is not None and (now - _frames_cache_time < 30):
+        return _frames_cache
+
+    url = f"{API_BASE_URL}/api/v1/ctv/frames"
+    resp = _client.get(url, headers=_headers(), timeout=15)
+    if resp.is_error:
+        raise Exception(parse_api_error(resp))
+    data = resp.json()
+    _frames_cache = data
+    _frames_cache_time = now
+    return data
+
+
+def ctv_save_frame(
+    url_img: str,
+    name: str = "",
+    target_uid: str = "ALL",
+    target_uids: list | None = None,
+    active: bool = True,
+) -> dict:
+    """
+    POST /api/v1/ctv/frames
+    Tạo mới hoặc chỉnh sửa khung widget tùy biến (ALL hoặc danh sách UID chỉ định).
+    """
+    global _frames_cache_time
+    endpoint = f"{API_BASE_URL}/api/v1/ctv/frames"
+    payload: dict = {
+        "url": url_img.strip(),
+        "active": bool(active),
+    }
+    if name:
+        payload["name"] = name.strip()
+    if target_uids is not None:
+        payload["targetUids"] = [str(u).strip() for u in target_uids if str(u).strip()]
+        if not target_uid and payload["targetUids"]:
+            payload["targetUid"] = ",".join(payload["targetUids"])
+    if target_uid:
+        payload["targetUid"] = target_uid.strip()
+
+    resp = _client.post(endpoint, json=payload, headers=_headers(), timeout=20)
+    if resp.is_error:
+        raise Exception(parse_api_error(resp))
+    _frames_cache_time = 0.0
+    return resp.json()
+
+
+def ctv_get_captions(uid: str = "") -> dict:
+    """
+    GET /api/v1/ctv/captions?uid=...
+    Tra cứu Brand Caption của CTV (khi không truyền uid) hoặc Caption riêng của khách hàng.
+    """
+    url = f"{API_BASE_URL}/api/v1/ctv/captions"
+    req_params = {"uid": uid.strip()} if uid and uid.strip() else None
+    resp = _client.get(url, params=req_params, headers=_headers(), timeout=15)
+    if resp.is_error:
+        raise Exception(parse_api_error(resp))
+    return resp.json()
+
+
+def ctv_save_caption(
+    text: str,
+    uid: str = "",
+    icon: str = "",
+    icon_type: str = "",
+    symbol_name: str = "",
+    colors: list | None = None,
+    target_uid: str = "",
+    active: bool = True,
+) -> dict:
+    """
+    POST /api/v1/ctv/captions
+    Thêm hoặc cập nhật Caption cho khách hàng (uid) hoặc Brand Caption CTV (targetUid='ALL').
+    """
+    url = f"{API_BASE_URL}/api/v1/ctv/captions"
+    payload: dict = {
+        "text": (text or "").strip()[:100],
+        "active": bool(active),
+    }
+    if uid and uid.strip():
+        payload["uid"] = uid.strip()
+    if target_uid and target_uid.strip():
+        payload["targetUid"] = target_uid.strip()
+    if icon:
+        payload["icon"] = icon.strip()
+    if icon_type:
+        payload["iconType"] = icon_type.strip()
+    if symbol_name:
+        payload["symbolName"] = symbol_name.strip()
+    if colors and isinstance(colors, list):
+        payload["colors"] = [str(c).strip() for c in colors if str(c).strip()][:2]
+
+    resp = _client.post(url, json=payload, headers=_headers(), timeout=15)
+    if resp.is_error:
+        raise Exception(parse_api_error(resp))
+    return resp.json()
+
+
+def ctv_get_symbols(category: str = "all", q: str = "") -> dict:
+    """
+    GET /api/v1/ctv/captions/symbols?category=...&q=...
+    Lấy thư viện 446+ Apple SF Symbols (hỗ trợ cache CDN nội bộ).
+    """
+    global _symbols_all_cache, _symbols_cache_time
+    cat_clean = (category or "all").strip()
+    q_clean = (q or "").strip()
+    now = time.time()
+
+    # Tận dụng cache danh sách đầy đủ khi tìm kiếm/lọc thông thường để phản hồi tức thì
+    if _symbols_all_cache is None or (now - _symbols_cache_time >= 1800):
+        url_all = f"{API_BASE_URL}/api/v1/ctv/captions/symbols"
+        resp_all = _client.get(url_all, params={"category": "all"}, timeout=15)
+        if resp_all.is_error:
+            raise Exception(parse_api_error(resp_all))
+        _symbols_all_cache = resp_all.json()
+        _symbols_cache_time = now
+
+    if (not cat_clean or cat_clean == "all") and not q_clean:
+        return _symbols_all_cache
+
+    # Nếu có từ khóa tiếng Việt đặc biệt hoặc yêu cầu filter, có thể gọi upstream để đồng bộ chính xác
+    url = f"{API_BASE_URL}/api/v1/ctv/captions/symbols"
+    req_params = {}
+    if cat_clean:
+        req_params["category"] = cat_clean
+    if q_clean:
+        req_params["q"] = q_clean
+    resp = _client.get(url, params=req_params, timeout=15)
+    if resp.is_error:
+        raise Exception(parse_api_error(resp))
+    return resp.json()
+
+
+def ctv_get_filters(force_refresh: bool = False) -> dict:
+    """
+    GET /api/v1/ctv/filters
+    Lấy toàn bộ danh sách bộ lọc màu LUT mẫu (sampleLuts) và LUT tùy biến (customFilters).
+    """
+    global _filters_cache, _filters_cache_time
+    now = time.time()
+    if not force_refresh and _filters_cache is not None and (now - _filters_cache_time < 60):
+        return _filters_cache
+
+    url = f"{API_BASE_URL}/api/v1/ctv/filters"
+    resp = _client.get(url, headers=_headers(), timeout=15)
+    if resp.is_error:
+        raise Exception(parse_api_error(resp))
+    data = resp.json()
+    _filters_cache = data
+    _filters_cache_time = now
+    return data
+
+
+def ctv_toggle_filter(filter_id: str, enabled: bool = True) -> dict:
+    """
+    POST /api/v1/ctv/filters/toggle
+    Bật hoặc tắt bộ lọc màu LUT đối với người dùng cuối trong cửa hàng CTV.
+    """
+    global _filters_cache_time
+    url = f"{API_BASE_URL}/api/v1/ctv/filters/toggle"
+    resp = _client.post(
+        url,
+        json={"filterId": filter_id.strip(), "enabled": bool(enabled)},
+        headers=_headers(),
+        timeout=15,
+    )
+    if resp.is_error:
+        raise Exception(parse_api_error(resp))
+    _filters_cache_time = 0.0
+    return resp.json()
+
+
+def ctv_upload_filter(file_bytes: bytes, filename: str, name: str = "") -> dict:
+    """
+    POST /api/v1/ctv/filters/upload
+    Tải lên file màu 3D LUT định dạng .cube (tối đa 20MB).
+    """
+    global _filters_cache_time
+    url = f"{API_BASE_URL}/api/v1/ctv/filters/upload"
+    form_data = {"name": name.strip()} if name and name.strip() else {}
+    files = {"file": (filename, file_bytes, "application/octet-stream")}
+    resp = _client.post(
+        url,
+        data=form_data,
+        files=files,
+        headers=_auth_only_headers(),
+        timeout=60,
+    )
+    if resp.is_error:
+        raise Exception(parse_api_error(resp))
+    _filters_cache_time = 0.0
+    return resp.json()
