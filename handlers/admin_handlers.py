@@ -1049,16 +1049,28 @@ async def cb_admin_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     ok, act_msg = await execute_order_activation(ctx.bot, order_id)
     if ok:
-        await query.edit_message_text(
-            f"✅ <b>ĐÃ DUYỆT ĐƠN HÀNG THÀNH CÔNG!</b>\n\n"
-            f"🧾 Mã đơn: <code>ORDER_{order_id}</code>\n"
-            f"👤 Khách: @{order['username']} (ID: <code>{order['user_id']}</code>)\n"
-            f"📦 Gói: {pv['emoji']} {pv['name']} ({plnv['label']})\n"
-            f"🎯 Tài khoản: <b>{order['display_name']}</b> (<code>{order['uid']}</code>)\n"
-            f"💰 Đã nhận: <b>{utils.fmt_price(order['price'])}</b>\n\n"
-            f"🎉 <i>Hệ thống đã kích hoạt và gửi đầy đủ cấu hình cho khách!</i>",
-            parse_mode=ParseMode.HTML
-        )
+        # Xóa tin nhắn đơn hàng cũ (có nút Duyệt/Từ chối) để tránh nhầm lẫn
+        try:
+            await query.message.delete()
+        except Exception:
+            pass
+        # Gửi tin nhắn xác nhận mới (không có nút bấm)
+        try:
+            await ctx.bot.send_message(
+                chat_id=query.message.chat_id,
+                text=(
+                    f"✅ <b>ĐÃ DUYỆT ĐƠN HÀNG THÀNH CÔNG!</b>\n\n"
+                    f"🧾 Mã đơn: <code>ORDER_{order_id}</code>\n"
+                    f"👤 Khách: @{order['username']} (ID: <code>{order['user_id']}</code>)\n"
+                    f"📦 Gói: {pv['emoji']} {pv['name']} ({plnv['label']})\n"
+                    f"🎯 Tài khoản: <b>{order['display_name']}</b> (<code>{order['uid']}</code>)\n"
+                    f"💰 Đã nhận: <b>{utils.fmt_price(order['price'])}</b>\n\n"
+                    f"🎉 <i>Hệ thống đã kích hoạt và gửi đầy đủ cấu hình cho khách!</i>"
+                ),
+                parse_mode=ParseMode.HTML
+            )
+        except Exception as e_send:
+            logger.warning(f"Could not send activation confirmation: {e_send}")
     else:
         from keyboards import admin_approval_kb
         acc_info = order.get('display_name') or order.get('uid') or 'Không rõ'

@@ -103,6 +103,77 @@ def payment_matches_order(order: dict, account: str, content: str, amount: float
     return False
 
 
+async def _send_zalo_group_reminder(bot, chat_id: int) -> None:
+    """Gửi nhắc nhở khách tham gia nhóm Zalo kèm ảnh QR (nếu có) sau khi thanh toán thành công."""
+    zalo_url = getattr(config, "ZALO_GROUP_URL", "").strip()
+    zalo_qr = getattr(config, "ZALO_GROUP_QR", "zalo_group_qr.png").strip()
+
+    # Tạo nội dung tin nhắn nhắc nhở
+    reminder_text = (
+        "👥 <b>THAM GIA NHÓM ZALO HỖ TRỢ — ALOPREMIUM</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🎉 Cảm ơn bạn đã mua hàng tại AloPremium!\n\n"
+        "📢 Hãy tham gia <b>Nhóm Zalo</b> của chúng tôi để:\n"
+        "• Nhận <b>hỗ trợ kỹ thuật nhanh nhất</b> 24/7\n"
+        "• Cập nhật <b>khuyến mãi & mã giảm giá VIP</b> độc quyền\n"
+        "• Giao lưu cùng cộng đồng người dùng AloPremium\n"
+    )
+    if zalo_url:
+        reminder_text += f"\n🔗 Link tham gia: <a href='{zalo_url}'>{zalo_url}</a>"
+    reminder_text += "\n\n📱 <i>Quét mã QR bên dưới bằng Zalo để vào nhóm ngay!</i>"
+
+    # Tạo nút bấm
+    try:
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        buttons = []
+        if zalo_url:
+            buttons.append([InlineKeyboardButton("👥 Vào Nhóm Zalo Ngay", url=zalo_url)])
+        support_phone = getattr(config, "SUPPORT_PHONE", "").strip()
+        if support_phone:
+            buttons.append([InlineKeyboardButton(f"📞 Hotline / Zalo CSKH: {support_phone}", url=f"https://zalo.me/{support_phone}")])
+        kb = InlineKeyboardMarkup(buttons) if buttons else None
+    except Exception:
+        kb = None
+
+    # Gửi ảnh QR nhóm Zalo nếu tồn tại file
+    qr_sent = False
+    if zalo_qr:
+        import os
+        # Thử tìm file QR ở nhiều vị trí
+        qr_candidates = [
+            zalo_qr,
+            os.path.join(os.path.dirname(__file__), zalo_qr),
+            os.path.join(os.path.dirname(__file__), "assets", zalo_qr),
+        ]
+        for qr_path in qr_candidates:
+            if os.path.isfile(qr_path):
+                try:
+                    with open(qr_path, "rb") as f:
+                        await bot.send_photo(
+                            chat_id=chat_id,
+                            photo=f,
+                            caption=reminder_text,
+                            parse_mode=ParseMode.HTML,
+                            reply_markup=kb,
+                        )
+                    qr_sent = True
+                    break
+                except Exception as e_qr:
+                    logger.warning(f"Could not send Zalo QR photo: {e_qr}")
+
+    # Nếu không gửi được ảnh QR, gửi tin nhắn text thường
+    if not qr_sent:
+        try:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=reminder_text,
+                parse_mode=ParseMode.HTML,
+                reply_markup=kb,
+            )
+        except Exception as e_txt:
+            logger.warning(f"Could not send Zalo group reminder: {e_txt}")
+
+
 async def execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
     with _processing_lock:
         if order_id in _processing_orders:
@@ -517,6 +588,10 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     )
                 except Exception as e:
                     logger.error(f"Error sending Locket delivery: {e}")
+        # ── GỬI NHẮC NHỞ THAM GIA NHÓM ZALO SAU KHI THANH TOÁN THÀNH CÔNG ──
+        if bot and isinstance(order.get("user_id"), int) and order.get("user_id") > 0:
+            await _send_zalo_group_reminder(bot, order["user_id"])
+
         if bot:
             if product_key == "filter_topup":
                 admin_header = "🎭 <b>[CẦN CỘNG LƯỢT FILTER AI — ĐÃ THANH TOÁN]</b>"

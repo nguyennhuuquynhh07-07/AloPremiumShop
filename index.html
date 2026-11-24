@@ -395,13 +395,13 @@
             <button onclick="switchMainTab('store')" id="tabBtn_store" class="tab-btn active locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold whitespace-nowrap cursor-pointer">
                 👑 Mua Gói VIP
             </button>
-            <button onclick="switchMainTab('free')" id="tabBtn_free" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-[#6E6659] hover:text-[#1E1B18] hover:bg-white/80 whitespace-nowrap cursor-pointer flex items-center gap-1.5">
-                <span class="line-through decoration-rose-500 decoration-2 opacity-75">🎁 Gói Free (0đ)</span>
-                <span class="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase">Tạm đóng</span>
-            </button>
             <button onclick="switchMainTab('features')" id="tabBtn_features" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-[#6E6659] hover:text-[#1E1B18] hover:bg-white/80 whitespace-nowrap cursor-pointer flex items-center gap-1.5">
                 <span>🎨 Tính Năng VIP</span>
                 <span class="px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-[#1E1B18] text-[9px] font-black uppercase tracking-wider shadow-xs">Mới</span>
+            </button>
+            <button onclick="switchMainTab('free')" id="tabBtn_free" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-[#6E6659] hover:text-[#1E1B18] hover:bg-white/80 whitespace-nowrap cursor-pointer flex items-center gap-1.5">
+                <span class="line-through decoration-rose-500 decoration-2 opacity-75">🎁 Gói Free (0đ)</span>
+                <span class="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase">Tạm đóng</span>
             </button>
             <button onclick="switchMainTab('lookup')" id="tabBtn_lookup" class="tab-btn locket-btn-interactive px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold text-[#6E6659] hover:text-[#1E1B18] hover:bg-white/80 whitespace-nowrap cursor-pointer">
                 🔍 Tra Cứu
@@ -1168,9 +1168,9 @@
                     <p class="text-xs sm:text-sm text-[#6E6659] mt-2">Cài đặt cấu hình DNS miễn phí 100% để trải nghiệm tính năng cơ bản, không cần mật khẩu hay tài khoản ngân hàng</p>
                 </div>
 
-                <!-- THE EXACT FREE PRICING CARD -->
-                <div class="flex justify-center my-6">
-                    <div class="w-full max-w-[340px] bg-[#FFFDF6] rounded-[36px] border-2 border-rose-300 p-6 sm:p-7 shadow-[0_14px_34px_-24px_rgba(239,68,68,0.3)] relative transition-all">
+                <!-- THE EXACT FREE PRICING CARD + DONATE QR SIDE BY SIDE -->
+                <div class="flex flex-col md:flex-row items-center md:items-stretch justify-center gap-6 my-6">
+                    <div class="w-full max-w-[340px] bg-[#FFFDF6] rounded-[36px] border-2 border-rose-300 p-6 sm:p-7 shadow-[0_14px_34px_-24px_rgba(239,68,68,0.3)] relative transition-all flex flex-col justify-between">
                         <!-- Red Notice Badge -->
                         <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-red-600 to-rose-600 text-white text-[11px] font-fredoka font-black uppercase px-3.5 py-1 rounded-full shadow-md flex items-center gap-1">
                             <span>🚫</span> ĐÃ TẮT / TẠM NGƯNG
@@ -1231,6 +1231,55 @@
                         <button type="button" onclick="switchMainTab('store')" class="w-full mt-3 py-3 px-4 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-center shadow-md transition-all block text-xs cursor-pointer">
                             👉 Xem Các Gói VIP Bản Quyền (Từ 5K) →
                         </button>
+                    </div>
+
+                    <!-- DONATE / SUPPORT SHOP QR CARD -->
+                    <div class="w-full max-w-[340px] bg-gradient-to-b from-[#FFFDF6] to-[#FFF6DC] rounded-[36px] border-2 border-[#FFD24C] p-6 sm:p-7 shadow-[0_14px_34px_-24px_rgba(245,158,11,0.45)] relative transition-all flex flex-col justify-between text-center">
+                        <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-[#FFB800] to-amber-500 text-[#1E1B18] text-[11px] font-fredoka font-black uppercase px-3.5 py-1 rounded-full shadow-md flex items-center gap-1">
+                            <span>💛</span> GÓC ỦNG HỘ SHOP
+                        </div>
+
+                        <div class="space-y-2 mt-1">
+                            <div class="inline-block bg-amber-100 text-amber-800 text-xs font-fredoka font-black px-4 py-1 rounded-full uppercase tracking-wider border border-amber-300">
+                                COFFEE FOR SHOP ☕
+                            </div>
+                            <h3 class="font-fredoka font-black text-lg sm:text-xl text-[#1E1B18] leading-snug pt-1">
+                                Ủng hộ Shop nhỏ để shop duy trì
+                            </h3>
+                            <p class="text-xs font-semibold text-[#B45309] bg-amber-50/90 border border-amber-200 rounded-xl px-3 py-2 leading-relaxed">
+                                ( Tùy tâm không ép buộc nhe . 1k 2k Shop cũng rất vui &lt;3 )
+                            </p>
+                        </div>
+
+                        <div class="my-4 flex flex-col items-center">
+                            <div class="bg-white p-2.5 rounded-2xl shadow-md border-2 border-[#FFB800]/50 inline-block">
+                                <img id="donateShopQrImg"
+                                     src="https://qr.sepay.vn/img?bank=TPB&acc=34528022007&template=compact&des=UNG%20HO%20SHOP"
+                                     onerror="this.onerror=null;this.src='https://img.vietqr.io/image/TPB-34528022007-compact2.png?addInfo=UNG%20HO%20SHOP';"
+                                     alt="Mã QR Ủng Hộ Shop Nhỏ"
+                                     class="w-48 h-48 object-contain rounded-xl mx-auto select-none" />
+                            </div>
+                            <p class="text-[11px] text-[#6E6659] mt-2 font-medium">
+                                Quét bằng App Ngân Hàng bất kỳ (Số tiền tùy tâm)
+                            </p>
+                        </div>
+
+                        <div class="space-y-2 text-left bg-white/90 rounded-2xl p-3.5 border border-[#F0E0B8] text-xs">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[#6E6659]">Ngân hàng:</span>
+                                <span id="donateBankName" class="font-bold text-[#1E1B18]">TPBank</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[#6E6659]">Số tài khoản:</span>
+                                <button type="button" onclick="copyDonateAccount()" class="font-mono font-black text-amber-700 hover:text-amber-900 underline cursor-pointer flex items-center gap-1">
+                                    <span id="donateBankAccount">34528022007</span> 📋
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[#6E6659]">Chủ TK:</span>
+                                <span id="donateAccountHolder" class="font-bold text-[#1E1B18]">NGUYEN NHU QUYNH</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -2654,6 +2703,49 @@
                     <p class="text-[#1E1B18]">3️⃣ Vào <strong>Cài đặt</strong> → <strong>Cài đặt chung</strong> → <strong>Giới thiệu</strong> → kéo xuống cuối chọn <strong>Cài đặt tin cậy chứng nhận</strong> → Gạt bật xanh <strong>LocketGold CA</strong>.</p>
                     <p class="text-[#1E1B18]">4️⃣ Vuốt tắt hẳn app Locket đang chạy ngầm trong đa nhiệm và mở lại để tận hưởng Locket Gold VIP!</p>
                 </div>
+
+                <!-- NHẮC NHỞ THAM GIA NHÓM ZALO HỖ TRỢ + QR & LINK NHÓM ZALO -->
+                <div id="successZaloGroupReminder" class="mt-4 p-4 rounded-2xl bg-gradient-to-br from-blue-50 via-white to-[#FFF8E5] border-2 border-blue-200 text-left space-y-3 shadow-sm">
+                    <div class="flex items-start gap-2.5">
+                        <span class="text-xl shrink-0">👥</span>
+                        <div>
+                            <h4 class="font-fredoka text-sm font-black text-blue-900">
+                                Nhắc nhở: Hãy tham gia Nhóm Zalo Hỗ Trợ!
+                            </h4>
+                            <p class="text-[11px] text-[#423C32] leading-relaxed mt-0.5">
+                                Vào nhóm Zalo ngay để được hỗ trợ kích hoạt, bảo hành 24/7, cập nhật chứng chỉ DNS mới nhất và nhận mã giảm giá VIP.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center gap-3 p-3 rounded-xl bg-white border border-blue-100 shadow-xs">
+                        <div class="bg-white p-1.5 rounded-xl border border-blue-200 shrink-0 shadow-xs">
+                            <img id="successZaloQrImg" src="/zalo_group_qr.png" loading="lazy" alt="Mã QR Nhóm Zalo AloPremium" class="w-28 h-28 object-contain rounded-lg mx-auto select-none" />
+                        </div>
+                        <div class="flex-1 w-full space-y-2 text-center sm:text-left">
+                            <p class="text-[11px] font-bold text-blue-800">
+                                📱 Mở Zalo quét mã QR hoặc bấm nút bên dưới để vào nhóm:
+                            </p>
+                            <div id="successZaloLinkBox" class="text-[11px] bg-blue-50/80 border border-blue-100 rounded-lg px-2.5 py-1.5 text-blue-700 font-medium break-all">
+                                🔗 Link nhóm: <a id="successZaloLinkText" href="https://zalo.me/0345222802" target="_blank" class="underline font-bold">https://zalo.me/0345222802</a>
+                            </div>
+                            <a id="btnSuccessJoinZalo" href="https://zalo.me/0345222802" target="_blank"
+                               class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-fredoka font-bold text-xs shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                                <span>🚀</span> Vào Nhóm Zalo Ngay
+                            </a>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <button type="button" onclick="downloadZaloQr()"
+                                        class="py-2 px-2.5 rounded-lg bg-[#FFF8E5] hover:bg-[#FFECC0] border border-[#E8D8B0] text-[#1E1B18] text-[11px] font-bold flex items-center justify-center gap-1 transition-all cursor-pointer">
+                                    <span>📥</span> Lưu Mã QR
+                                </button>
+                                <button type="button" onclick="shareZaloGroup()"
+                                        class="py-2 px-2.5 rounded-lg bg-white hover:bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold flex items-center justify-center gap-1 transition-all cursor-pointer">
+                                    <span>📋</span> Copy Link
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -4053,12 +4145,36 @@
         // Tải ảnh mã QR nhóm Zalo về máy
         function downloadZaloQr() {
             const a = document.createElement('a');
-            a.href = '/zalo_group_qr.png';
+            a.href = window.zaloGroupQrUrl || '/zalo_group_qr.png';
             a.download = 'QR_Nhom_Zalo_AloPremium.png';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             showToast('📥 Đang tải ảnh mã QR nhóm Zalo về thiết bị!');
+        }
+
+        function syncZaloGroupElements(groupUrl, groupQr) {
+            const targetUrl = groupUrl || window.zaloGroupUrl || 'https://zalo.me/0345222802';
+            const targetQr = groupQr || window.zaloGroupQrUrl || '/zalo_group_qr.png';
+            ['btnJoinZaloGroup', 'btnSuccessJoinZalo', 'successZaloLinkText'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.href = targetUrl;
+            });
+            const linkTextEl = document.getElementById('successZaloLinkText');
+            if (linkTextEl) linkTextEl.textContent = targetUrl;
+            ['zaloGroupQrImg', 'successZaloQrImg'].forEach(id => {
+                const img = document.getElementById(id);
+                if (img) img.src = targetQr;
+            });
+        }
+
+        function copyDonateAccount() {
+            const acc = (document.getElementById('donateBankAccount')?.textContent || '34528022007').trim();
+            navigator.clipboard?.writeText(acc).then(() => {
+                showToast(`📋 Đã sao chép STK ủng hộ: ${acc}`);
+            }).catch(() => {
+                prompt('Sao chép số tài khoản ủng hộ Shop:', acc);
+            });
         }
 
         // Load config & packages on startup
@@ -4120,12 +4236,28 @@
                     // Cập nhật cấu hình Nhóm Zalo Hỗ Trợ
                     if (data.zalo_group_url) {
                         window.zaloGroupUrl = data.zalo_group_url;
-                        const btnJoin = document.getElementById('btnJoinZaloGroup');
-                        if (btnJoin) btnJoin.href = data.zalo_group_url;
                     }
                     if (data.zalo_group_qr) {
-                        const qrImg = document.getElementById('zaloGroupQrImg');
-                        if (qrImg) qrImg.src = data.zalo_group_qr;
+                        window.zaloGroupQrUrl = data.zalo_group_qr;
+                    }
+                    syncZaloGroupElements(data.zalo_group_url, data.zalo_group_qr);
+
+                    // Đồng bộ thông tin QR Ủng hộ Shop
+                    if (data.bank_id && data.bank_account) {
+                        const donateQr = document.getElementById('donateShopQrImg');
+                        if (donateQr) {
+                            donateQr.src = `https://qr.sepay.vn/img?bank=${encodeURIComponent(data.bank_id)}&acc=${encodeURIComponent(data.bank_account)}&template=compact&des=UNG%20HO%20SHOP`;
+                            donateQr.onerror = function () {
+                                this.onerror = null;
+                                this.src = `https://img.vietqr.io/image/${encodeURIComponent(data.bank_id)}-${encodeURIComponent(data.bank_account)}-compact2.png?addInfo=UNG%20HO%20SHOP`;
+                            };
+                        }
+                        const elBankName = document.getElementById('donateBankName');
+                        const elBankAcc = document.getElementById('donateBankAccount');
+                        const elHolder = document.getElementById('donateAccountHolder');
+                        if (elBankName && data.bank_name) elBankName.textContent = data.bank_name;
+                        if (elBankAcc) elBankAcc.textContent = data.bank_account;
+                        if (elHolder && data.account_holder) elHolder.textContent = data.account_holder;
                     }
                 }
             } catch (e) {
@@ -4996,6 +5128,9 @@
 
             document.getElementById('modalWaitingPayment').classList.add('hidden');
             document.getElementById('modalSuccessPayment').classList.remove('hidden');
+            if (typeof syncZaloGroupElements === 'function') {
+                syncZaloGroupElements(window.zaloGroupUrl, window.zaloGroupQrUrl);
+            }
 
             const inAppWarn = document.getElementById('inAppBrowserWarning');
             if (inAppWarn) {

@@ -669,13 +669,21 @@
                         <h3 class="text-base font-black text-white flex items-center gap-2">
                             <span>📦 Bảng Giá &amp; Mã Gói Cước Nhập Sỉ API</span>
                         </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Đồng bộ từ <code>GET /api/packages?service=all|spotify|locket</code> trên máy chủ CTV</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Đồng bộ từ
+                            <code>GET /api/packages?service=all|spotify|locket</code> trên máy chủ CTV</p>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <div class="flex items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs">
-                            <button onclick="syncApiData('all')" id="pkgFilter_all" class="px-2.5 py-1 rounded-lg font-bold bg-amber-500 text-slate-950 cursor-pointer">Tất cả</button>
-                            <button onclick="syncApiData('spotify')" id="pkgFilter_spotify" class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white cursor-pointer">🎵 Spotify</button>
-                            <button onclick="syncApiData('locket')" id="pkgFilter_locket" class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white cursor-pointer">💛 Locket Gold</button>
+                        <div
+                            class="flex items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs">
+                            <button onclick="syncApiData('all')" id="pkgFilter_all"
+                                class="px-2.5 py-1 rounded-lg font-bold bg-amber-500 text-slate-950 cursor-pointer">Tất
+                                cả</button>
+                            <button onclick="syncApiData('spotify')" id="pkgFilter_spotify"
+                                class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white cursor-pointer">🎵
+                                Spotify</button>
+                            <button onclick="syncApiData('locket')" id="pkgFilter_locket"
+                                class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white cursor-pointer">💛
+                                Locket Gold</button>
                         </div>
                         <span id="packageCountBadge"
                             class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300">0 gói</span>
@@ -711,10 +719,12 @@
         <!-- ============================================================ -->
         <div id="tabContent_ctv_features" class="space-y-4 hidden text-[#1E1B18]">
             <!-- HEADER CARD: KHU VỰC CTV | Locket Custom Studio | Số dư coin -->
-            <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3.5">
+            <div
+                class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3.5">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5 flex-wrap">
-                        <span class="px-2.5 py-1 rounded-md bg-[#FFD84D] border-2 border-[#1E1B18] text-xs font-black uppercase tracking-wider text-[#1E1B18]">
+                        <span
+                            class="px-2.5 py-1 rounded-md bg-[#FFD84D] border-2 border-[#1E1B18] text-xs font-black uppercase tracking-wider text-[#1E1B18]">
                             KHU VỰC CTV
                         </span>
                         <h3 class="text-lg sm:text-xl font-black text-[#1E1B18]">
@@ -725,7 +735,8 @@
                             🔄 Đồng bộ
                         </button>
                     </div>
-                    <div class="px-3.5 py-1.5 rounded-lg bg-[#FFF8E1] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">
+                    <div
+                        class="px-3.5 py-1.5 rounded-lg bg-[#FFF8E1] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">
                         Số dư: <span id="adminStudioBalanceCoin" class="text-amber-700">--- coin</span>
                     </div>
                 </div>
@@ -757,7 +768,8 @@
 
             <!-- ══ SUB-TAB 1: KHUNG WIDGET ══ -->
             <div id="admStPane_frames" class="space-y-4">
-                <div class="bg-[#FFFDF5] rounded-xl border-2 border-[#1E1B18] shadow-[3px_3px_0px_#1E1B18] px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                <div
+                    class="bg-[#FFFDF5] rounded-xl border-2 border-[#1E1B18] shadow-[3px_3px_0px_#1E1B18] px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
                         <button type="button" onclick="switchAdminFrameMode('editor')" id="admFrameModeBtn_editor"
                             class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-[#1E1B18] font-bold text-xs cursor-pointer">
@@ -774,42 +786,56 @@
                 <!-- MODE A: EDITOR + DANH SÁCH + GIẢ LẬP WIDGET -->
                 <div id="admFrameView_editor" class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
                     <div class="lg:col-span-7 space-y-4">
-                        <form onsubmit="adminSaveCtvFrame(event)" class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
+                        <form onsubmit="adminSaveCtvFrame(event)"
+                            class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
                             <div class="flex items-center justify-between gap-2">
-                                <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Bộ Chỉnh Sửa Khung (1024x1024)</h4>
-                                <span class="px-2.5 py-0.5 rounded bg-emerald-400 border border-[#1E1B18] text-[11px] font-black text-[#1E1B18]">API Live</span>
+                                <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Bộ Chỉnh Sửa Khung (1024x1024)
+                                </h4>
+                                <span
+                                    class="px-2.5 py-0.5 rounded bg-emerald-400 border border-[#1E1B18] text-[11px] font-black text-[#1E1B18]">API
+                                    Live</span>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold text-[#1E1B18] mb-1">1. Tên khung (Ví dụ: Viền Trái Tim, Khung 20-10, Logo Brand):</label>
+                                <label class="block text-xs font-bold text-[#1E1B18] mb-1">1. Tên khung (Ví dụ: Viền
+                                    Trái Tim, Khung 20-10, Logo Brand):</label>
                                 <input type="text" id="adminFrameName" placeholder="Nhập tên khung..."
                                     class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
                             </div>
 
                             <div class="space-y-1.5">
-                                <label class="block text-xs font-bold text-[#1E1B18]">2. Tải ảnh khung lên (PNG trong suốt) hoặc dán Link URL:</label>
+                                <label class="block text-xs font-bold text-[#1E1B18]">2. Tải ảnh khung lên (PNG trong
+                                    suốt) hoặc dán Link URL:</label>
                                 <div class="flex flex-col sm:flex-row gap-2">
-                                    <input type="file" id="adminFrameFileInput" accept="image/png,image/webp" onchange="handleAdminFrameFileSelect(event)"
+                                    <input type="file" id="adminFrameFileInput" accept="image/png,image/webp"
+                                        onchange="handleAdminFrameFileSelect(event)"
                                         class="w-full sm:w-60 px-2 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] file:mr-2 file:py-0.5 file:px-2 file:rounded file:border file:border-[#1E1B18] file:bg-[#FFF8E1] file:text-xs file:font-bold cursor-pointer">
-                                    <input type="url" id="adminFrameUrl" oninput="handleAdminFrameUrlChange(this.value)" placeholder="https://doh.2707226.xyz/uploads/frame.png"
+                                    <input type="url" id="adminFrameUrl" oninput="handleAdminFrameUrlChange(this.value)"
+                                        placeholder="https://doh.2707226.xyz/uploads/frame.png"
                                         class="flex-1 px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
                                 <div class="sm:col-span-9">
-                                    <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Phạm vi áp dụng (ALL hoặc danh sách UID cách nhau dấu phẩy):</label>
-                                    <input type="text" id="adminFrameTargetUid" value="ALL" placeholder="ALL hoặc uid1,uid2"
+                                    <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Phạm vi áp dụng (ALL
+                                        hoặc danh sách UID cách nhau dấu phẩy):</label>
+                                    <input type="text" id="adminFrameTargetUid" value="ALL"
+                                        placeholder="ALL hoặc uid1,uid2"
                                         class="w-full px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-mono text-[#1E1B18] focus:outline-none">
                                 </div>
-                                <label class="sm:col-span-3 flex items-center gap-1.5 text-xs font-bold text-[#1E1B18] pt-4 cursor-pointer">
+                                <label
+                                    class="sm:col-span-3 flex items-center gap-1.5 text-xs font-bold text-[#1E1B18] pt-4 cursor-pointer">
                                     <input type="checkbox" id="adminFrameActive" checked class="w-4 h-4">
                                     <span>Đang bật</span>
                                 </label>
                             </div>
 
-                            <div class="w-full max-w-[240px] mx-auto aspect-square rounded-xl bg-[#1E1F26] border-2 border-[#1E1B18] flex items-center justify-center relative overflow-hidden">
-                                <span id="admFramePreviewEmpty" class="text-[11px] text-zinc-400 font-semibold text-center px-3">Chưa chọn ảnh PNG<br>(Preview nền tối)</span>
+                            <div
+                                class="w-full max-w-[240px] mx-auto aspect-square rounded-xl bg-[#1E1F26] border-2 border-[#1E1B18] flex items-center justify-center relative overflow-hidden">
+                                <span id="admFramePreviewEmpty"
+                                    class="text-[11px] text-zinc-400 font-semibold text-center px-3">Chưa chọn ảnh
+                                    PNG<br>(Preview nền tối)</span>
                                 <img id="admFramePreviewImg" src="" alt="" class="hidden w-full h-full object-contain">
                             </div>
 
@@ -820,19 +846,26 @@
                         </form>
 
                         <!-- DANH SÁCH KHUNG CTV -->
-                        <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
+                        <div
+                            class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">
                                     Danh Sách Khung (<span id="adminCtvFramesCount">0</span>/30)
                                 </h4>
                                 <div class="flex items-center gap-1.5 text-[11px]">
-                                    <button type="button" onclick="filterAdminFramesScope('all')" class="adm-fr-scope px-2.5 py-1 rounded border border-[#1E1B18] bg-[#FFD84D] font-black cursor-pointer" data-scope="all">
+                                    <button type="button" onclick="filterAdminFramesScope('all')"
+                                        class="adm-fr-scope px-2.5 py-1 rounded border border-[#1E1B18] bg-[#FFD84D] font-black cursor-pointer"
+                                        data-scope="all">
                                         Tất cả (<span id="admScAll">0</span>)
                                     </button>
-                                    <button type="button" onclick="filterAdminFramesScope('shared')" class="adm-fr-scope px-2.5 py-1 rounded border border-[#1E1B18] bg-white font-bold cursor-pointer" data-scope="shared">
+                                    <button type="button" onclick="filterAdminFramesScope('shared')"
+                                        class="adm-fr-scope px-2.5 py-1 rounded border border-[#1E1B18] bg-white font-bold cursor-pointer"
+                                        data-scope="shared">
                                         Chung (<span id="admScShared">0</span>)
                                     </button>
-                                    <button type="button" onclick="filterAdminFramesScope('private')" class="adm-fr-scope px-2.5 py-1 rounded border border-[#1E1B18] bg-white font-bold cursor-pointer" data-scope="private">
+                                    <button type="button" onclick="filterAdminFramesScope('private')"
+                                        class="adm-fr-scope px-2.5 py-1 rounded border border-[#1E1B18] bg-white font-bold cursor-pointer"
+                                        data-scope="private">
                                         Riêng (<span id="admScPriv">0</span>)
                                     </button>
                                 </div>
@@ -845,37 +878,66 @@
                     </div>
 
                     <!-- GIẢ LẬP WIDGET LOCKET THẬT -->
-                    <div class="lg:col-span-5 bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
+                    <div
+                        class="lg:col-span-5 bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
                         <div class="flex items-center justify-between gap-2 flex-wrap">
                             <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">Giả Lập Widget Locket Thật</h4>
-                            <div class="flex items-center border-2 border-[#1E1B18] rounded-lg overflow-hidden text-[11px] font-bold">
-                                <button type="button" onclick="setAdminSimSize('large')" id="admSimBtn_large" class="px-2.5 py-1 bg-[#FFD84D] text-[#1E1B18] cursor-pointer">Khung Lớn (1:1)</button>
-                                <button type="button" onclick="setAdminSimSize('small')" id="admSimBtn_small" class="px-2.5 py-1 bg-white text-[#1E1B18] border-l-2 border-[#1E1B18] cursor-pointer">Khung Nhỏ (1:1)</button>
+                            <div
+                                class="flex items-center border-2 border-[#1E1B18] rounded-lg overflow-hidden text-[11px] font-bold">
+                                <button type="button" onclick="setAdminSimSize('large')" id="admSimBtn_large"
+                                    class="px-2.5 py-1 bg-[#FFD84D] text-[#1E1B18] cursor-pointer">Khung Lớn
+                                    (1:1)</button>
+                                <button type="button" onclick="setAdminSimSize('small')" id="admSimBtn_small"
+                                    class="px-2.5 py-1 bg-white text-[#1E1B18] border-l-2 border-[#1E1B18] cursor-pointer">Khung
+                                    Nhỏ (1:1)</button>
                             </div>
                         </div>
-                        <div id="admSimWidgetBanner" class="px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-[#FFF8DC] text-[11px] font-bold text-[#1E1B18] text-center">
+                        <div id="admSimWidgetBanner"
+                            class="px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-[#FFF8DC] text-[11px] font-bold text-[#1E1B18] text-center">
                             Đang hiển thị khung lưu trong tài khoản CTV
                         </div>
-                        <div class="flex items-center justify-center gap-2 flex-wrap text-[11px] font-bold text-[#1E1B18]">
+                        <div
+                            class="flex items-center justify-center gap-2 flex-wrap text-[11px] font-bold text-[#1E1B18]">
                             <span>Ảnh lồng bên dưới:</span>
-                            <button type="button" onclick="document.getElementById('admSimPhotoImg').src='/assets/index/sim-demos/demo-1.jpg'" class="w-8 h-8 rounded-lg border-2 border-[#1E1B18] overflow-hidden cursor-pointer bg-white"><img src="/assets/index/sim-demos/demo-1.jpg" class="w-full h-full object-cover"></button>
-                            <button type="button" onclick="document.getElementById('admSimPhotoImg').src='/assets/index/sim-demos/demo-2.jpg'" class="w-8 h-8 rounded-lg border-2 border-[#1E1B18] overflow-hidden cursor-pointer bg-amber-50"><img src="/assets/index/sim-demos/demo-2.jpg" class="w-full h-full object-cover"></button>
-                            <button type="button" onclick="document.getElementById('admSimPhotoImg').src='/assets/index/sim-demos/demo-3.jpg'" class="w-8 h-8 rounded-lg border-2 border-[#1E1B18] overflow-hidden cursor-pointer bg-zinc-900"><img src="/assets/index/sim-demos/demo-3.jpg" class="w-full h-full object-cover"></button>
-                            <input type="file" id="admSimCustomPhoto" accept="image/*" onchange="handleAdminSimPhoto(event)" class="hidden">
-                            <button type="button" onclick="document.getElementById('admSimCustomPhoto').click()" class="px-2.5 py-1 rounded-lg border-2 border-[#1E1B18] bg-white hover:bg-[#FFF5D6] font-bold cursor-pointer">Đổi ảnh của bạn</button>
+                            <button type="button"
+                                onclick="document.getElementById('admSimPhotoImg').src='/assets/index/sim-demos/demo-1.jpg'"
+                                class="w-8 h-8 rounded-lg border-2 border-[#1E1B18] overflow-hidden cursor-pointer bg-white"><img
+                                    src="/assets/index/sim-demos/demo-1.jpg"
+                                    class="w-full h-full object-cover"></button>
+                            <button type="button"
+                                onclick="document.getElementById('admSimPhotoImg').src='/assets/index/sim-demos/demo-2.jpg'"
+                                class="w-8 h-8 rounded-lg border-2 border-[#1E1B18] overflow-hidden cursor-pointer bg-amber-50"><img
+                                    src="/assets/index/sim-demos/demo-2.jpg"
+                                    class="w-full h-full object-cover"></button>
+                            <button type="button"
+                                onclick="document.getElementById('admSimPhotoImg').src='/assets/index/sim-demos/demo-3.jpg'"
+                                class="w-8 h-8 rounded-lg border-2 border-[#1E1B18] overflow-hidden cursor-pointer bg-zinc-900"><img
+                                    src="/assets/index/sim-demos/demo-3.jpg"
+                                    class="w-full h-full object-cover"></button>
+                            <input type="file" id="admSimCustomPhoto" accept="image/*"
+                                onchange="handleAdminSimPhoto(event)" class="hidden">
+                            <button type="button" onclick="document.getElementById('admSimCustomPhoto').click()"
+                                class="px-2.5 py-1 rounded-lg border-2 border-[#1E1B18] bg-white hover:bg-[#FFF5D6] font-bold cursor-pointer">Đổi
+                                ảnh của bạn</button>
                         </div>
 
-                        <div class="mx-auto w-[250px] h-[410px] rounded-[36px] border-[5px] border-[#1E1B18] bg-gradient-to-b from-[#EDE6D6] via-[#D8CEBA] to-[#E5D3B3] relative overflow-hidden shadow-lg flex flex-col items-center pt-5 px-4 select-none">
+                        <div
+                            class="mx-auto w-[250px] h-[410px] rounded-[36px] border-[5px] border-[#1E1B18] bg-gradient-to-b from-[#EDE6D6] via-[#D8CEBA] to-[#E5D3B3] relative overflow-hidden shadow-lg flex flex-col items-center pt-5 px-4 select-none">
                             <div class="w-20 h-4 bg-[#1E1B18] rounded-full mb-2"></div>
                             <div class="text-center text-white drop-shadow-sm mb-3">
                                 <div class="text-3xl font-black leading-none">16:28</div>
                                 <div class="text-[10px] font-bold mt-0.5">Thứ Ba, 13 tháng 10</div>
                             </div>
-                            <div id="admSimWidgetBox" class="w-44 h-44 rounded-[28px] bg-zinc-900 relative overflow-hidden shadow-2xl border-2 border-white/40 transition-all">
-                                <img id="admSimPhotoImg" src="/assets/index/sim-demos/demo-1.jpg" class="absolute inset-0 w-full h-full object-cover">
-                                <img id="admSimOverlayImg" src="" class="hidden absolute inset-0 w-full h-full object-cover z-10 pointer-events-none">
+                            <div id="admSimWidgetBox"
+                                class="w-44 h-44 rounded-[28px] bg-zinc-900 relative overflow-hidden shadow-2xl border-2 border-white/40 transition-all">
+                                <img id="admSimPhotoImg" src="/assets/index/sim-demos/demo-1.jpg"
+                                    class="absolute inset-0 w-full h-full object-cover">
+                                <img id="admSimOverlayImg" src=""
+                                    class="hidden absolute inset-0 w-full h-full object-cover z-10 pointer-events-none">
                                 <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
-                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black text-white shadow" style="background: linear-gradient(135deg, #7C3AED, #2A0845);">Tạm Thời Vậy</span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black text-white shadow"
+                                        style="background: linear-gradient(135deg, #7C3AED, #2A0845);">Tạm Thời
+                                        Vậy</span>
                                 </div>
                             </div>
                         </div>
@@ -884,10 +946,13 @@
 
                 <!-- MODE B: KHO KHUNG MẪU (79) -->
                 <div id="admFrameView_gallery" class="hidden space-y-3">
-                    <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] p-4 flex items-center justify-between gap-2">
-                        <input type="text" id="admPresetSearch" oninput="renderAdminPresetGallery()" placeholder="Tìm khung trong 79 mẫu (Kuromi, Shin, Kitty, Conan, Gojo...)"
+                    <div
+                        class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] p-4 flex items-center justify-between gap-2">
+                        <input type="text" id="admPresetSearch" oninput="renderAdminPresetGallery()"
+                            placeholder="Tìm khung trong 79 mẫu (Kuromi, Shin, Kitty, Conan, Gojo...)"
                             class="flex-1 px-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
-                        <span class="px-3 py-1.5 rounded-lg bg-[#FFD84D] border border-[#1E1B18] text-xs font-black">79 Mẫu</span>
+                        <span class="px-3 py-1.5 rounded-lg bg-[#FFD84D] border border-[#1E1B18] text-xs font-black">79
+                            Mẫu</span>
                     </div>
                     <div id="admPresetGalleryGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3"></div>
                 </div>
@@ -896,21 +961,29 @@
             <!-- ══ SUB-TAB 2: CAPTION CHÚ THÍCH ══ -->
             <div id="admStPane_captions" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
                 <div class="lg:col-span-7 space-y-4">
-                    <form onsubmit="adminSaveCtvCaption(event)" class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3.5">
+                    <form onsubmit="adminSaveCtvCaption(event)"
+                        class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3.5">
                         <div class="flex items-start justify-between gap-2">
                             <div>
-                                <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">💬 Soạn Caption (CTV &amp; Khách hàng)</h4>
-                                <p class="text-[11px] text-[#6E6659]">Lưu Brand Caption (ALL) hoặc Caption riêng theo UID/Username khách hàng</p>
+                                <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">💬 Soạn Caption (CTV &amp;
+                                    Khách hàng)</h4>
+                                <p class="text-[11px] text-[#6E6659]">Lưu Brand Caption (ALL) hoặc Caption riêng theo
+                                    UID/Username khách hàng</p>
                             </div>
-                            <span class="px-2.5 py-1 rounded bg-emerald-400 border border-[#1E1B18] text-xs font-black text-[#1E1B18]">
+                            <span
+                                class="px-2.5 py-1 rounded bg-emerald-400 border border-[#1E1B18] text-xs font-black text-[#1E1B18]">
                                 <span id="admCapCountBadge">0</span>/100
                             </span>
                         </div>
 
                         <div class="flex items-center justify-between gap-2">
                             <div class="flex items-center gap-1.5">
-                                <button type="button" onclick="switchAdminIconMode('emoji')" id="admIconBtn_emoji" class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-bold cursor-pointer">Bảng Emoji</button>
-                                <button type="button" onclick="switchAdminIconMode('symbol')" id="admIconBtn_symbol" class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-xs font-black cursor-pointer">🍎 Apple Symbol</button>
+                                <button type="button" onclick="switchAdminIconMode('emoji')" id="admIconBtn_emoji"
+                                    class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-bold cursor-pointer">Bảng
+                                    Emoji</button>
+                                <button type="button" onclick="switchAdminIconMode('symbol')" id="admIconBtn_symbol"
+                                    class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-xs font-black cursor-pointer">🍎
+                                    Apple Symbol</button>
                             </div>
                             <span class="text-[11px] text-[#6E6659] italic">Chạm để chọn icon nhanh</span>
                         </div>
@@ -919,26 +992,34 @@
                             <div class="grid grid-cols-8 sm:grid-cols-10 gap-1.5" id="admEmojiGrid"></div>
                         </div>
 
-                        <div id="admIconPane_symbol" class="p-3 rounded-xl border-2 border-[#1E1B18] bg-white space-y-2">
+                        <div id="admIconPane_symbol"
+                            class="p-3 rounded-xl border-2 border-[#1E1B18] bg-white space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-black text-[#1E1B18]">Apple SF Symbols (449)</span>
-                                <span class="px-2 py-0.5 rounded bg-amber-100 border border-amber-400 text-[11px] font-bold">Đang chọn: <span id="admSelectedSymLabel">sparkles</span></span>
+                                <span
+                                    class="px-2 py-0.5 rounded bg-amber-100 border border-amber-400 text-[11px] font-bold">Đang
+                                    chọn: <span id="admSelectedSymLabel">sparkles</span></span>
                             </div>
-                            <input type="text" id="adminSymSearch" oninput="adminSearchSymbols(this.value)" placeholder="🔍 Tìm symbol (wind, heart, gio, tim...)"
+                            <input type="text" id="adminSymSearch" oninput="adminSearchSymbols(this.value)"
+                                placeholder="🔍 Tìm symbol (wind, heart, gio, tim...)"
                                 class="w-full px-3 py-1.5 rounded-lg border border-zinc-400 bg-[#FFFDF5] text-xs text-[#1E1B18] focus:outline-none">
-                            <div id="adminSymbolsGrid" class="max-h-48 overflow-y-auto grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-1">
-                                <span class="col-span-full text-center text-xs text-zinc-500 py-4">Đang tải SF Symbols...</span>
+                            <div id="adminSymbolsGrid"
+                                class="max-h-48 overflow-y-auto grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-1">
+                                <span class="col-span-full text-center text-xs text-zinc-500 py-4">Đang tải SF
+                                    Symbols...</span>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                             <div class="sm:col-span-7">
                                 <label class="block text-xs font-bold text-[#1E1B18] mb-1">✎ Nội dung caption *</label>
-                                <input type="text" id="adminCapText" maxlength="100" required oninput="updateAdminCapPreview()" placeholder="VD: AloPremium VIP ✨"
+                                <input type="text" id="adminCapText" maxlength="100" required
+                                    oninput="updateAdminCapPreview()" placeholder="VD: AloPremium VIP ✨"
                                     class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
                             </div>
                             <div class="sm:col-span-5">
-                                <label class="block text-xs font-bold text-[#1E1B18] mb-1">👤 UID / Username (trống = ALL Brand)</label>
+                                <label class="block text-xs font-bold text-[#1E1B18] mb-1">👤 UID / Username (trống =
+                                    ALL Brand)</label>
                                 <input type="text" id="adminCapUid" placeholder="camsitup hoặc để trống"
                                     class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
                             </div>
@@ -948,15 +1029,19 @@
                         <div class="flex items-center justify-between gap-2 flex-wrap">
                             <div class="flex items-center gap-2" id="admCapSwatches"></div>
                             <div class="flex items-center gap-1.5 text-xs">
-                                <input type="color" id="adminCapColor1" value="#FF5E3A" onchange="updateAdminCapPreview()" class="w-7 h-7 cursor-pointer">
-                                <input type="color" id="adminCapColor2" value="#FF2A68" onchange="updateAdminCapPreview()" class="w-7 h-7 cursor-pointer">
+                                <input type="color" id="adminCapColor1" value="#FF5E3A"
+                                    onchange="updateAdminCapPreview()" class="w-7 h-7 cursor-pointer">
+                                <input type="color" id="adminCapColor2" value="#FF2A68"
+                                    onchange="updateAdminCapPreview()" class="w-7 h-7 cursor-pointer">
                             </div>
                         </div>
 
                         <div class="flex justify-center">
-                            <div id="admCapPreviewPill" class="px-5 py-2 rounded-full border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] inline-flex items-center gap-1.5 text-white font-black text-xs"
-                                 style="background: linear-gradient(135deg, #FF5E3A, #FF2A68);">
-                                <img id="admCapPrevSvg" src="https://locket.2707226.xyz/assets/sf-symbols/sparkles.svg" class="w-4 h-4 brightness-0 invert">
+                            <div id="admCapPreviewPill"
+                                class="px-5 py-2 rounded-full border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] inline-flex items-center gap-1.5 text-white font-black text-xs"
+                                style="background: linear-gradient(135deg, #FF5E3A, #FF2A68);">
+                                <img id="admCapPrevSvg" src="https://locket.2707226.xyz/assets/sf-symbols/sparkles.svg"
+                                    class="w-4 h-4 brightness-0 invert">
                                 <span id="admCapPrevIcon" class="hidden">✨</span>
                                 <span id="admCapPrevText">Xem trước viền caption</span>
                             </div>
@@ -969,13 +1054,17 @@
                     </form>
 
                     <!-- TRA CỨU & DANH SÁCH CAPTION -->
-                    <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
+                    <div
+                        class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
                         <div class="flex flex-wrap items-center justify-between gap-2">
-                            <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">≣ Danh Sách Caption (<span id="admCapListCount">0</span>)</h4>
+                            <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">≣ Danh Sách Caption (<span
+                                    id="admCapListCount">0</span>)</h4>
                             <div class="flex items-center gap-1.5">
-                                <input type="text" id="adminCaptionLookupUid" placeholder="Tra Brand (trống) hoặc UID khách"
+                                <input type="text" id="adminCaptionLookupUid"
+                                    placeholder="Tra Brand (trống) hoặc UID khách"
                                     class="px-2.5 py-1 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] w-48 focus:outline-none">
-                                <button type="button" onclick="adminLookupCaptions()" class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-xs font-black cursor-pointer">
+                                <button type="button" onclick="adminLookupCaptions()"
+                                    class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-xs font-black cursor-pointer">
                                     🔍 Tra
                                 </button>
                             </div>
@@ -987,19 +1076,23 @@
                 </div>
 
                 <!-- GIẢ LẬP MÀN HÌNH LOCKET THẬT -->
-                <div class="lg:col-span-5 bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
+                <div
+                    class="lg:col-span-5 bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
                     <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">Giả Lập Màn Hình Locket Thật</h4>
-                    <div class="mx-auto w-[250px] min-h-[430px] rounded-[38px] border-[5px] border-[#1E1B18] bg-[#0B0B0F] text-white p-3.5 flex flex-col gap-3 shadow-xl select-none">
+                    <div
+                        class="mx-auto w-[250px] min-h-[430px] rounded-[38px] border-[5px] border-[#1E1B18] bg-[#0B0B0F] text-white p-3.5 flex flex-col gap-3 shadow-xl select-none">
                         <div class="flex items-center justify-between text-[10px] font-bold px-2">
                             <span>16:28</span>
                             <div class="w-16 h-3.5 bg-black rounded-full border border-zinc-800"></div>
                             <span>📶 🔋</span>
                         </div>
-                        <div class="w-full aspect-square rounded-[24px] overflow-hidden relative bg-zinc-900 border border-white/10">
+                        <div
+                            class="w-full aspect-square rounded-[24px] overflow-hidden relative bg-zinc-900 border border-white/10">
                             <img src="/assets/index/sim-demos/demo-1.jpg" class="w-full h-full object-cover">
                             <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2">
-                                <div id="admDarkSimPill" class="px-3 py-1 rounded-full text-[11px] font-black text-white shadow flex items-center gap-1 whitespace-nowrap"
-                                     style="background: linear-gradient(135deg, #FF5E3A, #FF2A68);">
+                                <div id="admDarkSimPill"
+                                    class="px-3 py-1 rounded-full text-[11px] font-black text-white shadow flex items-center gap-1 whitespace-nowrap"
+                                    style="background: linear-gradient(135deg, #FF5E3A, #FF2A68);">
                                     <span id="admDarkSimText">Xem trước caption</span>
                                 </div>
                             </div>
@@ -1012,36 +1105,58 @@
 
             <!-- ══ SUB-TAB 3: MUA SLOT KHUNG & CAPTION ══ -->
             <div id="admStPane_slots" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-5 space-y-4">
+                <div
+                    class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-5 space-y-4">
                     <div>
                         <h4 class="font-bold text-base text-[#1E1B18]">Gói Khung Widget (30 Ngày)</h4>
-                        <p class="text-xs text-[#6E6659] mt-0.5">Khách hàng cài DNS của bạn sẽ tự động hiển thị khung thương hiệu bạn tùy biến.</p>
+                        <p class="text-xs text-[#6E6659] mt-0.5">Khách hàng cài DNS của bạn sẽ tự động hiển thị khung
+                            thương hiệu bạn tùy biến.</p>
                     </div>
                     <div class="p-3.5 rounded-xl border-2 border-[#1E1B18] bg-[#FAF6EA] space-y-2 text-xs">
-                        <div class="flex justify-between"><span>Trạng thái:</span><span id="admSlotFrStatus" class="px-2 py-0.5 rounded border border-[#1E1B18] bg-rose-200 font-black">Chưa kiểm tra</span></div>
-                        <div class="flex justify-between"><span>Thời hạn:</span><span id="admSlotFrExp" class="font-bold text-rose-700">---</span></div>
-                        <div class="flex justify-between"><span>Số slot khả dụng:</span><span class="font-black">30 khung</span></div>
-                        <div class="flex justify-between"><span>Đang sử dụng:</span><span class="font-bold"><span id="admSlotFrUsed">0</span>/30 khung</span></div>
+                        <div class="flex justify-between"><span>Trạng thái:</span><span id="admSlotFrStatus"
+                                class="px-2 py-0.5 rounded border border-[#1E1B18] bg-rose-200 font-black">Chưa kiểm
+                                tra</span></div>
+                        <div class="flex justify-between"><span>Thời hạn:</span><span id="admSlotFrExp"
+                                class="font-bold text-rose-700">---</span></div>
+                        <div class="flex justify-between"><span>Số slot khả dụng:</span><span class="font-black">30
+                                khung</span></div>
+                        <div class="flex justify-between"><span>Đang sử dụng:</span><span class="font-bold"><span
+                                    id="admSlotFrUsed">0</span>/30 khung</span></div>
                     </div>
                     <div class="flex gap-2">
-                        <a href="https://locket.2707226.xyz" target="_blank" class="flex-1 py-2.5 text-center rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">Mua Gói 30 Ngày (5 coin) ↗</a>
-                        <a href="https://locket.2707226.xyz" target="_blank" class="py-2.5 px-3 rounded-xl bg-white border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18]">+1 Slot (1 coin)</a>
+                        <a href="https://locket.2707226.xyz" target="_blank"
+                            class="flex-1 py-2.5 text-center rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">Mua
+                            Gói 30 Ngày (5 coin) ↗</a>
+                        <a href="https://locket.2707226.xyz" target="_blank"
+                            class="py-2.5 px-3 rounded-xl bg-white border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18]">+1
+                            Slot (1 coin)</a>
                     </div>
                 </div>
-                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-5 space-y-4">
+                <div
+                    class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-5 space-y-4">
                     <div>
                         <h4 class="font-bold text-base text-[#1E1B18]">Gói Caption Chú Thích (30 Ngày)</h4>
-                        <p class="text-xs text-[#6E6659] mt-0.5">Khách hàng cài DNS của bạn sẽ có trọn bộ danh sách chú thích độc quyền của bạn.</p>
+                        <p class="text-xs text-[#6E6659] mt-0.5">Khách hàng cài DNS của bạn sẽ có trọn bộ danh sách chú
+                            thích độc quyền của bạn.</p>
                     </div>
                     <div class="p-3.5 rounded-xl border-2 border-[#1E1B18] bg-[#FAF6EA] space-y-2 text-xs">
-                        <div class="flex justify-between"><span>Trạng thái:</span><span id="admSlotCapStatus" class="px-2 py-0.5 rounded border border-[#1E1B18] bg-rose-200 font-black">Chưa kiểm tra</span></div>
-                        <div class="flex justify-between"><span>Thời hạn:</span><span id="admSlotCapExp" class="font-bold text-rose-700">---</span></div>
-                        <div class="flex justify-between"><span>Số slot khả dụng:</span><span class="font-black">100 caption</span></div>
-                        <div class="flex justify-between"><span>Đang sử dụng:</span><span class="font-bold"><span id="admSlotCapUsed">0</span>/100 caption</span></div>
+                        <div class="flex justify-between"><span>Trạng thái:</span><span id="admSlotCapStatus"
+                                class="px-2 py-0.5 rounded border border-[#1E1B18] bg-rose-200 font-black">Chưa kiểm
+                                tra</span></div>
+                        <div class="flex justify-between"><span>Thời hạn:</span><span id="admSlotCapExp"
+                                class="font-bold text-rose-700">---</span></div>
+                        <div class="flex justify-between"><span>Số slot khả dụng:</span><span class="font-black">100
+                                caption</span></div>
+                        <div class="flex justify-between"><span>Đang sử dụng:</span><span class="font-bold"><span
+                                    id="admSlotCapUsed">0</span>/100 caption</span></div>
                     </div>
                     <div class="flex gap-2">
-                        <a href="https://locket.2707226.xyz" target="_blank" class="flex-1 py-2.5 text-center rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">Mua Gói 30 Ngày (5 coin) ↗</a>
-                        <a href="https://locket.2707226.xyz" target="_blank" class="py-2.5 px-3 rounded-xl bg-white border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18]">+1 Slot (1 coin)</a>
+                        <a href="https://locket.2707226.xyz" target="_blank"
+                            class="flex-1 py-2.5 text-center rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">Mua
+                            Gói 30 Ngày (5 coin) ↗</a>
+                        <a href="https://locket.2707226.xyz" target="_blank"
+                            class="py-2.5 px-3 rounded-xl bg-white border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18]">+1
+                            Slot (1 coin)</a>
                     </div>
                 </div>
             </div>
@@ -1049,16 +1164,23 @@
             <!-- ══ SUB-TAB 4: NẠP LƯỢT FILTER ══ -->
             <div id="admStPane_topup_filter" class="hidden space-y-4">
                 <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[3px_3px_0px_#1E1B18] p-4 sm:p-5">
-                    <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Nạp Thêm Lượt Chụp Filter Cho Khách Hàng</h4>
-                    <p class="text-xs text-[#6E6659] mt-1">Khi khách hàng có nhu cầu sử dụng nhiều hơn, CTV có thể tra cứu khách tại đây và nạp thêm gói lượt trên Cổng CTV locket.2707226.xyz.</p>
+                    <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Nạp Thêm Lượt Chụp Filter Cho Khách Hàng
+                    </h4>
+                    <p class="text-xs text-[#6E6659] mt-1">Khi khách hàng có nhu cầu sử dụng nhiều hơn, CTV có thể tra
+                        cứu khách tại đây và nạp thêm gói lượt trên Cổng CTV locket.2707226.xyz.</p>
                 </div>
-                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-5 space-y-4">
+                <div
+                    class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-5 space-y-4">
                     <h4 class="font-bold text-sm text-[#1E1B18]">Thông Tin Tài Khoản Khách Hàng</h4>
                     <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="text" id="admTopupLookupInput" placeholder="Ví dụ: camsitup hoặc @camsitup" class="flex-1 px-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18]">
-                        <button type="button" onclick="adminLookupTopupCustomer()" class="px-5 py-2 rounded-xl border-2 border-[#1E1B18] bg-[#FAF6EA] hover:bg-[#FFD84D] text-xs font-black cursor-pointer">🔍 Tra Cứu Khách</button>
+                        <input type="text" id="admTopupLookupInput" placeholder="Ví dụ: camsitup hoặc @camsitup"
+                            class="flex-1 px-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18]">
+                        <button type="button" onclick="adminLookupTopupCustomer()"
+                            class="px-5 py-2 rounded-xl border-2 border-[#1E1B18] bg-[#FAF6EA] hover:bg-[#FFD84D] text-xs font-black cursor-pointer">🔍
+                            Tra Cứu Khách</button>
                     </div>
-                    <div id="admTopupCustResult" class="hidden p-3 rounded-xl border-2 border-[#1E1B18] bg-emerald-50 text-xs"></div>
+                    <div id="admTopupCustResult"
+                        class="hidden p-3 rounded-xl border-2 border-[#1E1B18] bg-emerald-50 text-xs"></div>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                         <div class="p-4 rounded-xl border-2 border-[#1E1B18] bg-[#FFF8DC] shadow-[2px_2px_0px_#1E1B18]">
                             <div class="font-black text-sm">Gói 20 Lượt Filter AI</div>
@@ -1077,7 +1199,8 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
-                        <a href="https://locket.2707226.xyz" target="_blank" class="px-5 py-2.5 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">
+                        <a href="https://locket.2707226.xyz" target="_blank"
+                            class="px-5 py-2.5 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">
                             Nạp Lượt Filter Trên Web CTV ↗
                         </a>
                         <span class="text-xs text-[#6E6659]">Số dư CTV: <b id="admTopupCoinMirror">---</b></span>
@@ -1087,29 +1210,39 @@
 
             <!-- ══ SUB-TAB 5: BỘ LỌC LUT (URL NGOÀI + UPLOAD .CUBE + 28 MẪU TOGGLE) ══ -->
             <div id="admStPane_filters" class="hidden space-y-4">
-                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-4">
+                <div
+                    class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-4">
                     <div>
                         <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Quản Lý Bộ Lọc Màu LUT</h4>
-                        <p class="text-xs text-[#6E6659] mt-0.5">Toàn bộ bộ lọc được gộp trong nhóm "Lut Filter". Bạn có thể thêm file .cube từ máy tính hoặc dán link tải từ bên ngoài (Google Drive, Dropbox, Github, web).</p>
+                        <p class="text-xs text-[#6E6659] mt-0.5">Toàn bộ bộ lọc được gộp trong nhóm "Lut Filter". Bạn có
+                            thể thêm file .cube từ máy tính hoặc dán link tải từ bên ngoài (Google Drive, Dropbox,
+                            Github, web).</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 text-xs">
-                        <span class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-white font-black">Tổng LUT mẫu: <span id="admLutSampleCnt">28</span></span>
-                        <span class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-white font-black">LUT đã thêm: <span id="admLutCustomCnt">0</span></span>
+                        <span class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-white font-black">Tổng LUT mẫu:
+                            <span id="admLutSampleCnt">28</span></span>
+                        <span class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-white font-black">LUT đã thêm:
+                            <span id="admLutCustomCnt">0</span></span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button type="button" onclick="switchAdminLutUploadMode('url')" id="admLutModeBtn_url" class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-xs font-black cursor-pointer">
+                        <button type="button" onclick="switchAdminLutUploadMode('url')" id="admLutModeBtn_url"
+                            class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-xs font-black cursor-pointer">
                             Thêm bằng Link Bên ngoài (URL)
                         </button>
-                        <button type="button" onclick="switchAdminLutUploadMode('file')" id="admLutModeBtn_file" class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-bold cursor-pointer">
+                        <button type="button" onclick="switchAdminLutUploadMode('file')" id="admLutModeBtn_file"
+                            class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-bold cursor-pointer">
                             Tải File .cube Từ Máy Tính
                         </button>
                     </div>
 
                     <!-- FORM A: THÊM TỪ LINK URL NGOÀI -->
-                    <form onsubmit="adminUploadLutFromUrl(event)" id="admLutForm_url" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                    <form onsubmit="adminUploadLutFromUrl(event)" id="admLutForm_url"
+                        class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                         <div class="md:col-span-5">
-                            <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Link tải file .cube bên ngoài (Drive, Dropbox, GitHub...)</label>
-                            <input type="url" id="adminLutExternalUrl" required placeholder="https://drive.google.com/file/d/... hoặc link .cube"
+                            <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Link tải file .cube bên ngoài
+                                (Drive, Dropbox, GitHub...)</label>
+                            <input type="url" id="adminLutExternalUrl" required
+                                placeholder="https://drive.google.com/file/d/... hoặc link .cube"
                                 class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] focus:outline-none">
                         </div>
                         <div class="md:col-span-4">
@@ -1118,26 +1251,31 @@
                                 class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] focus:outline-none">
                         </div>
                         <div class="md:col-span-3">
-                            <button type="submit" id="btnAdminUploadLutUrl" class="w-full py-2 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                            <button type="submit" id="btnAdminUploadLutUrl"
+                                class="w-full py-2 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
                                 Tải &amp; Thêm LUT từ URL
                             </button>
                         </div>
                     </form>
 
                     <!-- FORM B: UPLOAD FILE TỪ MÁY TÍNH -->
-                    <form onsubmit="adminUploadLutCube(event)" id="admLutForm_file" class="hidden grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                    <form onsubmit="adminUploadLutCube(event)" id="admLutForm_file"
+                        class="hidden grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                         <div class="md:col-span-5">
-                            <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Chọn file 3D LUT (.cube, tối đa 20MB):</label>
+                            <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Chọn file 3D LUT (.cube, tối
+                                đa 20MB):</label>
                             <input type="file" id="adminLutFileInput" accept=".cube" required
                                 class="w-full px-2.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] file:mr-2 file:py-0.5 file:px-2 file:rounded file:border file:border-[#1E1B18] file:bg-[#FFF8E1] file:text-xs file:font-bold cursor-pointer">
                         </div>
                         <div class="md:col-span-4">
-                            <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Tên hiển thị trên app Locket:</label>
+                            <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Tên hiển thị trên app
+                                Locket:</label>
                             <input type="text" id="adminLutNameInput" placeholder="VD: Tone Mùa Hè Pastel"
                                 class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] focus:outline-none">
                         </div>
                         <div class="md:col-span-3">
-                            <button type="submit" id="btnAdminUploadLut" class="w-full py-2 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                            <button type="submit" id="btnAdminUploadLut"
+                                class="w-full py-2 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
                                 📤 Upload File .cube
                             </button>
                         </div>
@@ -1145,10 +1283,13 @@
                 </div>
 
                 <!-- THƯ VIỆN LUT MẪU CHUẨN + TOGGLE BẬT/TẮT LIVE -->
-                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-4">
+                <div
+                    class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Thư Viện LUT Mẫu Chuẩn (<span id="adminCtvFiltersCount">28</span> Bộ Lọc)</h4>
-                        <input type="text" id="admLutSearchInput" oninput="renderAdminLutGrid()" placeholder="Tìm theo tên hoặc danh mục..."
+                        <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Thư Viện LUT Mẫu Chuẩn (<span
+                                id="adminCtvFiltersCount">28</span> Bộ Lọc)</h4>
+                        <input type="text" id="admLutSearchInput" oninput="renderAdminLutGrid()"
+                            placeholder="Tìm theo tên hoặc danh mục..."
                             class="px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] focus:outline-none w-full sm:w-56">
                     </div>
                     <div id="admLutCategoryPills" class="flex flex-wrap items-center gap-1.5 text-[11px]"></div>
@@ -2418,7 +2559,7 @@
                     if (cnt) cnt.textContent = adminPresetFrames.length;
                     renderAdminPresetGallery();
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         function renderAdminPresetGallery() {
@@ -2648,7 +2789,7 @@
                             </button>
                         `).join('');
                     }
-                } catch (e) {}
+                } catch (e) { }
             }, 250);
         }
 

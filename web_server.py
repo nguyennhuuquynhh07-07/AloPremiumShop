@@ -524,6 +524,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "zalo_group_qr": "/zalo_group_qr.png",
                 "support_phone": getattr(config, "SUPPORT_PHONE", "0345222802"),
                 "support_telegram": getattr(config, "SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28"),
+                "bank_id": getattr(config, "BANK_ID", "TPB"),
+                "bank_name": getattr(config, "BANK_NAME", "TPBank"),
+                "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
+                "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
             })
             return
 
