@@ -508,6 +508,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
         # 3. API Danh sách gói cước & bảng giá (kèm cấu hình Banner ưu đãi)
         if path == "/api/packages":
             try:
+                from order_service import trigger_upstream_package_sync_bg
+                trigger_upstream_package_sync_bg()
+            except Exception:
+                pass
+            try:
                 db.apply_custom_prices()
             except Exception:
                 pass

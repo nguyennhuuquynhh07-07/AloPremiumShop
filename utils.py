@@ -84,6 +84,11 @@ def fmt_datetime(iso: str | None) -> str:
 
 def get_dynamic_products() -> dict:
     try:
+        from order_service import trigger_upstream_package_sync_bg
+        trigger_upstream_package_sync_bg()
+    except Exception:
+        pass
+    try:
         import database as db
         if hasattr(db, "apply_custom_prices"):
             db.apply_custom_prices()

@@ -709,11 +709,81 @@ def cancel_expired_pending_orders() -> list[str]:
     return expired_ids
 
 
+_pkg_sync_lock = threading.Lock()
+_last_pkg_sync_ts = 0.0
+_PKG_SYNC_TTL = 300.0
+
+
+def sync_upstream_package_specs(force: bool = False) -> bool:
+    """
+    Đồng bộ thời hạn (durationDays) và tên gói Test từ web chính (https://locket.2707226.xyz/api/packages?service=all)
+    về config.PRODUCTS trong RAM (giữ nguyên giá bán lẻ VNĐ của shop).
+    """
+    global _last_pkg_sync_ts
+    now = time.time()
+    if not force and (now - _last_pkg_sync_ts) < _PKG_SYNC_TTL:
+        return False
+    if not _pkg_sync_lock.acquire(blocking=False):
+        return False
+    try:
+        if not force and (time.time() - _last_pkg_sync_ts) < _PKG_SYNC_TTL:
+            return False
+        import api_client
+        res = api_client.get_packages("all")
+        items = res.get("data") or []
+        if not isinstance(items, list) or not items:
+            return False
+        by_code = {
+            str(item.get("code") or "").strip().upper(): item
+            for item in items if isinstance(item, dict) and item.get("code")
+        }
+        updated = False
+        for prod_val in config.PRODUCTS.values():
+            plans = prod_val.get("plans") or {}
+            for plan_key, plan_val in plans.items():
+                if not isinstance(plan_val, dict):
+                    continue
+                code = str(plan_val.get("packageCode") or "").strip().upper()
+                upstream = by_code.get(code)
+                if not upstream:
+                    continue
+                try:
+                    days = int(upstream.get("durationDays") or 0)
+                except (TypeError, ValueError):
+                    days = 0
+                if days > 0:
+                    plan_val["durationDays"] = days
+                    if plan_key == "test" and days < 30:
+                        new_label = f"Test {days} Ngày"
+                        if plan_val.get("label") != new_label:
+                            plan_val["label"] = new_label
+                            updated = True
+                if "priceCoin" in upstream:
+                    plan_val["priceCoin"] = upstream.get("priceCoin", 0)
+        _last_pkg_sync_ts = time.time()
+        if updated:
+            logger.info("🔄 Đã đồng bộ nhãn & thời hạn gói Test từ web chính API.")
+        return True
+    except Exception as e:
+        logger.debug(f"sync_upstream_package_specs skipped: {e}")
+        return False
+    finally:
+        _pkg_sync_lock.release()
+
+
+def trigger_upstream_package_sync_bg() -> None:
+    """Kích hoạt đồng bộ gói cước ở thread nền nếu cache đã hết hạn (không chặn request)."""
+    if (time.time() - _last_pkg_sync_ts) < _PKG_SYNC_TTL:
+        return
+    threading.Thread(target=sync_upstream_package_specs, daemon=True).start()
+
+
 def sync_upstream_orders() -> int:
     """
     Đồng bộ toàn bộ danh sách tài khoản đã kích hoạt từ máy chủ API CTV (web chủ)
     vào cơ sở dữ liệu nội bộ để khách hàng cũ có thể tra cứu và tải lại DNS bất cứ lúc nào.
     """
+    sync_upstream_package_specs(force=True)
     try:
         import api_client
         uids = api_client.get_activated_uids(force_refresh=True)
@@ -741,7 +811,7 @@ def sync_upstream_orders() -> int:
                 plan_key = "6m"
             elif "1Y" in pkg_code or "1 NĂM" in pkg_name.upper():
                 plan_key = "1y"
-            elif "T3D" in pkg_code or "TEST" in pkg_name.upper():
+            elif pkg_code in ("LKGT3D", "SPT") or "T3D" in pkg_code or "TEST" in pkg_name.upper():
                 plan_key = "test"
 
             clean_u = username.lower().lstrip("@")

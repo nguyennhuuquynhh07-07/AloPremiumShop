@@ -584,7 +584,7 @@
                         </div>
                         <div class="my-4 pb-4 border-b border-[#F0E4C8]">
                             <div class="font-fredoka text-3xl font-black text-[#1E1B18]" id="price_display_locket">5.000đ - 160.000đ</div>
-                            <div class="text-xs text-[#6E6659] font-medium mt-1">Từ 1 ngày đến Vĩnh viễn • Cập nhật tức thì</div>
+                            <div class="text-xs text-[#6E6659] font-medium mt-1" id="duration_range_locket">Từ 3 ngày đến Vĩnh viễn • Cập nhật tức thì</div>
                         </div>
                         
                         <!-- TÍNH NĂNG NỔI BẬT LOCKET GOLD VIP -->
@@ -636,7 +636,7 @@
                             </div>
                             <div class="my-4 pb-4 border-b border-[#F0E4C8]">
                                 <div class="font-fredoka text-3xl font-black text-emerald-700" id="price_display_spotify">5.000đ - 180.000đ</div>
-                                <div class="text-xs text-[#6E6659] font-medium mt-1">Từ 1 ngày đến Vĩnh viễn • Đổi thiết bị thoải mái</div>
+                                <div class="text-xs text-[#6E6659] font-medium mt-1" id="duration_range_spotify">Từ 3 ngày đến Vĩnh viễn • Đổi thiết bị thoải mái</div>
                             </div>
                             <ul class="space-y-2 text-xs text-[#1E1B18]">
                                 <li class="flex items-center gap-2.5">
@@ -805,8 +805,8 @@
                         <span class="text-base">🎁</span>
                         <span>Khách mới từ <b>TikTok</b> muốn test thử độ uy tín trước?</span>
                     </div>
-                    <button type="button" onclick="quickSelectTrial5k()" class="px-3.5 py-1.5 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs shadow-sm cursor-pointer transition-all">
-                        ⚡ Dùng Thử 24h Chỉ 5.000đ →
+                    <button type="button" id="btnQuickTrial5k" onclick="quickSelectTrial5k()" class="px-3.5 py-1.5 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs shadow-sm cursor-pointer transition-all">
+                        ⚡ Dùng Thử 3 Ngày Chỉ 5.000đ →
                     </button>
                 </div>
 
@@ -4099,6 +4099,22 @@
                                     el.textContent = minP === maxP ? `${minP.toLocaleString('vi-VN')}đ` : `${minP.toLocaleString('vi-VN')}đ - ${maxP.toLocaleString('vi-VN')}đ`;
                                 }
                             }
+                            if ((pk === 'locket' || pk === 'spotify') && p.plans.test) {
+                                const tDays = Number(p.plans.test.durationDays) || 3;
+                                const rangeEl = document.getElementById('duration_range_' + pk);
+                                if (rangeEl) {
+                                    rangeEl.textContent = pk === 'locket'
+                                        ? `Từ ${tDays} ngày đến Vĩnh viễn • Cập nhật tức thì`
+                                        : `Từ ${tDays} ngày đến Vĩnh viễn • Đổi thiết bị thoải mái`;
+                                }
+                                if (pk === 'locket') {
+                                    const tPrice = Number(p.plans.test.price) || 5000;
+                                    const quickBtn = document.getElementById('btnQuickTrial5k');
+                                    if (quickBtn) {
+                                        quickBtn.textContent = `⚡ Dùng Thử ${tDays} Ngày Chỉ ${tPrice.toLocaleString('vi-VN')}đ →`;
+                                    }
+                                }
+                            }
                         }
                     });
                     // Cập nhật cấu hình Nhóm Zalo Hỗ Trợ
@@ -4397,7 +4413,10 @@
                 inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 setTimeout(() => inp.focus(), 400);
             }
-            showToast('⚡ Đã chọn Gói Dùng Thử Locket Gold 24h (5.000đ)!');
+            const tPlan = systemProducts?.locket?.plans?.test;
+            const tDays = Number(tPlan?.durationDays) || 3;
+            const tPrice = Number(tPlan?.price) || 5000;
+            showToast(`⚡ Đã chọn Gói Dùng Thử Locket Gold ${tDays} Ngày (${tPrice.toLocaleString('vi-VN')}đ)!`);
         }
 
         function openBankApp(appId) {
