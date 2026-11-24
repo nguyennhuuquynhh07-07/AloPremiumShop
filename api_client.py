@@ -424,3 +424,80 @@ def ctv_upload_filter(file_bytes: bytes, filename: str, name: str = "") -> dict:
         raise Exception(parse_api_error(resp))
     _filters_cache_time = 0.0
     return resp.json()
+
+
+def _normalize_external_cube_url(raw_url: str) -> str:
+    """Chuẩn hóa link Google Drive, Dropbox, GitHub blob sang link tải trực tiếp."""
+    import re
+    u = raw_url.strip()
+    m_gd = re.search(r"drive\.google\.com/file/d/([a-zA-Z0-9_-]+)", u)
+    if m_gd:
+        return f"https://drive.google.com/uc?export=download&id={m_gd.group(1)}"
+    if "dropbox.com/" in u:
+        u = re.sub(r"[?&]dl=0\b", "", u)
+        sep = "&" if "?" in u else "?"
+        if "dl=1" not in u:
+            u = f"{u}{sep}dl=1"
+    m_gh = re.match(r"^https://github\.com/([^/]+/[^/]+)/blob/(.+)$", u)
+    if m_gh:
+        return f"https://raw.githubusercontent.com/{m_gh.group(1)}/{m_gh.group(2)}"
+    return u
+
+
+def _validate_public_http_url(url_str: str) -> str:
+    """Chặn SSRF: chỉ cho phép HTTP/HTTPS công cộng, chặn IP nội bộ/loopback."""
+    import ipaddress
+    import socket
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url_str)
+    if parsed.scheme not in ("https", "http") or not parsed.hostname:
+        raise ValueError("Link tải .cube phải bắt đầu bằng https:// hoặc http:// hợp lệ.")
+    host = parsed.hostname
+    if host.lower() in ("localhost", "127.0.0.1", "0.0.0.0", "::1"):
+        raise ValueError("Không được phép tải từ địa chỉ nội bộ.")
+    infos = socket.getaddrinfo(host, None)
+    for info in infos:
+        ip_str = info[4][0].split("%")[0]
+        ip_obj = ipaddress.ip_address(ip_str)
+        if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local or ip_obj.is_reserved or ip_obj.is_multicast:
+            raise ValueError("Địa chỉ máy chủ nguồn không hợp lệ (chặn IP nội bộ).")
+    return url_str
+
+
+def ctv_upload_filter_from_url(external_url: str, name: str = "") -> dict:
+    """Tải file .cube từ URL ngoài (tối đa 20MB) rồi đẩy lên API CTV."""
+    import re
+    norm_url = _normalize_external_cube_url(external_url)
+    _validate_public_http_url(norm_url)
+
+    current_url = norm_url
+    max_bytes = 20 * 1024 * 1024
+    downloaded = bytearray()
+    for _ in range(4):
+        _validate_public_http_url(current_url)
+        with httpx.Client(timeout=httpx.Timeout(30.0, connect=8.0), follow_redirects=False) as dl_client:
+            with dl_client.stream("GET", current_url, headers={"User-Agent": "AloPremiumLUT/1.0"}) as r:
+                if r.status_code in (301, 302, 303, 307, 308) and r.headers.get("location"):
+                    from urllib.parse import urljoin
+                    current_url = urljoin(current_url, r.headers["location"])
+                    continue
+                if r.is_error:
+                    raise Exception(f"Không thể tải file từ URL (HTTP {r.status_code}).")
+                for chunk in r.iter_bytes(65536):
+                    downloaded.extend(chunk)
+                    if len(downloaded) > max_bytes:
+                        raise Exception("File tải về vượt quá giới hạn tối đa 20MB.")
+                break
+    else:
+        raise Exception("Quá nhiều lượt chuyển hướng khi tải file .cube.")
+
+    raw_bytes = bytes(downloaded)
+    if not raw_bytes or b"<html" in raw_bytes[:512].lower():
+        raise Exception("Đường dẫn không trả về file .cube hợp lệ (có thể link bị khóa quyền truy cập hoặc là trang HTML).")
+    if b"LUT_3D_SIZE" not in raw_bytes[:4096] and b"DOMAIN_" not in raw_bytes[:4096]:
+        if not re.search(rb"^\s*[+-]?\d+(\.\d+)?\s+[+-]?\d+(\.\d+)?\s+[+-]?\d+(\.\d+)?\s*$", raw_bytes[:4096], re.M):
+            raise Exception("Nội dung tải về không đúng định dạng file 3D LUT (.cube).")
+
+    fname = (name.strip().replace(" ", "_") or "external_lut") + ".cube"
+    return ctv_upload_filter(file_bytes=raw_bytes, filename=fname, name=name)

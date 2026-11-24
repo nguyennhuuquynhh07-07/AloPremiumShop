@@ -1037,7 +1037,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
             frames_data = {}
             captions_data = {}
             filters_data = {}
+            acc_data = {}
             errors = {}
+            try:
+                acc_data = api.get_account_info().get("data", {})
+            except Exception as e_acc:
+                errors["account"] = str(e_acc)
             try:
                 frames_data = api.ctv_get_frames(force_refresh=True)
             except Exception as e_fr:
@@ -1053,10 +1058,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             self._send_json(200, {
                 "ok": True,
+                "account": acc_data,
+                "balanceCoin": acc_data.get("balanceCoin"),
                 "frames": frames_data.get("frames", []),
                 "framesExpiresAt": frames_data.get("expiresAt"),
                 "captions": captions_data.get("captions", []),
                 "captionsMode": captions_data.get("mode", "brand"),
+                "captionsExpiresAt": captions_data.get("expiresAt"),
                 "sampleLuts": filters_data.get("sampleLuts", []),
                 "customFilters": filters_data.get("customFilters", []),
                 "filtersExpiresAt": filters_data.get("expiresAt"),
@@ -1658,6 +1666,78 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(200, res)
             except Exception as e_b64:
                 self._send_json(400, {"ok": False, "error": str(e_b64)})
+            return
+
+        # API Admin: Tải & Thêm 3D LUT (.cube) từ Link bên ngoài (Drive, Dropbox, GitHub, Web)
+        if path == "/api/admin/ctv/filters/upload_url":
+            pin = str(body.get("pin", "")).strip()
+            if pin != getattr(config, "ADMIN_PIN", "2802"):
+                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+                return
+            ext_url = str(body.get("url", "")).strip()
+            lut_name = str(body.get("name", "")).strip()
+            if not ext_url:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập link tải file .cube bên ngoài!"})
+                return
+            try:
+                res = api.ctv_upload_filter_from_url(external_url=ext_url, name=lut_name)
+                self._send_json(200, res)
+            except Exception as e_u:
+                self._send_json(400, {"ok": False, "error": str(e_u)})
+            return
+
+        # API Upload ảnh khung PNG từ máy tính (Admin PIN hoặc Khách VIP đã xác thực)
+        if path == "/api/upload_frame_image":
+            pin = str(body.get("pin", "")).strip()
+            ident = str(body.get("identifier", "")).strip()
+            is_admin = (pin == getattr(config, "ADMIN_PIN", "2802"))
+            if not is_admin:
+                if not ident:
+                    self._send_json(401, {"ok": False, "error": "Vui lòng kết nối tài khoản Locket VIP trước khi tải khung ảnh lên!"})
+                    return
+                is_vip, info = self._verify_customer_locket_vip(ident)
+                if not is_vip:
+                    self._send_json(403, {"ok": False, "error": info.get("error") or "Tài khoản chưa kích hoạt Locket Gold VIP để tải khung lên máy chủ."})
+                    return
+
+            img_b64 = str(body.get("image_b64", "")).strip()
+            if not img_b64:
+                self._send_json(400, {"ok": False, "error": "Thiếu dữ liệu ảnh khung!"})
+                return
+            try:
+                import base64
+                import uuid
+                if "," in img_b64:
+                    img_b64 = img_b64.split(",", 1)[1]
+                raw_img = base64.b64decode(img_b64)
+                if len(raw_img) > 5 * 1024 * 1024:
+                    self._send_json(413, {"ok": False, "error": "Ảnh khung tối đa 5MB!"})
+                    return
+                if raw_img.startswith(b"\x89PNG\r\n\x1a\n"):
+                    ext = "png"
+                elif raw_img[:4] == b"RIFF" and raw_img[8:12] == b"WEBP":
+                    ext = "webp"
+                else:
+                    self._send_json(400, {"ok": False, "error": "Chỉ hỗ trợ ảnh khung PNG trong suốt hoặc WEBP!"})
+                    return
+
+                up_dir = os.path.join(os.path.dirname(__file__), "assets", "uploads", "frames")
+                os.makedirs(up_dir, exist_ok=True)
+                fname = f"frame_{uuid.uuid4().hex[:12]}.{ext}"
+                fpath = os.path.join(up_dir, fname)
+                with open(fpath, "wb") as f_out:
+                    f_out.write(raw_img)
+
+                base_web = getattr(config, "WEBSITE_URL", "https://alopremium.shop").rstrip("/")
+                host_hdr = self.headers.get("Host", "").strip()
+                proto_hdr = self.headers.get("X-Forwarded-Proto", "https").strip()
+                if host_hdr and "localhost" not in host_hdr and "127.0.0.1" not in host_hdr:
+                    public_url = f"{proto_hdr}://{host_hdr}/assets/uploads/frames/{fname}"
+                else:
+                    public_url = f"{base_web}/assets/uploads/frames/{fname}"
+                self._send_json(200, {"ok": True, "url": public_url, "local_path": f"/assets/uploads/frames/{fname}"})
+            except Exception as e_img:
+                self._send_json(400, {"ok": False, "error": f"Lỗi xử lý ảnh khung: {e_img}"})
             return
 
         # 1.1 API Khách hàng kết nối tài khoản Locket với mục Tính Năng VIP (Frames + Captions)

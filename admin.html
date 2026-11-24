@@ -707,169 +707,453 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- TAB 5.5: QUẢN LÝ TÍNH NĂNG CTV (FRAMES, CAPTIONS, LUTS)      -->
+        <!-- TAB 5.5: LOCKET CUSTOM STUDIO (KHU VỰC CTV CHUẨN 5 TAB)      -->
         <!-- ============================================================ -->
-        <div id="tabContent_ctv_features" class="space-y-6 hidden">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-amber-500/30 rounded-3xl p-6 shadow-xl">
-                <div>
-                    <h3 class="text-base font-black text-white flex items-center gap-2">
-                        <span>🎨</span> Quản Trị Tính Năng CTV (Đồng Bộ Live locket.2707226.xyz)
-                    </h3>
-                    <p class="text-xs text-slate-400 mt-1">
-                        Đấu nối trực tiếp các API: <code>/api/v1/ctv/frames</code>, <code>/api/v1/ctv/captions</code>, <code>/api/v1/ctv/filters</code> &amp; Upload 3D LUT <code>.cube</code>
-                    </p>
-                </div>
-                <button onclick="loadCtvFeaturesOverview()" id="btnReloadCtvFeatures"
-                    class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow-lg transition-all cursor-pointer shrink-0">
-                    🔄 Tải Lại Dữ Liệu CTV
-                </button>
-            </div>
-
-            <!-- 1. QUẢN LÝ KHUNG WIDGET CTV -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <div>
-                        <h4 class="text-sm font-black text-white">🖼️ 1. Khung Widget CTV (GET / POST /api/v1/ctv/frames)</h4>
-                        <p class="text-xs text-slate-400 mt-0.5">Thêm hoặc chỉnh sửa khung ảnh PNG trong suốt cho Toàn Bộ Khách (ALL) hoặc theo từng UID</p>
-                    </div>
-                    <span id="adminCtvFramesCount" class="px-3 py-1 rounded-full bg-slate-800 text-amber-400 text-xs font-bold">0 khung</span>
-                </div>
-
-                <form onsubmit="adminSaveCtvFrame(event)" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
-                    <div class="md:col-span-4">
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">URL Ảnh Khung PNG (*):</label>
-                        <input type="url" id="adminFrameUrl" required placeholder="https://doh.2707226.xyz/uploads/frame.png"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400">
-                    </div>
-                    <div class="md:col-span-3">
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Tên Khung (hoặc chọn mẫu):</label>
-                        <input type="text" id="adminFrameName" placeholder="VD: Khung VIP 2026"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400">
-                    </div>
-                    <div class="md:col-span-3">
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Target UID (ALL hoặc UID cách dấu phẩy):</label>
-                        <input type="text" id="adminFrameTargetUid" value="ALL" placeholder="ALL hoặc uid1,uid2"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-400">
-                    </div>
-                    <div class="md:col-span-2 flex items-center gap-2">
-                        <label class="flex items-center gap-1.5 text-xs font-bold text-slate-300 cursor-pointer">
-                            <input type="checkbox" id="adminFrameActive" checked class="w-4 h-4 rounded">
-                            <span>Bật</span>
-                        </label>
-                        <button type="submit" id="btnAdminSaveFrame"
-                            class="flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs cursor-pointer">
-                            💾 Lưu
+        <div id="tabContent_ctv_features" class="space-y-4 hidden text-[#1E1B18]">
+            <!-- HEADER CARD: KHU VỰC CTV | Locket Custom Studio | Số dư coin -->
+            <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3.5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <span class="px-2.5 py-1 rounded-md bg-[#FFD84D] border-2 border-[#1E1B18] text-xs font-black uppercase tracking-wider text-[#1E1B18]">
+                            KHU VỰC CTV
+                        </span>
+                        <h3 class="text-lg sm:text-xl font-black text-[#1E1B18]">
+                            Locket Custom Studio
+                        </h3>
+                        <button type="button" onclick="loadCtvFeaturesOverview()" id="btnReloadCtvFeatures"
+                            class="px-2.5 py-1 rounded-lg bg-white hover:bg-[#FFF5D6] border border-[#1E1B18] text-[11px] font-bold text-[#1E1B18] cursor-pointer">
+                            🔄 Đồng bộ
                         </button>
                     </div>
-                </form>
-
-                <div class="flex items-center gap-2 text-xs">
-                    <span class="text-slate-400 shrink-0">⚡ Chọn nhanh từ 79 khung mẫu:</span>
-                    <select id="adminPresetFrameSelect" onchange="pickAdminPresetFrame(this.value)"
-                        class="flex-1 max-w-md px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-200 focus:outline-none">
-                        <option value="">-- Chọn khung từ thư viện 79 mẫu để điền nhanh --</option>
-                    </select>
+                    <div class="px-3.5 py-1.5 rounded-lg bg-[#FFF8E1] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">
+                        Số dư: <span id="adminStudioBalanceCoin" class="text-amber-700">--- coin</span>
+                    </div>
                 </div>
 
-                <div id="adminCtvFramesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                    <div class="col-span-full py-6 text-center text-slate-500">Đang tải danh sách khung CTV...</div>
+                <!-- 5 SUB-TABS -->
+                <div class="border-t-2 border-dashed border-[#D6CEBC] pt-3 flex flex-wrap items-center gap-2">
+                    <button type="button" onclick="switchAdminStudioTab('frames')" id="admStBtn_frames"
+                        class="px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] bg-[#FFD84D] text-[#1E1B18] font-bold text-xs cursor-pointer">
+                        Khung Widget (<span id="admCntFramesTab">0</span>/30)
+                    </button>
+                    <button type="button" onclick="switchAdminStudioTab('captions')" id="admStBtn_captions"
+                        class="px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer">
+                        Caption Chú Thích (<span id="admCntCaptionsTab">0</span>/100)
+                    </button>
+                    <button type="button" onclick="switchAdminStudioTab('slots')" id="admStBtn_slots"
+                        class="px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer">
+                        Mua Slot Khung &amp; Caption
+                    </button>
+                    <button type="button" onclick="switchAdminStudioTab('topup_filter')" id="admStBtn_topup_filter"
+                        class="px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer">
+                        Nạp Lượt Filter
+                    </button>
+                    <button type="button" onclick="switchAdminStudioTab('filters')" id="admStBtn_filters"
+                        class="px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer">
+                        Bộ Lọc LUT
+                    </button>
                 </div>
             </div>
 
-            <!-- 2. QUẢN LÝ CAPTION & APPLE SF SYMBOLS -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+            <!-- ══ SUB-TAB 1: KHUNG WIDGET ══ -->
+            <div id="admStPane_frames" class="space-y-4">
+                <div class="bg-[#FFFDF5] rounded-xl border-2 border-[#1E1B18] shadow-[3px_3px_0px_#1E1B18] px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="switchAdminFrameMode('editor')" id="admFrameModeBtn_editor"
+                            class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-[#1E1B18] font-bold text-xs cursor-pointer">
+                            Tự Thiết Kế &amp; Quản Lý (<span id="admCntFramesMode">0</span>/30)
+                        </button>
+                        <button type="button" onclick="switchAdminFrameMode('gallery')" id="admFrameModeBtn_gallery"
+                            class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer">
+                            Kho Khung Mẫu (<span id="admCntPresetFrames">79</span>)
+                        </button>
+                    </div>
+                    <span class="text-xs font-extrabold text-emerald-700">Kết nối Live locket.2707226.xyz</span>
+                </div>
+
+                <!-- MODE A: EDITOR + DANH SÁCH + GIẢ LẬP WIDGET -->
+                <div id="admFrameView_editor" class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                    <div class="lg:col-span-7 space-y-4">
+                        <form onsubmit="adminSaveCtvFrame(event)" class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
+                            <div class="flex items-center justify-between gap-2">
+                                <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Bộ Chỉnh Sửa Khung (1024x1024)</h4>
+                                <span class="px-2.5 py-0.5 rounded bg-emerald-400 border border-[#1E1B18] text-[11px] font-black text-[#1E1B18]">API Live</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-[#1E1B18] mb-1">1. Tên khung (Ví dụ: Viền Trái Tim, Khung 20-10, Logo Brand):</label>
+                                <input type="text" id="adminFrameName" placeholder="Nhập tên khung..."
+                                    class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-[#1E1B18]">2. Tải ảnh khung lên (PNG trong suốt) hoặc dán Link URL:</label>
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <input type="file" id="adminFrameFileInput" accept="image/png,image/webp" onchange="handleAdminFrameFileSelect(event)"
+                                        class="w-full sm:w-60 px-2 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] file:mr-2 file:py-0.5 file:px-2 file:rounded file:border file:border-[#1E1B18] file:bg-[#FFF8E1] file:text-xs file:font-bold cursor-pointer">
+                                    <input type="url" id="adminFrameUrl" oninput="handleAdminFrameUrlChange(this.value)" placeholder="https://doh.2707226.xyz/uploads/frame.png"
+                                        class="flex-1 px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+                                <div class="sm:col-span-9">
+                                    <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Phạm vi áp dụng (ALL hoặc danh sách UID cách nhau dấu phẩy):</label>
+                                    <input type="text" id="adminFrameTargetUid" value="ALL" placeholder="ALL hoặc uid1,uid2"
+                                        class="w-full px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-mono text-[#1E1B18] focus:outline-none">
+                                </div>
+                                <label class="sm:col-span-3 flex items-center gap-1.5 text-xs font-bold text-[#1E1B18] pt-4 cursor-pointer">
+                                    <input type="checkbox" id="adminFrameActive" checked class="w-4 h-4">
+                                    <span>Đang bật</span>
+                                </label>
+                            </div>
+
+                            <div class="w-full max-w-[240px] mx-auto aspect-square rounded-xl bg-[#1E1F26] border-2 border-[#1E1B18] flex items-center justify-center relative overflow-hidden">
+                                <span id="admFramePreviewEmpty" class="text-[11px] text-zinc-400 font-semibold text-center px-3">Chưa chọn ảnh PNG<br>(Preview nền tối)</span>
+                                <img id="admFramePreviewImg" src="" alt="" class="hidden w-full h-full object-contain">
+                            </div>
+
+                            <button type="submit" id="btnAdminSaveFrame"
+                                class="w-full py-2.5 px-4 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs sm:text-sm font-black text-[#1E1B18] cursor-pointer">
+                                💾 Lưu khung ảnh lên locket.2707226.xyz
+                            </button>
+                        </form>
+
+                        <!-- DANH SÁCH KHUNG CTV -->
+                        <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">
+                                    Danh Sách Khung (<span id="adminCtvFramesCount">0</span>/30)
+                                </h4>
+                                <div class="flex items-center gap-1.5 text-[11px]">
+                                    <button type="button" onclick="filterAdminFramesScope('all')" class="adm-fr-scope px-2.5 py-1 rounded border border-[#1E1B18] bg-[#FFD84D] font-black cursor-pointer" data-scope="all">
+                                        Tất cả (<span id="admScAll">0</span>)
+                                    </button>
+                                    <button type="button" onclick="filterAdminFramesScope('shared')" class="adm-fr-scope px-2.5 py-1 rounded border border-[#1E1B18] bg-white font-bold cursor-pointer" data-scope="shared">
+                                        Chung (<span id="admScShared">0</span>)
+                                    </button>
+                                    <button type="button" onclick="filterAdminFramesScope('private')" class="adm-fr-scope px-2.5 py-1 rounded border border-[#1E1B18] bg-white font-bold cursor-pointer" data-scope="private">
+                                        Riêng (<span id="admScPriv">0</span>)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="adminCtvFramesList" class="space-y-2.5 text-xs">
+                                <div class="py-6 text-center text-zinc-500">Đang tải danh sách khung CTV...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GIẢ LẬP WIDGET LOCKET THẬT -->
+                    <div class="lg:col-span-5 bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                            <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">Giả Lập Widget Locket Thật</h4>
+                            <div class="flex items-center border-2 border-[#1E1B18] rounded-lg overflow-hidden text-[11px] font-bold">
+                                <button type="button" onclick="setAdminSimSize('large')" id="admSimBtn_large" class="px-2.5 py-1 bg-[#FFD84D] text-[#1E1B18] cursor-pointer">Khung Lớn (1:1)</button>
+                                <button type="button" onclick="setAdminSimSize('small')" id="admSimBtn_small" class="px-2.5 py-1 bg-white text-[#1E1B18] border-l-2 border-[#1E1B18] cursor-pointer">Khung Nhỏ (1:1)</button>
+                            </div>
+                        </div>
+                        <div id="admSimWidgetBanner" class="px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-[#FFF8DC] text-[11px] font-bold text-[#1E1B18] text-center">
+                            Đang hiển thị khung lưu trong tài khoản CTV
+                        </div>
+                        <div class="flex items-center justify-center gap-2 flex-wrap text-[11px] font-bold text-[#1E1B18]">
+                            <span>Ảnh lồng bên dưới:</span>
+                            <button type="button" onclick="document.getElementById('admSimPhotoImg').src='/assets/index/stickers/bff.webp'" class="w-8 h-8 rounded-lg border-2 border-[#1E1B18] overflow-hidden cursor-pointer"><img src="/assets/index/stickers/bff.webp" class="w-full h-full object-cover"></button>
+                            <button type="button" onclick="document.getElementById('admSimPhotoImg').src='/assets/index/stickers/i-heart-locket.webp'" class="w-8 h-8 rounded-lg border-2 border-[#1E1B18] overflow-hidden cursor-pointer bg-amber-100"><img src="/assets/index/stickers/i-heart-locket.webp" class="w-full h-full object-cover"></button>
+                            <input type="file" id="admSimCustomPhoto" accept="image/*" onchange="handleAdminSimPhoto(event)" class="hidden">
+                            <button type="button" onclick="document.getElementById('admSimCustomPhoto').click()" class="px-2.5 py-1 rounded-lg border-2 border-[#1E1B18] bg-white hover:bg-[#FFF5D6] font-bold cursor-pointer">Đổi ảnh của bạn</button>
+                        </div>
+
+                        <div class="mx-auto w-[250px] h-[410px] rounded-[36px] border-[5px] border-[#1E1B18] bg-gradient-to-b from-[#EDE6D6] via-[#D8CEBA] to-[#E5D3B3] relative overflow-hidden shadow-lg flex flex-col items-center pt-5 px-4 select-none">
+                            <div class="w-20 h-4 bg-[#1E1B18] rounded-full mb-2"></div>
+                            <div class="text-center text-white drop-shadow-sm mb-3">
+                                <div class="text-3xl font-black leading-none">16:28</div>
+                                <div class="text-[10px] font-bold mt-0.5">Thứ Ba, 13 tháng 10</div>
+                            </div>
+                            <div id="admSimWidgetBox" class="w-44 h-44 rounded-[28px] bg-zinc-900 relative overflow-hidden shadow-2xl border-2 border-white/40 transition-all">
+                                <img id="admSimPhotoImg" src="/assets/index/stickers/bff.webp" class="absolute inset-0 w-full h-full object-cover">
+                                <img id="admSimOverlayImg" src="" class="hidden absolute inset-0 w-full h-full object-cover z-10 pointer-events-none">
+                                <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black text-white shadow" style="background: linear-gradient(135deg, #7C3AED, #2A0845);">Tạm Thời Vậy</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODE B: KHO KHUNG MẪU (79) -->
+                <div id="admFrameView_gallery" class="hidden space-y-3">
+                    <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] p-4 flex items-center justify-between gap-2">
+                        <input type="text" id="admPresetSearch" oninput="renderAdminPresetGallery()" placeholder="Tìm khung trong 79 mẫu (Kuromi, Shin, Kitty, Conan, Gojo...)"
+                            class="flex-1 px-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
+                        <span class="px-3 py-1.5 rounded-lg bg-[#FFD84D] border border-[#1E1B18] text-xs font-black">79 Mẫu</span>
+                    </div>
+                    <div id="admPresetGalleryGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+                </div>
+            </div>
+
+            <!-- ══ SUB-TAB 2: CAPTION CHÚ THÍCH ══ -->
+            <div id="admStPane_captions" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                <div class="lg:col-span-7 space-y-4">
+                    <form onsubmit="adminSaveCtvCaption(event)" class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">💬 Soạn Caption (CTV &amp; Khách hàng)</h4>
+                                <p class="text-[11px] text-[#6E6659]">Lưu Brand Caption (ALL) hoặc Caption riêng theo UID/Username khách hàng</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded bg-emerald-400 border border-[#1E1B18] text-xs font-black text-[#1E1B18]">
+                                <span id="admCapCountBadge">0</span>/100
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="switchAdminIconMode('emoji')" id="admIconBtn_emoji" class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-bold cursor-pointer">Bảng Emoji</button>
+                                <button type="button" onclick="switchAdminIconMode('symbol')" id="admIconBtn_symbol" class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-xs font-black cursor-pointer">🍎 Apple Symbol</button>
+                            </div>
+                            <span class="text-[11px] text-[#6E6659] italic">Chạm để chọn icon nhanh</span>
+                        </div>
+
+                        <div id="admIconPane_emoji" class="hidden p-2.5 rounded-xl border-2 border-[#1E1B18] bg-white">
+                            <div class="grid grid-cols-8 sm:grid-cols-10 gap-1.5" id="admEmojiGrid"></div>
+                        </div>
+
+                        <div id="admIconPane_symbol" class="p-3 rounded-xl border-2 border-[#1E1B18] bg-white space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-black text-[#1E1B18]">Apple SF Symbols (449)</span>
+                                <span class="px-2 py-0.5 rounded bg-amber-100 border border-amber-400 text-[11px] font-bold">Đang chọn: <span id="admSelectedSymLabel">sparkles</span></span>
+                            </div>
+                            <input type="text" id="adminSymSearch" oninput="adminSearchSymbols(this.value)" placeholder="🔍 Tìm symbol (wind, heart, gio, tim...)"
+                                class="w-full px-3 py-1.5 rounded-lg border border-zinc-400 bg-[#FFFDF5] text-xs text-[#1E1B18] focus:outline-none">
+                            <div id="adminSymbolsGrid" class="max-h-48 overflow-y-auto grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-1">
+                                <span class="col-span-full text-center text-xs text-zinc-500 py-4">Đang tải SF Symbols...</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                            <div class="sm:col-span-7">
+                                <label class="block text-xs font-bold text-[#1E1B18] mb-1">✎ Nội dung caption *</label>
+                                <input type="text" id="adminCapText" maxlength="100" required oninput="updateAdminCapPreview()" placeholder="VD: AloPremium VIP ✨"
+                                    class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
+                            </div>
+                            <div class="sm:col-span-5">
+                                <label class="block text-xs font-bold text-[#1E1B18] mb-1">👤 UID / Username (trống = ALL Brand)</label>
+                                <input type="text" id="adminCapUid" placeholder="camsitup hoặc để trống"
+                                    class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
+                            </div>
+                        </div>
+                        <input type="hidden" id="adminCapSymbol" value="sparkles">
+
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                            <div class="flex items-center gap-2" id="admCapSwatches"></div>
+                            <div class="flex items-center gap-1.5 text-xs">
+                                <input type="color" id="adminCapColor1" value="#FF5E3A" onchange="updateAdminCapPreview()" class="w-7 h-7 cursor-pointer">
+                                <input type="color" id="adminCapColor2" value="#FF2A68" onchange="updateAdminCapPreview()" class="w-7 h-7 cursor-pointer">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center">
+                            <div id="admCapPreviewPill" class="px-5 py-2 rounded-full border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] inline-flex items-center gap-1.5 text-white font-black text-xs"
+                                 style="background: linear-gradient(135deg, #FF5E3A, #FF2A68);">
+                                <img id="admCapPrevSvg" src="https://locket.2707226.xyz/assets/sf-symbols/sparkles.svg" class="w-4 h-4 brightness-0 invert">
+                                <span id="admCapPrevIcon" class="hidden">✨</span>
+                                <span id="admCapPrevText">Xem trước viền caption</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnAdminSaveCap"
+                            class="w-full py-2.5 px-4 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                            + Thêm &amp; Lưu Caption Lên locket.2707226.xyz
+                        </button>
+                    </form>
+
+                    <!-- TRA CỨU & DANH SÁCH CAPTION -->
+                    <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">≣ Danh Sách Caption (<span id="admCapListCount">0</span>)</h4>
+                            <div class="flex items-center gap-1.5">
+                                <input type="text" id="adminCaptionLookupUid" placeholder="Tra Brand (trống) hoặc UID khách"
+                                    class="px-2.5 py-1 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] w-48 focus:outline-none">
+                                <button type="button" onclick="adminLookupCaptions()" class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-xs font-black cursor-pointer">
+                                    🔍 Tra
+                                </button>
+                            </div>
+                        </div>
+                        <div id="adminCtvCaptionsList" class="space-y-2 text-xs">
+                            <div class="py-6 text-center text-zinc-500">Đang tải danh sách Caption...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GIẢ LẬP MÀN HÌNH LOCKET THẬT -->
+                <div class="lg:col-span-5 bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
+                    <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">Giả Lập Màn Hình Locket Thật</h4>
+                    <div class="mx-auto w-[250px] min-h-[430px] rounded-[38px] border-[5px] border-[#1E1B18] bg-[#0B0B0F] text-white p-3.5 flex flex-col gap-3 shadow-xl select-none">
+                        <div class="flex items-center justify-between text-[10px] font-bold px-2">
+                            <span>16:28</span>
+                            <div class="w-16 h-3.5 bg-black rounded-full border border-zinc-800"></div>
+                            <span>📶 🔋</span>
+                        </div>
+                        <div class="w-full aspect-square rounded-[24px] overflow-hidden relative bg-zinc-900 border border-white/10">
+                            <img src="/assets/index/stickers/bff.webp" class="w-full h-full object-cover">
+                            <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2">
+                                <div id="admDarkSimPill" class="px-3 py-1 rounded-full text-[11px] font-black text-white shadow flex items-center gap-1 whitespace-nowrap"
+                                     style="background: linear-gradient(135deg, #FF5E3A, #FF2A68);">
+                                    <span id="admDarkSimText">Xem trước caption</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center text-xs font-black">Chú thích</div>
+                        <div id="admDarkSimGroups" class="flex flex-wrap gap-1.5 text-[10px] justify-center"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ SUB-TAB 3: MUA SLOT KHUNG & CAPTION ══ -->
+            <div id="admStPane_slots" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-5 space-y-4">
                     <div>
-                        <h4 class="text-sm font-black text-white">💬 2. Caption Chú Thích &amp; Apple SF Symbols (GET / POST /api/v1/ctv/captions)</h4>
-                        <p class="text-xs text-slate-400 mt-0.5">Quản lý Brand Caption (ALL) hoặc tra cứu &amp; thêm Caption riêng theo từng UID/Username khách hàng</p>
+                        <h4 class="font-bold text-base text-[#1E1B18]">Gói Khung Widget (30 Ngày)</h4>
+                        <p class="text-xs text-[#6E6659] mt-0.5">Khách hàng cài DNS của bạn sẽ tự động hiển thị khung thương hiệu bạn tùy biến.</p>
+                    </div>
+                    <div class="p-3.5 rounded-xl border-2 border-[#1E1B18] bg-[#FAF6EA] space-y-2 text-xs">
+                        <div class="flex justify-between"><span>Trạng thái:</span><span id="admSlotFrStatus" class="px-2 py-0.5 rounded border border-[#1E1B18] bg-rose-200 font-black">Chưa kiểm tra</span></div>
+                        <div class="flex justify-between"><span>Thời hạn:</span><span id="admSlotFrExp" class="font-bold text-rose-700">---</span></div>
+                        <div class="flex justify-between"><span>Số slot khả dụng:</span><span class="font-black">30 khung</span></div>
+                        <div class="flex justify-between"><span>Đang sử dụng:</span><span class="font-bold"><span id="admSlotFrUsed">0</span>/30 khung</span></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="https://locket.2707226.xyz" target="_blank" class="flex-1 py-2.5 text-center rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">Mua Gói 30 Ngày (5 coin) ↗</a>
+                        <a href="https://locket.2707226.xyz" target="_blank" class="py-2.5 px-3 rounded-xl bg-white border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18]">+1 Slot (1 coin)</a>
+                    </div>
+                </div>
+                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-5 space-y-4">
+                    <div>
+                        <h4 class="font-bold text-base text-[#1E1B18]">Gói Caption Chú Thích (30 Ngày)</h4>
+                        <p class="text-xs text-[#6E6659] mt-0.5">Khách hàng cài DNS của bạn sẽ có trọn bộ danh sách chú thích độc quyền của bạn.</p>
+                    </div>
+                    <div class="p-3.5 rounded-xl border-2 border-[#1E1B18] bg-[#FAF6EA] space-y-2 text-xs">
+                        <div class="flex justify-between"><span>Trạng thái:</span><span id="admSlotCapStatus" class="px-2 py-0.5 rounded border border-[#1E1B18] bg-rose-200 font-black">Chưa kiểm tra</span></div>
+                        <div class="flex justify-between"><span>Thời hạn:</span><span id="admSlotCapExp" class="font-bold text-rose-700">---</span></div>
+                        <div class="flex justify-between"><span>Số slot khả dụng:</span><span class="font-black">100 caption</span></div>
+                        <div class="flex justify-between"><span>Đang sử dụng:</span><span class="font-bold"><span id="admSlotCapUsed">0</span>/100 caption</span></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="https://locket.2707226.xyz" target="_blank" class="flex-1 py-2.5 text-center rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">Mua Gói 30 Ngày (5 coin) ↗</a>
+                        <a href="https://locket.2707226.xyz" target="_blank" class="py-2.5 px-3 rounded-xl bg-white border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18]">+1 Slot (1 coin)</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ SUB-TAB 4: NẠP LƯỢT FILTER ══ -->
+            <div id="admStPane_topup_filter" class="hidden space-y-4">
+                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[3px_3px_0px_#1E1B18] p-4 sm:p-5">
+                    <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Nạp Thêm Lượt Chụp Filter Cho Khách Hàng</h4>
+                    <p class="text-xs text-[#6E6659] mt-1">Khi khách hàng có nhu cầu sử dụng nhiều hơn, CTV có thể tra cứu khách tại đây và nạp thêm gói lượt trên Cổng CTV locket.2707226.xyz.</p>
+                </div>
+                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-5 space-y-4">
+                    <h4 class="font-bold text-sm text-[#1E1B18]">Thông Tin Tài Khoản Khách Hàng</h4>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="admTopupLookupInput" placeholder="Ví dụ: camsitup hoặc @camsitup" class="flex-1 px-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18]">
+                        <button type="button" onclick="adminLookupTopupCustomer()" class="px-5 py-2 rounded-xl border-2 border-[#1E1B18] bg-[#FAF6EA] hover:bg-[#FFD84D] text-xs font-black cursor-pointer">🔍 Tra Cứu Khách</button>
+                    </div>
+                    <div id="admTopupCustResult" class="hidden p-3 rounded-xl border-2 border-[#1E1B18] bg-emerald-50 text-xs"></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div class="p-4 rounded-xl border-2 border-[#1E1B18] bg-[#FFF8DC] shadow-[2px_2px_0px_#1E1B18]">
+                            <div class="font-black text-sm">Gói 20 Lượt Filter AI</div>
+                            <div class="text-[#6E6659]">+20 lượt chụp</div>
+                            <div class="font-black text-amber-700 mt-1">4 Coin (4.000đ)</div>
+                        </div>
+                        <div class="p-4 rounded-xl border-2 border-[#1E1B18] bg-white">
+                            <div class="font-black text-sm">Gói 50 Lượt Filter AI</div>
+                            <div class="text-[#6E6659]">+50 lượt chụp</div>
+                            <div class="font-black text-amber-700 mt-1">8 Coin (8.000đ)</div>
+                        </div>
+                        <div class="p-4 rounded-xl border-2 border-[#1E1B18] bg-white">
+                            <div class="font-black text-sm">Gói 100 Lượt Filter AI</div>
+                            <div class="text-[#6E6659]">+100 lượt chụp</div>
+                            <div class="font-black text-amber-700 mt-1">15 Coin (15.000đ)</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="https://locket.2707226.xyz" target="_blank" class="px-5 py-2.5 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18]">
+                            Nạp Lượt Filter Trên Web CTV ↗
+                        </a>
+                        <span class="text-xs text-[#6E6659]">Số dư CTV: <b id="admTopupCoinMirror">---</b></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ SUB-TAB 5: BỘ LỌC LUT (URL NGOÀI + UPLOAD .CUBE + 28 MẪU TOGGLE) ══ -->
+            <div id="admStPane_filters" class="hidden space-y-4">
+                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-4">
+                    <div>
+                        <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Quản Lý Bộ Lọc Màu LUT</h4>
+                        <p class="text-xs text-[#6E6659] mt-0.5">Toàn bộ bộ lọc được gộp trong nhóm "Lut Filter". Bạn có thể thêm file .cube từ máy tính hoặc dán link tải từ bên ngoài (Google Drive, Dropbox, Github, web).</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                        <span class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-white font-black">Tổng LUT mẫu: <span id="admLutSampleCnt">28</span></span>
+                        <span class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-white font-black">LUT đã thêm: <span id="admLutCustomCnt">0</span></span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <input type="text" id="adminCaptionLookupUid" placeholder="Để trống = Brand CTV, hoặc nhập UID/User..."
-                            class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400 w-56">
-                        <button onclick="adminLookupCaptions()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-amber-400 cursor-pointer">
-                            🔍 Tra Caption
+                        <button type="button" onclick="switchAdminLutUploadMode('url')" id="admLutModeBtn_url" class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-xs font-black cursor-pointer">
+                            Thêm bằng Link Bên ngoài (URL)
+                        </button>
+                        <button type="button" onclick="switchAdminLutUploadMode('file')" id="admLutModeBtn_file" class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-bold cursor-pointer">
+                            Tải File .cube Từ Máy Tính
                         </button>
                     </div>
-                </div>
 
-                <form onsubmit="adminSaveCtvCaption(event)" class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    <!-- FORM A: THÊM TỪ LINK URL NGOÀI -->
+                    <form onsubmit="adminUploadLutFromUrl(event)" id="admLutForm_url" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                         <div class="md:col-span-5">
-                            <label class="block text-[11px] font-bold text-slate-300 mb-1">Nội dung Caption (tối đa 100 ký tự) (*):</label>
-                            <input type="text" id="adminCapText" maxlength="100" required placeholder="VD: AloPremium.Shop VIP ✨"
-                                class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400">
+                            <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Link tải file .cube bên ngoài (Drive, Dropbox, GitHub...)</label>
+                            <input type="url" id="adminLutExternalUrl" required placeholder="https://drive.google.com/file/d/... hoặc link .cube"
+                                class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] focus:outline-none">
+                        </div>
+                        <div class="md:col-span-4">
+                            <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Tên hiển thị bộ lọc</label>
+                            <input type="text" id="adminLutUrlNameInput" placeholder="VD: Tone Mùa Hè Pastel"
+                                class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] focus:outline-none">
                         </div>
                         <div class="md:col-span-3">
-                            <label class="block text-[11px] font-bold text-slate-300 mb-1">UID / Username Khách (để trống nếu ALL):</label>
-                            <input type="text" id="adminCapUid" placeholder="VD: camsitup (trống = Brand ALL)"
-                                class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-[11px] font-bold text-slate-300 mb-1">SF Symbol Name:</label>
-                            <input type="text" id="adminCapSymbol" value="sparkles" placeholder="wind, heart.fill..."
-                                class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-400">
-                        </div>
-                        <div class="md:col-span-2 flex items-end gap-1.5">
-                            <input type="color" id="adminCapColor1" value="#FFB800" title="Màu Gradient 1" class="w-8 h-9 rounded bg-transparent border-0 cursor-pointer">
-                            <input type="color" id="adminCapColor2" value="#FF8008" title="Màu Gradient 2" class="w-8 h-9 rounded bg-transparent border-0 cursor-pointer">
-                            <button type="submit" id="btnAdminSaveCap"
-                                class="flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs cursor-pointer">
-                                💾 Lưu
+                            <button type="submit" id="btnAdminUploadLutUrl" class="w-full py-2 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                                Tải &amp; Thêm LUT từ URL
                             </button>
                         </div>
-                    </div>
+                    </form>
 
-                    <!-- Tìm kiếm nhanh SF Symbol -->
-                    <div class="pt-2 border-t border-slate-800/80 space-y-2">
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="text-[11px] font-bold text-slate-400">✨ Chọn nhanh Apple SF Symbol (449+ icon):</span>
-                            <input type="text" id="adminSymSearch" oninput="adminSearchSymbols(this.value)" placeholder="Tìm symbol (gio, tim, wind...)"
-                                class="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-[11px] text-white w-48">
+                    <!-- FORM B: UPLOAD FILE TỪ MÁY TÍNH -->
+                    <form onsubmit="adminUploadLutCube(event)" id="admLutForm_file" class="hidden grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                        <div class="md:col-span-5">
+                            <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Chọn file 3D LUT (.cube, tối đa 20MB):</label>
+                            <input type="file" id="adminLutFileInput" accept=".cube" required
+                                class="w-full px-2.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] file:mr-2 file:py-0.5 file:px-2 file:rounded file:border file:border-[#1E1B18] file:bg-[#FFF8E1] file:text-xs file:font-bold cursor-pointer">
                         </div>
-                        <div id="adminSymbolsGrid" class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-                            <span class="text-[11px] text-slate-500">Đang tải SF Symbols...</span>
+                        <div class="md:col-span-4">
+                            <label class="block text-[11px] font-bold text-[#1E1B18] mb-1">Tên hiển thị trên app Locket:</label>
+                            <input type="text" id="adminLutNameInput" placeholder="VD: Tone Mùa Hè Pastel"
+                                class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] focus:outline-none">
                         </div>
-                    </div>
-                </form>
-
-                <div id="adminCtvCaptionsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                    <div class="col-span-full py-6 text-center text-slate-500">Đang tải danh sách Caption...</div>
-                </div>
-            </div>
-
-            <!-- 3. QUẢN LÝ BỘ LỌC LUT & UPLOAD .CUBE -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <div>
-                        <h4 class="text-sm font-black text-white">🌈 3. Bộ Lọc Màu LUT &amp; Upload File 3D LUT (.cube)</h4>
-                        <p class="text-xs text-slate-400 mt-0.5">Bật / Tắt từng bộ lọc LUT hoặc tải lên file <code>.cube</code> trực tiếp lên máy chủ CTV</p>
-                    </div>
-                    <span id="adminCtvFiltersCount" class="px-3 py-1 rounded-full bg-slate-800 text-amber-400 text-xs font-bold">0 LUT</span>
+                        <div class="md:col-span-3">
+                            <button type="submit" id="btnAdminUploadLut" class="w-full py-2 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                                📤 Upload File .cube
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- Upload .cube -->
-                <form onsubmit="adminUploadLutCube(event)" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-slate-950/60 p-4 rounded-2xl border border-amber-500/30">
-                    <div class="md:col-span-5">
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Chọn file 3D LUT (.cube, tối đa 20MB) (*):</label>
-                        <input type="file" id="adminLutFileInput" accept=".cube" required
-                            class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-300 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 cursor-pointer">
+                <!-- THƯ VIỆN LUT MẪU CHUẨN + TOGGLE BẬT/TẮT LIVE -->
+                <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <h4 class="font-bold text-sm sm:text-base text-[#1E1B18]">Thư Viện LUT Mẫu Chuẩn (<span id="adminCtvFiltersCount">28</span> Bộ Lọc)</h4>
+                        <input type="text" id="admLutSearchInput" oninput="renderAdminLutGrid()" placeholder="Tìm theo tên hoặc danh mục..."
+                            class="px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] focus:outline-none w-full sm:w-56">
                     </div>
-                    <div class="md:col-span-4">
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Tên hiển thị trên app Locket:</label>
-                        <input type="text" id="adminLutNameInput" placeholder="VD: Tone Mùa Hè Pastel"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400">
+                    <div id="admLutCategoryPills" class="flex flex-wrap items-center gap-1.5 text-[11px]"></div>
+                    <div id="adminCtvFiltersList" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
+                        <div class="col-span-full py-8 text-center text-zinc-500">Đang tải danh sách bộ lọc LUT...</div>
                     </div>
-                    <div class="md:col-span-3">
-                        <button type="submit" id="btnAdminUploadLut"
-                            class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs cursor-pointer shadow-md">
-                            📤 Upload 3D LUT (.cube)
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Danh sách Custom Filters & Sample LUTs -->
-                <div id="adminCtvFiltersList" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
-                    <div class="col-span-full py-6 text-center text-slate-500">Đang tải danh sách bộ lọc LUT...</div>
                 </div>
             </div>
         </div>
@@ -1955,10 +2239,40 @@
         }
 
         // ==========================================
-        // 5.5 CTV FEATURES (FRAMES, CAPTIONS, LUTS)
+        // 5.5 CTV FEATURES: LOCKET CUSTOM STUDIO 5 TAB
         // ==========================================
         let adminPresetFrames = [];
+        let adminCtvFramesCache = [];
+        let adminCtvCaptionsCache = [];
+        let adminCtvCustomLuts = [];
+        let adminCtvSampleLuts = [];
+        let adminFrameScope = 'all';
+        let adminLutCategory = 'all';
+        let adminPendingFrameB64 = '';
+        let adminPendingFrameFname = '';
+        let adminCapIconMode = 'symbol';
+        let adminSelectedEmoji = '✨';
         let adminPresetInit = false;
+
+        const ADM_LUT_META = [
+            { id: 'all', label: 'Tất cả' },
+            { id: 'vintage', label: 'Vintage Cổ Điển' },
+            { id: 'film', label: 'Màu Film' },
+            { id: 'instagram', label: 'Instagram' },
+            { id: 'iphone', label: 'iPhone LUT' },
+            { id: 'skintone', label: 'Chân Dung & Da' },
+            { id: 'wedding_luxury', label: 'Cưới & Luxury' },
+            { id: 'city', label: 'Thành Phố & Street' },
+            { id: 'pink', label: 'Tone Hồng Pink' },
+            { id: 'sunset', label: 'Hoàng Hôn Sunset' },
+            { id: 'fashion', label: 'Thời Trang Fashion' },
+            { id: 'romance', label: 'Lãng Mạn Romance' }
+        ];
+
+        const ADM_SWATCHES = [
+            ['#FF5E3A', '#FF2A68'], ['#D946EF', '#9333EA'], ['#00C6FF', '#0072FF'], ['#11998E', '#38EF7D'],
+            ['#FFB800', '#FF8008'], ['#570AE6', '#2A0845'], ['#F4F4F5', '#D4D4D8'], ['#27272A', '#09090B']
+        ];
 
         function escapeAdminHtml(str) {
             return String(str || '')
@@ -1969,17 +2283,82 @@
                 .replace(/'/g, '&#39;');
         }
 
+        function switchAdminStudioTab(key) {
+            ['frames', 'captions', 'slots', 'topup_filter', 'filters'].forEach(k => {
+                const pane = document.getElementById('admStPane_' + k);
+                const btn = document.getElementById('admStBtn_' + k);
+                if (pane) pane.classList.toggle('hidden', k !== key);
+                if (btn) btn.className = `px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] font-bold text-xs cursor-pointer ${k === key ? 'bg-[#FFD84D] text-[#1E1B18]' : 'bg-white hover:bg-[#FFF5D6] text-[#1E1B18]'}`;
+            });
+        }
+
+        function switchAdminFrameMode(mode) {
+            const pEd = document.getElementById('admFrameView_editor');
+            const pGal = document.getElementById('admFrameView_gallery');
+            const bEd = document.getElementById('admFrameModeBtn_editor');
+            const bGal = document.getElementById('admFrameModeBtn_gallery');
+            if (pEd) pEd.classList.toggle('hidden', mode !== 'editor');
+            if (pGal) pGal.classList.toggle('hidden', mode !== 'gallery');
+            if (bEd) bEd.className = `px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] font-bold text-xs cursor-pointer ${mode === 'editor' ? 'bg-[#FFD84D] text-[#1E1B18]' : 'bg-white hover:bg-[#FFF5D6] text-[#1E1B18]'}`;
+            if (bGal) bGal.className = `px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] font-bold text-xs cursor-pointer ${mode === 'gallery' ? 'bg-[#FFD84D] text-[#1E1B18]' : 'bg-white hover:bg-[#FFF5D6] text-[#1E1B18]'}`;
+        }
+
+        function setAdminSimSize(sz) {
+            const box = document.getElementById('admSimWidgetBox');
+            const bL = document.getElementById('admSimBtn_large');
+            const bS = document.getElementById('admSimBtn_small');
+            if (box) box.className = sz === 'small' ? 'w-32 h-32 rounded-[22px] bg-zinc-900 relative overflow-hidden shadow-2xl border-2 border-white/40 transition-all mt-4' : 'w-44 h-44 rounded-[28px] bg-zinc-900 relative overflow-hidden shadow-2xl border-2 border-white/40 transition-all';
+            if (bL) bL.className = `px-2.5 py-1 cursor-pointer ${sz === 'large' ? 'bg-[#FFD84D] text-[#1E1B18]' : 'bg-white text-[#1E1B18]'}`;
+            if (bS) bS.className = `px-2.5 py-1 border-l-2 border-[#1E1B18] cursor-pointer ${sz === 'small' ? 'bg-[#FFD84D] text-[#1E1B18]' : 'bg-white text-[#1E1B18]'}`;
+        }
+
+        function handleAdminSimPhoto(e) {
+            const f = e.target.files && e.target.files[0];
+            if (!f) return;
+            const r = new FileReader();
+            r.onload = ev => { document.getElementById('admSimPhotoImg').src = ev.target.result; };
+            r.readAsDataURL(f);
+        }
+
+        function handleAdminFrameFileSelect(e) {
+            const f = e.target.files && e.target.files[0];
+            if (!f) return;
+            const r = new FileReader();
+            r.onload = ev => {
+                adminPendingFrameB64 = ev.target.result;
+                adminPendingFrameFname = f.name;
+                document.getElementById('adminFrameUrl').value = '';
+                showAdminFramePreview(ev.target.result, f.name);
+            };
+            r.readAsDataURL(f);
+        }
+
+        function handleAdminFrameUrlChange(val) {
+            adminPendingFrameB64 = '';
+            adminPendingFrameFname = '';
+            const u = (val || '').trim();
+            if (u.startsWith('http')) showAdminFramePreview(u, document.getElementById('adminFrameName').value || 'Khung URL');
+        }
+
+        function showAdminFramePreview(src, name = '') {
+            const img = document.getElementById('admFramePreviewImg');
+            const hint = document.getElementById('admFramePreviewEmpty');
+            const simOv = document.getElementById('admSimOverlayImg');
+            const simBan = document.getElementById('admSimWidgetBanner');
+            if (img && src) { img.src = src; img.classList.remove('hidden'); if (hint) hint.classList.add('hidden'); }
+            if (simOv && src) { simOv.src = src; simOv.classList.remove('hidden'); }
+            if (simBan && name) simBan.textContent = `Đang xem thử khung: ${name}`;
+        }
+
         async function loadCtvFeaturesOverview() {
             const btn = document.getElementById('btnReloadCtvFeatures');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '⏳ Đang tải...';
-            }
+            if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Đang tải...'; }
 
             if (!adminPresetInit) {
                 adminPresetInit = true;
                 loadAdminPresetFrames();
                 adminSearchSymbols('');
+                renderAdminEmojiSwatches();
             }
 
             try {
@@ -1987,16 +2366,44 @@
                 const data = await res.json();
                 if (!data.ok) throw new Error(data.error || 'Lỗi tải dữ liệu CTV');
 
-                renderAdminCtvFrames(data.frames || []);
-                renderAdminCtvCaptions(data.captions || [], data.captionsMode || 'brand');
-                renderAdminCtvFilters(data.customFilters || [], data.sampleLuts || []);
+                const coinTxt = (data.balanceCoin !== undefined && data.balanceCoin !== null ? data.balanceCoin : '---') + ' coin';
+                const cEl = document.getElementById('adminStudioBalanceCoin');
+                const mEl = document.getElementById('admTopupCoinMirror');
+                if (cEl) cEl.textContent = coinTxt;
+                if (mEl) mEl.textContent = coinTxt;
+
+                adminCtvFramesCache = data.frames || [];
+                adminCtvCaptionsCache = data.captions || [];
+                adminCtvCustomLuts = data.customFilters || [];
+                adminCtvSampleLuts = data.sampleLuts || [];
+
+                updateAdminSlotCard('Fr', adminCtvFramesCache.length, 30, data.framesExpiresAt);
+                updateAdminSlotCard('Cap', adminCtvCaptionsCache.length, 100, data.captionsExpiresAt);
+
+                renderAdminCtvFrames(adminCtvFramesCache);
+                renderAdminCtvCaptions(adminCtvCaptionsCache, data.captionsMode || 'brand');
+                renderAdminLutPills();
+                renderAdminLutGrid();
             } catch (err) {
                 showAdminToast('❌ ' + err.message);
             } finally {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = '🔄 Tải Lại Dữ Liệu CTV';
-                }
+                if (btn) { btn.disabled = false; btn.innerHTML = '🔄 Đồng bộ'; }
+            }
+        }
+
+        function updateAdminSlotCard(prefix, used, total, expIso) {
+            const uEl = document.getElementById(`admSlot${prefix}Used`);
+            const sEl = document.getElementById(`admSlot${prefix}Status`);
+            const eEl = document.getElementById(`admSlot${prefix}Exp`);
+            if (uEl) uEl.textContent = used;
+            const active = expIso && new Date(expIso) > new Date();
+            if (sEl) {
+                sEl.textContent = active ? 'Đang hoạt động' : 'Hết hạn / Chưa mua';
+                sEl.className = `px-2 py-0.5 rounded border border-[#1E1B18] font-black ${active ? 'bg-emerald-300 text-emerald-950' : 'bg-rose-200 text-rose-950'}`;
+            }
+            if (eEl) {
+                eEl.textContent = expIso ? new Date(expIso).toLocaleDateString('vi-VN') : 'Chưa đăng ký gói';
+                eEl.className = `font-bold ${active ? 'text-emerald-800' : 'text-rose-700'}`;
             }
         }
 
@@ -2006,53 +2413,108 @@
                 const data = await res.json();
                 if (data && Array.isArray(data.frames)) {
                     adminPresetFrames = data.frames;
-                    const sel = document.getElementById('adminPresetFrameSelect');
-                    if (sel) {
-                        sel.innerHTML = '<option value="">-- Chọn khung từ thư viện 79 mẫu để điền nhanh --</option>' +
-                            adminPresetFrames.map((fr, idx) => `<option value="${idx}">${escapeAdminHtml(fr.name)} (${escapeAdminHtml(fr.category || '')})</option>`).join('');
-                    }
+                    const cnt = document.getElementById('admCntPresetFrames');
+                    if (cnt) cnt.textContent = adminPresetFrames.length;
+                    renderAdminPresetGallery();
                 }
             } catch (e) {}
         }
 
-        function pickAdminPresetFrame(idxStr) {
-            if (idxStr === '') return;
-            const fr = adminPresetFrames[parseInt(idxStr, 10)];
-            if (!fr) return;
-            document.getElementById('adminFrameUrl').value = fr.rawImage || fr.image || '';
-            document.getElementById('adminFrameName').value = fr.name || '';
+        function renderAdminPresetGallery() {
+            const grid = document.getElementById('admPresetGalleryGrid');
+            if (!grid) return;
+            const kw = (document.getElementById('admPresetSearch')?.value || '').trim().toLowerCase();
+            const list = adminPresetFrames.filter(fr => !kw || (fr.name || '').toLowerCase().includes(kw) || (fr.category || '').toLowerCase().includes(kw));
+            grid.innerHTML = list.map(fr => {
+                const imgUrl = escapeAdminHtml(fr.rawImage || fr.image);
+                const sName = escapeAdminHtml(fr.name);
+                return `
+                    <div class="bg-[#FFFDF5] rounded-2xl p-2.5 border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] flex flex-col justify-between">
+                        <div>
+                            <div class="w-full aspect-square rounded-xl bg-zinc-900 relative overflow-hidden mb-2 border border-[#1E1B18]">
+                                <img src="/assets/index/stickers/bff.webp" class="absolute inset-0 w-full h-full object-cover opacity-80">
+                                <img src="${imgUrl}" loading="lazy" class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none">
+                            </div>
+                            <div class="font-bold text-xs text-[#1E1B18] truncate">${sName}</div>
+                        </div>
+                        <button type="button" onclick="pickAdminPresetToEditor('${imgUrl}', '${sName}')"
+                            class="mt-2 w-full py-1.5 rounded-lg bg-[#FFD84D] hover:bg-[#FFC928] border border-[#1E1B18] text-[10px] font-black cursor-pointer">
+                            ⚡ Chọn &amp; Dùng Khung
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function pickAdminPresetToEditor(url, name) {
+            document.getElementById('adminFrameUrl').value = url;
+            document.getElementById('adminFrameName').value = name;
+            adminPendingFrameB64 = '';
+            showAdminFramePreview(url, name);
+            switchAdminFrameMode('editor');
+        }
+
+        function filterAdminFramesScope(sc) {
+            adminFrameScope = sc;
+            document.querySelectorAll('.adm-fr-scope').forEach(b => {
+                const act = b.getAttribute('data-scope') === sc;
+                b.className = `adm-fr-scope px-2.5 py-1 rounded border border-[#1E1B18] cursor-pointer ${act ? 'bg-[#FFD84D] font-black' : 'bg-white font-bold'}`;
+            });
+            renderAdminCtvFrames(adminCtvFramesCache);
         }
 
         function renderAdminCtvFrames(frames) {
             const el = document.getElementById('adminCtvFramesList');
-            const cnt = document.getElementById('adminCtvFramesCount');
-            if (cnt) cnt.textContent = `${frames.length} khung`;
-            if (!el) return;
+            ['adminCtvFramesCount', 'admCntFramesTab', 'admCntFramesMode'].forEach(id => {
+                const e = document.getElementById(id);
+                if (e) e.textContent = frames.length;
+            });
 
-            if (!frames.length) {
-                el.innerHTML = '<div class="col-span-full py-6 text-center text-slate-500">Chưa có khung nào trên máy chủ CTV.</div>';
+            const shared = frames.filter(f => String(f.targetUid || '').toUpperCase() === 'ALL' || (f.targetUids || []).includes('ALL'));
+            const priv = frames.filter(f => !(String(f.targetUid || '').toUpperCase() === 'ALL' || (f.targetUids || []).includes('ALL')));
+            const elA = document.getElementById('admScAll');
+            const elS = document.getElementById('admScShared');
+            const elP = document.getElementById('admScPriv');
+            if (elA) elA.textContent = frames.length;
+            if (elS) elS.textContent = shared.length;
+            if (elP) elP.textContent = priv.length;
+
+            if (frames[0]) showAdminFramePreview(frames[0].url, frames[0].name);
+
+            let view = frames;
+            if (adminFrameScope === 'shared') view = shared;
+            if (adminFrameScope === 'private') view = priv;
+            if (!el) return;
+            if (!view.length) {
+                el.innerHTML = '<div class="py-6 text-center text-zinc-500">Không có khung nào trong mục này.</div>';
                 return;
             }
 
-            el.innerHTML = frames.map(fr => {
+            el.innerHTML = view.map((fr, idx) => {
                 const safeUrl = escapeAdminHtml(fr.url || '');
                 const safeName = escapeAdminHtml(fr.name || 'Không tên');
                 const targetTxt = escapeAdminHtml(fr.targetUid || (fr.targetUids || []).join(',') || 'ALL');
+                const isAll = targetTxt.toUpperCase() === 'ALL';
                 const active = fr.active !== false;
                 return `
-                    <div class="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center gap-3">
-                        <img src="${safeUrl}" alt="${safeName}" class="w-14 h-14 rounded-xl bg-slate-900 object-cover border border-slate-700 shrink-0">
-                        <div class="min-w-0 flex-1 space-y-1">
-                            <div class="flex items-center justify-between gap-1">
-                                <span class="font-bold text-white truncate">${safeName}</span>
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}">
-                                    ${active ? 'Bật' : 'Tắt'}
-                                </span>
+                    <div class="p-3 rounded-xl border-2 border-[#1E1B18] bg-emerald-50/70 space-y-2">
+                        <div class="flex items-center justify-between gap-2.5 flex-wrap">
+                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                <img src="${safeUrl}" class="w-11 h-11 rounded-lg bg-[#1E1F26] object-cover border border-[#1E1B18] shrink-0">
+                                <div class="min-w-0">
+                                    <div class="font-bold text-[#1E1B18] truncate">${safeName}</div>
+                                    <div class="flex items-center gap-1.5 flex-wrap mt-1">
+                                        <span class="px-2 py-0.5 rounded border border-[#1E1B18] text-[10px] font-bold ${isAll ? 'bg-sky-100' : 'bg-amber-100'}">${isAll ? 'Tất cả khách' : targetTxt}</span>
+                                        <span class="px-2 py-0.5 rounded border border-[#1E1B18] text-[10px] font-black ${idx === 0 && active ? 'bg-emerald-200 text-emerald-950' : 'bg-white text-zinc-700'}">
+                                            ${idx === 0 && active ? '● ĐANG ÁP DỤNG' : (active ? 'Đang bật' : 'Tắt')}
+                                        </span>
+                                        <a href="${safeUrl}" target="_blank" class="text-[10px] text-sky-700 underline font-bold">Xem ảnh gốc</a>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="text-[10px] text-amber-400 font-mono truncate" title="${targetTxt}">Target: ${targetTxt}</p>
                             <button type="button" onclick="fillAdminFrameForm('${safeUrl}', '${safeName}', '${targetTxt}', ${active})"
-                                class="text-[10px] text-cyan-400 hover:underline font-bold cursor-pointer">
-                                ✏️ Sửa trong form
+                                class="px-2.5 py-1 rounded-md border border-[#1E1B18] bg-[#FFD84D] text-[10px] font-black cursor-pointer shrink-0">
+                                ✏️ Chọn / Sửa
                             </button>
                         </div>
                     </div>
@@ -2065,24 +2527,33 @@
             document.getElementById('adminFrameName').value = name;
             document.getElementById('adminFrameTargetUid').value = targetUid || 'ALL';
             document.getElementById('adminFrameActive').checked = !!active;
+            adminPendingFrameB64 = '';
+            showAdminFramePreview(url, name);
         }
 
         async function adminSaveCtvFrame(e) {
             e.preventDefault();
             const btn = document.getElementById('btnAdminSaveFrame');
-            const url = document.getElementById('adminFrameUrl').value.trim();
+            let url = document.getElementById('adminFrameUrl').value.trim();
             const name = document.getElementById('adminFrameName').value.trim();
             const targetUid = document.getElementById('adminFrameTargetUid').value.trim() || 'ALL';
             const active = document.getElementById('adminFrameActive').checked;
 
-            if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+            if (!url && !adminPendingFrameB64) { alert('Vui lòng chọn ảnh PNG hoặc dán URL khung!'); return; }
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang lưu lên locket.2707226.xyz...'; }
             try {
-                const payload = { pin: currentPin, url, name, targetUid, active };
-                if (targetUid.includes(',')) {
-                    payload.targetUids = targetUid.split(',').map(x => x.trim()).filter(Boolean);
-                } else {
-                    payload.targetUids = [targetUid];
+                if (!url && adminPendingFrameB64) {
+                    const upRes = await fetch('/api/upload_frame_image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pin: currentPin, image_b64: adminPendingFrameB64, filename: adminPendingFrameFname })
+                    });
+                    const upData = await upRes.json();
+                    if (!upRes.ok || !upData.ok) throw new Error(upData.error || 'Upload PNG thất bại');
+                    url = upData.url;
                 }
+                const payload = { pin: currentPin, url, name, targetUid, active };
+                payload.targetUids = targetUid.includes(',') ? targetUid.split(',').map(x => x.trim()).filter(Boolean) : [targetUid];
                 const res = await fetch('/api/admin/ctv/frames', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -2090,12 +2561,71 @@
                 });
                 const data = await res.json();
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Lưu khung thất bại');
+                adminPendingFrameB64 = '';
                 showAdminToast('✅ ' + (data.message || 'Lưu khung thành công lên locket.2707226.xyz!'));
                 loadCtvFeaturesOverview();
             } catch (err) {
                 alert('❌ ' + err.message);
             } finally {
-                if (btn) { btn.disabled = false; btn.textContent = '💾 Lưu'; }
+                if (btn) { btn.disabled = false; btn.textContent = '💾 Lưu khung ảnh lên locket.2707226.xyz'; }
+            }
+        }
+
+        function renderAdminEmojiSwatches() {
+            const emojis = ['✨', '❤️', '🔥', '😍', '🥰', '😭', '🤣', '🥺', '👏', '🎉', '🙌', '🥳', '🤩', '🤍', '💛', '🌈', '☀️', '🌙', '⚡', '🎵', '📸', '☕', '🎮', '👑'];
+            const eGrid = document.getElementById('admEmojiGrid');
+            if (eGrid) {
+                eGrid.innerHTML = emojis.map(em => `<button type="button" onclick="pickAdminEmoji('${em}')" class="p-1.5 rounded border border-zinc-300 hover:bg-amber-100 text-base cursor-pointer">${em}</button>`).join('');
+            }
+            const sw = document.getElementById('admCapSwatches');
+            if (sw) {
+                sw.innerHTML = ADM_SWATCHES.map(c => `
+                    <button type="button" onclick="pickAdminSwatch('${c[0]}', '${c[1]}')" class="w-6 h-6 rounded-full border-2 border-[#1E1B18] cursor-pointer" style="background: linear-gradient(135deg, ${c[0]}, ${c[1]});"></button>
+                `).join('');
+            }
+        }
+
+        function switchAdminIconMode(m) {
+            adminCapIconMode = m;
+            document.getElementById('admIconPane_emoji')?.classList.toggle('hidden', m !== 'emoji');
+            document.getElementById('admIconPane_symbol')?.classList.toggle('hidden', m !== 'symbol');
+            const bE = document.getElementById('admIconBtn_emoji');
+            const bS = document.getElementById('admIconBtn_symbol');
+            if (bE) bE.className = `px-3 py-1 rounded-lg border-2 border-[#1E1B18] text-xs cursor-pointer ${m === 'emoji' ? 'bg-[#FFD84D] font-black' : 'bg-white font-bold'}`;
+            if (bS) bS.className = `px-3 py-1 rounded-lg border-2 border-[#1E1B18] text-xs cursor-pointer ${m === 'symbol' ? 'bg-[#FFD84D] font-black' : 'bg-white font-bold'}`;
+            updateAdminCapPreview();
+        }
+
+        function pickAdminEmoji(em) {
+            adminSelectedEmoji = em;
+            adminCapIconMode = 'emoji';
+            document.getElementById('adminCapSymbol').value = em;
+            updateAdminCapPreview();
+        }
+
+        function pickAdminSwatch(c0, c1) {
+            document.getElementById('adminCapColor1').value = c0;
+            document.getElementById('adminCapColor2').value = c1;
+            updateAdminCapPreview();
+        }
+
+        function updateAdminCapPreview() {
+            const txt = document.getElementById('adminCapText')?.value || 'Xem trước viền caption';
+            const c1 = document.getElementById('adminCapColor1')?.value || '#FF5E3A';
+            const c2 = document.getElementById('adminCapColor2')?.value || '#FF2A68';
+            const pill = document.getElementById('admCapPreviewPill');
+            const tEl = document.getElementById('admCapPrevText');
+            const simP = document.getElementById('admDarkSimPill');
+            const simT = document.getElementById('admDarkSimText');
+            const svg = document.getElementById('admCapPrevSvg');
+            const ico = document.getElementById('admCapPrevIcon');
+            if (tEl) tEl.textContent = txt;
+            if (simT) simT.textContent = txt;
+            if (pill) pill.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+            if (simP) simP.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+            if (adminCapIconMode === 'emoji') {
+                svg?.classList.add('hidden');
+                if (ico) { ico.classList.remove('hidden'); ico.textContent = adminSelectedEmoji; }
             }
         }
 
@@ -2108,18 +2638,28 @@
                     const data = await res.json();
                     const grid = document.getElementById('adminSymbolsGrid');
                     if (grid && data.ok) {
-                        const syms = (data.symbols || []).slice(0, 36);
+                        const syms = (data.symbols || []).slice(0, 64);
                         grid.innerHTML = syms.map(s => `
-                            <button type="button" onclick="document.getElementById('adminCapSymbol').value='${escapeAdminHtml(s.name)}'"
+                            <button type="button" onclick="pickAdminSymbol('${escapeAdminHtml(s.name)}', '${escapeAdminHtml(s.previewUrl)}')"
                                 title="${escapeAdminHtml(s.title)} (${escapeAdminHtml(s.name)})"
-                                class="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-amber-500/20 border border-slate-700 hover:border-amber-400 flex items-center gap-1.5 shrink-0 cursor-pointer">
-                                <img src="${escapeAdminHtml(s.previewUrl)}" class="w-4 h-4 brightness-0 invert">
-                                <span class="text-[10px] text-slate-300 font-mono">${escapeAdminHtml(s.name)}</span>
+                                class="aspect-square rounded-lg border border-zinc-300 hover:border-[#1E1B18] hover:bg-amber-50 flex items-center justify-center p-1.5 cursor-pointer bg-white">
+                                <img src="${escapeAdminHtml(s.previewUrl)}" loading="lazy" class="w-5 h-5 object-contain">
                             </button>
                         `).join('');
                     }
                 } catch (e) {}
             }, 250);
+        }
+
+        function pickAdminSymbol(name, url) {
+            adminCapIconMode = 'symbol';
+            document.getElementById('adminCapSymbol').value = name;
+            document.getElementById('admSelectedSymLabel').textContent = name;
+            const svg = document.getElementById('admCapPrevSvg');
+            const ico = document.getElementById('admCapPrevIcon');
+            if (svg && url) { svg.src = url; svg.classList.remove('hidden'); }
+            ico?.classList.add('hidden');
+            updateAdminCapPreview();
         }
 
         async function adminLookupCaptions() {
@@ -2137,9 +2677,23 @@
 
         function renderAdminCtvCaptions(captions, mode) {
             const el = document.getElementById('adminCtvCaptionsList');
+            const darkG = document.getElementById('admDarkSimGroups');
+            ['admCntCaptionsTab', 'admCapCountBadge', 'admCapListCount'].forEach(id => {
+                const e = document.getElementById(id);
+                if (e) e.textContent = captions.length;
+            });
+
+            if (darkG) {
+                darkG.innerHTML = captions.map(cp => {
+                    const c0 = (cp.colors && cp.colors[0]) || '#570AE6';
+                    const c1 = (cp.colors && cp.colors[1]) || '#2A0845';
+                    return `<span class="px-2.5 py-1 rounded-full font-bold text-white shadow truncate max-w-[115px]" style="background: linear-gradient(135deg, ${escapeAdminHtml(c0)}, ${escapeAdminHtml(c1)});">${escapeAdminHtml(cp.text)}</span>`;
+                }).join('');
+            }
+
             if (!el) return;
             if (!captions.length) {
-                el.innerHTML = `<div class="col-span-full py-6 text-center text-slate-500">Không có Caption nào (${escapeAdminHtml(mode)}).</div>`;
+                el.innerHTML = `<div class="py-6 text-center text-zinc-500">Không có Caption nào (${escapeAdminHtml(mode)}).</div>`;
                 return;
             }
             el.innerHTML = captions.map(cp => {
@@ -2147,18 +2701,18 @@
                 const c1 = (cp.colors && cp.colors[1]) || '#FF8008';
                 const iconHtml = cp.symbolPreviewUrl
                     ? `<img src="${escapeAdminHtml(cp.symbolPreviewUrl)}" class="w-4 h-4 brightness-0 invert shrink-0">`
-                    : `<span class="shrink-0">${escapeAdminHtml(cp.icon && cp.icon.trim() ? cp.icon : '✨')}</span>`;
+                    : (cp.icon && cp.icon.trim() && cp.icon !== '\u200b' ? `<span class="shrink-0">${escapeAdminHtml(cp.icon)}</span>` : '');
                 return `
-                    <div class="p-3 rounded-2xl border border-white/10 shadow flex items-center justify-between gap-2 text-white"
-                         style="background: linear-gradient(135deg, ${escapeAdminHtml(c0)}, ${escapeAdminHtml(c1)});">
-                        <div class="flex items-center gap-2 min-w-0">
+                    <div class="p-2.5 rounded-xl border-2 border-[#1E1B18] bg-white space-y-1.5">
+                        <div class="w-full py-2 px-4 rounded-full text-center font-black text-xs text-white flex items-center justify-center gap-1.5"
+                             style="background: linear-gradient(135deg, ${escapeAdminHtml(c0)}, ${escapeAdminHtml(c1)});">
                             ${iconHtml}
-                            <div class="min-w-0">
-                                <div class="font-bold truncate">${escapeAdminHtml(cp.text)}</div>
-                                <div class="text-[10px] opacity-80 font-mono truncate">${escapeAdminHtml(cp.symbolName || cp.iconType || 'emoji')} · ${escapeAdminHtml(cp.targetUid || mode)}</div>
-                            </div>
+                            <span class="truncate">${escapeAdminHtml(cp.text)}</span>
                         </div>
-                        <span class="px-2 py-0.5 rounded bg-black/30 text-[10px] font-bold shrink-0">${cp.active !== false ? 'Bật' : 'Tắt'}</span>
+                        <div class="flex items-center justify-between text-[10px] text-[#6E6659] px-1">
+                            <span>${escapeAdminHtml(cp.groupName || mode)} · <b>${cp.active !== false ? 'Đang bật' : 'Tắt'}</b></span>
+                            <span class="font-mono">${escapeAdminHtml(cp.targetUid || mode)}</span>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -2172,53 +2726,95 @@
             const sym = document.getElementById('adminCapSymbol').value.trim() || 'sparkles';
             const c1 = document.getElementById('adminCapColor1').value;
             const c2 = document.getElementById('adminCapColor2').value;
+            const isSym = adminCapIconMode === 'symbol';
 
-            if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang lưu...'; }
             try {
                 const payload = {
-                    pin: currentPin,
-                    text,
-                    uid,
-                    targetUid: uid ? '' : 'ALL',
-                    icon: sym,
-                    iconType: 'symbol',
-                    symbolName: sym,
-                    colors: [c1, c2],
-                    active: true
+                    pin: currentPin, text, uid, targetUid: uid ? '' : 'ALL',
+                    icon: sym, iconType: isSym ? 'symbol' : 'emoji',
+                    symbolName: isSym ? sym : '', colors: [c1, c2], active: true
                 };
                 const res = await fetch('/api/admin/ctv/captions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                 });
                 const data = await res.json();
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Lưu caption thất bại');
                 showAdminToast('🎉 ' + (data.message || 'Lưu Caption thành công!'));
-                if (uid) {
-                    document.getElementById('adminCaptionLookupUid').value = uid;
-                    adminLookupCaptions();
-                } else {
-                    loadCtvFeaturesOverview();
-                }
+                if (uid) { document.getElementById('adminCaptionLookupUid').value = uid; adminLookupCaptions(); }
+                else loadCtvFeaturesOverview();
             } catch (err) {
                 alert('❌ ' + err.message);
             } finally {
-                if (btn) { btn.disabled = false; btn.textContent = '💾 Lưu'; }
+                if (btn) { btn.disabled = false; btn.textContent = '+ Thêm & Lưu Caption Lên locket.2707226.xyz'; }
             }
         }
 
-        function renderAdminCtvFilters(customFilters, sampleLuts) {
+        async function adminLookupTopupCustomer() {
+            const ident = document.getElementById('admTopupLookupInput').value.trim();
+            const box = document.getElementById('admTopupCustResult');
+            if (!ident) { alert('Nhập Username/UID khách!'); return; }
+            box.classList.remove('hidden');
+            box.textContent = '⏳ Đang tra cứu khách hàng...';
+            try {
+                const res = await fetch('/api/admin/check_uid', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, identifier: ident, service: 'locket' })
+                });
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error || 'Không tìm thấy');
+                const inf = (data.data && data.data.data) || data.data || {};
+                box.innerHTML = `<b>@${escapeAdminHtml(inf.username || ident)}</b> · UID: <code>${escapeAdminHtml(inf.uid || '---')}</code> · Trạng thái: <b class="${inf.active ? 'text-emerald-700' : 'text-rose-700'}">${inf.active ? 'ACTIVE VIP' : 'Chưa kích hoạt'}</b>`;
+            } catch (err) {
+                box.innerHTML = `<span class="text-rose-700 font-bold">❌ ${escapeAdminHtml(err.message)}</span>`;
+            }
+        }
+
+        function switchAdminLutUploadMode(m) {
+            document.getElementById('admLutForm_url')?.classList.toggle('hidden', m !== 'url');
+            document.getElementById('admLutForm_file')?.classList.toggle('hidden', m !== 'file');
+            const bU = document.getElementById('admLutModeBtn_url');
+            const bF = document.getElementById('admLutModeBtn_file');
+            if (bU) bU.className = `px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] text-xs cursor-pointer ${m === 'url' ? 'bg-[#FFD84D] font-black' : 'bg-white font-bold'}`;
+            if (bF) bF.className = `px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] text-xs cursor-pointer ${m === 'file' ? 'bg-[#FFD84D] font-black' : 'bg-white font-bold'}`;
+        }
+
+        function renderAdminLutPills() {
+            const bar = document.getElementById('admLutCategoryPills');
+            if (!bar) return;
+            const sCnt = document.getElementById('admLutSampleCnt');
+            const cCnt = document.getElementById('admLutCustomCnt');
+            const totCnt = document.getElementById('adminCtvFiltersCount');
+            if (sCnt) sCnt.textContent = adminCtvSampleLuts.length;
+            if (cCnt) cCnt.textContent = adminCtvCustomLuts.length;
+            if (totCnt) totCnt.textContent = adminCtvSampleLuts.length;
+
+            bar.innerHTML = ADM_LUT_META.map(m => {
+                const cnt = m.id === 'all' ? adminCtvSampleLuts.length : adminCtvSampleLuts.filter(x => String(x.category || '').toLowerCase() === m.id).length;
+                if (m.id !== 'all' && cnt === 0) return '';
+                const act = adminLutCategory === m.id;
+                return `<button type="button" onclick="adminLutCategory='${m.id}'; renderAdminLutPills(); renderAdminLutGrid();" class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] font-bold cursor-pointer ${act ? 'bg-[#FFD84D] text-[#1E1B18]' : 'bg-white hover:bg-[#FFF5D6]'}">${m.label} (${cnt})</button>`;
+            }).join('');
+        }
+
+        function renderAdminLutGrid() {
             const el = document.getElementById('adminCtvFiltersList');
-            const cnt = document.getElementById('adminCtvFiltersCount');
-            const combined = [
-                ...customFilters.map(x => ({ ...x, isCustom: true })),
-                ...sampleLuts.map(x => ({ ...x, isCustom: false }))
-            ];
-            if (cnt) cnt.textContent = `${combined.length} LUT`;
+            const kw = (document.getElementById('admLutSearchInput')?.value || '').trim().toLowerCase();
             if (!el) return;
 
+            const customIds = new Set(adminCtvCustomLuts.map(x => x.id));
+            const combined = [
+                ...adminCtvCustomLuts.map(x => ({ ...x, isCustom: true })),
+                ...adminCtvSampleLuts.map(x => ({ ...x, isCustom: false }))
+            ].filter(flt => {
+                const catLow = String(flt.category || '').toLowerCase();
+                const matchCat = adminLutCategory === 'all' || catLow === adminLutCategory;
+                const matchKw = !kw || (flt.name || '').toLowerCase().includes(kw) || catLow.includes(kw);
+                return matchCat && matchKw;
+            });
+
             if (!combined.length) {
-                el.innerHTML = '<div class="col-span-full py-6 text-center text-slate-500">Không có bộ lọc LUT nào.</div>';
+                el.innerHTML = '<div class="col-span-full py-6 text-center text-zinc-500">Không có bộ lọc LUT nào khớp.</div>';
                 return;
             }
 
@@ -2227,19 +2823,24 @@
                 const safeId = escapeAdminHtml(flt.id);
                 const safeName = escapeAdminHtml(flt.name || safeId);
                 const iconUrl = escapeAdminHtml(flt.iconUrl || flt.icon || '');
+                const meta = ADM_LUT_META.find(m => m.id === String(flt.category || '').toLowerCase());
+                const catLabel = escapeAdminHtml(meta ? meta.label : (flt.category || flt.group || 'LUT'));
                 return `
-                    <div class="p-3 rounded-2xl bg-slate-950/80 border ${flt.isCustom ? 'border-amber-500/40' : 'border-slate-800'} flex flex-col justify-between gap-2 text-center">
-                        <div>
-                            <div class="w-12 h-12 mx-auto rounded-xl overflow-hidden bg-slate-900 mb-2 border border-slate-700">
-                                ${iconUrl ? `<img src="${iconUrl}" class="w-full h-full object-cover">` : '<span class="leading-[48px]">🎞️</span>'}
-                            </div>
-                            <div class="font-bold text-white truncate text-[11px]" title="${safeName}">${safeName}</div>
-                            <div class="text-[10px] text-slate-400 truncate">${escapeAdminHtml(flt.category || flt.group || 'LUT')}</div>
+                    <div class="bg-white rounded-xl border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] p-2.5 flex flex-col justify-between">
+                        <div class="w-full aspect-square rounded-lg bg-[#E6DEC8] border border-[#1E1B18] relative overflow-hidden flex items-center justify-center mb-2">
+                            <span class="absolute top-1.5 left-1.5 z-10 px-1.5 py-0.5 rounded bg-[#1E1B18]/85 text-white text-[9px] font-black">${catLabel}</span>
+                            ${iconUrl ? `<img src="${iconUrl}" loading="lazy" class="w-full h-full object-cover">` : '<span class="text-2xl">🎞️</span>'}
                         </div>
-                        <button type="button" onclick="adminToggleLut('${safeId}', ${!isEnabled})"
-                            class="w-full py-1 px-2 rounded-lg font-bold text-[10px] cursor-pointer transition-all ${isEnabled ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30'}">
-                            ${isEnabled ? '● Đang Bật (Tắt)' : '○ Đang Tắt (Bật)'}
-                        </button>
+                        <div class="flex items-end justify-between gap-1.5">
+                            <div class="min-w-0">
+                                <div class="font-bold text-xs text-[#1E1B18] truncate" title="${safeName}">${safeName}</div>
+                                <div class="text-[10px] text-[#6E6659]">Kích thước: ${flt.size || 16}^3</div>
+                            </div>
+                            <button type="button" onclick="adminToggleLut('${safeId}', ${!isEnabled})"
+                                class="px-2.5 py-0.5 rounded border border-[#1E1B18] text-[10px] font-black cursor-pointer shrink-0 ${isEnabled ? 'bg-emerald-300 text-[#1E1B18] hover:bg-emerald-400' : 'bg-zinc-200 text-zinc-700 hover:bg-zinc-300'}">
+                                ${isEnabled ? 'Bật' : 'Tắt'}
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -2249,16 +2850,39 @@
             try {
                 showAdminToast('⏳ Đang cập nhật trạng thái bộ lọc LUT...');
                 const res = await fetch('/api/admin/ctv/filters/toggle', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: currentPin, filterId, enabled: nextEnabled })
                 });
                 const data = await res.json();
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Toggle thất bại');
-                showAdminToast(`✅ ${data.message || 'Đã cập nhật LUT thành công!'}`);
+                showAdminToast(`✅ ${data.message || 'Đã cập nhật LUT!'}`);
                 loadCtvFeaturesOverview();
             } catch (err) {
                 alert('❌ ' + err.message);
+            }
+        }
+
+        async function adminUploadLutFromUrl(e) {
+            e.preventDefault();
+            const extUrl = document.getElementById('adminLutExternalUrl').value.trim();
+            const nameVal = document.getElementById('adminLutUrlNameInput').value.trim();
+            const btn = document.getElementById('btnAdminUploadLutUrl');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang tải & biên dịch...'; }
+            try {
+                const res = await fetch('/api/admin/ctv/filters/upload_url', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, url: extUrl, name: nameVal })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Tải & Thêm LUT từ URL thất bại');
+                showAdminToast('🎉 ' + (data.message || 'Thêm LUT từ URL thành công!'));
+                document.getElementById('adminLutExternalUrl').value = '';
+                document.getElementById('adminLutUrlNameInput').value = '';
+                loadCtvFeaturesOverview();
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'Tải & Thêm LUT từ URL'; }
             }
         }
 
@@ -2268,32 +2892,17 @@
             const nameInput = document.getElementById('adminLutNameInput');
             const btn = document.getElementById('btnAdminUploadLut');
             const file = fileInput && fileInput.files && fileInput.files[0];
-            if (!file) {
-                alert('Vui lòng chọn file .cube!');
-                return;
-            }
-            if (!file.name.toLowerCase().endsWith('.cube')) {
-                alert('Chỉ hỗ trợ file định dạng .cube!');
-                return;
-            }
-            if (file.size > 20 * 1024 * 1024) {
-                alert('Dung lượng file vượt quá 20MB!');
-                return;
-            }
+            if (!file || !file.name.toLowerCase().endsWith('.cube')) { alert('Vui lòng chọn file định dạng .cube!'); return; }
+            if (file.size > 20 * 1024 * 1024) { alert('Dung lượng file vượt quá 20MB!'); return; }
 
-            if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Đang upload lên locket.2707226.xyz...'; }
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang upload...'; }
             try {
                 const fd = new FormData();
                 fd.append('pin', currentPin);
                 fd.append('file', file);
-                if (nameInput && nameInput.value.trim()) {
-                    fd.append('name', nameInput.value.trim());
-                }
+                if (nameInput && nameInput.value.trim()) fd.append('name', nameInput.value.trim());
 
-                const res = await fetch(`/api/admin/ctv/filters/upload?pin=${encodeURIComponent(currentPin)}`, {
-                    method: 'POST',
-                    body: fd
-                });
+                const res = await fetch(`/api/admin/ctv/filters/upload?pin=${encodeURIComponent(currentPin)}`, { method: 'POST', body: fd });
                 const data = await res.json();
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Upload .cube thất bại');
 
@@ -2304,7 +2913,7 @@
             } catch (err) {
                 alert('❌ ' + err.message);
             } finally {
-                if (btn) { btn.disabled = false; btn.innerHTML = '📤 Upload 3D LUT (.cube)'; }
+                if (btn) { btn.disabled = false; btn.textContent = '📤 Upload File .cube'; }
             }
         }
 

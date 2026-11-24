@@ -18,3 +18,4 @@ data/*.json
 .DS_Store
 Thumbs.db
 PremiumStores-main/
+assets/uploads/
