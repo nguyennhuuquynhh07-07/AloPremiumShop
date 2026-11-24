@@ -129,6 +129,11 @@ FILTER_TOPUP_PACKS = {
     "50":  {"label": "Gói 50 Lượt Filter AI",  "turns": 50,  "price": 17000},
     "100": {"label": "Gói 100 Lượt Filter AI", "turns": 100, "price": 33000},
 }
+FREE_CAPTION_QUOTA = 5
+CAPTION_TOPUP_PACKS = {
+    "10": {"label": "Gói +10 Caption VIP", "captions": 10, "price": 5000},
+    "30": {"label": "Gói +30 Caption VIP", "captions": 30, "price": 10000},
+}
 
 # ============================================================
 #  6. ĐƯỜNG DẪN DỮ LIỆU

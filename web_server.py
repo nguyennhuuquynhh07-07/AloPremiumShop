@@ -257,7 +257,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 if isinstance(pkg, dict):
                     package_name = pkg.get("name") or pkg.get("code") or ""
                 expires_at = dt.get("expiresAt")
-                if dt.get("active") is True or dt.get("status") == "ACTIVE":
+                if (dt.get("active") is True or dt.get("status") == "ACTIVE") and (dt.get("isMine") is True):
                     is_active = True
         except Exception:
             pass
@@ -301,7 +301,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             "is_vip": is_vip,
             "active_on_server": is_active,
             "has_shop_order": has_paid_order,
-            "package_name": package_name or ("Locket Gold VIP" if is_vip else "Tài khoản thường (Chưa VIP)"),
+            "package_name": (package_name or "Locket Gold VIP") if is_vip else "Chưa mua gói VIP tại cửa hàng",
             "expires_at": expires_at,
         }
 
@@ -691,6 +691,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             prod_key = order.get("product")
             is_locket_ai = (prod_key == "locket_ai")
             is_filter_topup = (prod_key == "filter_topup")
+            is_caption_pack = (prod_key == "caption_pack")
             is_combo = prod_key in ("combo", "locket_spotify")
             has_studio = order.get("has_studio", False) or (prod_key == "studio_caption")
             username_target = utils.clean_input(str(order.get("uid") or order.get("username") or order.get("account_target") or order.get("display_name") or "")).lstrip("@")
@@ -700,7 +701,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             if is_locket_ai:
                 exact_dns = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
                 download_url = None
-            elif is_filter_topup:
+            elif is_filter_topup or is_caption_pack:
                 exact_dns = None
                 download_url = None
             elif is_combo:
@@ -727,6 +728,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "direct_safari_url": exact_dns if is_done else None,
                 "created_at": order.get("created_at"),
                 "is_locket_ai": is_locket_ai,
+                "is_caption_pack": is_caption_pack,
                 "contact_admin": is_locket_ai or is_filter_topup,
                 "has_studio": has_studio,
                 "studio_url": studio_url if is_done else None,
@@ -845,9 +847,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     prod_k = od.get("product") or "locket"
                     is_ai = (prod_k == "locket_ai")
                     is_filter = (prod_k == "filter_topup")
+                    is_cap = (prod_k == "caption_pack")
                     u_disp = od.get("display_name") or od.get("username") or od.get("identifier") or "Khách VIP"
                     u_clean = utils.clean_input(str(u_disp)).lstrip("@")
-                    if is_ai or is_filter:
+                    if is_ai or is_filter or is_cap:
                         exact_safari = None
                         exact_dl = None
                     elif prod_k in ("combo", "locket_spotify"):
@@ -1767,7 +1770,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": f"Lỗi xử lý ảnh khung: {e_img}"})
             return
 
-        # 1.1 API Khách hàng kết nối tài khoản Locket với mục Tính Năng VIP (Frames + Captions)
+        # 1.1 API Khách hàng kết nối tài khoản Locket với mục Tính Năng VIP (Chỉ mở khi đã mua gói VIP)
         if path == "/api/features/connect_uid":
             raw_id = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
             if not raw_id:
@@ -1781,8 +1784,25 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             verified_uid = info["uid"]
             verified_uname = info["username"]
+            free_q = int(getattr(config, "FREE_CAPTION_QUOTA", 5))
 
-            # Lấy danh sách Caption cá nhân của chính khách hàng từ locket.2707226.xyz
+            if not is_vip:
+                self._send_json(200, {
+                    "ok": True,
+                    "account": info,
+                    "customer_captions": [],
+                    "customer_frames": [],
+                    "caption_quota": {
+                        "free": free_q,
+                        "extra": 0,
+                        "total": free_q,
+                        "used": 0,
+                        "remaining": 0,
+                    },
+                })
+                return
+
+            # Lấy danh sách Caption cá nhân RIÊNG của chính khách hàng này từ https://locket.2707226.xyz
             customer_captions = []
             try:
                 cap_res = api.ctv_get_captions(uid=verified_uid)
@@ -1796,7 +1816,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
 
-            # Lấy danh sách Khung riêng của chính khách hàng từ CTV (không để lộ UID khách khác)
+            # Lấy danh sách Khung riêng của chính khách hàng từ CTV (ẩn tuyệt đối UID khách khác)
             customer_frames = []
             try:
                 fr_res = api.ctv_get_frames()
@@ -1821,11 +1841,22 @@ class WebAppHandler(BaseHTTPRequestHandler):
             except Exception:
                 pass
 
+            q_info = db.get_caption_quota_info(verified_uid, verified_uname)
+            used_cap = len(customer_captions)
+            total_cap = int(q_info.get("total_quota", free_q))
+
             self._send_json(200, {
                 "ok": True,
                 "account": info,
                 "customer_captions": customer_captions,
                 "customer_frames": customer_frames,
+                "caption_quota": {
+                    "free": q_info.get("free_quota", free_q),
+                    "extra": q_info.get("extra_quota", 0),
+                    "total": total_cap,
+                    "used": used_cap,
+                    "remaining": max(0, total_cap - used_cap),
+                },
             })
             return
 
@@ -1893,12 +1924,46 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 return
 
             verified_uid = info["uid"]
+            verified_uname = info["username"]
             icon_val = str(body.get("icon", "")).strip()
             icon_type = str(body.get("iconType", "symbol")).strip()
             symbol_name = str(body.get("symbolName", "") or icon_val).strip()
             colors = body.get("colors") if isinstance(body.get("colors"), list) else ["#FFB800", "#FF8008"]
+            caption_id = str(body.get("caption_id") or body.get("id") or "").strip()
 
             try:
+                caps_before = []
+                try:
+                    cb_res = api.ctv_get_captions(uid=verified_uid)
+                    if isinstance(cb_res, dict) and cb_res.get("ok"):
+                        caps_before = cb_res.get("captions", []) or []
+                except Exception:
+                    try:
+                        cb_res2 = api.ctv_get_captions(uid=verified_uname)
+                        if isinstance(cb_res2, dict) and cb_res2.get("ok"):
+                            caps_before = cb_res2.get("captions", []) or []
+                    except Exception:
+                        caps_before = []
+
+                q_info = db.get_caption_quota_info(verified_uid, verified_uname)
+                total_cap = int(q_info.get("total_quota", 5))
+                used_cap = len(caps_before)
+
+                if caption_id:
+                    if not any(str(c.get("id") or "") == caption_id for c in caps_before):
+                        self._send_json(403, {"ok": False, "error": "Bạn chỉ được chỉnh sửa Caption thuộc tài khoản của chính mình!"})
+                        return
+                else:
+                    if used_cap >= total_cap:
+                        self._send_json(402, {
+                            "ok": False,
+                            "need_caption_topup": True,
+                            "used_count": used_cap,
+                            "total_quota": total_cap,
+                            "error": f"Bạn đã dùng hết {used_cap}/{total_cap} Caption! Mua thêm gói +10 Caption (5.000đ) hoặc +30 Caption (10.000đ) để tạo thêm.",
+                        })
+                        return
+
                 res = api.ctv_save_caption(
                     text=text_val,
                     uid=verified_uid,
@@ -1907,18 +1972,27 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     symbol_name=symbol_name if icon_type == "symbol" else "",
                     colors=colors,
                     active=True,
+                    caption_id=caption_id,
                 )
-                caps_now = []
+                caps_now = caps_before
                 try:
                     c_res = api.ctv_get_captions(uid=verified_uid)
                     caps_now = c_res.get("captions", []) or []
                 except Exception:
                     pass
+                used_after = len(caps_now)
                 self._send_json(200, {
                     "ok": True,
-                    "message": res.get("message") or f"Đã nạp Caption lên tài khoản @{info['username']}!",
+                    "message": res.get("message") or f"Đã nạp Caption riêng lên tài khoản @{verified_uname}!",
                     "caption": res.get("caption"),
                     "customer_captions": caps_now,
+                    "caption_quota": {
+                        "free": q_info.get("free_quota", 5),
+                        "extra": q_info.get("extra_quota", 0),
+                        "total": total_cap,
+                        "used": used_after,
+                        "remaining": max(0, total_cap - used_after),
+                    },
                 })
             except Exception as e_sc:
                 self._send_json(400, {"ok": False, "error": str(e_sc)})
@@ -2275,21 +2349,19 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": "Username Locket không hợp lệ! Vui lòng kiểm tra lại."})
                 return
 
-            try:
-                res = api.locket_resolve(cleaned)
-                data = res.get("data") if isinstance(res.get("data"), dict) else res
-                if not isinstance(data, dict) or (not data.get("uid") and not data.get("id") and not data.get("username")):
-                    self._send_json(400, {
-                        "ok": False,
-                        "error": f"Không tìm thấy tài khoản Locket '@{cleaned}'! Vui lòng kiểm tra lại đúng Username trên app Locket."
-                    })
-                    return
-                locket_username = str(data.get("username") or cleaned).lstrip("@")
-                locket_uid = str(data.get("uid") or data.get("id") or locket_username)
-                avatar = data.get("avatar") or data.get("avatarUrl") or ""
-            except Exception as e_res:
-                self._send_json(400, {"ok": False, "error": f"Không kiểm tra được tài khoản Locket '@{cleaned}': {e_res}"})
+            is_vip, info = self._verify_customer_locket_vip(cleaned)
+            if "error" in info:
+                self._send_json(400, {"ok": False, "error": info["error"]})
                 return
+            if not is_vip:
+                self._send_json(403, {
+                    "ok": False,
+                    "error": f"Tài khoản @{info['username']} chưa mua gói VIP tại cửa hàng! Vui lòng mua gói Locket Gold VIP (từ 5.000đ) trước khi dùng Tính Năng VIP.",
+                })
+                return
+            locket_username = str(info.get("username") or cleaned).lstrip("@")
+            locket_uid = str(info.get("uid") or locket_username)
+            avatar = info.get("avatar") or ""
 
             from order_service import payment_deadline
             clean_ident = locket_username.lower()
@@ -2380,6 +2452,133 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "product": "filter_topup",
                 "plan": pack,
                 "product_name": "Nạp Lượt Filter AI",
+                "plan_label": pack_cfg["label"],
+                "display_name": locket_username,
+                "expires_at_ms": int(payment_deadline(order) * 1000)
+            })
+            return
+
+        # 2.3 API Tạo đơn Mua Thêm Gói Caption VIP (+10 Caption: 5.000đ, +30 Caption: 10.000đ)
+        if path == "/api/create_caption_order":
+            import re
+            pack = str(body.get("pack") or body.get("plan") or "").strip()
+            raw_ident = str(body.get("identifier") or body.get("username") or body.get("uid") or "").strip()
+            packs_map = getattr(config, "CAPTION_TOPUP_PACKS", {})
+            pack_cfg = packs_map.get(pack)
+            if not pack_cfg:
+                self._send_json(400, {"ok": False, "error": "Gói mua thêm Caption không hợp lệ (chọn 10 hoặc 30 caption)."})
+                return
+            if not raw_ident:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập và kết nối Username Locket VIP trước!"})
+                return
+            if re.search(r"(https?://|/|spotify\.com|locket\.cam)", raw_ident, re.I):
+                self._send_json(400, {"ok": False, "error": "Chỉ điền Username Locket, không dán đường link!"})
+                return
+
+            is_vip, info = self._verify_customer_locket_vip(raw_ident)
+            if "error" in info:
+                self._send_json(400, {"ok": False, "error": info["error"]})
+                return
+            if not is_vip:
+                self._send_json(403, {
+                    "ok": False,
+                    "error": f"Tài khoản @{info['username']} chưa kích hoạt gói Locket Gold VIP tại cửa hàng! Vui lòng mua gói VIP trước.",
+                })
+                return
+
+            locket_username = str(info.get("username") or raw_ident).lstrip("@")
+            locket_uid = str(info.get("uid") or locket_username)
+            avatar = info.get("avatar") or ""
+
+            from order_service import payment_deadline
+            clean_ident = locket_username.lower()
+            existing_orders = db.get_orders()
+            pending_same_order = None
+            pending_count_user = 0
+            for od in existing_orders.values():
+                deadline = payment_deadline(od)
+                if (od.get("status") in ("waiting_payment", "pending")
+                        and deadline is not None and time.time() < deadline):
+                    od_ident = str(od.get("uid", "")).lower().lstrip("@")
+                    od_target = str(od.get("account_target", "")).lower().lstrip("@")
+                    if clean_ident in (od_ident, od_target):
+                        pending_count_user += 1
+                        if od.get("product") == "caption_pack" and od.get("plan") == pack and od.get("source") == "web":
+                            pending_same_order = od
+
+            if pending_count_user >= 5 and not pending_same_order:
+                self._send_json(429, {
+                    "ok": False,
+                    "error": "Bạn đang có nhiều đơn hàng chưa thanh toán! Vui lòng hoàn tất đơn trước hoặc chờ 5 phút."
+                })
+                return
+
+            price = int(pack_cfg["price"])
+            if pending_same_order:
+                p_id = pending_same_order["order_id"]
+                p_price = pending_same_order["price"]
+                qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
+                self._send_json(200, {
+                    "ok": True,
+                    "order_id": p_id,
+                    "memo": f"ORDER_{p_id}",
+                    "price": p_price,
+                    "qr_url": qr_url,
+                    "bank_id": getattr(config, "BANK_ID", "TPB"),
+                    "bank_name": getattr(config, "BANK_NAME", "TPBank"),
+                    "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
+                    "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
+                    "product": "caption_pack",
+                    "plan": pack,
+                    "product_name": "Mua Thêm Caption VIP",
+                    "plan_label": pack_cfg["label"],
+                    "display_name": locket_username,
+                    "is_reused": True,
+                    "expires_at_ms": int(payment_deadline(pending_same_order) * 1000)
+                })
+                return
+
+            cap_order_id = utils.gen_order_id()
+            order = db.create_order(
+                order_id=cap_order_id,
+                user_id=0,
+                username=f"web_{locket_username[:15]}",
+                product="caption_pack",
+                plan=pack,
+                plan_label=pack_cfg["label"],
+                price=price,
+                uid=locket_username,
+                display_name=locket_username,
+                account_target=locket_username,
+                locket_uid=locket_uid,
+                caption_amount=pack_cfg["captions"],
+                avatar=avatar,
+                source="web",
+                status="waiting_payment"
+            )
+            dispatch_admin_order_alert(
+                cap_order_id,
+                {"name": "Mua Thêm Caption VIP"},
+                {"label": pack_cfg["label"]},
+                locket_username,
+                locket_username,
+                price,
+                price
+            )
+            qr_url = utils.get_vietqr_url(amount=price, add_info=f"ORDER_{cap_order_id}")
+            self._send_json(200, {
+                "ok": True,
+                "order_id": cap_order_id,
+                "memo": f"ORDER_{cap_order_id}",
+                "price": price,
+                "qr_url": qr_url,
+                "bank_id": getattr(config, "BANK_ID", "TPB"),
+                "bank_name": getattr(config, "BANK_NAME", "TPBank"),
+                "bank_account": getattr(config, "ACCOUNT_NO", "34528022007"),
+                "account_holder": getattr(config, "ACCOUNT_NAME", "NGUYEN NHU QUYNH"),
+                "product": "caption_pack",
+                "plan": pack,
+                "product_name": "Mua Thêm Caption VIP",
                 "plan_label": pack_cfg["label"],
                 "display_name": locket_username,
                 "expires_at_ms": int(payment_deadline(order) * 1000)

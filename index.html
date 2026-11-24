@@ -1280,7 +1280,7 @@
                         <div class="flex items-center bg-white border-2 border-[#1E1B18] rounded-lg overflow-hidden shadow-[2px_2px_0px_#1E1B18]">
                             <span class="pl-2.5 text-xs font-black text-amber-600">@</span>
                             <input type="text" id="featureUsernameInput"
-                                   placeholder="Username Locket (vd: camsitup)"
+                                   placeholder="Nhập username Locket của bạn"
                                    onkeydown="if(event.key==='Enter') connectFeatureAccount();"
                                    class="px-2 py-1.5 text-xs font-bold text-[#1E1B18] bg-transparent focus:outline-none w-36 sm:w-44">
                             <button type="button" onclick="connectFeatureAccount()" id="btnConnectFeatureUid"
@@ -1299,15 +1299,15 @@
                     <!-- JS render hồ sơ Locket -->
                 </div>
 
-                <!-- ĐƯỜNG KẺ ĐỨT NÉT + 5 SUB-TABS -->
-                <div class="border-t-2 border-dashed border-[#D6CEBC] pt-3 flex flex-wrap items-center gap-2">
+                <!-- ĐƯỜNG KẺ ĐỨT NÉT + 5 SUB-TABS (CHỈ HIỆN KHI ĐÃ MUA GÓI VIP) -->
+                <div id="studioSubTabsBar" class="hidden border-t-2 border-dashed border-[#D6CEBC] pt-3 flex flex-wrap items-center gap-2">
                     <button type="button" onclick="switchFeatureSubTab('frames')" id="subTabBtn_frames"
                             class="px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] bg-[#FFD84D] text-[#1E1B18] font-bold text-xs cursor-pointer transition-all">
                         Khung Widget (<span id="subTabFrameBadgeCount">0</span>/30)
                     </button>
                     <button type="button" onclick="switchFeatureSubTab('captions')" id="subTabBtn_captions"
                             class="px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer transition-all">
-                        Caption Chú Thích (<span id="subTabCaptionBadgeCount">0</span>/100)
+                        Caption Chú Thích (<span id="subTabCaptionBadgeCount">0</span>/<span id="subTabCaptionQuotaTotal">5</span>)
                     </button>
                     <button type="button" onclick="switchFeatureSubTab('slots')" id="subTabBtn_slots"
                             class="px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer transition-all">
@@ -1323,6 +1323,41 @@
                     </button>
                 </div>
             </div>
+
+            <!-- CỔNG KHÓA TÍNH NĂNG VIP (BẮT BUỘC MUA GÓI MỚI MỞ KHÓA) -->
+            <div id="studioVipLockGate" class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-6 sm:p-8 text-center space-y-4">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-[#FFD84D] border-2 border-[#1E1B18] shadow-[3px_3px_0px_#1E1B18] flex items-center justify-center text-3xl">
+                    🔒
+                </div>
+                <div class="space-y-1.5 max-w-xl mx-auto">
+                    <span class="inline-block px-3 py-1 rounded-full bg-rose-100 border border-rose-400 text-rose-900 text-[11px] font-black uppercase">
+                        Yêu cầu tài khoản đã mua Locket VIP
+                    </span>
+                    <h3 class="font-fredoka text-lg sm:text-xl font-black text-[#1E1B18]">
+                        Khu Vực Chỉ Dành Cho Khách Đã Mua Gói VIP
+                    </h3>
+                    <p id="studioVipLockDesc" class="text-xs sm:text-sm text-[#6E6659] leading-relaxed">
+                        Khu vực tùy biến <b>Khung Widget</b>, soạn <b>Caption Apple SF Symbols</b> (tặng sẵn <b>5 Caption miễn phí</b> hiển thị riêng cho mình bạn), <b>Nạp Lượt Filter AI</b> &amp; <b>Kho 28+ Bộ Lọc LUT</b> chỉ mở sau khi bạn mua gói VIP tại AloPremium.Shop. Nếu đã mua, hãy nhập <b>Username Locket</b> ở thanh trên rồi bấm <b>Kết nối</b> để mở khóa!
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center justify-center gap-2.5 pt-1">
+                    <button type="button" onclick="switchMainTab('store'); window.scrollTo({top: 0, behavior: 'smooth'});"
+                            class="px-5 py-2.5 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs sm:text-sm font-black text-[#1E1B18] cursor-pointer">
+                        👑 Mua Gói Locket VIP Ngay (Từ 5.000đ)
+                    </button>
+                    <button type="button" onclick="document.getElementById('featureUsernameInput')?.focus()"
+                            class="px-4 py-2.5 rounded-xl bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18] cursor-pointer">
+                        🔑 Tôi Đã Mua — Nhập Username
+                    </button>
+                    <button type="button" onclick="switchMainTab('lookup')"
+                            class="px-4 py-2.5 rounded-xl bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18] cursor-pointer">
+                        🔍 Tra Cứu Đơn Hàng
+                    </button>
+                </div>
+            </div>
+
+            <!-- KHU VỰC LÀM VIỆC ĐÃ MỞ KHÓA (ẨN HOÀN TOÀN NẾU CHƯA MUA VIP) -->
+            <div id="studioUnlockedWorkspace" class="hidden space-y-4">
 
             <!-- ════════════════════════════════════════════════════════ -->
             <!-- SUB-TAB 1: KHUNG WIDGET (ẢNH 1)                           -->
@@ -1529,12 +1564,12 @@
                         <div class="flex items-start justify-between gap-2">
                             <div>
                                 <h3 class="font-bold text-sm sm:text-base text-[#1E1B18] flex items-center gap-1.5">
-                                    <span>💬</span> Soạn Caption
+                                    <span>💬</span> Soạn Caption Riêng Tư
                                 </h3>
-                                <p class="text-[11px] text-[#6E6659]">Hiển thị trực tiếp trên camera Locket của bạn &amp; bạn bè</p>
+                                <p class="text-[11px] text-[#6E6659]">Chỉ hiển thị trên Locket của riêng bạn · Tặng 5 Caption miễn phí</p>
                             </div>
                             <span class="px-2.5 py-1 rounded-md bg-emerald-400 border border-[#1E1B18] text-xs font-black text-[#1E1B18]">
-                                <span id="captionSlotHeaderCount">0</span>/100
+                                <span id="captionSlotHeaderCount">0</span>/<span id="captionHeaderQuotaTotal">5</span>
                             </span>
                         </div>
 
@@ -1598,9 +1633,9 @@
                             <div class="flex items-center gap-2">
                                 <select id="captionGroupSelect" onchange="updateCaptionLivePreview()"
                                         class="flex-1 px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-bold text-[#1E1B18] focus:outline-none">
-                                    <option value="😎 nnq">😎 nnq</option>
-                                    <option value="Gen Z Life">✨ Gen Z Life</option>
-                                    <option value="Mặc định">💬 Mặc định</option>
+                                    <option value="💬 Caption Của Tôi">💬 Caption Của Tôi</option>
+                                    <option value="✨ Vibe Chill">✨ Vibe Chill</option>
+                                    <option value="💛 Mặc định">💛 Mặc định</option>
                                 </select>
                                 <button type="button" onclick="addNewCaptionGroupPrompt()" title="Tạo nhóm mới"
                                         class="w-9 h-9 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] hover:bg-[#FFC928] text-sm font-black cursor-pointer">
@@ -1635,25 +1670,66 @@
                             </div>
                         </div>
 
+                        <!-- TRẠNG THÁI SỬA MẪU -->
+                        <div id="editingCaptionBanner" class="hidden px-3 py-2 rounded-xl bg-amber-100 border border-[#1E1B18] flex items-center justify-between gap-2 text-xs">
+                            <span class="font-bold text-[#1E1B18]">✏️ Đang chỉnh sửa Caption cá nhân (không tốn thêm lượt)</span>
+                            <button type="button" onclick="cancelEditCaption()" class="px-2 py-0.5 rounded bg-white border border-[#1E1B18] font-bold text-[11px] cursor-pointer">
+                                ✕ Tạo mới
+                            </button>
+                        </div>
+
                         <!-- NÚT SUBMIT VÀNG DÀI -->
                         <button type="button" onclick="saveCustomerCaptionLive()" id="btnSaveCaptionLive"
                                 class="w-full py-2.5 px-4 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs sm:text-sm font-black text-[#1E1B18] cursor-pointer">
-                            + Lưu &amp; Nạp Vào Tài Khoản Locket (<span id="btnGroupLabel">😎 nnq</span>)
+                            + Lưu &amp; Nạp Riêng Vào Locket (<span id="btnGroupLabel">💬 Caption Của Tôi</span>)
                         </button>
+
+                        <!-- HẠN MỨC 5 CAPTION MIỄN PHÍ + MUA THÊM 10 (5K) / 30 (10K) -->
+                        <div id="captionQuotaTopupBox" class="p-3.5 rounded-xl border-2 border-[#1E1B18] bg-[#FAF6EA] space-y-2.5 text-xs">
+                            <div class="flex flex-wrap items-center justify-between gap-1.5">
+                                <span class="font-bold text-[#1E1B18]">
+                                    📊 Hạn mức của bạn: <b id="captionQuotaUsedLabel">0</b>/<b id="captionQuotaTotalLabel">5</b> Caption
+                                </span>
+                                <span class="text-[11px] text-[#6E6659]">
+                                    (Tặng 5 miễn phí · Đã mua thêm: <b id="captionQuotaExtraLabel">0</b>)
+                                </span>
+                            </div>
+                            <div id="captionQuotaLimitBanner" class="hidden p-2.5 rounded-lg bg-rose-100 border border-rose-400 text-rose-900 font-bold text-[11px]">
+                                ⚠️ Bạn đã dùng hết hạn mức Caption hiện tại! Hãy mua thêm gói bên dưới để tạo tiếp Caption riêng tư trên locket.2707226.xyz:
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <button type="button" onclick="buyCaptionTopupPack('10')" id="btnBuyCap10"
+                                        class="p-2.5 rounded-xl bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] flex items-center justify-between cursor-pointer transition-all">
+                                    <div class="text-left">
+                                        <div class="font-black text-[#1E1B18]">➕ Thêm 10 Caption</div>
+                                        <div class="text-[10px] text-[#6E6659]">Cộng ngay sau khi TT</div>
+                                    </div>
+                                    <span class="px-2 py-0.5 rounded bg-[#FFD84D] border border-[#1E1B18] font-black text-amber-950">5.000đ</span>
+                                </button>
+                                <button type="button" onclick="buyCaptionTopupPack('30')" id="btnBuyCap30"
+                                        class="p-2.5 rounded-xl bg-[#FFF8DC] hover:bg-[#FFD84D] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] flex items-center justify-between cursor-pointer transition-all">
+                                    <div class="text-left">
+                                        <div class="font-black text-[#1E1B18]">🔥 Thêm 30 Caption</div>
+                                        <div class="text-[10px] text-[#6E6659]">Tiết kiệm hơn</div>
+                                    </div>
+                                    <span class="px-2 py-0.5 rounded bg-emerald-300 border border-[#1E1B18] font-black text-emerald-950">10.000đ</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- DANH SÁCH CAPTION (DẠNG THANH GRADIENT) -->
+                    <!-- DANH SÁCH CAPTION RIÊNG CỦA KHÁCH (DẠNG THANH GRADIENT) -->
                     <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
                         <div class="flex items-center justify-between">
                             <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">
-                                ≣ Danh Sách Caption (<span id="activeCaptionsCount">0</span>)
+                                ≣ Danh Sách Caption Của Bạn (<span id="activeCaptionsCount">0</span>)
                             </h4>
                             <span id="activeCaptionsModeBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-100 border border-[#1E1B18] text-[10px] font-black text-[#1E1B18]">
-                                Mẫu Shop
+                                Chỉ mình bạn thấy
                             </span>
                         </div>
                         <div id="liveCaptionsList" class="space-y-2.5">
-                            <p class="text-xs text-[#6E6659] py-4 text-center">⏳ Đang tải danh sách Caption từ máy chủ...</p>
+                            <p class="text-xs text-[#6E6659] py-4 text-center">Bạn chưa tạo Caption nào (tặng sẵn 5 Caption miễn phí).</p>
                         </div>
                     </div>
                 </div>
@@ -1759,25 +1835,28 @@
                                 <span id="slotCaptionExpiryText" class="font-bold text-emerald-800">Theo gói VIP đã mua</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-[#6E6659] font-semibold">Giới hạn caption cá nhân:</span>
-                                <span class="font-black text-[#1E1B18]">Tối đa 100 caption</span>
+                                <span class="text-[#6E6659] font-semibold">Miễn phí mặc định:</span>
+                                <span class="font-black text-[#1E1B18]">5 Caption cá nhân</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-[#6E6659] font-semibold">Đang sử dụng:</span>
-                                <span class="font-bold text-[#1E1B18]"><span id="slotCaptionUsedCount">0</span>/100 caption</span>
+                                <span class="font-bold text-[#1E1B18]"><span id="slotCaptionUsedCount">0</span>/<span id="slotCaptionQuotaTotal">5</span> caption</span>
                             </div>
                             <div class="flex items-center justify-between pt-1 border-t border-black/10">
-                                <span class="text-[#6E6659] font-semibold">Chi phí mở khóa:</span>
-                                <span class="font-black text-emerald-700">Miễn phí kèm Locket VIP (từ 5.000đ)</span>
+                                <span class="text-[#6E6659] font-semibold">Mua thêm ngoài 5 miễn phí:</span>
+                                <span class="font-black text-amber-800">+10 (5.000đ) · +30 (10.000đ)</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex gap-2">
-                        <button type="button" onclick="switchMainTab('store'); scrollToProductCard('locket_ai');" class="flex-1 py-2.5 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
-                            ✨ Mua VIP All-in-One (250.000đ)
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="buyCaptionTopupPack('10')" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                            +10 Caption (5K)
                         </button>
-                        <button type="button" onclick="switchFeatureSubTab('captions')" class="py-2.5 px-3 rounded-xl bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18] cursor-pointer">
+                        <button type="button" onclick="buyCaptionTopupPack('30')" class="flex-1 py-2 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                            +30 Caption (10K)
+                        </button>
+                        <button type="button" onclick="switchFeatureSubTab('captions')" class="py-2 px-3 rounded-xl bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18] cursor-pointer">
                             ✍️ Soạn Ngay
                         </button>
                     </div>
@@ -1801,7 +1880,7 @@
                     <div>
                         <label class="block text-xs font-bold text-[#1E1B18] mb-1.5">Username Locket của bạn:</label>
                         <div class="flex flex-col sm:flex-row gap-2">
-                            <input type="text" id="filterTopupLookupInput" placeholder="Ví dụ: camsitup hoặc @camsitup"
+                            <input type="text" id="filterTopupLookupInput" placeholder="Nhập username Locket của bạn"
                                    class="flex-1 px-3.5 py-2.5 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
                             <button type="button" onclick="lookupFilterTopupCustomer()"
                                     class="px-5 py-2.5 rounded-xl bg-[#FAF6EA] hover:bg-[#FFD84D] border-2 border-[#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer shrink-0">
@@ -1930,6 +2009,7 @@
                     </div>
                 </div>
             </div>
+            </div> <!-- KẾT THÚC #studioUnlockedWorkspace -->
         </div>
 
         <!-- MODAL THỬ KHUNG WIDGET TRỰC TIẾP (FRAME TRY-ON MODAL) -->
@@ -2738,10 +2818,43 @@
             if (bGal) bGal.className = `px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] font-bold text-xs cursor-pointer ${mode === 'gallery' ? 'bg-[#FFD84D] text-[#1E1B18]' : 'bg-white hover:bg-[#FFF5D6] text-[#1E1B18]'}`;
         }
 
+        let captionQuotaState = { free: 5, extra: 0, total: 5, used: 0, remaining: 5 };
+        let editingCaptionId = '';
+        let studioDataLoaded = false;
+
+        function applyStudioVipGate(isVip, acc) {
+            const lockGate = document.getElementById('studioVipLockGate');
+            const lockDesc = document.getElementById('studioVipLockDesc');
+            const subTabs = document.getElementById('studioSubTabsBar');
+            const workspace = document.getElementById('studioUnlockedWorkspace');
+            if (lockGate) lockGate.classList.toggle('hidden', !!isVip);
+            if (subTabs) subTabs.classList.toggle('hidden', !isVip);
+            if (workspace) workspace.classList.toggle('hidden', !isVip);
+
+            if (!isVip && lockDesc) {
+                if (acc && acc.username) {
+                    lockDesc.innerHTML = `Tài khoản <b>@${escapeFeatureHtml(acc.username)}</b> hiện chưa mua hoặc chưa kích hoạt gói <b>Locket Gold VIP</b> tại AloPremium.Shop nên chưa thể sử dụng khu vực Tính Năng VIP. Vui lòng mua gói VIP (từ 5.000đ) để mở khóa ngay!`;
+                } else {
+                    lockDesc.innerHTML = `Khu vực tùy biến <b>Khung Widget</b>, soạn <b>Caption Apple SF Symbols</b> (tặng sẵn <b>5 Caption miễn phí</b> hiển thị riêng cho mình bạn), <b>Nạp Lượt Filter AI</b> &amp; <b>Kho 28+ Bộ Lọc LUT</b> chỉ mở sau khi bạn mua gói VIP tại AloPremium.Shop. Nếu đã mua, hãy nhập <b>Username Locket</b> ở thanh trên rồi bấm <b>Kết nối</b> để mở khóa!`;
+                }
+            }
+        }
+
+        async function ensureStudioDataLoaded() {
+            if (studioDataLoaded) return;
+            studioDataLoaded = true;
+            await Promise.allSettled([
+                loadLiveFrames(),
+                loadLiveSymbols('all', ''),
+                loadLiveFilters()
+            ]);
+        }
+
         async function initFeaturesSection() {
             if (featuresInitialized) return;
             featuresInitialized = true;
 
+            applyStudioVipGate(false, null);
             renderEmojiPickerGrid();
             renderGradientPicker();
             updateCaptionLivePreview();
@@ -2750,15 +2863,11 @@
             try {
                 const savedU = localStorage.getItem('alopremium_feature_uid') || '';
                 const inp = document.getElementById('featureUsernameInput');
-                if (inp && !inp.value && savedU) inp.value = savedU;
+                if (inp && !inp.value && savedU) {
+                    inp.value = savedU;
+                    await connectFeatureAccount(true);
+                }
             } catch (e) {}
-
-            await Promise.allSettled([
-                loadLiveFrames(),
-                loadLiveSymbols('all', ''),
-                loadLiveFilters(),
-                loadBrandCaptionsLive()
-            ]);
         }
 
         async function loadLiveFrames() {
@@ -3025,14 +3134,14 @@
             }).join('');
         }
 
-        async function connectFeatureAccount() {
+        async function connectFeatureAccount(silent = false) {
             const inp = document.getElementById('featureUsernameInput');
             const btn = document.getElementById('btnConnectFeatureUid');
             const box = document.getElementById('connectedFeatureAccountBox');
             const stPill = document.getElementById('studioAccountStatusPill');
             const usernameRaw = (inp ? inp.value : '').trim().replace(/^@/, '');
             if (!usernameRaw) {
-                alert('⚠️ Vui lòng nhập Username Locket của bạn (VD: camsitup)!');
+                if (!silent) alert('⚠️ Vui lòng nhập Username Locket của bạn!');
                 return;
             }
             if (btn) { btn.disabled = true; btn.textContent = '⏳...'; }
@@ -3046,15 +3155,17 @@
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Không kết nối được tài khoản');
 
                 connectedAccount = data.account;
-                customerFramesLive = data.customer_frames || [];
-                customerCaptionsLive = data.customer_captions || [];
+                const isVip = !!(connectedAccount && connectedAccount.is_vip);
+                customerFramesLive = isVip ? (data.customer_frames || []) : [];
+                customerCaptionsLive = isVip ? (data.customer_captions || []) : [];
+                captionQuotaState = data.caption_quota || { free: 5, extra: 0, total: 5, used: customerCaptionsLive.length, remaining: Math.max(0, 5 - customerCaptionsLive.length) };
+                editingCaptionId = '';
                 try { localStorage.setItem('alopremium_feature_uid', connectedAccount.username); } catch (e) {}
 
-                const isVip = connectedAccount.is_vip;
                 if (stPill) {
                     stPill.innerHTML = isVip
                         ? `Tài khoản: <span class="text-emerald-700 font-black">@${escapeFeatureHtml(connectedAccount.username)} (VIP)</span>`
-                        : `Tài khoản: <span class="text-rose-600">@${escapeFeatureHtml(connectedAccount.username)} (Chưa VIP)</span>`;
+                        : `Tài khoản: <span class="text-rose-600">@${escapeFeatureHtml(connectedAccount.username)} (Chưa mua VIP)</span>`;
                 }
                 if (box) {
                     box.classList.remove('hidden');
@@ -3065,18 +3176,21 @@
                                 <div class="font-black text-[#1E1B18] flex items-center gap-1.5 flex-wrap">
                                     <span>@${escapeFeatureHtml(connectedAccount.username)}</span>
                                     <span class="px-2 py-0.5 rounded border border-[#1E1B18] text-[10px] font-black uppercase ${isVip ? 'bg-emerald-300 text-emerald-950' : 'bg-rose-200 text-rose-900'}">
-                                        ${isVip ? '● ĐÃ KÍCH HOẠT VIP' : '○ CHƯA VIP'}
+                                        ${isVip ? '● ĐÃ KÍCH HOẠT VIP' : '○ CHƯA MUA GÓI VIP'}
                                     </span>
                                 </div>
                                 <p class="text-[10px] text-[#6E6659] font-mono">UID: ${escapeFeatureHtml(connectedAccount.uid)} · ${escapeFeatureHtml(connectedAccount.package_name)}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="font-bold text-[#1E1B18]">${customerFramesLive.length} khung riêng · ${customerCaptionsLive.length} caption</span>
+                            <span class="font-bold text-[#1E1B18]">${isVip ? `${customerFramesLive.length} khung riêng · ${customerCaptionsLive.length}/${captionQuotaState.total} caption` : 'Chưa mở khóa Tính Năng VIP'}</span>
                             ${!isVip ? `<button type="button" onclick="switchMainTab('store')" class="px-2.5 py-1 rounded-lg bg-[#FFD84D] border border-[#1E1B18] text-[11px] font-black cursor-pointer">👑 Mua VIP từ 5K</button>` : ''}
                         </div>
                     `;
                 }
+
+                // Khóa hoặc mở khóa toàn bộ khu vực Tính Năng VIP
+                applyStudioVipGate(isVip, connectedAccount);
 
                 // Cập nhật trạng thái tab Quyền Lợi VIP & đồng bộ ô nhập Nạp Lượt Filter
                 const sfPill = document.getElementById('slotFrameStatusPill');
@@ -3110,12 +3224,19 @@
                     fTopInp.value = connectedAccount.username;
                 }
 
-                mergeAllFrames();
-                renderActiveCaptionsList();
-                renderDarkSimGroups();
-                showToast(`✅ Đã kết nối Locket @${connectedAccount.username}!`);
+                if (isVip) {
+                    await ensureStudioDataLoaded();
+                    mergeAllFrames();
+                    updateCaptionQuotaUI();
+                    renderActiveCaptionsList();
+                    renderDarkSimGroups();
+                    if (!silent) showToast(`✅ Đã mở khóa Tính Năng VIP cho @${connectedAccount.username}!`);
+                } else {
+                    if (!silent) showToast(`🔒 @${connectedAccount.username} chưa mua gói VIP tại shop nên chưa thể dùng!`);
+                }
             } catch (err) {
-                alert('❌ ' + err.message);
+                applyStudioVipGate(false, null);
+                if (!silent) alert('❌ ' + err.message);
             } finally {
                 if (btn) { btn.disabled = false; btn.textContent = 'Kết nối'; }
             }
@@ -3432,7 +3553,7 @@
         function updateCaptionLivePreview() {
             const input = document.getElementById('captionTextInput');
             const textVal = input ? (input.value || 'Hôm nay trời đẹp quá ✨') : 'Hôm nay trời đẹp quá ✨';
-            const grpVal = document.getElementById('captionGroupSelect')?.value || '😎 nnq';
+            const grpVal = document.getElementById('captionGroupSelect')?.value || '💬 Caption Của Tôi';
             const bgCss = `linear-gradient(135deg, ${selectedGradient.hex[0]}, ${selectedGradient.hex[1]})`;
 
             const lblGrp = document.getElementById('btnGroupLabel');
@@ -3467,19 +3588,64 @@
             });
         }
 
+        function updateCaptionQuotaUI() {
+            const used = customerCaptionsLive.length;
+            const total = Number(captionQuotaState?.total || 5);
+            const extra = Number(captionQuotaState?.extra || 0);
+            captionQuotaState = {
+                free: Number(captionQuotaState?.free || 5),
+                extra: extra,
+                total: total,
+                used: used,
+                remaining: Math.max(0, total - used)
+            };
+
+            const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = String(val); };
+            setTxt('subTabCaptionBadgeCount', used);
+            setTxt('subTabCaptionQuotaTotal', total);
+            setTxt('captionSlotHeaderCount', used);
+            setTxt('captionHeaderQuotaTotal', total);
+            setTxt('activeCaptionsCount', used);
+            setTxt('slotCaptionUsedCount', used);
+            setTxt('slotCaptionQuotaTotal', total);
+            setTxt('captionQuotaUsedLabel', used);
+            setTxt('captionQuotaTotalLabel', total);
+            setTxt('captionQuotaExtraLabel', extra);
+
+            const limBanner = document.getElementById('captionQuotaLimitBanner');
+            if (limBanner) {
+                limBanner.classList.toggle('hidden', used < total);
+            }
+            const editBan = document.getElementById('editingCaptionBanner');
+            if (editBan) {
+                editBan.classList.toggle('hidden', !editingCaptionId);
+            }
+            const saveBtn = document.getElementById('btnSaveCaptionLive');
+            if (saveBtn && !saveBtn.disabled) {
+                const curGrp = escapeFeatureHtml(document.getElementById('captionGroupSelect')?.value || '💬 Caption Của Tôi');
+                saveBtn.innerHTML = editingCaptionId
+                    ? '✏️ Cập Nhật Caption Đang Sửa'
+                    : `+ Lưu &amp; Nạp Riêng Vào Locket (<span id="btnGroupLabel">${curGrp}</span>)`;
+            }
+        }
+
+        function cancelEditCaption() {
+            editingCaptionId = '';
+            updateCaptionQuotaUI();
+            showToast('✅ Đã chuyển sang chế độ tạo Caption mới.');
+        }
+
         async function saveCustomerCaptionLive() {
-            const ident = connectedAccount ? connectedAccount.username : (document.getElementById('featureUsernameInput')?.value || '').trim();
-            const textVal = (document.getElementById('captionTextInput')?.value || '').trim();
-            if (!ident) {
-                const inp = document.getElementById('featureUsernameInput');
-                if (inp) { inp.focus(); inp.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-                showToast('⚠️ Vui lòng nhập & kết nối Username Locket ở trên trước khi nạp Caption!');
+            if (!connectedAccount || !connectedAccount.is_vip) {
+                alert('🔒 Bạn cần mua & kết nối tài khoản Locket Gold VIP tại shop trước khi sử dụng tính năng này!');
                 return;
             }
+            const ident = connectedAccount.username;
+            const textVal = (document.getElementById('captionTextInput')?.value || '').trim();
             if (!textVal) { alert('⚠️ Vui lòng nhập nội dung Caption!'); return; }
 
             const btn = document.getElementById('btnSaveCaptionLive');
-            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang gửi lên Locket...'; }
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang gửi lên locket.2707226.xyz...'; }
             try {
                 const isSym = currentIconMode === 'symbol';
                 const res = await fetch('/api/features/save_caption', {
@@ -3487,6 +3653,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         identifier: ident,
+                        caption_id: editingCaptionId || '',
                         text: textVal,
                         icon: isSym ? selectedSymbol.name : selectedSymbol.icon,
                         iconType: isSym ? 'symbol' : 'emoji',
@@ -3495,57 +3662,78 @@
                     })
                 });
                 const data = await res.json();
-                if (!res.ok || !data.ok) throw new Error(data.error || 'Không thể lưu Caption');
+                if (!res.ok || !data.ok) {
+                    if (res.status === 402 || data.need_caption_topup) {
+                        const limBanner = document.getElementById('captionQuotaLimitBanner');
+                        if (limBanner) limBanner.classList.remove('hidden');
+                        document.getElementById('captionQuotaTopupBox')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        showToast('⚠️ Đã hết ' + (data.total_quota || captionQuotaState.total) + ' Caption! Hãy chọn mua +10 (5K) hoặc +30 (10K).');
+                        return;
+                    }
+                    throw new Error(data.error || 'Không thể lưu Caption');
+                }
+                editingCaptionId = '';
                 if (Array.isArray(data.customer_captions)) {
                     customerCaptionsLive = data.customer_captions;
-                    renderActiveCaptionsList();
-                    renderDarkSimGroups();
                 }
-                showToast('🎉 ' + (data.message || 'Đã lưu Caption thành công!'));
+                if (data.caption_quota) {
+                    captionQuotaState = data.caption_quota;
+                }
+                updateCaptionQuotaUI();
+                renderActiveCaptionsList();
+                renderDarkSimGroups();
+                showToast('🎉 ' + (data.message || 'Đã lưu Caption riêng lên locket.2707226.xyz!'));
             } catch (err) {
                 alert('❌ ' + err.message);
             } finally {
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerHTML = `+ Lưu &amp; Nạp Vào Tài Khoản Locket (<span id="btnGroupLabel">${escapeFeatureHtml(document.getElementById('captionGroupSelect')?.value || '😎 nnq')}</span>)`;
+                    updateCaptionQuotaUI();
                 }
             }
         }
 
-        async function loadBrandCaptionsLive() {
+        async function buyCaptionTopupPack(packKey) {
+            if (!connectedAccount || !connectedAccount.is_vip) {
+                alert('🔒 Bạn cần mua gói Locket Gold VIP và kết nối tài khoản ở thanh trên trước!');
+                return;
+            }
+            const btn = document.getElementById('btnBuyCap' + packKey);
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<span class="font-bold">⏳ Đang tạo mã QR...</span>'; }
             try {
-                const res = await fetch('/api/features/brand_captions');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.ok) {
-                        brandCaptionsLive = data.captions || [];
-                        renderActiveCaptionsList();
-                        renderDarkSimGroups();
-                    }
-                }
-            } catch (e) {}
+                const res = await fetch('/api/create_caption_order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pack: String(packKey), identifier: connectedAccount.username })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Không tạo được đơn mua thêm Caption');
+                showCheckout(data);
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+            }
         }
 
         function renderActiveCaptionsList() {
             const listEl = document.getElementById('liveCaptionsList');
             const badgeEl = document.getElementById('activeCaptionsModeBadge');
-            const isCust = connectedAccount && customerCaptionsLive.length > 0;
-            const list = isCust ? customerCaptionsLive : brandCaptionsLive;
+            const list = (connectedAccount && connectedAccount.is_vip) ? customerCaptionsLive : [];
 
-            const c1 = document.getElementById('subTabCaptionBadgeCount');
-            const c2 = document.getElementById('captionSlotHeaderCount');
-            const c3 = document.getElementById('activeCaptionsCount');
-            const c4 = document.getElementById('slotCaptionUsedCount');
-            [c1, c2, c3, c4].forEach(el => { if (el) el.textContent = list.length; });
-            if (badgeEl) badgeEl.textContent = isCust ? `Của @${connectedAccount.username}` : 'Mẫu Shop';
+            updateCaptionQuotaUI();
+            if (badgeEl) {
+                badgeEl.textContent = connectedAccount ? `Riêng @${connectedAccount.username}` : 'Chỉ mình bạn thấy';
+            }
 
             if (!listEl) return;
             if (!list.length) {
-                listEl.innerHTML = '<p class="text-xs text-[#6E6659] py-4 text-center">Chưa có Caption nào đang kích hoạt.</p>';
+                listEl.innerHTML = '<p class="text-xs text-[#6E6659] py-4 text-center">Bạn chưa tạo Caption nào (được tặng sẵn 5 Caption miễn phí). Hãy soạn Caption đầu tiên bên trên!</p>';
                 return;
             }
 
-            listEl.innerHTML = list.map(cp => {
+            listEl.innerHTML = list.map((cp, idx) => {
                 const col0 = (cp.colors && cp.colors[0]) || '#570AE6';
                 const col1 = (cp.colors && cp.colors[1]) || '#2A0845';
                 const symImg = cp.symbolPreviewUrl
@@ -3559,10 +3747,10 @@
                             <span class="truncate">${escapeFeatureHtml(cp.text)}</span>
                         </div>
                         <div class="flex items-center justify-between text-[10px] text-[#6E6659] px-1">
-                            <span>Trạng thái: <b class="text-emerald-700">${cp.active !== false ? 'Đang bật' : 'Tắt'}</b></span>
-                            <button type="button" onclick="applyPresetCaptionToComposer('${escapeFeatureHtml(cp.text)}', '${escapeFeatureHtml(col0)}', '${escapeFeatureHtml(col1)}')"
+                            <span>Hiển thị: <b class="text-emerald-700">Riêng tài khoản bạn</b></span>
+                            <button type="button" onclick="applyPresetCaptionToComposer(${idx})"
                                     class="px-2 py-0.5 rounded border border-[#1E1B18] bg-[#FAF6EA] font-bold text-[#1E1B18] cursor-pointer">
-                                ✏️ Sửa mẫu này
+                                ✏️ Sửa caption này
                             </button>
                         </div>
                     </div>
@@ -3570,41 +3758,36 @@
             }).join('');
         }
 
-        function applyPresetCaptionToComposer(text, c0, c1) {
-            document.getElementById('captionTextInput').value = text;
+        function applyPresetCaptionToComposer(idx) {
+            const cp = customerCaptionsLive[idx];
+            if (!cp) return;
+            document.getElementById('captionTextInput').value = cp.text || '';
+            const c0 = (cp.colors && cp.colors[0]) || '#FF5E3A';
+            const c1 = (cp.colors && cp.colors[1]) || '#FF2A68';
+            editingCaptionId = cp.id || '';
             selectGradient('Mẫu chọn', [c0, c1]);
-            showToast('✏️ Đã đưa caption vào khung soạn!');
+            updateCaptionQuotaUI();
+            document.getElementById('captionTextInput')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showToast('✏️ Đã đưa Caption riêng của bạn vào khung soạn!');
         }
 
         function renderDarkSimGroups() {
             const box = document.getElementById('darkSimGroupsContainer');
             if (!box) return;
-            const list = (connectedAccount && customerCaptionsLive.length > 0) ? customerCaptionsLive : brandCaptionsLive;
-            const genzPresets = [
-                { text: 'Hướng nội', colors: ['#3F3F46', '#18181B'] },
-                { text: 'Cảm lạnh', colors: ['#0E7490', '#164E63'] },
-                { text: 'Bất lực', colors: ['#334155', '#0F172A'] },
-                { text: 'Xin lũi được chưa', colors: ['#F59E0B', '#D97706'] },
-                { text: 'Rớt nước mắt', colors: ['#0284C7', '#0369A1'] }
-            ];
+            const list = (connectedAccount && connectedAccount.is_vip) ? customerCaptionsLive : [];
+            const unameLabel = connectedAccount ? `@${escapeFeatureHtml(connectedAccount.username)}` : 'Riêng bạn';
 
             const renderPill = (item) => {
                 const c0 = (item.colors && item.colors[0]) || '#570AE6';
                 const c1 = (item.colors && item.colors[1]) || '#2A0845';
-                return `<span class="px-2.5 py-1 rounded-full font-bold text-white shadow-sm truncate max-w-[110px]" style="background: linear-gradient(135deg, ${escapeFeatureHtml(c0)}, ${escapeFeatureHtml(c1)});">${escapeFeatureHtml(item.text)}</span>`;
+                return `<span class="px-2.5 py-1 rounded-full font-bold text-white shadow-sm truncate max-w-[115px]" style="background: linear-gradient(135deg, ${escapeFeatureHtml(c0)}, ${escapeFeatureHtml(c1)});">${escapeFeatureHtml(item.text)}</span>`;
             };
 
             box.innerHTML = `
                 <div>
-                    <div class="text-zinc-400 font-bold mb-1.5">📁 Của Shop &amp; Bạn (${list.length})</div>
+                    <div class="text-zinc-400 font-bold mb-1.5">🔒 Chỉ ${unameLabel} thấy (${list.length})</div>
                     <div class="flex flex-wrap gap-1.5">
-                        ${list.length ? list.map(renderPill).join('') : '<span class="text-zinc-500">Chưa có caption riêng</span>'}
-                    </div>
-                </div>
-                <div>
-                    <div class="text-zinc-400 font-bold mb-1.5">✨ Gen Z Life</div>
-                    <div class="flex flex-wrap gap-1.5">
-                        ${genzPresets.map(renderPill).join('')}
+                        ${list.length ? list.map(renderPill).join('') : '<span class="text-zinc-500">Chưa có caption riêng — hãy soạn bên trái</span>'}
                     </div>
                 </div>
             `;
@@ -4650,6 +4833,7 @@
             const isSpotify = prod === 'spotify';
             const isLocketAi = prod === 'locket_ai';
             const isFilterTopup = prod === 'filter_topup';
+            const isCaptionPack = prod === 'caption_pack';
             const isStudioOnly = prod === 'studio_caption';
 
             const singleBox = document.getElementById('singleDownloadActions');
@@ -4670,8 +4854,8 @@
 
             let safariDnsUrl = '';
 
-            if (isLocketAi || isFilterTopup) {
-                // GÓI VIP ALL-IN-ONE HOẶC NẠP LƯỢT FILTER AI: HIỆN THÔNG TIN XÁC NHẬN & LIÊN HỆ ADMIN
+            if (isLocketAi || isFilterTopup || isCaptionPack) {
+                // GÓI VIP ALL-IN-ONE, NẠP LƯỢT FILTER AI HOẶC MUA THÊM CAPTION VIP
                 if (aiBox) aiBox.classList.remove('hidden');
                 if (btnToggleQr) btnToggleQr.classList.add('hidden');
                 if (qrWrapper) qrWrapper.classList.add('hidden');
@@ -4680,13 +4864,22 @@
                 const uTarget = (currentOrderData?.display_name || currentOrderData?.uid || '').replace(/^@/, '');
                 const rawOrderCode = currentOrderData?.order_id || orderId || 'VIP';
                 const formattedCode = String(rawOrderCode).startsWith('ORDER_') ? rawOrderCode : `ORDER_${rawOrderCode}`;
-                const priceVal = (currentOrderData?.price || (isFilterTopup ? 7000 : 250000)).toLocaleString('vi-VN') + 'đ';
+                const priceVal = (currentOrderData?.price || (isCaptionPack ? 5000 : (isFilterTopup ? 7000 : 250000))).toLocaleString('vi-VN') + 'đ';
 
                 const elBadge = document.getElementById('aiModalBadge');
                 const elHeading = document.getElementById('aiModalHeading');
                 const elDesc = document.getElementById('aiModalDesc');
 
-                if (isFilterTopup) {
+                if (isCaptionPack) {
+                    const packLbl = currentOrderData?.plan_label || (`Gói +${currentOrderData?.plan || '10'} Caption VIP`);
+                    if (modalSubtitle) modalSubtitle.textContent = `Đã cộng tự động ${packLbl} vào tài khoản của bạn!`;
+                    if (elBadge) elBadge.textContent = `💬 ${packLbl.toUpperCase()}`;
+                    if (elHeading) elHeading.innerHTML = '<span>💬</span> Đã Cộng Thêm Caption Tự Động Thành Công!';
+                    if (elDesc) elDesc.innerHTML = `Hệ thống đã cộng <b>${escapeFeatureHtml(packLbl)}</b> vào tài khoản <b id="aiDisplayUser" class="text-purple-700">@${escapeFeatureHtml(uTarget || 'quy_khach')}</b>. Hãy đóng bảng này để tạo ngay Caption mới trên Locket Custom Studio!`;
+                    if (typeof connectFeatureAccount === 'function') {
+                        setTimeout(() => { connectFeatureAccount(true); }, 300);
+                    }
+                } else if (isFilterTopup) {
                     const packLbl = currentOrderData?.plan_label || (`Gói ${currentOrderData?.plan || '20'} Lượt Filter AI`);
                     if (modalSubtitle) modalSubtitle.textContent = `Đã thanh toán ${packLbl}! Admin sẽ cộng lượt vào tài khoản của bạn ngay.`;
                     if (elBadge) elBadge.textContent = `🎭 ${packLbl.toUpperCase()}`;
@@ -4774,7 +4967,7 @@
             // Hiển thị mã QR tải cấu hình chuẩn Safari (chỉ cho các gói DNS)
             const qrImg = document.getElementById('qrSuccessImg');
             if (qrImg) {
-                if (!isLocketAi && !isFilterTopup) {
+                if (!isLocketAi && !isFilterTopup && !isCaptionPack) {
                     qrImg.src = `/api/qr?data=${encodeURIComponent(safariDnsUrl)}`;
                     qrImg.onerror = () => {
                         qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(safariDnsUrl)}`;
@@ -4787,12 +4980,12 @@
 
             const inAppWarn = document.getElementById('inAppBrowserWarning');
             if (inAppWarn) {
-                if (!isLocketAi && !isFilterTopup && isInAppBrowser()) inAppWarn.classList.remove('hidden');
+                if (!isLocketAi && !isFilterTopup && !isCaptionPack && isInAppBrowser()) inAppWarn.classList.remove('hidden');
                 else inAppWarn.classList.add('hidden');
             }
 
-            // Lưu thông tin hồ sơ DNS vào thiết bị để Cài Lại bất cứ lúc nào (bỏ qua gói nạp lượt Filter)
-            if (!isFilterTopup) {
+            // Lưu thông tin hồ sơ DNS vào thiết bị để Cài Lại bất cứ lúc nào (bỏ qua gói nạp lẻ Filter/Caption)
+            if (!isFilterTopup && !isCaptionPack) {
                 saveProfileLocally({
                     order_id: orderId,
                     display_name: currentOrderData?.display_name || orderId,
@@ -4896,12 +5089,17 @@
             const user = (currentOrderData?.display_name || currentOrderData?.uid || '').replace(/^@/, '');
             const price = (currentOrderData?.price || 250000).toLocaleString('vi-VN');
             const isFilter = currentOrderData?.product === 'filter_topup';
-            const pkgDesc = isFilter
-                ? (currentOrderData?.plan_label || `gói ${currentOrderData?.plan || '20'} Lượt Filter AI`)
-                : 'gói VIP ALL-IN-ONE';
-            const msg = isFilter
-                ? `Chào Admin, mình vừa thanh toán thành công đơn hàng ${formattedCode} (${price}đ) ${pkgDesc} cho tài khoản @${user}. Nhờ Admin cộng lượt Filter AI giúp mình với ạ!`
-                : `Chào Admin, mình vừa thanh toán thành công đơn hàng ${formattedCode} (${price}đ) ${pkgDesc} cho tài khoản @${user}. Nhờ Admin hỗ trợ kích hoạt giúp mình với ạ!`;
+            const isCap = currentOrderData?.product === 'caption_pack';
+            const pkgDesc = isCap
+                ? (currentOrderData?.plan_label || `gói +${currentOrderData?.plan || '10'} Caption VIP`)
+                : (isFilter
+                    ? (currentOrderData?.plan_label || `gói ${currentOrderData?.plan || '20'} Lượt Filter AI`)
+                    : 'gói VIP ALL-IN-ONE');
+            const msg = isCap
+                ? `Chào Admin, mình đã thanh toán đơn hàng ${formattedCode} (${price}đ) ${pkgDesc} cho tài khoản @${user}.`
+                : (isFilter
+                    ? `Chào Admin, mình vừa thanh toán thành công đơn hàng ${formattedCode} (${price}đ) ${pkgDesc} cho tài khoản @${user}. Nhờ Admin cộng lượt Filter AI giúp mình với ạ!`
+                    : `Chào Admin, mình vừa thanh toán thành công đơn hàng ${formattedCode} (${price}đ) ${pkgDesc} cho tài khoản @${user}. Nhờ Admin hỗ trợ kích hoạt giúp mình với ạ!`);
             navigator.clipboard.writeText(msg).then(() => {
                 showToast('✅ Đã sao chép tin nhắn gửi Admin!');
                 const btn = document.getElementById('btnCopyAiAdminMsg');
@@ -5069,20 +5267,23 @@
                 box.innerHTML = '';
                 ordersList.forEach(od => {
                     const isDone = od.status === 'done';
-                    if (isDone && od.product !== 'filter_topup') saveProfileLocally(od);
+                    if (isDone && od.product !== 'filter_topup' && od.product !== 'caption_pack') saveProfileLocally(od);
 
                     const card = document.createElement('div');
                     card.className = 'p-5 rounded-3xl bg-white border-2 border-[#E8D8B0] shadow-md space-y-4';
 
                     const isAiProd = od.product === 'locket_ai';
                     const isFilterTopup = od.product === 'filter_topup';
+                    const isCaptionPack = od.product === 'caption_pack';
                     const isCombo = od.product === 'combo';
                     const isLocketSpotify = od.product === 'locket_spotify';
                     const comboDns = od.direct_safari_url || od.dns_link || od.download_url || 'https://doh.2707226.xyz/alopremiumshop';
-                    const prodName = isFilterTopup
-                        ? `Nạp Lượt Filter AI (${od.plan_label || (od.plan + ' lượt')})`
-                        : (od.product === 'spotify' ? 'Spotify Premium' : ((isCombo || isLocketSpotify) ? 'Combo Duo VIP' : (isAiProd ? 'VIP ALL-IN-ONE (Locket & AI)' : 'Locket Gold VIP')));
-                    const prodEmoji = isFilterTopup ? '🎭' : (od.product === 'spotify' ? '🎵' : ((isCombo || isLocketSpotify) ? '👑' : (isAiProd ? '✨' : '💛')));
+                    const prodName = isCaptionPack
+                        ? `Mua Thêm Caption VIP (${od.plan_label || ('+' + od.plan + ' caption')})`
+                        : (isFilterTopup
+                            ? `Nạp Lượt Filter AI (${od.plan_label || (od.plan + ' lượt')})`
+                            : (od.product === 'spotify' ? 'Spotify Premium' : ((isCombo || isLocketSpotify) ? 'Combo Duo VIP' : (isAiProd ? 'VIP ALL-IN-ONE (Locket & AI)' : 'Locket Gold VIP'))));
+                    const prodEmoji = isCaptionPack ? '💬' : (isFilterTopup ? '🎭' : (od.product === 'spotify' ? '🎵' : ((isCombo || isLocketSpotify) ? '👑' : (isAiProd ? '✨' : '💛'))));
                     const dlUrl = isAiProd ? (od.download_url || 'https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1') : ((isCombo || isLocketSpotify) ? comboDns : (od.download_url || 'https://doh.2707226.xyz/alopremiumshop'));
                     const safariUrl = od.direct_safari_url || ((isCombo || isLocketSpotify) ? comboDns : (od.download_url || 'https://doh.2707226.xyz/alopremiumshop'));
                     const studioUrl = od.studio_url || (isAiProd ? `https://locket.jayteam.click/caption.html?u=${encodeURIComponent(od.display_name)}` : '');
@@ -5096,7 +5297,7 @@
                                     <div class="flex items-center gap-2">
                                         <span class="font-fredoka font-black text-base text-[#1E1B18]">@${od.display_name}</span>
                                         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${isDone ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
-                                            ${isDone ? (isFilterTopup ? '✅ ĐÃ THANH TOÁN' : '✅ ĐÃ KÍCH HOẠT GOLD') : '⏳ CHỜ THANH TOÁN'}
+                                            ${isDone ? ((isFilterTopup || isCaptionPack) ? '✅ ĐÃ THANH TOÁN' : '✅ ĐÃ KÍCH HOẠT GOLD') : '⏳ CHỜ THANH TOÁN'}
                                         </span>
                                     </div>
                                     <p class="text-xs text-[#6E6659] mt-0.5">${prodEmoji} <b>${prodName}</b> (${od.plan}) • Mã: <span class="font-mono font-bold text-[#1E1B18]">${od.order_id}</span></p>
@@ -5105,7 +5306,22 @@
                         </div>
 
                         ${isDone ? (
-                            isFilterTopup ? `
+                            isCaptionPack ? `
+                            <div class="space-y-3">
+                                <div class="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-amber-50 border-2 border-[#1E1B18] space-y-2.5">
+                                    <div class="flex items-center gap-2 text-xs font-bold text-[#1E1B18]">
+                                        <span>💬</span> ${prodName} • Đã cộng lượt tạo Caption tự động
+                                    </div>
+                                    <p class="text-[11px] text-[#6E6659] leading-relaxed">
+                                        Hệ thống đã cộng hạn mức tạo Caption riêng tư cho tài khoản <b>@${od.display_name}</b>. Bạn có thể vào mục <b>Tính Năng VIP → Caption Chú Thích</b> để tạo ngay!
+                                    </p>
+                                    <button type="button" onclick="switchMainTab('features'); switchFeatureSubTab('captions');"
+                                            class="w-full py-2.5 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] text-[#1E1B18] font-black text-xs cursor-pointer">
+                                        💬 Mở Trình Soạn Caption Ngay →
+                                    </button>
+                                </div>
+                            </div>
+                            ` : isFilterTopup ? `
                             <div class="space-y-3">
                                 <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-emerald-50 border-2 border-[#1E1B18] space-y-2.5">
                                     <div class="flex items-center gap-2 text-xs font-bold text-[#1E1B18]">

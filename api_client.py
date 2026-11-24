@@ -301,6 +301,7 @@ def ctv_save_caption(
     colors: list | None = None,
     target_uid: str = "",
     active: bool = True,
+    caption_id: str = "",
 ) -> dict:
     """
     POST /api/v1/ctv/captions
@@ -311,6 +312,8 @@ def ctv_save_caption(
         "text": (text or "").strip()[:100],
         "active": bool(active),
     }
+    if caption_id and caption_id.strip():
+        payload["id"] = caption_id.strip()
     if uid and uid.strip():
         payload["uid"] = uid.strip()
     if target_uid and target_uid.strip():

@@ -1291,6 +1291,12 @@ def _build_success_message(order, pv, plnv, dns_link: str) -> str:
             f"• Admin đang cộng lượt chụp AI Filter trực tiếp vào tài khoản Locket của bạn (thường xong trong 1–3 phút).\n"
             f"• Mọi lượt mua thêm sẽ được cộng dồn trực tiếp và không bị reset theo tháng."
         )
+    elif order["product"] == "caption_pack":
+        step4 = (
+            f"💬 <b>TRẠNG THÁI GÓI THÊM CAPTION VIP:</b>\n"
+            f"• Hệ thống đã tự động cộng lượt tạo Caption mới (<b>{plnv['label']}</b>) vào tài khoản của bạn.\n"
+            f"• Hãy quay lại mục <b>Tính Năng VIP → Caption Chú Thích</b> trên website để tạo thêm Caption ngay!"
+        )
     else:
         step4 = (
             f"📌 <b>BƯỚC CÀI ĐẶT CẤU HÌNH DNS PROFILE:</b>\n"

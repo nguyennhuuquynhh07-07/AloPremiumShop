@@ -416,6 +416,92 @@ def recover_order_payments() -> None:
 
 
 
+# ── CAPTION QUOTA MANAGEMENT (5 MIỄN PHÍ + MUA THÊM 10/30 CAPTION) ──────────
+
+DB_CAPTION_QUOTAS = "data/caption_quotas.json"
+
+
+def _normalize_caption_quota_keys(uid: str = "", username: str = "") -> tuple[str, str]:
+    uid_clean = str(uid or "").strip()
+    uname_clean = str(username or "").strip().lower().lstrip("@")
+    return uid_clean, uname_clean
+
+
+def get_caption_quota_info(uid: str, username: str = "") -> dict:
+    import config
+    free_quota = int(getattr(config, "FREE_CAPTION_QUOTA", 5))
+    uid_k, uname_k = _normalize_caption_quota_keys(uid, username)
+    with _db_lock:
+        quotas = _load(DB_CAPTION_QUOTAS, {})
+        extra_total = 0
+        granted_orders = []
+        seen_orders = set()
+        for k in dict.fromkeys([x for x in (uid_k, uname_k) if x]):
+            entry = quotas.get(k)
+            if not isinstance(entry, dict):
+                continue
+            entry_orders = entry.get("granted_orders") or []
+            if entry_orders:
+                for oid in entry_orders:
+                    if oid not in seen_orders:
+                        seen_orders.add(oid)
+                        granted_orders.append(oid)
+                extra_total += int(entry.get("extra_quota", 0))
+            else:
+                extra_total = max(extra_total, int(entry.get("extra_quota", 0)))
+        return {
+            "free_quota": free_quota,
+            "extra_quota": extra_total,
+            "total_quota": free_quota + extra_total,
+            "granted_orders": granted_orders,
+        }
+
+
+def add_caption_quota(uid: str, extra_captions: int, username: str = "", order_id: str = "") -> dict:
+    import config
+    free_quota = int(getattr(config, "FREE_CAPTION_QUOTA", 5))
+    uid_k, uname_k = _normalize_caption_quota_keys(uid, username)
+    primary_key = uid_k or uname_k
+    if not primary_key or int(extra_captions) <= 0:
+        return get_caption_quota_info(uid, username)
+
+    with _db_lock:
+        quotas = _load(DB_CAPTION_QUOTAS, {})
+        # Chống cộng trùng theo order_id trên cả key uid và username
+        if order_id:
+            for k in (uid_k, uname_k):
+                if k and isinstance(quotas.get(k), dict) and order_id in (quotas[k].get("granted_orders") or []):
+                    return get_caption_quota_info(uid, username)
+
+        entry = quotas.get(primary_key)
+        if not isinstance(entry, dict):
+            entry = {"uid": uid_k, "username": uname_k, "extra_quota": 0, "granted_orders": []}
+
+        # Gộp record cũ lưu theo username nếu lần này đã có Firebase UID chuẩn
+        if uid_k and uname_k and uid_k != uname_k and isinstance(quotas.get(uname_k), dict):
+            old_e = quotas.pop(uname_k)
+            entry["extra_quota"] = int(entry.get("extra_quota", 0)) + int(old_e.get("extra_quota", 0))
+            for old_oid in (old_e.get("granted_orders") or []):
+                if old_oid not in entry.setdefault("granted_orders", []):
+                    entry["granted_orders"].append(old_oid)
+
+        entry["uid"] = uid_k or entry.get("uid", "")
+        entry["username"] = uname_k or entry.get("username", "")
+        entry["extra_quota"] = int(entry.get("extra_quota", 0)) + int(extra_captions)
+        if order_id:
+            entry.setdefault("granted_orders", []).append(order_id)
+        entry["updated_at"] = datetime.now().isoformat()
+
+        quotas[primary_key] = entry
+        _save(DB_CAPTION_QUOTAS, quotas)
+        return {
+            "free_quota": free_quota,
+            "extra_quota": entry["extra_quota"],
+            "total_quota": free_quota + entry["extra_quota"],
+            "granted_orders": list(entry.get("granted_orders") or []),
+        }
+
+
 # ── PRICING MANAGEMENT (ĐỒNG BỘ WEB & TELEGRAM BOT) ───────────────────────────
 
 DEFAULT_PRICES = {

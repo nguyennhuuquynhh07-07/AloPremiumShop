@@ -51,6 +51,14 @@ def resolve_order_product_meta(order: dict) -> tuple[dict, dict]:
             {"name": "Nạp Lượt Filter AI", "emoji": "🎭", "service": "filter_topup"},
             {"label": label, "packageCode": f"FILTER_{plan_key}", "price": order.get("price", pack_info.get("price", 7000))},
         )
+    if product_key == "caption_pack":
+        pack_info = getattr(config, "CAPTION_TOPUP_PACKS", {}).get(str(plan_key), {})
+        caps = pack_info.get("captions") or (int(plan_key) if str(plan_key).isdigit() else 10)
+        label = order.get("plan_label") or pack_info.get("label") or f"Gói +{caps} Caption VIP"
+        return (
+            {"name": "Mua Thêm Caption VIP", "emoji": "💬", "service": "caption_pack"},
+            {"label": label, "packageCode": f"CAPTION_{plan_key}", "price": order.get("price", pack_info.get("price", 5000))},
+        )
     pv = PRODUCTS.get(product_key, {"name": str(product_key or "Dịch vụ VIP"), "emoji": "📦", "plans": {}})
     plnv = pv.get("plans", {}).get(plan_key, {"label": order.get("plan_label") or str(plan_key or "VIP"), "price": order.get("price", 0)})
     return pv, plnv
@@ -131,6 +139,12 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
         label = pack_info.get("label") or f"Gói {turns} Lượt Filter AI"
         pv = {"name": "Nạp Lượt Filter AI", "emoji": "🎭", "service": "filter_topup"}
         plnv = {"label": label, "packageCode": f"FILTER_{plan_key}", "price": order.get("price", pack_info.get("price", 7000))}
+    elif product_key == "caption_pack":
+        pack_info = getattr(config, "CAPTION_TOPUP_PACKS", {}).get(str(plan_key), {})
+        caps = pack_info.get("captions") or (int(plan_key) if str(plan_key).isdigit() else 10)
+        label = order.get("plan_label") or pack_info.get("label") or f"Gói +{caps} Caption VIP"
+        pv = {"name": "Mua Thêm Caption VIP", "emoji": "💬", "service": "caption_pack"}
+        plnv = {"label": label, "packageCode": f"CAPTION_{plan_key}", "price": order.get("price", pack_info.get("price", 5000))}
     else:
         pv = PRODUCTS.get(product_key)
         if not pv:
@@ -200,6 +214,17 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             )
         elif product_key == "filter_topup":
             # Gói nạp thêm lượt Filter AI (7k/17k/33k) - đối soát tự động SePay và Admin cộng lượt trực tiếp
+            db.update_order(
+                order_id,
+                status="done",
+                done_at=datetime.now().isoformat(),
+            )
+        elif product_key == "caption_pack":
+            # Gói mua thêm Caption VIP (+10: 5.000đ, +30: 10.000đ) -> cộng quota tự động 100%
+            pack_caps = int(order.get("caption_amount") or (30 if str(plan_key) == "30" else 10))
+            locket_uid = str(order.get("locket_uid") or "").strip()
+            uname = str(order.get("account_target") or order.get("display_name") or order.get("uid") or "").strip().lstrip("@")
+            db.add_caption_quota(uid=locket_uid, extra_captions=pack_caps, username=uname, order_id=order_id)
             db.update_order(
                 order_id,
                 status="done",
@@ -493,7 +518,12 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 except Exception as e:
                     logger.error(f"Error sending Locket delivery: {e}")
         if bot:
-            admin_header = "🎭 <b>[CẦN CỘNG LƯỢT FILTER AI — ĐÃ THANH TOÁN]</b>" if product_key == "filter_topup" else "💰 <b>[KÍCH HOẠT THÀNH CÔNG]</b>"
+            if product_key == "filter_topup":
+                admin_header = "🎭 <b>[CẦN CỘNG LƯỢT FILTER AI — ĐÃ THANH TOÁN]</b>"
+            elif product_key == "caption_pack":
+                admin_header = "💬 <b>[ĐÃ CỘNG QUOTA CAPTION TỰ ĐỘNG]</b>"
+            else:
+                admin_header = "💰 <b>[KÍCH HOẠT THÀNH CÔNG]</b>"
             for aid in config.ADMIN_IDS:
                 try:
                     await bot.send_message(
@@ -513,6 +543,8 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
 
         if product_key == "filter_topup":
             return True, "Đã xác nhận thanh toán gói Nạp Lượt Filter AI!"
+        if product_key == "caption_pack":
+            return True, f"Đã cộng thêm lượt Caption ({plnv['label']}) tự động!"
         return True, "Kích hoạt API CTV thành công!"
 
     except Exception as e:
