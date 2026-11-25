@@ -124,39 +124,41 @@ def get_stats() -> dict:
 
 
 def record_sale(product: str, plan: str, price: int):
-    stats = get_stats()
-    stats["total_orders"]  += 1
-    stats["total_revenue"] += price
-    prod = stats["products"].setdefault(product, {})
-    entry = prod.setdefault(plan, {"orders": 0, "revenue": 0})
-    entry["orders"]  += 1
-    entry["revenue"] += price
-    _save(DB_STATS, stats)
+    with _db_lock:
+        stats = get_stats()
+        stats["total_orders"]  += 1
+        stats["total_revenue"] += price
+        prod = stats["products"].setdefault(product, {})
+        entry = prod.setdefault(plan, {"orders": 0, "revenue": 0})
+        entry["orders"]  += 1
+        entry["revenue"] += price
+        _save(DB_STATS, stats)
 
 
 # ── USERS ─────────────────────────────────────────────────────────────────────
 
 def get_users() -> dict:
-    users = _load(DB_USERS, None)
-    if users is None:
-        users = {}
-        # Tự động đồng bộ các user đã từng đặt đơn hàng từ trước
-        orders = get_orders()
-        for o in orders.values():
-            uid = str(o.get("user_id"))
-            if uid and uid not in users:
-                users[uid] = {
-                    "user_id": o.get("user_id"),
-                    "username": o.get("username", ""),
-                    "first_name": o.get("username", "Người dùng"),
-                    "last_name": "",
-                    "lang": "vi",
-                    "joined_at": o.get("created_at", datetime.now().isoformat()),
-                    "is_banned": False,
-                    "ban_reason": "",
-                }
-        _save(DB_USERS, users)
-    return users
+    with _db_lock:
+        users = _load(DB_USERS, None)
+        if users is None:
+            users = {}
+            # Tự động đồng bộ các user đã từng đặt đơn hàng từ trước
+            orders = get_orders()
+            for o in orders.values():
+                uid = str(o.get("user_id"))
+                if uid and uid not in users:
+                    users[uid] = {
+                        "user_id": o.get("user_id"),
+                        "username": o.get("username", ""),
+                        "first_name": o.get("username", "Người dùng"),
+                        "last_name": "",
+                        "lang": "vi",
+                        "joined_at": o.get("created_at", datetime.now().isoformat()),
+                        "is_banned": False,
+                        "ban_reason": "",
+                    }
+            _save(DB_USERS, users)
+        return users
 
 
 def save_users(users: dict):
@@ -169,60 +171,63 @@ def get_user(user_id: int | str) -> dict | None:
 
 
 def upsert_user(user_id: int | str, username: str = "", first_name: str = "", last_name: str = "") -> dict:
-    users = get_users()
-    key = str(user_id)
-    if key not in users:
-        users[key] = {
-            "user_id": int(user_id),
-            "username": username or "",
-            "first_name": first_name or "",
-            "last_name": last_name or "",
-            "lang": "vi",
-            "joined_at": datetime.now().isoformat(),
-            "is_banned": False,
-            "ban_reason": "",
-        }
-    else:
-        if username:
-            users[key]["username"] = username
-        if first_name:
-            users[key]["first_name"] = first_name
-        if last_name:
-            users[key]["last_name"] = last_name
-    save_users(users)
-    return users[key]
+    with _db_lock:
+        users = get_users()
+        key = str(user_id)
+        if key not in users:
+            users[key] = {
+                "user_id": int(user_id),
+                "username": username or "",
+                "first_name": first_name or "",
+                "last_name": last_name or "",
+                "lang": "vi",
+                "joined_at": datetime.now().isoformat(),
+                "is_banned": False,
+                "ban_reason": "",
+            }
+        else:
+            if username:
+                users[key]["username"] = username
+            if first_name:
+                users[key]["first_name"] = first_name
+            if last_name:
+                users[key]["last_name"] = last_name
+        save_users(users)
+        return users[key]
 
 
 def ban_user(user_id: int | str, reason: str = "Vi phạm chính sách bot") -> bool:
-    users = get_users()
-    key = str(user_id)
-    if key not in users:
-        users[key] = {
-            "user_id": int(user_id),
-            "username": "",
-            "first_name": f"User {user_id}",
-            "last_name": "",
-            "lang": "vi",
-            "joined_at": datetime.now().isoformat(),
-            "is_banned": True,
-            "ban_reason": reason,
-        }
-    else:
-        users[key]["is_banned"] = True
-        users[key]["ban_reason"] = reason
-    save_users(users)
-    return True
+    with _db_lock:
+        users = get_users()
+        key = str(user_id)
+        if key not in users:
+            users[key] = {
+                "user_id": int(user_id),
+                "username": "",
+                "first_name": f"User {user_id}",
+                "last_name": "",
+                "lang": "vi",
+                "joined_at": datetime.now().isoformat(),
+                "is_banned": True,
+                "ban_reason": reason,
+            }
+        else:
+            users[key]["is_banned"] = True
+            users[key]["ban_reason"] = reason
+        save_users(users)
+        return True
 
 
 def unban_user(user_id: int | str) -> bool:
-    users = get_users()
-    key = str(user_id)
-    if key in users:
-        users[key]["is_banned"] = False
-        users[key]["ban_reason"] = ""
-        save_users(users)
-        return True
-    return False
+    with _db_lock:
+        users = get_users()
+        key = str(user_id)
+        if key in users:
+            users[key]["is_banned"] = False
+            users[key]["ban_reason"] = ""
+            save_users(users)
+            return True
+        return False
 
 
 def is_banned(user_id: int | str) -> tuple[bool, str]:
@@ -233,11 +238,12 @@ def is_banned(user_id: int | str) -> tuple[bool, str]:
 
 
 def set_user_lang(user_id: int | str, lang: str):
-    users = get_users()
-    key = str(user_id)
-    if key in users:
-        users[key]["lang"] = lang
-        save_users(users)
+    with _db_lock:
+        users = get_users()
+        key = str(user_id)
+        if key in users:
+            users[key]["lang"] = lang
+            save_users(users)
 
 
 def get_user_lang(user_id: int | str) -> str:
@@ -258,52 +264,55 @@ def save_codes(codes: dict):
 
 
 def add_codes_batch(code_list: list, discount_pct: int, max_uses: int = 0) -> list:
-    codes = get_codes()
-    created = []
-    now_iso = datetime.now().isoformat()
-    for code in code_list:
-        code_clean = (code or "").strip().upper()
-        if len(code_clean) >= 2:
-            data = {
-                "code": code_clean,
-                "discount_pct": discount_pct,
-                "max_uses": max_uses,
-                "used_count": 0,
-                "created_at": now_iso,
-                "active": True,
-            }
-            codes[code_clean] = data
-            created.append(data)
-    save_codes(codes)
-    return created
+    with _db_lock:
+        codes = get_codes()
+        created = []
+        now_iso = datetime.now().isoformat()
+        for code in code_list:
+            code_clean = (code or "").strip().upper()
+            if len(code_clean) >= 2:
+                data = {
+                    "code": code_clean,
+                    "discount_pct": discount_pct,
+                    "max_uses": max_uses,
+                    "used_count": 0,
+                    "created_at": now_iso,
+                    "active": True,
+                }
+                codes[code_clean] = data
+                created.append(data)
+        save_codes(codes)
+        return created
 
 
 def add_code(code: str, discount_pct: int, max_uses: int = 0) -> dict:
     code_clean = (code or "").strip().upper()
     if not code_clean:
         return {}
-    codes = get_codes()
-    data = {
-        "code": code_clean,
-        "discount_pct": discount_pct,
-        "max_uses": max_uses,
-        "used_count": 0,
-        "created_at": datetime.now().isoformat(),
-        "active": True,
-    }
-    codes[code_clean] = data
-    save_codes(codes)
-    return data
+    with _db_lock:
+        codes = get_codes()
+        data = {
+            "code": code_clean,
+            "discount_pct": discount_pct,
+            "max_uses": max_uses,
+            "used_count": 0,
+            "created_at": datetime.now().isoformat(),
+            "active": True,
+        }
+        codes[code_clean] = data
+        save_codes(codes)
+        return data
 
 
 def del_code(code: str) -> bool:
-    codes = get_codes()
-    code_clean = code.strip().upper()
-    if code_clean in codes:
-        del codes[code_clean]
-        save_codes(codes)
-        return True
-    return False
+    with _db_lock:
+        codes = get_codes()
+        code_clean = code.strip().upper()
+        if code_clean in codes:
+            del codes[code_clean]
+            save_codes(codes)
+            return True
+        return False
 
 
 def get_code(code: str) -> dict | None:
@@ -312,16 +321,17 @@ def get_code(code: str) -> dict | None:
 
 
 def use_code(code: str) -> bool:
-    codes = get_codes()
-    code_clean = code.strip().upper()
-    if code_clean in codes:
-        item = codes[code_clean]
-        if item.get("max_uses", 0) > 0 and item.get("used_count", 0) >= item["max_uses"]:
-            return False
-        item["used_count"] = item.get("used_count", 0) + 1
-        save_codes(codes)
-        return True
-    return False
+    with _db_lock:
+        codes = get_codes()
+        code_clean = code.strip().upper()
+        if code_clean in codes:
+            item = codes[code_clean]
+            if item.get("max_uses", 0) > 0 and item.get("used_count", 0) >= item["max_uses"]:
+                return False
+            item["used_count"] = item.get("used_count", 0) + 1
+            save_codes(codes)
+            return True
+        return False
 
 
 # ── SEARCH / FIND ─────────────────────────────────────────────────────────────
@@ -371,12 +381,13 @@ def is_tx_used(tx_id: str) -> bool:
 def mark_tx_used(tx_id: str, order_id: str):
     if not tx_id:
         return
-    txs = get_used_tx_ids()
-    txs[str(tx_id)] = {
-        "order_id": order_id,
-        "used_at": datetime.now().isoformat()
-    }
-    _save(DB_TX, txs)
+    with _db_lock:
+        txs = get_used_tx_ids()
+        txs[str(tx_id)] = {
+            "order_id": order_id,
+            "used_at": datetime.now().isoformat()
+        }
+        _save(DB_TX, txs)
 
 
 def register_order_payment(order_id: str, tx_id: str, amount: float, *, on_time: bool) -> str | None:
@@ -547,45 +558,48 @@ def update_plan_price(prod_key: str, plan_key: str, new_price: int) -> bool:
     except (ValueError, TypeError):
         return False
 
-    prices = get_custom_prices()
-    if prod_key not in prices or not isinstance(prices[prod_key], dict):
-        prices[prod_key] = {}
-    prices[prod_key][plan_key] = new_price
-    save_custom_prices(prices)
-    apply_custom_prices()
-    return True
+    with _db_lock:
+        prices = get_custom_prices()
+        if prod_key not in prices or not isinstance(prices[prod_key], dict):
+            prices[prod_key] = {}
+        prices[prod_key][plan_key] = new_price
+        save_custom_prices(prices)
+        apply_custom_prices()
+        return True
 
 def update_all_prices(price_map: dict) -> bool:
     from config import PRODUCTS
-    prices = get_custom_prices()
-    for prod_key, plans in price_map.items():
-        if prod_key in PRODUCTS and isinstance(plans, dict):
-            if prod_key not in prices or not isinstance(prices[prod_key], dict):
-                prices[prod_key] = {}
-            for plan_key, price_val in plans.items():
-                if plan_key in PRODUCTS[prod_key].get("plans", {}):
-                    try:
-                        p_int = int(price_val.get("price") if isinstance(price_val, dict) else price_val)
-                        if p_int >= 0:
-                            prices[prod_key][plan_key] = p_int
-                    except (ValueError, TypeError):
-                        pass
-    save_custom_prices(prices)
-    apply_custom_prices()
-    return True
+    with _db_lock:
+        prices = get_custom_prices()
+        for prod_key, plans in price_map.items():
+            if prod_key in PRODUCTS and isinstance(plans, dict):
+                if prod_key not in prices or not isinstance(prices[prod_key], dict):
+                    prices[prod_key] = {}
+                for plan_key, price_val in plans.items():
+                    if plan_key in PRODUCTS[prod_key].get("plans", {}):
+                        try:
+                            p_int = int(price_val.get("price") if isinstance(price_val, dict) else price_val)
+                            if p_int >= 0:
+                                prices[prod_key][plan_key] = p_int
+                        except (ValueError, TypeError):
+                            pass
+        save_custom_prices(prices)
+        apply_custom_prices()
+        return True
 
 def reset_default_prices() -> bool:
-    if os.path.exists(DB_PRICES):
-        try:
-            os.remove(DB_PRICES)
-        except Exception:
-            pass
-    from config import PRODUCTS
-    for pk, plans in DEFAULT_PRICES.items():
-        for pl, val in plans.items():
-            if pk in PRODUCTS and pl in PRODUCTS[pk]["plans"]:
-                PRODUCTS[pk]["plans"][pl]["price"] = val
-    return True
+    with _db_lock:
+        if os.path.exists(DB_PRICES):
+            try:
+                os.remove(DB_PRICES)
+            except Exception:
+                pass
+        from config import PRODUCTS
+        for pk, plans in DEFAULT_PRICES.items():
+            for pl, val in plans.items():
+                if pk in PRODUCTS and pl in PRODUCTS[pk]["plans"]:
+                    PRODUCTS[pk]["plans"][pl]["price"] = val
+        return True
 
 # ── BANNER / THÔNG BÁO ƯU ĐÃI WEB ───────────────────────────────────────────
 DEFAULT_BANNER = {

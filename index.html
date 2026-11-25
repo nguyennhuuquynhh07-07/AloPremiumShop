@@ -7,6 +7,139 @@
     <link rel="icon" type="image/png" href="/favicon.png?v=locket2">
     <link rel="shortcut icon" href="/favicon.png?v=locket2">
     <link rel="apple-touch-icon" href="/favicon.png?v=locket2">
+    <script id="apDevtoolsShield">
+        (function () {
+            'use strict';
+            if (window.__apShieldInstalled) return;
+            window.__apShieldInstalled = true;
+            window.__AP_DEVTOOLS_LOCKED__ = false;
+
+            const _con = window.console;
+            const _log = (_con && typeof _con.log === 'function') ? _con.log.bind(_con) : function () {};
+            const _clr = (_con && typeof _con.clear === 'function') ? _con.clear.bind(_con) : function () {};
+
+            function _wipeSensitiveData() {
+                try {
+                    const keys = [
+                        'verifiedAccountData', 'currentOrderData', 'checkoutSummary',
+                        'activeDownloadUrl', 'connectedAccount', 'customerFramesLive',
+                        'customerCaptionsLive', 'allFramesData', 'baseLibraryFrames',
+                        'allSymbolsCache', 'allFiltersLive', 'cachedOrders', 'cachedUsers'
+                    ];
+                    for (let i = 0; i < keys.length; i++) {
+                        try { window[keys[i]] = null; } catch (e) {}
+                    }
+                } catch (e) {}
+            }
+
+            function _showBlockToast(msg) {
+                try {
+                    if (!document.body) { alert(msg); return; }
+                    let el = document.getElementById('apSecurityWarnToast');
+                    if (!el) {
+                        el = document.createElement('div');
+                        el.id = 'apSecurityWarnToast';
+                        el.style.cssText = 'position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:2147483647;background:#991B1B;color:#FFFFFF;border:2px solid #FCA5A5;padding:10px 18px;border-radius:12px;font-family:sans-serif;font-size:13px;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.45);max-width:92vw;text-align:center;';
+                        document.body.appendChild(el);
+                    }
+                    el.textContent = msg;
+                    el.style.display = 'block';
+                    clearTimeout(window.__apWarnTimer);
+                    window.__apWarnTimer = setTimeout(function () {
+                        if (el) el.style.display = 'none';
+                    }, 3000);
+                } catch (e) {}
+            }
+
+            function _lockPage(reason) {
+                if (window.__AP_DEVTOOLS_LOCKED__) return;
+                window.__AP_DEVTOOLS_LOCKED__ = true;
+                _wipeSensitiveData();
+                try { _clr(); } catch (e) {}
+                const renderErr = function () {
+                    const msgBox =
+                        '<div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;background:#0B0F19;color:#F8FAFC;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;padding:24px;box-sizing:border-box;">' +
+                        '<div style="max-width:480px;width:100%;background:#111827;border:2px solid #EF4444;border-radius:20px;padding:28px 24px;text-align:center;box-shadow:0 25px 60px rgba(239,68,68,.25);">' +
+                        '<div style="width:64px;height:64px;margin:0 auto 14px;border-radius:9999px;background:rgba(239,68,68,.15);border:2px solid #EF4444;display:flex;align-items:center;justify-content:center;font-size:30px;">⛔</div>' +
+                        '<h1 style="margin:0 0 8px;font-size:20px;font-weight:900;color:#FCA5A5;">LỖI BẢO MẬT (ERR_403)</h1>' +
+                        '<p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:#E2E8F0;">Hệ thống phát hiện thao tác mở <b>Công cụ kiểm tra mã nguồn (F12 / Inspect)</b> hoặc xem code trái phép.</p>' +
+                        '<div style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);border-radius:12px;padding:10px 12px;font-size:12px;color:#FECACA;margin-bottom:18px;">' +
+                        'Toàn bộ mã nguồn &amp; dữ liệu quan trọng đã được ẩn và ngắt kết nối để bảo vệ bản quyền AloPremium.Shop.' +
+                        '</div>' +
+                        '<button type="button" onclick="window.location.reload()" style="padding:11px 22px;border-radius:12px;border:none;background:#EF4444;color:#FFFFFF;font-weight:800;font-size:13px;cursor:pointer;">🔄 Đóng F12 và Tải Lại Trang</button>' +
+                        '</div></div>';
+                    try {
+                        if (document.body) document.body.innerHTML = msgBox;
+                        else document.documentElement.innerHTML = '<body>' + msgBox + '</body>';
+                    } catch (e) {}
+                };
+                if (document.body) renderErr();
+                else document.addEventListener('DOMContentLoaded', renderErr);
+            }
+            window.__apTriggerSecurityError = _lockPage;
+
+            try {
+                const noop = function () {};
+                ['log', 'debug', 'info', 'warn', 'error', 'table', 'dir', 'trace'].forEach(function (m) {
+                    if (window.console) window.console[m] = noop;
+                });
+            } catch (e) {}
+
+            document.addEventListener('contextmenu', function (e) {
+                const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+                if (tag === 'INPUT' || tag === 'TEXTAREA') return true;
+                e.preventDefault();
+                e.stopPropagation();
+                _showBlockToast('⛔ Lỗi 403: Tính năng chuột phải và Inspect đã bị khóa!');
+                return false;
+            }, true);
+
+            document.addEventListener('keydown', function (e) {
+                const k = String(e.key || '').toLowerCase();
+                const isF12 = (e.keyCode === 123 || k === 'f12');
+                const isDevShortcut = (e.ctrlKey || e.metaKey) && e.shiftKey && ['i', 'j', 'c', 'k'].includes(k);
+                const isViewSource = (e.ctrlKey || e.metaKey) && (k === 'u' || k === 's');
+                const isMacDev = e.metaKey && e.altKey && ['i', 'j', 'c', 'u'].includes(k);
+                if (isF12 || isDevShortcut || isViewSource || isMacDev) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    _lockPage('KEY_BLOCKED');
+                    return false;
+                }
+            }, true);
+
+            document.addEventListener('dragstart', function (e) {
+                const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+                if (tag === 'IMG') { e.preventDefault(); return false; }
+            }, true);
+
+            setInterval(function () {
+                if (window.__AP_DEVTOOLS_LOCKED__) return;
+                try {
+                    let triggered = false;
+                    const bait = new Image();
+                    Object.defineProperty(bait, 'id', {
+                        get: function () {
+                            triggered = true;
+                            _lockPage('CONSOLE_TRAP');
+                            return 'ap';
+                        }
+                    });
+                    _log('%c', bait);
+                    _clr();
+                    if (triggered) return;
+                } catch (e) {}
+
+                try {
+                    const t0 = performance.now();
+                    (function () {}).constructor('debugger')();
+                    if (performance.now() - t0 > 120) {
+                        _lockPage('DEBUGGER_TIMING');
+                    }
+                } catch (e) {}
+            }, 1000);
+        })();
+    </script>
     
     <!-- Google Fonts: Fredoka (Locket chunky branding) + Plus Jakarta Sans (Clean modern UI) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +147,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -738,7 +870,7 @@
                             <ul class="space-y-2 text-xs text-[#1E1B18]">
                                 <li class="flex items-center gap-2.5">
                                     <span class="w-4 h-4 rounded-full bg-[#FFB800] text-[#1E1B18] flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                    <span class="font-semibold text-[#1E1B18]">👑 <strong>Locket Gold VIP:</strong> Viền vàng, 60s, 38 khung, 4K</span>
+                                    <span class="font-semibold text-[#1E1B18]">👑 <strong>Locket Gold VIP:</strong> Viền vàng, 60s, 79+ khung, 4K</span>
                                 </li>
                                 <li class="flex items-center gap-2.5">
                                     <span class="w-4 h-4 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
@@ -776,7 +908,7 @@
                 <div class="sm:hidden flex items-center justify-between px-2 pt-1 text-xs text-[#A09685]">
                     <div class="flex items-center gap-1.5 font-medium">
                         <span>👉</span>
-                        <span>Vuốt ngang để xem 5 gói</span>
+                        <span>Vuốt ngang để xem 4 gói</span>
                     </div>
                     <div class="flex items-center gap-1.5" id="carouselDots">
                         <button type="button" onclick="scrollToProductCard('locket')" id="dot_locket" class="w-3 h-2 rounded-full bg-[#FFB800] transition-all" aria-label="Gói Locket"></button>
@@ -884,7 +1016,7 @@
                                     <div class="flex flex-wrap gap-1.5 mt-2">
                                         <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-[#FFB800]/50 text-[10px] font-bold text-[#92400E]">👑 Viền Vàng VIP</span>
                                         <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-purple-300 text-[10px] font-bold text-purple-800">🎭 AI Filters</span>
-                                        <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-pink-300 text-[10px] font-bold text-pink-800">🎨 38 Khung Studio</span>
+                                        <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-pink-300 text-[10px] font-bold text-pink-800">🎨 79+ Khung Studio</span>
                                     </div>
                                 </div>
                             </div>
@@ -1254,8 +1386,7 @@
                         <div class="my-4 flex flex-col items-center">
                             <div class="bg-white p-2.5 rounded-2xl shadow-md border-2 border-[#FFB800]/50 inline-block">
                                 <img id="donateShopQrImg"
-                                     src="https://qr.sepay.vn/img?bank=TPB&acc=34528022007&template=compact&des=UNG%20HO%20SHOP"
-                                     onerror="this.onerror=null;this.src='https://img.vietqr.io/image/TPB-34528022007-compact2.png?addInfo=UNG%20HO%20SHOP';"
+                                     src="/api/donate_qr"
                                      alt="Mã QR Ủng Hộ Shop Nhỏ"
                                      class="w-48 h-48 object-contain rounded-xl mx-auto select-none" />
                             </div>
@@ -1454,7 +1585,7 @@
                                 <div class="flex flex-col sm:flex-row gap-2">
                                     <input type="file" id="editorFrameFileInput" accept="image/png,image/webp" onchange="handleEditorFrameFileSelect(event)"
                                            class="w-full sm:w-64 px-2.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold file:mr-2 file:py-1 file:px-2.5 file:rounded file:border file:border-[#1E1B18] file:bg-[#FFF8E1] file:text-xs file:font-bold cursor-pointer">
-                                    <input type="url" id="editorFrameUrlInput" oninput="handleEditorFrameUrlInput(this.value)" placeholder="Hoặc dán link https://...frame.png"
+                                    <input type="text" id="editorFrameUrlInput" oninput="handleEditorFrameUrlInput(this.value)" placeholder="Hoặc dán link ảnh khung PNG"
                                            class="flex-1 px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
                                 </div>
                                 <p class="text-[11px] text-amber-800 italic">
@@ -1744,7 +1875,7 @@
                                 </span>
                             </div>
                             <div id="captionQuotaLimitBanner" class="hidden p-2.5 rounded-lg bg-rose-100 border border-rose-400 text-rose-900 font-bold text-[11px]">
-                                ⚠️ Bạn đã dùng hết hạn mức Caption hiện tại! Hãy mua thêm gói bên dưới để tạo tiếp Caption riêng tư trên locket.2707226.xyz:
+                                ⚠️ Bạn đã dùng hết hạn mức Caption hiện tại! Hãy mua thêm gói bên dưới để tạo tiếp Caption riêng tư trên hệ thống VIP:
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <button type="button" onclick="buyCaptionTopupPack('10')" id="btnBuyCap10"
@@ -2570,7 +2701,7 @@
                 <!-- NÚT CÀI ĐẶT DÀNH CHO GÓI ĐƠN LẺ (CHUẨN 100% NHƯ BOT) -->
                 <div id="singleDownloadActions" class="space-y-2.5">
                     <!-- Nút 1: Cài đặt trực tiếp qua Safari (Khuyên dùng) -->
-                    <a id="modalSafariBtn" href="https://doh.2707226.xyz/alopremiumshop" target="_blank" 
+                    <a id="modalSafariBtn" href="#" target="_blank" 
                        class="w-full block py-4 px-6 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-center text-sm sm:text-base shadow-2xl pulse-gold transition-all cursor-pointer">
                         🌐 CÀI ĐẶT TRỰC TIẾP QUA SAFARI (Khuyên Dùng)
                     </a>
@@ -2604,16 +2735,16 @@
                         <p class="text-xs text-[#423C32] leading-relaxed">
                             Trọn bộ Locket Gold VIP (Viền vàng, 4K gốc, video 60s) & Spotify Premium nghe nhạc không quảng cáo, cài đặt 1 chạm qua DNS chính chủ.
                         </p>
-                        <a id="comboSafariBtn" href="https://doh.2707226.xyz/alopremiumshop" target="_blank"
+                        <a id="comboSafariBtn" href="#" target="_blank"
                            class="w-full block py-3.5 px-4 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs sm:text-sm shadow-md text-center transition-all cursor-pointer">
                             🌐 CÀI ĐẶT TRỰC TIẾP QUA SAFARI (Locket & Spotify)
                         </a>
                         <div class="grid grid-cols-2 gap-2">
-                            <a id="comboDownloadBtn_file" href="https://doh.2707226.xyz/alopremiumshop" 
+                            <a id="comboDownloadBtn_file" href="#" 
                                class="py-2.5 px-3 rounded-lg bg-white border border-[#E8D8B0] text-[11px] font-semibold text-[#6E6659] text-center hover:text-[#1E1B18] flex items-center justify-center gap-1">
                                 📥 Tải File Cấu Hình
                             </a>
-                            <button type="button" onclick="copyComboUrl();" class="py-2.5 px-3 rounded-lg bg-white border border-[#E8D8B0] text-[11px] font-semibold text-[#6E6659] hover:text-[#1E1B18] flex items-center justify-center gap-1 cursor-pointer">
+                            <button type="button" id="btnCopyComboUrl" onclick="copyComboUrl();" class="py-2.5 px-3 rounded-lg bg-white border border-[#E8D8B0] text-[11px] font-semibold text-[#6E6659] hover:text-[#1E1B18] flex items-center justify-center gap-1 cursor-pointer">
                                 📋 Copy Link DNS
                             </button>
                         </div>
@@ -2693,15 +2824,17 @@
                 <!-- Tóm tắt 4 bước cài đặt chuẩn iOS giống Bot (Chỉ hiện cho các gói dùng DNS) -->
                 <div id="generalSetupGuideBox" class="mt-6 text-left text-xs space-y-2 bg-[#FFF3D6] p-4 rounded-2xl border border-[#FFE29A]">
                     <div class="flex items-center justify-between">
-                        <p class="font-bold text-[#D97706] flex items-center gap-1.5">
+                        <p id="setupGuideTitle" class="font-bold text-[#D97706] flex items-center gap-1.5">
                             <span>⚡</span> 4 Bước Kích Hoạt Lên Gold VIP (30 giây):
                         </p>
                         <button type="button" onclick="closePaymentModal(); switchMainTab('guide');" class="text-[11px] text-[#B45309] font-bold underline hover:text-[#78350F] cursor-pointer">🎬 Xem Video Hướng Dẫn</button>
                     </div>
-                    <p class="text-[#1E1B18]">1️⃣ Bấm <strong>"Cài Đặt Trực Tiếp Qua Safari"</strong> bên trên → Nhấn <strong>"Cho phép"</strong> tải hồ sơ.</p>
-                    <p class="text-[#1E1B18]">2️⃣ Vào <strong>Cài đặt iPhone</strong> → <strong>Đã tải về hồ sơ</strong> → Bấm <strong>Cài đặt</strong>.</p>
-                    <p class="text-[#1E1B18]">3️⃣ Vào <strong>Cài đặt</strong> → <strong>Cài đặt chung</strong> → <strong>Giới thiệu</strong> → kéo xuống cuối chọn <strong>Cài đặt tin cậy chứng nhận</strong> → Gạt bật xanh <strong>LocketGold CA</strong>.</p>
-                    <p class="text-[#1E1B18]">4️⃣ Vuốt tắt hẳn app Locket đang chạy ngầm trong đa nhiệm và mở lại để tận hưởng Locket Gold VIP!</p>
+                    <ol id="setupGuideList" class="space-y-1.5 text-[#1E1B18] list-decimal list-inside">
+                        <li>Bấm <strong>"Cài Đặt Trực Tiếp Qua Safari"</strong> bên trên → Nhấn <strong>"Cho phép"</strong> tải hồ sơ.</li>
+                        <li>Vào <strong>Cài đặt iPhone</strong> → <strong>Đã tải về hồ sơ</strong> → Bấm <strong>Cài đặt</strong>.</li>
+                        <li>Vào <strong>Cài đặt</strong> → <strong>Cài đặt chung</strong> → <strong>Giới thiệu</strong> → kéo xuống cuối chọn <strong>Cài đặt tin cậy chứng nhận</strong> → Gạt bật xanh <strong>LocketGold CA</strong>.</li>
+                        <li>Vuốt tắt hẳn app Locket đang chạy ngầm trong đa nhiệm và mở lại để tận hưởng Locket Gold VIP!</li>
+                    </ol>
                 </div>
 
                 <!-- NHẮC NHỞ THAM GIA NHÓM ZALO HỖ TRỢ + QR & LINK NHÓM ZALO -->
@@ -2788,7 +2921,51 @@
     <!-- ============================================================ -->
     <!-- CORE STORE JAVASCRIPT LOGIC                                  -->
     <!-- ============================================================ -->
-    <script>
+    <script data-protected="1">
+        // Hiệu ứng pháo hoa nội bộ (không dùng CDN ngoài)
+        function confetti(opts) {
+            try {
+                const count = Math.min(140, Math.max(20, (opts && opts.particleCount) || 80));
+                const cv = document.createElement('canvas');
+                cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999999;';
+                cv.width = window.innerWidth;
+                cv.height = window.innerHeight;
+                document.body.appendChild(cv);
+                const ctx = cv.getContext('2d');
+                const cols = ['#FFB800', '#10B981', '#F43F5E', '#3B82F6', '#A855F7', '#F97316'];
+                const oy = (opts && opts.origin && typeof opts.origin.y === 'number') ? opts.origin.y : 0.6;
+                const ps = Array.from({ length: count }, () => {
+                    const ang = (Math.random() * 140 - 70 - 90) * Math.PI / 180;
+                    const spd = 6 + Math.random() * 10;
+                    return {
+                        x: cv.width / 2,
+                        y: cv.height * oy,
+                        vx: Math.cos(ang) * spd,
+                        vy: Math.sin(ang) * spd,
+                        r: 4 + Math.random() * 4,
+                        c: cols[Math.floor(Math.random() * cols.length)],
+                        a: 1
+                    };
+                });
+                function tick() {
+                    ctx.clearRect(0, 0, cv.width, cv.height);
+                    let alive = false;
+                    for (const p of ps) {
+                        p.x += p.vx; p.y += p.vy; p.vy += 0.32; p.a -= 0.015;
+                        if (p.a > 0 && p.y < cv.height + 20) {
+                            alive = true;
+                            ctx.globalAlpha = Math.max(0, p.a);
+                            ctx.fillStyle = p.c;
+                            ctx.fillRect(p.x, p.y, p.r, p.r * 0.65);
+                        }
+                    }
+                    if (alive) requestAnimationFrame(tick);
+                    else cv.remove();
+                }
+                requestAnimationFrame(tick);
+            } catch (e) {}
+        }
+
         // Global State
         let systemProducts = {};
         let selectedProduct = 'locket';
@@ -2822,7 +2999,7 @@
         }
 
         // ══════════════════════════════════════════════════════════════
-        // PHẦN TÍNH NĂNG: LOCKET CUSTOM STUDIO LIVE API locket.2707226.xyz
+        // PHẦN TÍNH NĂNG: LOCKET CUSTOM STUDIO LIVE API ALOPREMIUM
         // ══════════════════════════════════════════════════════════════
         let allFramesData = [];
         let baseLibraryFrames = [];
@@ -2842,7 +3019,7 @@
         let currentSymbolCategory = 'all';
         let currentSymbolSearch = '';
         let currentIconMode = 'symbol';
-        let selectedSymbol = { name: 'wind', icon: '🌟', previewUrl: 'https://locket.2707226.xyz/assets/sf-symbols/wind.svg' };
+        let selectedSymbol = { name: 'wind', icon: '🌟', previewUrl: '/api/default_symbol?name=wind' };
         let selectedGradient = { name: 'Hồng Cam', hex: ['#FF5E3A', '#FF2A68'] };
 
         let allFiltersLive = [];
@@ -2857,6 +3034,26 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
+        }
+
+        function escapeJsAttr(str) {
+            return escapeFeatureHtml(
+                String(str ?? '')
+                    .replace(/\\/g, '\\\\')
+                    .replace(/'/g, "\\'")
+                    .replace(/\r/g, ' ')
+                    .replace(/\n/g, ' ')
+            );
+        }
+
+        function safeHttpUrl(url, fallback = '') {
+            const s = String(url || '').trim();
+            if (!s) return fallback;
+            if (s.startsWith('https://') || s.startsWith('http://') || (s.startsWith('/') && !s.startsWith('//'))) {
+                return s;
+            }
+            if (/^(logo\.png|assets\/)/i.test(s)) return s;
+            return fallback;
         }
 
         const LOCKET_EMOJIS = ['✨', '❤️', '🔥', '😍', '🥰', '😭', '🤣', '🥺', '👏', '🎉', '🙌', '🥳', '🤩', '🤍', '💛', '💜', '🌈', '☀️', '🌙', '⚡', '🎵', '📸', '☕', '🧋', '🎮', '🎁', '👑', '🫶', '💥', '🍀'];
@@ -2913,6 +3110,7 @@
         let captionQuotaState = { free: 5, extra: 0, total: 5, used: 0, remaining: 5 };
         let editingCaptionId = '';
         let studioDataLoaded = false;
+        let lastLoadedStudioUid = '';
 
         function applyStudioVipGate(isVip, acc) {
             const lockGate = document.getElementById('studioVipLockGate');
@@ -2933,13 +3131,23 @@
         }
 
         async function ensureStudioDataLoaded() {
-            if (studioDataLoaded) return;
-            studioDataLoaded = true;
-            await Promise.allSettled([
+            if (!connectedAccount || !connectedAccount.is_vip || !connectedAccount.username) {
+                studioDataLoaded = false;
+                return;
+            }
+            const uid = String(connectedAccount.username || '').trim().toLowerCase();
+            if (studioDataLoaded && lastLoadedStudioUid === uid) return;
+            const results = await Promise.all([
                 loadLiveFrames(),
                 loadLiveSymbols('all', ''),
                 loadLiveFilters()
             ]);
+            if (results.every(Boolean)) {
+                studioDataLoaded = true;
+                lastLoadedStudioUid = uid;
+            } else {
+                studioDataLoaded = false;
+            }
         }
 
         async function initFeaturesSection() {
@@ -2964,8 +3172,10 @@
 
         async function loadLiveFrames() {
             const statusPill = document.getElementById('ctvApiStatusPill');
+            const ident = (connectedAccount && connectedAccount.username) ? connectedAccount.username : '';
+            if (!ident) return false;
             try {
-                const res = await fetch('/api/frames');
+                const res = await fetch(`/api/frames?identifier=${encodeURIComponent(ident)}`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && Array.isArray(data.frames)) {
@@ -2976,11 +3186,13 @@
                                 ? '● Đã đồng bộ hệ thống Locket Live'
                                 : '● Kho Offline (79 Khung)';
                         }
+                        return true;
                     }
                 }
             } catch (e) {
                 console.warn('Load /api/frames failed:', e);
             }
+            return false;
         }
 
         function mergeAllFrames() {
@@ -3085,7 +3297,7 @@
             pendingEditorFrameFileB64 = '';
             pendingEditorFrameFileName = '';
             const u = (val || '').trim();
-            if (u.startsWith('http')) {
+            if (u.startsWith('http') || u.startsWith('/api/media?') || u.startsWith('/assets/')) {
                 showEditorPreviewImg(u, document.getElementById('editorFrameNameInput')?.value || 'Khung URL');
             }
         }
@@ -3181,8 +3393,12 @@
             }
 
             listEl.innerHTML = viewList.map((fr, idx) => {
-                const imgUrl = escapeFeatureHtml(fr.rawImage || fr.image);
+                const rawImgUrl = safeHttpUrl(fr.rawImage || fr.image, '/assets/index/sim-demos/demo-1.jpg');
+                const imgUrl = escapeFeatureHtml(rawImgUrl);
+                const jsImgUrl = escapeJsAttr(rawImgUrl);
                 const safeName = escapeFeatureHtml(fr.name);
+                const jsName = escapeJsAttr(fr.name);
+                const jsId = escapeJsAttr(fr.id);
                 const isPriv = fr.source === 'customer_assigned';
                 const targetTag = isPriv
                     ? `<span class="px-2 py-0.5 rounded bg-amber-100 border border-[#1E1B18] text-[10px] font-bold">Riêng @${escapeFeatureHtml(connectedAccount?.username || 'bạn')}</span>`
@@ -3206,17 +3422,17 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="button" onclick="setSimWidgetFrame('${imgUrl}', '${safeName}')"
+                            <button type="button" onclick="setSimWidgetFrame('${jsImgUrl}', '${jsName}')"
                                     class="px-2.5 py-1 rounded-md border border-[#1E1B18] bg-[#FFD84D] text-[10px] font-black cursor-pointer shrink-0">
                                 ✓ Xem giả lập
                             </button>
                         </div>
                         <div class="flex items-center justify-end gap-1.5 pt-1 border-t border-black/10 text-[10px]">
-                            <button type="button" onclick="applyFrameToLocketApi('${imgUrl}', '${safeName}', this)"
+                            <button type="button" onclick="applyFrameToLocketApi('${jsImgUrl}', '${jsName}', this)"
                                     class="px-2.5 py-1 rounded-md border border-[#1E1B18] bg-white hover:bg-[#FFD84D] font-bold cursor-pointer">
                                 👤 Nạp vào tài khoản
                             </button>
-                            <button type="button" onclick="openTryFrameModal('${escapeFeatureHtml(fr.id)}')"
+                            <button type="button" onclick="openTryFrameModal('${jsId}')"
                                     class="px-2.5 py-1 rounded-md border border-[#1E1B18] bg-white hover:bg-zinc-100 font-bold cursor-pointer">
                                 🖼️ Thử ảnh
                             </button>
@@ -3324,9 +3540,16 @@
                     renderDarkSimGroups();
                     if (!silent) showToast(`✅ Đã mở khóa Tính Năng VIP cho @${connectedAccount.username}!`);
                 } else {
+                    studioDataLoaded = false;
+                    lastLoadedStudioUid = '';
+                    baseLibraryFrames = [];
+                    allFramesData = [];
+                    mergeAllFrames();
                     if (!silent) showToast(`🔒 @${connectedAccount.username} chưa mua gói VIP tại shop nên chưa thể dùng!`);
                 }
             } catch (err) {
+                studioDataLoaded = false;
+                lastLoadedStudioUid = '';
                 applyStudioVipGate(false, null);
                 if (!silent) alert('❌ ' + err.message);
             } finally {
@@ -3379,10 +3602,13 @@
             }
 
             container.innerHTML = filtered.map(item => {
-                const imgUrl = escapeFeatureHtml(item.rawImage || item.image);
+                const rawImgUrl = safeHttpUrl(item.rawImage || item.image, '/assets/index/sim-demos/demo-1.jpg');
+                const imgUrl = escapeFeatureHtml(rawImgUrl);
+                const jsImgUrl = escapeJsAttr(rawImgUrl);
                 const badgeText = escapeFeatureHtml(item.badge || item.category || 'VIP');
                 const safeName = escapeFeatureHtml(item.name);
-                const safeId = escapeFeatureHtml(item.id);
+                const jsName = escapeJsAttr(item.name);
+                const jsId = escapeJsAttr(item.id);
                 return `
                     <div class="bg-[#FFFDF5] rounded-2xl p-3 border-2 border-[#1E1B18] shadow-[3px_3px_0px_#1E1B18] flex flex-col justify-between">
                         <div>
@@ -3394,11 +3620,11 @@
                             <h4 class="font-bold text-xs text-[#1E1B18] truncate" title="${safeName}">${safeName}</h4>
                         </div>
                         <div class="flex gap-1.5 mt-2.5">
-                            <button type="button" onclick="pickGalleryFrameToEditor('${imgUrl}', '${safeName}')"
+                            <button type="button" onclick="pickGalleryFrameToEditor('${jsImgUrl}', '${jsName}')"
                                     class="flex-1 py-1.5 px-2 rounded-lg bg-[#FFD84D] hover:bg-[#FFC928] border border-[#1E1B18] text-[10px] font-black text-[#1E1B18] cursor-pointer">
                                 ⚡ Chọn Thiết Kế
                             </button>
-                            <button type="button" onclick="openTryFrameModal('${safeId}')" title="Thử Khung & Nạp"
+                            <button type="button" onclick="openTryFrameModal('${jsId}')" title="Thử Khung & Nạp"
                                     class="px-2 py-1.5 rounded-lg bg-white hover:bg-zinc-100 border border-[#1E1B18] text-[10px] font-bold cursor-pointer">
                                 🖼️
                             </button>
@@ -3519,8 +3745,10 @@
         }
 
         async function loadLiveSymbols(category = 'all', q = '') {
+            const ident = (connectedAccount && connectedAccount.username) ? connectedAccount.username : '';
+            if (!ident) return false;
             try {
-                const res = await fetch(`/api/features/symbols?category=${encodeURIComponent(category)}&q=${encodeURIComponent(q)}`);
+                const res = await fetch(`/api/features/symbols?category=${encodeURIComponent(category)}&q=${encodeURIComponent(q)}&identifier=${encodeURIComponent(ident)}`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.ok) {
@@ -3532,11 +3760,12 @@
                         const cntEl = document.getElementById('subTabSymbolCount');
                         if (cntEl && data.total) cntEl.textContent = `${data.total}`;
                         renderSymbolsPicker();
-                        return;
+                        return true;
                     }
                 }
             } catch (e) {}
             renderSymbolsPicker();
+            return false;
         }
 
         function renderSymbolCategoriesBar() {
@@ -3737,7 +3966,7 @@
             if (!textVal) { alert('⚠️ Vui lòng nhập nội dung Caption!'); return; }
 
             const btn = document.getElementById('btnSaveCaptionLive');
-            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang gửi lên locket.2707226.xyz...'; }
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang lưu lên hệ thống VIP...'; }
             try {
                 const isSym = currentIconMode === 'symbol';
                 const res = await fetch('/api/features/save_caption', {
@@ -3774,7 +4003,7 @@
                 updateCaptionQuotaUI();
                 renderActiveCaptionsList();
                 renderDarkSimGroups();
-                showToast('🎉 ' + (data.message || 'Đã lưu Caption riêng lên locket.2707226.xyz!'));
+                showToast('🎉 ' + (data.message || 'Đã lưu Caption riêng lên hệ thống VIP thành công!'));
             } catch (err) {
                 alert('❌ ' + err.message);
             } finally {
@@ -3989,8 +4218,10 @@
         // SUB-TAB 5: THƯ VIỆN 28 BỘ LỌC MÀU LUT (ẢNH 5 VERBATIM)
         // ══════════════════════════════════════════════════════════════
         async function loadLiveFilters() {
+            const ident = (connectedAccount && connectedAccount.username) ? connectedAccount.username : '';
+            if (!ident) return false;
             try {
-                const res = await fetch('/api/features/filters');
+                const res = await fetch(`/api/features/filters?identifier=${encodeURIComponent(ident)}`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.ok) {
@@ -4009,11 +4240,13 @@
 
                         renderLutCategoryPills();
                         renderFiltersLiveList();
+                        return true;
                     }
                 }
             } catch (e) {
                 console.warn('Load LUT filters failed:', e);
             }
+            return false;
         }
 
         function getLutCatLabel(rawCat) {
@@ -4242,15 +4475,11 @@
                     }
                     syncZaloGroupElements(data.zalo_group_url, data.zalo_group_qr);
 
-                    // Đồng bộ thông tin QR Ủng hộ Shop
+                    // Đồng bộ thông tin QR Ủng hộ Shop qua proxy nội bộ
                     if (data.bank_id && data.bank_account) {
                         const donateQr = document.getElementById('donateShopQrImg');
                         if (donateQr) {
-                            donateQr.src = `https://qr.sepay.vn/img?bank=${encodeURIComponent(data.bank_id)}&acc=${encodeURIComponent(data.bank_account)}&template=compact&des=UNG%20HO%20SHOP`;
-                            donateQr.onerror = function () {
-                                this.onerror = null;
-                                this.src = `https://img.vietqr.io/image/${encodeURIComponent(data.bank_id)}-${encodeURIComponent(data.bank_account)}-compact2.png?addInfo=UNG%20HO%20SHOP`;
-                            };
+                            donateQr.src = '/api/donate_qr';
                         }
                         const elBankName = document.getElementById('donateBankName');
                         const elBankAcc = document.getElementById('donateBankAccount');
@@ -5060,7 +5289,8 @@
                 if (modalSubtitle) modalSubtitle.textContent = 'Gói Combo Duo VIP đã sẵn sàng cài đặt trên iPhone của bạn.';
                 if (comboBox) comboBox.classList.remove('hidden');
 
-                safariDnsUrl = (currentOrderData && (currentOrderData.direct_safari_url || currentOrderData.dns_link)) || 'https://doh.2707226.xyz/alopremiumshop';
+                const rawPaidSafari = (currentOrderData && (currentOrderData.direct_safari_url || currentOrderData.download_url || currentOrderData.dns_link)) || `/api/download_profile?order_id=${encodeURIComponent(orderId)}`;
+                safariDnsUrl = rawPaidSafari.startsWith('/') ? (window.location.origin + rawPaidSafari) : rawPaidSafari;
                 const btnSafari = document.getElementById('comboSafariBtn');
                 const btnFile = document.getElementById('comboDownloadBtn_file');
                 if (btnSafari) btnSafari.href = safariDnsUrl;
@@ -5077,13 +5307,14 @@
                     `;
                 }
             } else {
-                // GÓI ĐƠN LẺ (LOCKET GOLD HOẶC SPOTIFY): DÙNG LINK ALOPREMIUMSHOP TỪ SERVER CTV
+                // GÓI ĐƠN LẺ (LOCKET GOLD HOẶC SPOTIFY): DÙNG LINK ĐƯỢC CẤP TỪ SERVER SAU THANH TOÁN
                 if (btnToggleQr) btnToggleQr.classList.remove('hidden');
                 if (guideBox) guideBox.classList.remove('hidden');
                 if (modalSubtitle) modalSubtitle.textContent = 'Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.';
                 if (singleBox) singleBox.classList.remove('hidden');
 
-                safariDnsUrl = (currentOrderData && (currentOrderData.direct_safari_url || currentOrderData.dns_link)) || 'https://doh.2707226.xyz/alopremiumshop';
+                const rawPaidSingle = (currentOrderData && (currentOrderData.direct_safari_url || currentOrderData.download_url || currentOrderData.dns_link)) || `/api/download_profile?order_id=${encodeURIComponent(orderId)}`;
+                safariDnsUrl = rawPaidSingle.startsWith('/') ? (window.location.origin + rawPaidSingle) : rawPaidSingle;
                 const btnDl = document.getElementById('modalDownloadBtn');
                 if (btnDl) btnDl.href = safariDnsUrl;
                 if (safariBtn) safariBtn.href = safariDnsUrl;
@@ -5118,11 +5349,8 @@
             // Hiển thị mã QR tải cấu hình chuẩn Safari (chỉ cho các gói DNS)
             const qrImg = document.getElementById('qrSuccessImg');
             if (qrImg) {
-                if (!isLocketAi && !isFilterTopup && !isCaptionPack) {
+                if (!isLocketAi && !isFilterTopup && !isCaptionPack && safariDnsUrl) {
                     qrImg.src = `/api/qr?data=${encodeURIComponent(safariDnsUrl)}`;
-                    qrImg.onerror = () => {
-                        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(safariDnsUrl)}`;
-                    };
                 }
             }
 
@@ -5153,15 +5381,18 @@
         }
 
         function copyAiVipUrl() {
-            const url = "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1";
-            navigator.clipboard.writeText(url).then(() => {
-                alert("✅ Đã sao chép liên kết tải cấu hình VIP All-in-One!");
-            });
+            const rawOrderCode = currentOrderData?.order_id || '';
+            if (rawOrderCode) {
+                const formattedCode = String(rawOrderCode).startsWith('ORDER_') ? rawOrderCode : `ORDER_${rawOrderCode}`;
+                navigator.clipboard?.writeText(formattedCode);
+                showToast('✅ Đã chép mã đơn ' + formattedCode + '. Vui lòng gửi cho Admin hỗ trợ kích hoạt!');
+            } else {
+                showToast('💬 Vui lòng nhắn Admin Zalo/Telegram để nhận cấu hình VIP ALL-IN-ONE!');
+            }
         }
 
         function copyStudioLink() {
-            const uTarget = (currentOrderData.display_name || currentOrderData.uid || '').replace(/^@/, '');
-            const url = "https://locket.jayteam.click/caption.html?u=" + encodeURIComponent(uTarget || 'vip');
+            const url = window.location.origin + '/#section_features';
             navigator.clipboard.writeText(url).then(() => {
                 alert("✅ Đã sao chép link Studio Chỉnh Chú Thích & Khung Viền: " + url);
             });
@@ -5210,7 +5441,12 @@
         }
 
         function copyDownloadUrl() {
-            const link = 'https://doh.2707226.xyz/alopremiumshop';
+            const raw = (currentOrderData && (currentOrderData.direct_safari_url || currentOrderData.download_url || currentOrderData.dns_link)) || activeDownloadUrl || '';
+            if (!raw) {
+                showToast('⚠️ Chưa có link cài đặt. Vui lòng hoàn tất thanh toán hoặc tra cứu đơn!');
+                return;
+            }
+            const link = raw.startsWith('/') ? (window.location.origin + raw) : raw;
             navigator.clipboard.writeText(link).then(() => {
                 showToast('✅ Đã sao chép link cài đặt Safari: ' + link);
                 const btn = document.getElementById('btnCopyDownloadUrl');
@@ -5224,7 +5460,12 @@
         }
 
         function copyComboUrl(service) {
-            const link = (currentOrderData && (currentOrderData.direct_safari_url || currentOrderData.dns_link)) || 'https://doh.2707226.xyz/alopremiumshop';
+            const raw = (currentOrderData && (currentOrderData.direct_safari_url || currentOrderData.download_url || currentOrderData.dns_link)) || activeDownloadUrl || '';
+            if (!raw) {
+                showToast('⚠️ Chưa có link DNS Combo. Vui lòng hoàn tất thanh toán!');
+                return;
+            }
+            const link = raw.startsWith('/') ? (window.location.origin + raw) : raw;
             navigator.clipboard.writeText(link).then(() => {
                 showToast('✅ Đã sao chép link DNS Combo Duo VIP: ' + link);
                 const btn = document.getElementById('btnCopyComboUrl');
@@ -5350,9 +5591,9 @@
                     <div>
                         <div class="font-fredoka font-black text-xs text-[#1E1B18] flex items-center gap-1.5">
                             <span>${item.product === 'spotify' ? '🎵' : (item.product === 'locket_ai' ? '✨' : '💛')}</span>
-                            <span>@${item.display_name}</span>
+                            <span>@${escapeFeatureHtml(item.display_name)}</span>
                         </div>
-                        <p class="text-[10px] text-[#6E6659]">Gói: ${item.plan}</p>
+                        <p class="text-[10px] text-[#6E6659]">Gói: ${escapeFeatureHtml(item.plan)}</p>
                     </div>
                     <button type="button" onclick="reinstallSavedProfile(${i})" 
                             class="px-3 py-1.5 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs cursor-pointer shadow-xs">
@@ -5387,32 +5628,11 @@
 
                 let ordersList = data.orders || [];
 
-                // Nếu server vừa khởi động lại (trên Render) chưa thấy đơn, tự động khôi phục từ bộ nhớ máy khách!
-                if (ordersList.length === 0) {
-                    const qClean = q.toLowerCase().replace(/^@/, '');
-                    const savedMatch = fallbackSavedItem || getSavedProfiles().find(it => (it.display_name || '').toLowerCase().replace(/^@/, '') === qClean);
-                    if (savedMatch) {
-                        const isAi = savedMatch.product === 'locket_ai' || savedMatch.plan === 'ltm' || savedMatch.plan === 'extra';
-                        const vipUrl = "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1";
-                        ordersList = [{
-                            order_id: savedMatch.order_id || 'SAVED_VIP',
-                            display_name: savedMatch.display_name,
-                            product: savedMatch.product || (isAi ? 'locket_ai' : 'locket'),
-                            plan: savedMatch.plan || 'VIP',
-                            status: 'done',
-                            avatar: savedMatch.avatar || 'logo.png',
-                            download_url: savedMatch.download_url || (isAi ? vipUrl : 'https://doh.2707226.xyz/alopremiumshop'),
-                            direct_safari_url: savedMatch.direct_safari_url || (isAi ? vipUrl : 'https://doh.2707226.xyz/alopremiumshop'),
-                            studio_url: `https://locket.jayteam.click/caption.html?u=${encodeURIComponent(savedMatch.display_name)}`
-                        }];
-                    }
-                }
-
                 if (ordersList.length === 0) {
                     box.innerHTML = `
                         <div class="p-5 rounded-2xl bg-[#FFF9ED] text-xs text-[#6E6659] border-2 border-[#E8D8B0] space-y-2">
-                            <p class="font-fredoka font-bold text-sm text-[#1E1B18]">🔍 Không tìm thấy lịch sử cho: <i>"${q}"</i></p>
-                            <p>Bạn hãy kiểm tra lại xem có gõ đúng chính xác <b>Username</b> khi mua không nhé (hoặc liên hệ Admin qua Telegram để được hỗ trợ cấp lại ngay).</p>
+                            <p class="font-fredoka font-bold text-sm text-[#1E1B18]">🔍 Không tìm thấy lịch sử cho: <i>"${escapeFeatureHtml(q)}"</i></p>
+                            <p>Bạn hãy kiểm tra lại xem có gõ đúng chính xác <b>Username</b> hoặc <b>Mã đơn hàng</b> khi mua không nhé (hoặc liên hệ Admin qua Zalo/Telegram để được hỗ trợ ngay).</p>
                         </div>
                     `;
                     return;
@@ -5431,30 +5651,40 @@
                     const isCaptionPack = od.product === 'caption_pack';
                     const isCombo = od.product === 'combo';
                     const isLocketSpotify = od.product === 'locket_spotify';
-                    const comboDns = od.direct_safari_url || od.dns_link || od.download_url || 'https://doh.2707226.xyz/alopremiumshop';
+                    const comboDns = safeHttpUrl(od.direct_safari_url || od.download_url || od.dns_link, '#');
                     const prodName = isCaptionPack
                         ? `Mua Thêm Caption VIP (${od.plan_label || ('+' + od.plan + ' caption')})`
                         : (isFilterTopup
                             ? `Nạp Lượt Filter AI (${od.plan_label || (od.plan + ' lượt')})`
                             : (od.product === 'spotify' ? 'Spotify Premium' : ((isCombo || isLocketSpotify) ? 'Combo Duo VIP' : (isAiProd ? 'VIP ALL-IN-ONE (Locket & AI)' : 'Locket Gold VIP'))));
                     const prodEmoji = isCaptionPack ? '💬' : (isFilterTopup ? '🎭' : (od.product === 'spotify' ? '🎵' : ((isCombo || isLocketSpotify) ? '👑' : (isAiProd ? '✨' : '💛'))));
-                    const dlUrl = isAiProd ? (od.download_url || 'https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1') : ((isCombo || isLocketSpotify) ? comboDns : (od.download_url || 'https://doh.2707226.xyz/alopremiumshop'));
-                    const safariUrl = od.direct_safari_url || ((isCombo || isLocketSpotify) ? comboDns : (od.download_url || 'https://doh.2707226.xyz/alopremiumshop'));
-                    const studioUrl = od.studio_url || (isAiProd ? `https://locket.jayteam.click/caption.html?u=${encodeURIComponent(od.display_name)}` : '');
-                    const avatarUrl = od.avatar || 'logo.png';
+                    const dlUrl = safeHttpUrl((isCombo || isLocketSpotify) ? comboDns : (od.download_url || ''), '#');
+                    const safariUrl = safeHttpUrl(od.direct_safari_url || ((isCombo || isLocketSpotify) ? comboDns : (od.download_url || '')), '#');
+                    const studioUrl = safeHttpUrl(od.studio_url, '');
+                    const avatarUrl = safeHttpUrl(od.avatar, 'logo.png');
+
+                    const safeDisp = escapeFeatureHtml(od.display_name || 'Khách VIP');
+                    const safeProdName = escapeFeatureHtml(prodName);
+                    const safePlan = escapeFeatureHtml(od.plan || 'VIP');
+                    const safeOrderId = escapeFeatureHtml(od.order_id || '');
+                    const safeQrBoxId = safeOrderId.replace(/[^A-Za-z0-9_-]/g, '');
+                    const safeAvatar = escapeFeatureHtml(avatarUrl);
+                    const safeDlUrl = escapeFeatureHtml(dlUrl);
+                    const safeSafariUrl = escapeFeatureHtml(safariUrl);
+                    const safeStudioUrl = escapeFeatureHtml(studioUrl);
 
                     card.innerHTML = `
                         <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-[#F0E4C8]">
                             <div class="flex items-center gap-3">
-                                <img src="${avatarUrl}" class="w-12 h-12 rounded-full border-2 border-[#FFB800] object-cover" onerror="this.src='logo.png'">
+                                <img src="${safeAvatar}" class="w-12 h-12 rounded-full border-2 border-[#FFB800] object-cover" onerror="this.src='logo.png'">
                                 <div>
                                     <div class="flex items-center gap-2">
-                                        <span class="font-fredoka font-black text-base text-[#1E1B18]">@${od.display_name}</span>
+                                        <span class="font-fredoka font-black text-base text-[#1E1B18]">@${safeDisp}</span>
                                         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${isDone ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
                                             ${isDone ? ((isFilterTopup || isCaptionPack) ? '✅ ĐÃ THANH TOÁN' : '✅ ĐÃ KÍCH HOẠT GOLD') : '⏳ CHỜ THANH TOÁN'}
                                         </span>
                                     </div>
-                                    <p class="text-xs text-[#6E6659] mt-0.5">${prodEmoji} <b>${prodName}</b> (${od.plan}) • Mã: <span class="font-mono font-bold text-[#1E1B18]">${od.order_id}</span></p>
+                                    <p class="text-xs text-[#6E6659] mt-0.5">${prodEmoji} <b>${safeProdName}</b> (${safePlan}) • Mã: <span class="font-mono font-bold text-[#1E1B18]">${safeOrderId}</span></p>
                                 </div>
                             </div>
                         </div>
@@ -5464,10 +5694,10 @@
                             <div class="space-y-3">
                                 <div class="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-amber-50 border-2 border-[#1E1B18] space-y-2.5">
                                     <div class="flex items-center gap-2 text-xs font-bold text-[#1E1B18]">
-                                        <span>💬</span> ${prodName} • Đã cộng lượt tạo Caption tự động
+                                        <span>💬</span> ${safeProdName} • Đã cộng lượt tạo Caption tự động
                                     </div>
                                     <p class="text-[11px] text-[#6E6659] leading-relaxed">
-                                        Hệ thống đã cộng hạn mức tạo Caption riêng tư cho tài khoản <b>@${od.display_name}</b>. Bạn có thể vào mục <b>Tính Năng VIP → Caption Chú Thích</b> để tạo ngay!
+                                        Hệ thống đã cộng hạn mức tạo Caption riêng tư cho tài khoản <b>@${safeDisp}</b>. Bạn có thể vào mục <b>Tính Năng VIP → Caption Chú Thích</b> để tạo ngay!
                                     </p>
                                     <button type="button" onclick="switchMainTab('features'); switchFeatureSubTab('captions');"
                                             class="w-full py-2.5 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] text-[#1E1B18] font-black text-xs cursor-pointer">
@@ -5479,10 +5709,10 @@
                             <div class="space-y-3">
                                 <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-emerald-50 border-2 border-[#1E1B18] space-y-2.5">
                                     <div class="flex items-center gap-2 text-xs font-bold text-[#1E1B18]">
-                                        <span>🎭</span> ${prodName} • Đã xác nhận thanh toán
+                                        <span>🎭</span> ${safeProdName} • Đã xác nhận thanh toán
                                     </div>
                                     <p class="text-[11px] text-[#6E6659] leading-relaxed">
-                                        Hệ thống đã ghi nhận thanh toán gói nạp lượt Filter AI cho <b>@${od.display_name}</b> (mã đơn <b>${od.order_id}</b>). Nếu chưa thấy lượt được cộng, hãy nhắn Admin để được cộng ngay!
+                                        Hệ thống đã ghi nhận thanh toán gói nạp lượt Filter AI cho <b>@${safeDisp}</b> (mã đơn <b>${safeOrderId}</b>). Nếu chưa thấy lượt được cộng, hãy nhắn Admin để được cộng ngay!
                                     </p>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                                         <a href="https://zalo.me/0345222802" target="_blank" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-fredoka font-bold text-xs text-center flex items-center justify-center gap-1.5 shadow-sm">
@@ -5501,7 +5731,7 @@
                                         <span>👑</span> Gói VIP ALL-IN-ONE (Vĩnh Viễn) • Liên hệ Admin hỗ trợ kích hoạt
                                     </div>
                                     <p class="text-[11px] text-[#6E6659] leading-relaxed">
-                                        Gói VIP ALL-IN-ONE được Admin cấu hình độc quyền riêng cho tài khoản. Vui lòng gửi mã đơn <b>${od.order_id}</b> cho Admin để được hỗ trợ kích hoạt lại ngay lập tức!
+                                        Gói VIP ALL-IN-ONE được Admin cấu hình độc quyền riêng cho tài khoản. Vui lòng gửi mã đơn <b>${safeOrderId}</b> cho Admin để được hỗ trợ kích hoạt lại ngay lập tức!
                                     </p>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                                         <a href="https://zalo.me/0345222802" target="_blank" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-fredoka font-bold text-xs text-center flex items-center justify-center gap-1.5 shadow-sm">
@@ -5516,24 +5746,24 @@
                             ` : `
                             <div class="space-y-3">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                                    <a href="${safariUrl}" target="_blank" class="px-4 py-3 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs text-center flex items-center justify-center gap-1.5 shadow-sm locket-btn-glow">
+                                    <a href="${safeSafariUrl}" target="_blank" class="px-4 py-3 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs text-center flex items-center justify-center gap-1.5 shadow-sm locket-btn-glow">
                                         <span>⚡</span> Cài Lại Qua Safari
                                     </a>
-                                    <a href="${dlUrl}" class="px-4 py-3 rounded-2xl bg-[#FFF8E5] hover:bg-[#FFECC0] text-[#1E1B18] font-fredoka font-black text-xs text-center border-2 border-[#FFE29A] flex items-center justify-center gap-1.5">
+                                    <a href="${safeDlUrl}" class="px-4 py-3 rounded-2xl bg-[#FFF8E5] hover:bg-[#FFECC0] text-[#1E1B18] font-fredoka font-black text-xs text-center border-2 border-[#FFE29A] flex items-center justify-center gap-1.5">
                                         <span>📥</span> Tải File .mobileconfig
                                     </a>
-                                    <button type="button" onclick="toggleOrderQr('qr-box-${od.order_id}')" class="px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-[#1E1B18] font-fredoka font-bold text-xs text-center border-2 border-[#E8D8B0] flex items-center justify-center gap-1.5 cursor-pointer">
+                                    <button type="button" onclick="toggleOrderQr('qr-box-${safeQrBoxId}')" class="px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-[#1E1B18] font-fredoka font-bold text-xs text-center border-2 border-[#E8D8B0] flex items-center justify-center gap-1.5 cursor-pointer">
                                         <span>📷</span> Hiện Mã QR
                                     </button>
                                 </div>
 
-                                ${studioUrl ? `
-                                    <a href="${studioUrl}" target="_blank" class="w-full block py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-fredoka font-black text-xs text-center shadow-md transition-all">
-                                        🎨 Mở Studio Chỉnh Chú Thích & Đổi 38 Khung Viền
+                                ${safeStudioUrl ? `
+                                    <a href="${safeStudioUrl}" target="_blank" class="w-full block py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-fredoka font-black text-xs text-center shadow-md transition-all">
+                                        🎨 Mở Studio Chỉnh Chú Thích &amp; Đổi Khung Viền
                                     </a>
                                 ` : ''}
 
-                                <div id="qr-box-${od.order_id}" class="hidden p-4 bg-[#FFF9ED] rounded-2xl border-2 border-[#FFE29A] text-center shadow-inner">
+                                <div id="qr-box-${safeQrBoxId}" class="hidden p-4 bg-[#FFF9ED] rounded-2xl border-2 border-[#FFE29A] text-center shadow-inner">
                                     <div class="bg-white p-3 rounded-2xl inline-block mx-auto mb-2 border border-[#E8D8B0] shadow-sm">
                                         <img src="/api/qr?data=${encodeURIComponent(safariUrl)}" alt="QR Cài đặt" class="w-40 h-40 object-contain mx-auto" />
                                     </div>
@@ -5547,9 +5777,9 @@
                                         <span>💡</span> Hướng dẫn cài lại khi bị mất Gold hoặc xóa cấu hình:
                                     </p>
                                     <ol class="list-decimal list-inside text-[11px] text-[#6E6659] space-y-0.5 pl-1">
-                                        <li>Bấm nút vàng <b>"Cài Lại Qua Safari"</b> bên trên > Nhấn <b>"Cho phép"</b> tải về.</li>
-                                        <li>Vào <b>Cài đặt iPhone > Đã tải về hồ sơ</b> > Nhấn <b>"Cài đặt"</b>.</li>
-                                        <li>Vào <b>Cài đặt > Cài đặt chung > Giới thiệu > Cài đặt tin cậy chứng nhận</b> > Bật xanh công tắc <b>LocketGold CA</b>.</li>
+                                        <li>Bấm nút vàng <b>"Cài Lại Qua Safari"</b> bên trên &gt; Nhấn <b>"Cho phép"</b> tải về.</li>
+                                        <li>Vào <b>Cài đặt iPhone &gt; Đã tải về hồ sơ</b> &gt; Nhấn <b>"Cài đặt"</b>.</li>
+                                        <li>Vào <b>Cài đặt &gt; Cài đặt chung &gt; Giới thiệu &gt; Cài đặt tin cậy chứng nhận</b> &gt; Bật xanh công tắc <b>LocketGold CA</b>.</li>
                                         <li>Vuốt tắt hẳn app Locket đang chạy ngầm và mở lại là Gold VIP kích hoạt ngay!</li>
                                     </ol>
                                 </div>
@@ -5563,7 +5793,7 @@
                     box.appendChild(card);
                 });
             } catch (err) {
-                box.innerHTML = `<div class="p-4 rounded-2xl bg-rose-50 text-rose-700 text-xs border border-rose-200">❌ ${err.message}</div>`;
+                box.innerHTML = `<div class="p-4 rounded-2xl bg-rose-50 text-rose-700 text-xs border border-rose-200">❌ ${escapeFeatureHtml(err.message)}</div>`;
             }
         }
 
@@ -5809,7 +6039,7 @@
         });
     </script>
 
-    <script>
+    <script data-protected="1">
         // Fallback progress bar listener
         window.addEventListener('scroll', () => {
             const scrollH = document.documentElement.scrollHeight - window.innerHeight;

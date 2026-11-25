@@ -255,7 +255,7 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             return False, "Đơn hàng thiếu thông tin tài khoản (UID / Username)."
 
         target_account = candidate_accounts[0]
-        dns_link = f"{DNS_BASE_URL}/{DNS_SLUG}"
+        dns_link = f"{DNS_BASE_URL}/{DNS_SLUG}" if DNS_BASE_URL and DNS_SLUG else getattr(config, "DNS_COMBO_URL", "https://doh.2707226.xyz/alopremiumshop")
         dns_link_locket = dns_link
         dns_link_spotify = dns_link
 
@@ -411,6 +411,24 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             db.update_order(order_id, status="done", done_at=datetime.now().isoformat(), dns_link=dns_link)
 
         db.record_sale(product_key, plan_key, order["price"])
+
+        # Trừ lượt mã giảm giá chỉ khi thanh toán & kích hoạt thành công (chống spam đốt mã)
+        applied_coupon = str(order.get("discount_code") or "").strip().upper()
+        if applied_coupon and not order.get("coupon_counted"):
+            db.use_code(applied_coupon)
+            db.update_order(order_id, coupon_counted=True)
+
+        # Tự động dọn tin nhắn [ĐƠN HÀNG WEB MỚI] cũ (có nút Duyệt/Từ chối) để tránh nhầm lẫn
+        if bot and order.get("admin_alert_messages"):
+            for alert_ref in order.get("admin_alert_messages", []):
+                try:
+                    c_id = alert_ref.get("chat_id")
+                    m_id = alert_ref.get("message_id")
+                    if c_id and m_id:
+                        await bot.delete_message(chat_id=c_id, message_id=m_id)
+                except Exception:
+                    pass
+            db.update_order(order_id, admin_alert_messages=[])
 
         from handlers.user_handlers import _build_success_message
         from keyboards import success_kb, combo_success_kb

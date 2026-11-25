@@ -12,14 +12,21 @@ Phục vụ:
 import os
 import sys
 import json
+import base64
+import uuid
+import hashlib
+import ipaddress
+import socket
 import logging
 import threading
 import asyncio
 import time
+from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 import urllib.parse
+import urllib.request
 
 import config
 import database as db
@@ -41,28 +48,220 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     allow_reuse_address = True
 
 import time
+import hmac
+import re
 from collections import defaultdict
 
+_RATE_LIMIT_LOCK = threading.Lock()
 _IP_REQUESTS = defaultdict(list)
 _IP_BANNED = {}
+_ADMIN_PIN_FAILS = defaultdict(list)
+_ADMIN_PIN_BANNED = {}
+_UPLOAD_REQUESTS = defaultdict(list)
+
+_MEDIA_SECRET_SEED = (
+    str(getattr(config, "SECRET_KEY", "") or "")
+    + "|"
+    + str(getattr(config, "API_KEY", "") or "")
+    + "|"
+    + str(getattr(config, "ADMIN_PIN", "") or "")
+)
+_MEDIA_SECRET = (
+    hashlib.sha256(_MEDIA_SECRET_SEED.encode("utf-8")).digest()
+    if _MEDIA_SECRET_SEED.strip("|")
+    else os.urandom(32)
+)
+_MEDIA_CACHE_LOCK = threading.Lock()
+_MEDIA_CACHE: dict[str, tuple[float, str, bytes]] = {}
+
+
+def _encode_media_token(raw_url: str) -> str:
+    raw = str(raw_url or "").strip().encode("utf-8")
+    if not raw:
+        return ""
+    nonce = os.urandom(8)
+    ks = hashlib.sha256(_MEDIA_SECRET + nonce).digest()
+    enc = bytes(b ^ ks[i % len(ks)] for i, b in enumerate(raw))
+    tag = hmac.new(_MEDIA_SECRET, nonce + enc, hashlib.sha256).digest()[:16]
+    return base64.urlsafe_b64encode(nonce + tag + enc).decode("ascii").rstrip("=")
+
+
+def _decode_media_token(token: str) -> str:
+    t = str(token or "").strip()
+    if not t or len(t) > 2048:
+        return ""
+    try:
+        pad = "=" * ((4 - len(t) % 4) % 4)
+        blob = base64.urlsafe_b64decode((t + pad).encode("ascii"))
+        if len(blob) <= 24:
+            return ""
+        nonce, tag, enc = blob[:8], blob[8:24], blob[24:]
+        expected = hmac.new(_MEDIA_SECRET, nonce + enc, hashlib.sha256).digest()[:16]
+        if not hmac.compare_digest(tag, expected):
+            return ""
+        ks = hashlib.sha256(_MEDIA_SECRET + nonce).digest()
+        dec = bytes(b ^ ks[i % len(ks)] for i, b in enumerate(enc))
+        return dec.decode("utf-8")
+    except Exception:
+        return ""
+
+
+def _proxy_media_url(raw_url: str | None) -> str | None:
+    if not raw_url:
+        return raw_url
+    s = str(raw_url).strip()
+    if not s:
+        return s
+    if s.startswith("/api/media?m=") or not (s.startswith("http://") or s.startswith("https://")):
+        return s
+    try:
+        p = urlparse(s)
+        base_host = urlparse(getattr(config, "WEBSITE_URL", "https://alopremium.shop")).netloc.lower()
+        if p.hostname and p.hostname.lower() == base_host.split(":")[0]:
+            return (p.path or "/") + (f"?{p.query}" if p.query else "")
+    except Exception:
+        pass
+    tok = _encode_media_token(s)
+    return f"/api/media?m={tok}" if tok else s
+
+
+def _unwrap_media_url(raw_url: str) -> str:
+    s = str(raw_url or "").strip()
+    if "/api/media?" in s:
+        try:
+            q = parse_qs(urlparse(s).query)
+            tok = q.get("m", [""])[0].strip()
+            decoded = _decode_media_token(tok)
+            if decoded:
+                return decoded
+        except Exception:
+            pass
+    return s
+
+
+def _get_masked_vietqr_url(amount: int, add_info: str) -> str:
+    raw = utils.get_vietqr_url(amount=amount, add_info=add_info)
+    return _proxy_media_url(raw) or raw
+
+
+def _is_safe_public_url(url: str) -> bool:
+    try:
+        p = urlparse(url)
+        if p.scheme not in ("http", "https") or not p.hostname:
+            return False
+        host = p.hostname.lower()
+        if host in ("localhost", "127.0.0.1", "0.0.0.0", "::1"):
+            return False
+        infos = socket.getaddrinfo(host, p.port or (443 if p.scheme == "https" else 80), type=socket.SOCK_STREAM)
+        if not infos:
+            return False
+        for info in infos:
+            ip_str = info[4][0].split("%")[0]
+            ip_obj = ipaddress.ip_address(ip_str)
+            if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local or ip_obj.is_multicast or ip_obj.is_reserved:
+                return False
+        return True
+    except Exception:
+        return False
+
+
+def _protect_html_response(html_text: str) -> bytes:
+    """Ẩn comment HTML và mã hóa runtime các thẻ <script data-protected="1"> trước khi trả về trình duyệt."""
+    script_re = re.compile(r'(<script\b[^>]*>[\s\S]*?</script>|<style\b[^>]*>[\s\S]*?</style>)', re.I)
+    protected_re = re.compile(r'^<script\b([^>]*\bdata-protected=["\']?1["\']?[^>]*)>([\s\S]*?)</script>$', re.I)
+    parts = script_re.split(html_text)
+    out = []
+    for idx, part in enumerate(parts):
+        if idx % 2 == 0:
+            out.append(re.sub(r'<!--(?!\[if)[\s\S]*?-->', '', part))
+        else:
+            m = protected_re.match(part)
+            if not m:
+                out.append(part)
+                continue
+            js_bytes = m.group(2).encode("utf-8")
+            key = os.urandom(16)
+            xored = bytes(b ^ key[i % 16] for i, b in enumerate(js_bytes))
+            b64_payload = base64.b64encode(xored).decode("ascii")
+            key_arr = ",".join(str(b) for b in key)
+            loader = (
+                "<script>"
+                "(function(){"
+                "if(window.__AP_DEVTOOLS_LOCKED__){if(window.__apTriggerSecurityError)window.__apTriggerSecurityError('LOCKED');return;}"
+                f"var _k=[{key_arr}],_r=atob('{b64_payload}'),_n=_r.length,_u=new Uint8Array(_n),_i=0;"
+                "for(;_i<_n;_i++){_u[_i]=_r.charCodeAt(_i)^_k[_i%_k.length];}"
+                "var _c=new TextDecoder('utf-8').decode(_u);"
+                "(0,eval)(_c);"
+                "})();"
+                "</script>"
+            )
+            out.append(loader)
+    return "".join(out).encode("utf-8")
+
+
+def _get_admin_pin() -> str:
+    return str(getattr(config, "ADMIN_PIN", "") or "").strip()
+
 
 def check_ip_rate_limit(ip: str, max_requests: int = 60, window_secs: int = 60) -> tuple[bool, str]:
     now = time.time()
-    if ip in _IP_BANNED:
-        remaining = int(_IP_BANNED[ip] - now)
-        if remaining > 0:
-            return False, f"IP bị tạm khóa do gửi yêu cầu quá nhanh. Vui lòng thử lại sau {remaining} giây."
-        else:
+    with _RATE_LIMIT_LOCK:
+        if ip in _IP_BANNED:
+            remaining = int(_IP_BANNED[ip] - now)
+            if remaining > 0:
+                return False, f"IP bị tạm khóa do gửi yêu cầu quá nhanh. Vui lòng thử lại sau {remaining} giây."
             del _IP_BANNED[ip]
 
-    timestamps = [t for t in _IP_REQUESTS[ip] if now - t < window_secs]
-    timestamps.append(now)
-    _IP_REQUESTS[ip] = timestamps
-    if len(timestamps) > max_requests:
-        _IP_BANNED[ip] = now + 900
-        return False, "Tần suất yêu cầu bất thường. IP của bạn đã bị tạm khóa 15 phút để đảm bảo an toàn."
+        timestamps = [t for t in _IP_REQUESTS[ip] if now - t < window_secs]
+        timestamps.append(now)
+        _IP_REQUESTS[ip] = timestamps
+        if len(_IP_REQUESTS) > 2000:
+            stale = [k for k, v in _IP_REQUESTS.items() if not v or (now - v[-1] > 300)]
+            for k in stale:
+                del _IP_REQUESTS[k]
+        if len(timestamps) > max_requests:
+            _IP_BANNED[ip] = now + 900
+            return False, "Tần suất yêu cầu bất thường. IP của bạn đã bị tạm khóa 15 phút để đảm bảo an toàn."
 
-    return True, ""
+        return True, ""
+
+
+def check_admin_pin_bruteforce(ip: str) -> tuple[bool, str]:
+    now = time.time()
+    with _RATE_LIMIT_LOCK:
+        ban_until = _ADMIN_PIN_BANNED.get(ip, 0)
+        if ban_until > now:
+            rem = int(ban_until - now)
+            return False, f"Bạn đã nhập sai mã PIN quá nhiều lần. Vui lòng thử lại sau {rem} giây."
+        if ip in _ADMIN_PIN_BANNED:
+            del _ADMIN_PIN_BANNED[ip]
+        return True, ""
+
+
+def record_admin_pin_result(ip: str, success: bool) -> None:
+    now = time.time()
+    with _RATE_LIMIT_LOCK:
+        if success:
+            _ADMIN_PIN_FAILS.pop(ip, None)
+            _ADMIN_PIN_BANNED.pop(ip, None)
+            return
+        fails = [t for t in _ADMIN_PIN_FAILS[ip] if now - t < 900]
+        fails.append(now)
+        _ADMIN_PIN_FAILS[ip] = fails
+        if len(fails) >= 5:
+            _ADMIN_PIN_BANNED[ip] = now + 900
+            _ADMIN_PIN_FAILS.pop(ip, None)
+
+
+def check_upload_rate_limit(ip: str, max_uploads: int = 12, window_secs: int = 600) -> tuple[bool, str]:
+    now = time.time()
+    with _RATE_LIMIT_LOCK:
+        times = [t for t in _UPLOAD_REQUESTS[ip] if now - t < window_secs]
+        if len(times) >= max_uploads:
+            return False, "Bạn đã tải lên quá nhiều ảnh trong thời gian ngắn. Vui lòng thử lại sau ít phút."
+        times.append(now)
+        _UPLOAD_REQUESTS[ip] = times
+        return True, ""
 
 
 _RECENT_DISPATCHED_ALERTS = {}  # order_id -> (timestamp, price)
@@ -102,13 +301,14 @@ def dispatch_admin_order_alert(order_id: str, pv: dict, plnv: dict, display_name
         )
         from keyboards import admin_approval_kb
         kb = admin_approval_kb(order_id)
+        sent_refs = []
 
         # 1. Thử gửi qua Telegram Bot loop nếu có
         sent_any = False
         if BOT_INSTANCE and BOT_LOOP and BOT_LOOP.is_running():
             for aid in config.ADMIN_IDS:
                 try:
-                    asyncio.run_coroutine_threadsafe(
+                    fut = asyncio.run_coroutine_threadsafe(
                         BOT_INSTANCE.send_message(
                             chat_id=aid,
                             text=msg_admin,
@@ -117,6 +317,9 @@ def dispatch_admin_order_alert(order_id: str, pv: dict, plnv: dict, display_name
                         ),
                         BOT_LOOP
                     )
+                    sent_msg = fut.result(timeout=4.0)
+                    if sent_msg and getattr(sent_msg, "message_id", None):
+                        sent_refs.append({"chat_id": aid, "message_id": sent_msg.message_id})
                     sent_any = True
                 except Exception as e_bot:
                     logger.warning(f"Bot loop send failed: {e_bot}")
@@ -131,14 +334,26 @@ def dispatch_admin_order_alert(order_id: str, pv: dict, plnv: dict, display_name
                     kb_dict = kb.to_dict() if hasattr(kb, "to_dict") else {}
                     with httpx.Client(timeout=4.0) as client:
                         for aid in config.ADMIN_IDS:
-                            client.post(url, json={
+                            r = client.post(url, json={
                                 "chat_id": aid,
                                 "text": msg_admin,
                                 "parse_mode": "HTML",
                                 "reply_markup": kb_dict
                             })
+                            try:
+                                mid = r.json().get("result", {}).get("message_id")
+                                if mid:
+                                    sent_refs.append({"chat_id": aid, "message_id": mid})
+                            except Exception:
+                                pass
             except Exception as e_http:
                 logger.warning(f"Telegram HTTP direct notification failed: {e_http}")
+
+        if sent_refs:
+            try:
+                db.update_order(order_id, admin_alert_messages=sent_refs)
+            except Exception:
+                pass
 
     threading.Thread(target=_worker, daemon=True).start()
 
@@ -159,13 +374,69 @@ class WebAppHandler(BaseHTTPRequestHandler):
     def _send_cors_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, HEAD")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-Admin-Pin")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-Admin-Pin, X-Admin-PIN, X-Locket-User")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("X-XSS-Protection", "1; mode=block")
         self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
         self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
         self.send_header("Permissions-Policy", "geolocation=(), camera=(), microphone=(), payment=()")
+
+    def _extract_admin_pin(self, params: dict | None = None, body: dict | None = None, explicit_pin: str = "") -> str:
+        hdr_pin = (self.headers.get("X-Admin-PIN") or self.headers.get("X-Admin-Pin") or "").strip()
+        if hdr_pin:
+            return hdr_pin
+        if explicit_pin:
+            return explicit_pin.strip()
+        if isinstance(body, dict) and body.get("pin") is not None:
+            return str(body.get("pin") or "").strip()
+        if isinstance(params, dict):
+            return str(params.get("pin", [""])[0] or "").strip()
+        return ""
+
+    def _is_valid_admin_pin(self, pin: str) -> bool:
+        expected = _get_admin_pin()
+        if not expected or not pin:
+            return False
+        return hmac.compare_digest(pin.encode("utf-8"), expected.encode("utf-8"))
+
+    def _require_admin(self, params: dict | None = None, body: dict | None = None, explicit_pin: str = "") -> bool:
+        client_ip = self._get_client_ip()
+        allowed, reason = check_admin_pin_bruteforce(client_ip)
+        if not allowed:
+            self._send_json(429, {"ok": False, "error": reason})
+            return False
+        pin = self._extract_admin_pin(params=params, body=body, explicit_pin=explicit_pin)
+        if not self._is_valid_admin_pin(pin):
+            record_admin_pin_result(client_ip, False)
+            self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            return False
+        record_admin_pin_result(client_ip, True)
+        return True
+
+    def _require_vip_or_admin(self, params: dict | None = None) -> bool:
+        hdr_pin = (self.headers.get("X-Admin-PIN") or self.headers.get("X-Admin-Pin") or "").strip()
+        param_pin = str((params or {}).get("pin", [""])[0] or "").strip()
+        if hdr_pin or param_pin:
+            return self._require_admin(params=params)
+        ident = ""
+        if isinstance(params, dict):
+            ident = str(
+                params.get("identifier", [""])[0]
+                or params.get("username", [""])[0]
+                or params.get("uid", [""])[0]
+                or ""
+            ).strip()
+        if not ident:
+            ident = (self.headers.get("X-Locket-User") or "").strip()
+        if not ident:
+            self._send_json(403, {"ok": False, "error": "Vui lòng kết nối tài khoản Locket Gold VIP để sử dụng tính năng này."})
+            return False
+        is_vip, info = self._verify_customer_locket_vip(ident)
+        if not is_vip:
+            self._send_json(403, {"ok": False, "error": info.get("error") or "Tài khoản chưa kích hoạt Locket Gold VIP tại cửa hàng."})
+            return False
+        return True
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -305,6 +576,55 @@ class WebAppHandler(BaseHTTPRequestHandler):
             "expires_at": expires_at,
         }
 
+    def _upsert_ctv_lookup_order(
+        self,
+        ret_oid: str,
+        product: str,
+        plan_name: str,
+        ret_user: str,
+        ret_uid: str,
+        created_at: str | None,
+        expires_at: str | None,
+        avatar: str | None,
+    ) -> dict:
+        """Đồng bộ đơn CTV vào DB nội bộ khi tra cứu và trả về bản ghi hiển thị."""
+        created_str = created_at or datetime.now().isoformat()
+        dns_str = f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
+        fields_ctv = {
+            "user_id": 0,
+            "username": ret_user,
+            "display_name": ret_user,
+            "account_target": ret_user,
+            "uid": ret_uid,
+            "product": product,
+            "plan": plan_name,
+            "plan_label": plan_name,
+            "status": "done",
+            "created_at": created_str,
+            "done_at": created_str,
+            "expires_at": expires_at,
+            "avatar": avatar,
+            "dns_link": dns_str,
+            "source": "web_chu",
+        }
+        if not db.update_order(ret_oid, **fields_ctv):
+            db.create_order(order_id=ret_oid, price=0, **fields_ctv)
+        masked_avatar = _proxy_media_url(avatar)
+        return {
+            "order_id": ret_oid,
+            "product": product,
+            "plan": plan_name,
+            "price": 0,
+            "status": "done",
+            "uid": ret_uid,
+            "display_name": ret_user,
+            "avatar": masked_avatar,
+            "expires_at": expires_at,
+            "created_at": created_str,
+            "download_url": f"/api/download_profile?order_id={ret_oid}",
+            "direct_safari_url": f"/api/download_profile?order_id={ret_oid}",
+        }
+
     def do_HEAD(self):
         self.send_response(200)
         self._send_cors_headers()
@@ -329,16 +649,169 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(403, {"ok": False, "error": "Access denied"})
             return
 
-        # Kiểm tra Rate Limit (ngoại trừ ping keep-alive và tài nguyên tĩnh)
+        # Kiểm tra Rate Limit (tách giới hạn rộng cho proxy ảnh/asset và ping)
         static_exts_check = (
             ".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp", ".mp4",
             ".js", ".css", ".woff", ".woff2", ".ttf", ".webmanifest", ".mobileconfig"
         )
-        if not path.startswith(("/health", "/ping")) and not lower_raw.endswith(static_exts_check):
+        if path in ("/api/media", "/api/donate_qr", "/api/default_symbol"):
+            allowed, reason = check_ip_rate_limit(f"media:{client_ip}", max_requests=600, window_secs=60)
+            if not allowed:
+                self._send_json(429, {"ok": False, "error": reason})
+                return
+        elif not path.startswith(("/health", "/ping")) and not lower_raw.endswith(static_exts_check):
             allowed, reason = check_ip_rate_limit(client_ip, max_requests=60, window_secs=60)
             if not allowed:
                 self._send_json(429, {"ok": False, "error": reason})
                 return
+
+        # 0.2 Proxy ảnh/SVG/QR same-origin để ẩn 100% domain nguồn khỏi DevTools Sources
+        if path == "/api/media":
+            token = params.get("m", [""])[0].strip()
+            target_url = _decode_media_token(token)
+            if not target_url:
+                self._send_json(403, {"ok": False, "error": "Invalid or expired media token"})
+                return
+            now = time.time()
+            with _MEDIA_CACHE_LOCK:
+                cached = _MEDIA_CACHE.get(target_url)
+                if cached and (now - cached[0]) < 1800:
+                    c_type, c_bytes = cached[1], cached[2]
+                    self.send_response(200)
+                    self.send_header("Content-Type", c_type)
+                    self.send_header("Content-Length", str(len(c_bytes)))
+                    self.send_header("Cache-Control", "public, max-age=1800")
+                    self.send_header("X-Content-Type-Options", "nosniff")
+                    if "svg" in c_type.lower():
+                        self.send_header("Content-Security-Policy", "sandbox")
+                    self._send_cors_headers()
+                    self.end_headers()
+                    self.wfile.write(c_bytes)
+                    return
+
+            if not _is_safe_public_url(target_url):
+                self._send_json(403, {"ok": False, "error": "Disallowed media target"})
+                return
+            try:
+                req = urllib.request.Request(target_url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    c_type = (resp.headers.get("Content-Type") or "image/png").split(";")[0].strip().lower()
+                    data = resp.read(4 * 1024 * 1024 + 1)
+                if len(data) > 4 * 1024 * 1024:
+                    self._send_json(413, {"ok": False, "error": "Media too large"})
+                    return
+                if not c_type.startswith("image/") and c_type not in ("application/octet-stream",):
+                    self._send_json(403, {"ok": False, "error": "Unsupported media type"})
+                    return
+                if c_type == "application/octet-stream":
+                    c_type = "image/svg+xml" if target_url.lower().endswith(".svg") else "image/png"
+                if "svg" in c_type:
+                    c_type = "image/svg+xml; charset=utf-8"
+                with _MEDIA_CACHE_LOCK:
+                    if len(_MEDIA_CACHE) >= 300:
+                        _MEDIA_CACHE.pop(next(iter(_MEDIA_CACHE)))
+                    _MEDIA_CACHE[target_url] = (now, c_type, data)
+                self.send_response(200)
+                self.send_header("Content-Type", c_type)
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Cache-Control", "public, max-age=1800")
+                self.send_header("X-Content-Type-Options", "nosniff")
+                if "svg" in c_type.lower():
+                    self.send_header("Content-Security-Policy", "sandbox")
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(data)
+            except Exception as e_media:
+                self._send_json(502, {"ok": False, "error": f"Media unavailable: {e_media}"})
+            return
+
+        if path == "/api/donate_qr":
+            bank_id = getattr(config, "BANK_ID", "TPB")
+            acc_no = getattr(config, "ACCOUNT_NO", "34528022007")
+            cache_k = f"donate_qr:{bank_id}:{acc_no}"
+            now = time.time()
+            with _MEDIA_CACHE_LOCK:
+                cached = _MEDIA_CACHE.get(cache_k)
+                if cached and (now - cached[0]) < 3600:
+                    c_type, c_bytes = cached[1], cached[2]
+                    self.send_response(200)
+                    self.send_header("Content-Type", c_type)
+                    self.send_header("Content-Length", str(len(c_bytes)))
+                    self.send_header("Cache-Control", "public, max-age=3600")
+                    self.send_header("X-Content-Type-Options", "nosniff")
+                    self._send_cors_headers()
+                    self.end_headers()
+                    self.wfile.write(c_bytes)
+                    return
+            urls = [
+                f"https://qr.sepay.vn/img?bank={urllib.parse.quote(bank_id)}&acc={urllib.parse.quote(acc_no)}&template=compact&des=UNG%20HO%20SHOP",
+                f"https://img.vietqr.io/image/{urllib.parse.quote(bank_id)}-{urllib.parse.quote(acc_no)}-compact2.png?addInfo=UNG%20HO%20SHOP",
+            ]
+            for u in urls:
+                try:
+                    req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
+                    with urllib.request.urlopen(req, timeout=8) as resp:
+                        if resp.status == 200:
+                            c_type = (resp.headers.get("Content-Type") or "image/png").split(";")[0].strip().lower()
+                            data = resp.read(2 * 1024 * 1024)
+                            if c_type.startswith("image/") and data:
+                                with _MEDIA_CACHE_LOCK:
+                                    _MEDIA_CACHE[cache_k] = (now, c_type, data)
+                                self.send_response(200)
+                                self.send_header("Content-Type", c_type)
+                                self.send_header("Content-Length", str(len(data)))
+                                self.send_header("Cache-Control", "public, max-age=3600")
+                                self.send_header("X-Content-Type-Options", "nosniff")
+                                self._send_cors_headers()
+                                self.end_headers()
+                                self.wfile.write(data)
+                                return
+                except Exception:
+                    continue
+            self._send_json(502, {"ok": False, "error": "Donate QR temporarily unavailable"})
+            return
+
+        if path == "/api/default_symbol":
+            sym_name = params.get("name", ["wind"])[0].strip() or "wind"
+            if not re.fullmatch(r"[a-zA-Z0-9._-]{1,64}", sym_name):
+                self._send_json(400, {"ok": False, "error": "Invalid symbol name"})
+                return
+            upstream_base = getattr(config, "API_BASE_URL", "https://locket.2707226.xyz").rstrip("/")
+            target_url = f"{upstream_base}/assets/sf-symbols/{sym_name}.svg"
+            now = time.time()
+            with _MEDIA_CACHE_LOCK:
+                cached = _MEDIA_CACHE.get(target_url)
+                if cached and (now - cached[0]) < 86400:
+                    c_type, c_bytes = cached[1], cached[2]
+                    self.send_response(200)
+                    self.send_header("Content-Type", c_type)
+                    self.send_header("Content-Length", str(len(c_bytes)))
+                    self.send_header("Cache-Control", "public, max-age=86400")
+                    self.send_header("Content-Security-Policy", "sandbox")
+                    self.send_header("X-Content-Type-Options", "nosniff")
+                    self._send_cors_headers()
+                    self.end_headers()
+                    self.wfile.write(c_bytes)
+                    return
+            try:
+                req = urllib.request.Request(target_url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=8) as resp:
+                    data = resp.read(512 * 1024)
+                c_type = "image/svg+xml; charset=utf-8"
+                with _MEDIA_CACHE_LOCK:
+                    _MEDIA_CACHE[target_url] = (now, c_type, data)
+                self.send_response(200)
+                self.send_header("Content-Type", c_type)
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.send_header("Content-Security-Policy", "sandbox")
+                self.send_header("X-Content-Type-Options", "nosniff")
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(data)
+            except Exception:
+                self._send_json(404, {"ok": False, "error": "Symbol unavailable"})
+            return
 
         # 1. Health check & Render keep-alive
         if path in ("/health", "/ping"):
@@ -349,25 +822,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Bot Locket Gold + Spotify is running 24/7!")
             return
 
-        # 1.1 Phục vụ file cấu hình Free.mobileconfig cho iOS Safari (Gói miễn phí)
+        # 1.1 Gói Free đã tạm đóng -> trả 410 Gone thay vì cho tải lén .mobileconfig Free
         if raw_path in ("/Free.mobileconfig", "/LocketNgon.mobileconfig"):
-            cfg_name = os.path.basename(raw_path) if os.path.exists(os.path.join(os.path.dirname(__file__), os.path.basename(raw_path))) else "Free.mobileconfig"
-            cfg_path = os.path.join(os.path.dirname(__file__), cfg_name)
-            if os.path.exists(cfg_path) and os.path.isfile(cfg_path):
-                with open(cfg_path, "rb") as f:
-                    cfg_data = f.read()
-                self.send_response(200)
-                self.send_header("Content-Type", "application/x-apple-aspen-config")
-                self.send_header("Content-Disposition", f'attachment; filename="{cfg_name}"')
-                self.send_header("Content-Length", str(len(cfg_data)))
-                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
-                self._send_cors_headers()
-                self.end_headers()
-                self.wfile.write(cfg_data)
-                return
-            else:
-                self._send_json(404, {"ok": False, "error": f"{cfg_name} not found"})
-                return
+            self._send_json(410, {
+                "ok": False,
+                "error": "Gói Locket Gold Free đã tạm ngưng phát hành. Vui lòng chọn gói VIP từ 5.000đ!"
+            })
+            return
 
         # 1.2 Phục vụ trang Hướng dẫn cài đặt DNS (Clean URL)
         if raw_path in ("/huong-dan", "/huong-dan.html", "/cai-dns", "/cai-dns.html"):
@@ -500,8 +961,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "support_phone": getattr(config, "SUPPORT_PHONE", "0345222802"),
                 "support_telegram": getattr(config, "SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28"),
                 "server_url": getattr(config, "SERVER_BASE_URL", ""),
-                "dns_slug": getattr(config, "DNS_SLUG", "alopremiumshop"),
-                "dns_url": f"{getattr(config, 'DNS_BASE_URL', 'https://doh.2707226.xyz')}/{getattr(config, 'DNS_SLUG', 'alopremiumshop')}",
             })
             return
 
@@ -531,8 +990,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 3.0 API Đồng bộ đơn hàng từ máy chủ CTV (Web Chủ)
+        # 3.0 API Đồng bộ đơn hàng từ máy chủ CTV (Chỉ Admin)
         if path == "/api/sync_upstream":
+            if not self._require_admin(params=params):
+                return
             from order_service import sync_upstream_orders
             cnt = sync_upstream_orders()
             self._send_json(200, {
@@ -542,8 +1003,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 3.01 API Danh sách Khung Widget Locket (Hợp nhất Khung Live từ CTV locket.2707226.xyz + Kho 79 Khung)
+        # 3.01 API Danh sách Khung Widget Locket (Chỉ dành cho khách VIP hoặc Admin)
         if path == "/api/frames":
+            if not self._require_vip_or_admin(params=params):
+                return
             all_frames = []
             seen_urls = set()
 
@@ -562,13 +1025,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
                             u_img = str(fr.get("url") or "").strip()
                             if u_img and u_img not in seen_urls:
                                 seen_urls.add(u_img)
+                                masked_img = _proxy_media_url(u_img)
                                 all_frames.append({
                                     "id": fr.get("id") or f"ctv_{len(all_frames)}",
                                     "name": fr.get("name") or "Khung Độc Quyền VIP",
                                     "category": "Khung Nổi Bật",
                                     "group": "ctv_live",
-                                    "image": u_img,
-                                    "rawImage": u_img,
+                                    "image": masked_img,
+                                    "rawImage": masked_img,
                                     "badge": "Nổi Bật",
                                     "source": "ctv_live",
                                 })
@@ -585,7 +1049,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         raw_u = str(fr.get("rawImage") or fr.get("image") or "").strip()
                         if raw_u and raw_u not in seen_urls:
                             seen_urls.add(raw_u)
-                            all_frames.append(fr)
+                            fr_copy = dict(fr)
+                            if fr_copy.get("image"):
+                                fr_copy["image"] = _proxy_media_url(fr_copy["image"])
+                            if fr_copy.get("rawImage"):
+                                fr_copy["rawImage"] = _proxy_media_url(fr_copy["rawImage"])
+                            all_frames.append(fr_copy)
                 except Exception as e_f:
                     logger.warning(f"Error reading data/frames.json: {e_f}")
 
@@ -598,26 +1067,58 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 3.02 API Thư viện 449 Apple SF Symbols (Kết nối locket.2707226.xyz)
+        # 3.02 API Thư viện 449 Apple SF Symbols (Yêu cầu VIP/Admin)
         if path == "/api/features/symbols":
+            if not self._require_vip_or_admin(params=params):
+                return
             category = params.get("category", ["all"])[0].strip()
             q_kw = params.get("q", [""])[0].strip()
             try:
                 sym_data = api.ctv_get_symbols(category=category, q=q_kw)
+                if isinstance(sym_data, dict) and isinstance(sym_data.get("symbols"), list):
+                    sym_copy = dict(sym_data)
+                    masked_syms = []
+                    for s in sym_data["symbols"]:
+                        if isinstance(s, dict):
+                            sc = dict(s)
+                            if sc.get("previewUrl"):
+                                sc["previewUrl"] = _proxy_media_url(sc["previewUrl"])
+                            if sc.get("url"):
+                                sc["url"] = _proxy_media_url(sc["url"])
+                            masked_syms.append(sc)
+                        else:
+                            masked_syms.append(s)
+                    sym_copy["symbols"] = masked_syms
+                    sym_data = sym_copy
                 self._send_json(200, sym_data)
             except Exception as e_sym:
                 self._send_json(502, {"ok": False, "error": f"Không tải được kho SF Symbols từ máy chủ Locket: {e_sym}"})
             return
 
-        # 3.03 API Bộ Lọc Màu 3D LUT (Kết nối locket.2707226.xyz/api/v1/ctv/filters)
+        # 3.03 API Bộ Lọc Màu 3D LUT (Yêu cầu VIP/Admin)
         if path == "/api/features/filters":
+            if not self._require_vip_or_admin(params=params):
+                return
             try:
                 flt_data = api.ctv_get_filters()
-                sample_luts = flt_data.get("sampleLuts", []) or []
-                custom_luts = [
-                    cf for cf in (flt_data.get("customFilters", []) or [])
-                    if isinstance(cf, dict) and cf.get("enabled", True) is not False
-                ]
+                sample_luts = []
+                for it in (flt_data.get("sampleLuts", []) or []):
+                    if isinstance(it, dict):
+                        itc = dict(it)
+                        if itc.get("iconUrl"):
+                            itc["iconUrl"] = _proxy_media_url(itc["iconUrl"])
+                        if itc.get("icon"):
+                            itc["icon"] = _proxy_media_url(itc["icon"])
+                        sample_luts.append(itc)
+                custom_luts = []
+                for cf in (flt_data.get("customFilters", []) or []):
+                    if isinstance(cf, dict) and cf.get("enabled", True) is not False:
+                        cfc = dict(cf)
+                        if cfc.get("iconUrl"):
+                            cfc["iconUrl"] = _proxy_media_url(cfc["iconUrl"])
+                        if cfc.get("icon"):
+                            cfc["icon"] = _proxy_media_url(cfc["icon"])
+                        custom_luts.append(cfc)
                 self._send_json(200, {
                     "ok": True,
                     "sampleLuts": sample_luts,
@@ -628,8 +1129,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(502, {"ok": False, "error": f"Không tải được bộ lọc LUT từ máy chủ Locket: {e_flt}"})
             return
 
-        # 3.04 API Brand Captions đang hoạt động của Shop (ẩn dữ liệu riêng tư)
+        # 3.04 API Brand Captions đang hoạt động của Shop (Yêu cầu VIP/Admin)
         if path == "/api/features/brand_captions":
+            if not self._require_vip_or_admin(params=params):
+                return
             try:
                 cap_res = api.ctv_get_captions()
                 public_caps = []
@@ -645,7 +1148,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                             "icon": cp.get("icon", ""),
                             "iconType": cp.get("iconType", "emoji"),
                             "symbolName": cp.get("symbolName"),
-                            "symbolPreviewUrl": cp.get("symbolPreviewUrl"),
+                            "symbolPreviewUrl": _proxy_media_url(cp.get("symbolPreviewUrl")),
                             "colors": cp.get("colors") or ["#FFB800", "#FF8008"],
                         })
                 self._send_json(200, {"ok": True, "captions": public_caps, "total": len(public_caps)})
@@ -703,21 +1206,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
             is_caption_pack = (prod_key == "caption_pack")
             is_combo = prod_key in ("combo", "locket_spotify")
             has_studio = order.get("has_studio", False) or (prod_key == "studio_caption")
-            username_target = utils.clean_input(str(order.get("uid") or order.get("username") or order.get("account_target") or order.get("display_name") or "")).lstrip("@")
-            studio_url = f"https://locket.jayteam.click/caption.html?u={username_target}" if has_studio else None
+            studio_url = "/#section_features" if has_studio else None
 
-            # Xác định chuẩn xác link DNS theo từng gói cước
-            if is_locket_ai:
-                exact_dns = getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
+            if is_locket_ai or is_filter_topup or is_caption_pack:
                 download_url = None
-            elif is_filter_topup or is_caption_pack:
-                exact_dns = None
-                download_url = None
-            elif is_combo:
-                exact_dns = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
-                download_url = f"/api/download_profile?order_id={order_id}" if is_done else None
             else:
-                exact_dns = order.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
                 download_url = f"/api/download_profile?order_id={order_id}" if is_done else None
 
             self._send_json(200, {
@@ -733,8 +1226,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "uid": order.get("uid"),
                 "display_name": order.get("display_name"),
                 "download_url": download_url,
-                "dns_link": exact_dns if is_done else None,
-                "direct_safari_url": exact_dns if is_done else None,
+                "dns_link": download_url,
+                "direct_safari_url": download_url,
                 "created_at": order.get("created_at"),
                 "is_locket_ai": is_locket_ai,
                 "is_caption_pack": is_caption_pack,
@@ -770,12 +1263,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         if clean_u in u_list:
                             order = od
                             break
-                # Fallback: kiểm tra trực tiếp trên máy chủ API CTV
+                # Fallback: kiểm tra trực tiếp trên máy chủ API CTV (chỉ cho tài khoản của chính shop)
                 if not order and len(clean_u) >= 3:
                     try:
                         ctv_info = api.check_uid_details(clean_u, "locket")
                         dt = ctv_info.get("data", {}) if isinstance(ctv_info, dict) else {}
-                        if dt.get("active") or dt.get("status") == "ACTIVE":
+                        if (dt.get("active") is True or dt.get("status") == "ACTIVE") and (dt.get("isMine") is True):
                             order = {
                                 "order_id": f"CTV_{clean_u.upper()}",
                                 "product": dt.get("service") or "locket",
@@ -795,12 +1288,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 return
 
             product_key = order.get("product", "locket")
-            if product_key == "locket_ai":
-                vip_url = order.get("vip_download_url") or order.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
-                self.send_response(302)
-                self.send_header("Location", vip_url)
-                self._send_cors_headers()
-                self.end_headers()
+            if product_key in ("locket_ai", "filter_topup", "caption_pack", "studio_caption"):
+                self._send_json(403, {
+                    "ok": False,
+                    "error": "Gói này không sử dụng file tải DNS mặc định. Vui lòng xem hướng dẫn hoặc liên hệ Admin hỗ trợ!"
+                })
                 return
 
             if product_key in ("combo", "locket_spotify"):
@@ -843,12 +1335,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 match = (
                     oid_lower == q_raw or
                     oid_lower == q_no_order or
-                    o_user == q_clean or
-                    o_ident == q_clean or
-                    o_disp == q_clean or
-                    o_target == q_clean or
-                    o_uid == q_clean or
-                    (len(q_clean) >= 4 and (q_clean in o_user or q_clean in o_ident or q_clean in o_disp))
+                    (bool(q_clean) and (
+                        o_user == q_clean or
+                        o_ident == q_clean or
+                        o_disp == q_clean or
+                        o_target == q_clean or
+                        o_uid == q_clean
+                    ))
                 )
 
                 if match:
@@ -862,12 +1355,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     if is_ai or is_filter or is_cap:
                         exact_safari = None
                         exact_dl = None
-                    elif prod_k in ("combo", "locket_spotify"):
-                        exact_safari = od.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}" if is_done else None
-                        exact_dl = f"/api/download_profile?order_id={oid}" if is_done else None
                     else:
-                        exact_safari = od.get("dns_link") or f"{config.DNS_BASE_URL}/{config.DNS_SLUG}" if is_done else None
                         exact_dl = f"/api/download_profile?order_id={oid}" if is_done else None
+                        exact_safari = exact_dl
 
                     results.append({
                         "order_id": oid,
@@ -878,7 +1368,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "status": od.get("status"),
                         "uid": od.get("uid"),
                         "display_name": u_disp,
-                        "avatar": od.get("avatar"),
+                        "avatar": _proxy_media_url(od.get("avatar")),
                         "created_at": od.get("created_at"),
                         "download_url": exact_dl,
                         "direct_safari_url": exact_safari,
@@ -893,48 +1383,25 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 try:
                     uids = api.get_activated_uids()
                     for it in uids:
+                        if it.get("isMine") is False:
+                            continue
                         it_u = str(it.get("username", "")).lower().lstrip("@")
                         it_uid = str(it.get("uidString", "")).lower()
-                        if q_clean == it_u or q_clean == it_uid or (len(q_clean) >= 4 and (q_clean in it_u or q_clean in it_uid)):
+                        if q_clean == it_u or q_clean == it_uid:
                             pkg_it = it.get("package") or {}
                             svc_it = it.get("service") or "locket"
                             safe_suffix = (it_uid[:8] if len(it_uid) >= 8 else it_u[:8]).upper()
                             oid_it = f"CTV_{safe_suffix}"
-
-                            # Tự động đồng bộ ngay vào database nội bộ
-                            db.update_order(
-                                oid_it,
-                                order_id=oid_it,
-                                user_id=0,
-                                username=it.get("username") or it_u,
-                                display_name=it.get("username") or it_u,
-                                account_target=it.get("username") or it_u,
-                                uid=it.get("uidString") or q_clean,
+                            results.append(self._upsert_ctv_lookup_order(
+                                ret_oid=oid_it,
                                 product=svc_it,
-                                plan=pkg_it.get("name") or "VIP",
-                                plan_label=pkg_it.get("name") or "VIP",
-                                status="done",
-                                created_at=it.get("createdAt") or datetime.now().isoformat(),
-                                done_at=it.get("createdAt") or datetime.now().isoformat(),
+                                plan_name=pkg_it.get("name") or "VIP",
+                                ret_user=it.get("username") or it_u or q_clean,
+                                ret_uid=it.get("uidString") or q_clean,
+                                created_at=it.get("createdAt"),
                                 expires_at=it.get("expiresAt"),
                                 avatar=it.get("avatarUrl"),
-                                dns_link=f"{config.DNS_BASE_URL}/{config.DNS_SLUG}",
-                                source="web_chu"
-                            )
-                            results.append({
-                                "order_id": oid_it,
-                                "product": svc_it,
-                                "plan": pkg_it.get("name") or "VIP",
-                                "price": 0,
-                                "status": "done",
-                                "uid": it.get("uidString") or q_clean,
-                                "display_name": it.get("username") or q_clean,
-                                "avatar": it.get("avatarUrl"),
-                                "expires_at": it.get("expiresAt"),
-                                "created_at": it.get("createdAt") or datetime.now().isoformat(),
-                                "download_url": f"/api/download_profile?order_id={oid_it}",
-                                "direct_safari_url": f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
-                            })
+                            ))
                             break
                 except Exception as e_q_uids:
                     logger.warning(f"Error checking active UIDs during lookup: {e_q_uids}")
@@ -945,46 +1412,22 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         try:
                             ctv_res = api.check_uid_details(q_clean, svc)
                             dt = ctv_res.get("data", {}) if isinstance(ctv_res, dict) else {}
-                            if dt.get("active") or dt.get("status") == "ACTIVE" or dt.get("found"):
+                            if (dt.get("active") is True or dt.get("status") == "ACTIVE") and (dt.get("isMine") is True):
                                 pkg_info = dt.get("package") or {}
                                 ret_uid = dt.get("uid") or q_clean
                                 ret_user = dt.get("username") or q_clean
                                 safe_suffix = (ret_uid[:8] if len(ret_uid) >= 8 else ret_user[:8]).upper()
                                 ret_oid = f"CTV_{safe_suffix}"
-
-                                db.update_order(
-                                    ret_oid,
-                                    order_id=ret_oid,
-                                    user_id=0,
-                                    username=ret_user,
-                                    display_name=ret_user,
-                                    account_target=ret_user,
-                                    uid=ret_uid,
+                                results.append(self._upsert_ctv_lookup_order(
+                                    ret_oid=ret_oid,
                                     product=dt.get("service") or svc,
-                                    plan=pkg_info.get("name") or "VIP",
-                                    plan_label=pkg_info.get("name") or "VIP",
-                                    status="done",
-                                    created_at=dt.get("createdAt") or datetime.now().isoformat(),
-                                    done_at=dt.get("createdAt") or datetime.now().isoformat(),
+                                    plan_name=pkg_info.get("name") or "VIP",
+                                    ret_user=ret_user,
+                                    ret_uid=ret_uid,
+                                    created_at=dt.get("createdAt"),
                                     expires_at=dt.get("expiresAt"),
                                     avatar=dt.get("avatarUrl"),
-                                    dns_link=f"{config.DNS_BASE_URL}/{config.DNS_SLUG}",
-                                    source="web_chu"
-                                )
-                                results.append({
-                                    "order_id": ret_oid,
-                                    "product": dt.get("service") or svc,
-                                    "plan": pkg_info.get("name") or "VIP",
-                                    "price": 0,
-                                    "status": "done",
-                                    "uid": ret_uid,
-                                    "display_name": ret_user,
-                                    "avatar": dt.get("avatarUrl"),
-                                    "expires_at": dt.get("expiresAt"),
-                                    "created_at": dt.get("createdAt") or datetime.now().isoformat(),
-                                    "download_url": f"/api/download_profile?order_id={ret_oid}",
-                                    "direct_safari_url": f"{config.DNS_BASE_URL}/{config.DNS_SLUG}"
-                                })
+                                ))
                                 break
                         except Exception:
                             pass
@@ -998,6 +1441,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
             raw_data = params.get("data", [""])[0].strip()
             if not raw_data:
                 self._send_json(400, {"ok": False, "error": "Thiếu tham số data"})
+                return
+            if len(raw_data) > 1024:
+                self._send_json(400, {"ok": False, "error": "Dữ liệu mã QR vượt quá 1024 ký tự"})
                 return
             try:
                 bio = utils.generate_qr_code(raw_data)
@@ -1017,12 +1463,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
         if path in ("/admin", "/admin.html"):
             admin_path = os.path.join(os.path.dirname(__file__), "admin.html")
             if os.path.exists(admin_path):
-                with open(admin_path, "rb") as f:
-                    html_bytes = f.read()
+                with open(admin_path, "r", encoding="utf-8") as f:
+                    html_bytes = _protect_html_response(f.read())
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.send_header("Content-Length", str(len(html_bytes)))
-                self.send_header("Cache-Control", "no-cache, must-revalidate")
+                self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                self.send_header("Pragma", "no-cache")
+                self.send_header("Expires", "0")
+                self.send_header("X-Content-Type-Options", "nosniff")
+                self.send_header("X-Frame-Options", "SAMEORIGIN")
                 self._send_cors_headers()
                 self.end_headers()
                 self.wfile.write(html_bytes)
@@ -1033,9 +1483,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Lấy thông tin đồng bộ API CTV & Gói cước
         if path == "/api/admin/api_info":
-            pin = params.get("pin", [""])[0].strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(params=params):
                 return
             svc_filter = params.get("service", ["all"])[0].strip().lower()
             if svc_filter not in ("all", "spotify", "locket"):
@@ -1069,9 +1517,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Tổng quan Tính Năng CTV (Frames, Brand Captions, Filters LUT)
         if path == "/api/admin/ctv/overview":
-            pin = params.get("pin", [""])[0].strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(params=params):
                 return
             frames_data = {}
             captions_data = {}
@@ -1113,9 +1559,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Tra cứu Caption CTV hoặc theo UID khách hàng
         if path == "/api/admin/ctv/captions":
-            pin = params.get("pin", [""])[0].strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(params=params):
                 return
             uid_q = params.get("uid", [""])[0].strip()
             try:
@@ -1127,9 +1571,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Lấy danh sách đơn hàng
         if path == "/api/admin/orders":
-            pin = params.get("pin", [""])[0].strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(params=params):
                 return
             all_orders = list(db.get_orders().values())
             all_orders.sort(key=lambda x: x.get("created_at", ""), reverse=True)
@@ -1138,9 +1580,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Lấy danh sách bảng giá & mã gói (kèm cấu hình Banner)
         if path == "/api/admin/prices":
-            pin = params.get("pin", [""])[0].strip() or self.headers.get("X-Admin-PIN", "").strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(params=params):
                 return
             self._send_json(200, {
                 "ok": True,
@@ -1152,9 +1592,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Lấy danh sách mã giảm giá
         if path == "/api/admin/codes":
-            pin = params.get("pin", [""])[0].strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(params=params):
                 return
             codes = list(db.get_codes().values())
             self._send_json(200, {"ok": True, "codes": codes})
@@ -1162,9 +1600,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Thống kê doanh thu & tổng quan toàn diện
         if path == "/api/admin/stats":
-            pin = params.get("pin", [""])[0].strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(params=params):
                 return
 
             orders = list(db.get_orders().values())
@@ -1175,7 +1611,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
             
             total_revenue = sum(o.get("price", 0) for o in done_orders)
 
-            from datetime import datetime
             now = datetime.now()
             today_str = now.strftime("%Y-%m-%d")
 
@@ -1184,6 +1619,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             locket_done = [o for o in done_orders if o.get("product") == "locket"]
             spotify_done = [o for o in done_orders if o.get("product") == "spotify"]
+            combo_done = [o for o in done_orders if o.get("product") in ("combo", "locket_spotify")]
+            ai_done = [o for o in done_orders if o.get("product") == "locket_ai"]
+            addon_done = [o for o in done_orders if o.get("product") in ("filter_topup", "caption_pack", "studio_caption")]
 
             self._send_json(200, {
                 "ok": True,
@@ -1202,6 +1640,18 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     "spotify": {
                         "count": len(spotify_done),
                         "revenue": sum(o.get("price", 0) for o in spotify_done)
+                    },
+                    "combo": {
+                        "count": len(combo_done),
+                        "revenue": sum(o.get("price", 0) for o in combo_done)
+                    },
+                    "locket_ai": {
+                        "count": len(ai_done),
+                        "revenue": sum(o.get("price", 0) for o in ai_done)
+                    },
+                    "addons": {
+                        "count": len(addon_done),
+                        "revenue": sum(o.get("price", 0) for o in addon_done)
                     }
                 }
             })
@@ -1209,9 +1659,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Danh sách khách hàng & chi tiêu
         if path == "/api/admin/users":
-            pin = params.get("pin", [""])[0].strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(params=params):
                 return
 
             raw_users = db.get_users()
@@ -1250,9 +1698,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Thông tin cấu hình hệ thống
         if path == "/api/admin/system_info":
-            pin = params.get("pin", [""])[0].strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(params=params):
                 return
 
             self._send_json(200, {
@@ -1274,12 +1720,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
         if path in ("/", "/index.html", "/LocketNgon", "/LocketNgon.html"):
             index_path = os.path.join(os.path.dirname(__file__), "index.html")
             if os.path.exists(index_path):
-                with open(index_path, "rb") as f:
-                    html_bytes = f.read()
+                with open(index_path, "r", encoding="utf-8") as f:
+                    html_bytes = _protect_html_response(f.read())
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.send_header("Content-Length", str(len(html_bytes)))
-                self.send_header("Cache-Control", "no-cache, must-revalidate")
+                self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                self.send_header("Pragma", "no-cache")
+                self.send_header("Expires", "0")
+                self.send_header("X-Content-Type-Options", "nosniff")
+                self.send_header("X-Frame-Options", "SAMEORIGIN")
                 self._send_cors_headers()
                 self.end_headers()
                 self.wfile.write(html_bytes)
@@ -1309,15 +1759,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
         # Xử lý riêng Upload Multipart/JSON cho file 3D LUT (.cube) trước khi đọc body JSON
         ctype = self.headers.get("Content-Type", "")
         if path == "/api/admin/ctv/filters/upload" and "multipart/form-data" in ctype.lower():
-            pin_header = (params.get("pin", [""])[0] or self.headers.get("X-Admin-Pin", "") or self.headers.get("X-Admin-PIN", "")).strip()
+            pin_header = (self.headers.get("X-Admin-PIN") or self.headers.get("X-Admin-Pin") or params.get("pin", [""])[0] or "").strip()
             try:
                 fields, file_bytes, filename = self._read_multipart_form()
             except ValueError as e_mp:
                 self._send_json(400, {"ok": False, "error": str(e_mp)})
                 return
-            pin = (fields.get("pin") or pin_header).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            pin = (pin_header or fields.get("pin") or "").strip()
+            if not self._require_admin(explicit_pin=pin):
                 return
             if not file_bytes or not filename.lower().endswith(".cube"):
                 self._send_json(400, {"ok": False, "error": "Vui lòng tải lên file 3D LUT định dạng .cube (tối đa 20MB)."})
@@ -1334,19 +1783,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Đăng nhập mã PIN
         if path == "/api/admin/login":
-            pin = str(body.get("pin", "")).strip()
-            admin_pin = getattr(config, "ADMIN_PIN", "2802")
-            if pin == admin_pin:
+            if self._require_admin(body=body):
                 self._send_json(200, {"ok": True})
-            else:
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
             return
 
         # API Admin: Cập nhật thông báo ưu đãi (Banner Header Web)
         if path == "/api/admin/update_banner":
-            pin = str(body.get("pin", "")).strip() or self.headers.get("X-Admin-PIN", "").strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             tag = body.get("tag", "🔥 HOT ƯU ĐÃI")
             text = body.get("text", "")
@@ -1361,9 +1804,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Cập nhật giá 1 gói cước (Đồng bộ Web & Bot)
         if path == "/api/admin/update_price":
-            pin = str(body.get("pin", "")).strip() or self.headers.get("X-Admin-PIN", "").strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             product = str(body.get("product", "")).strip()
             plan = str(body.get("plan", "")).strip()
@@ -1393,9 +1834,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Cập nhật toàn bộ bảng giá cùng lúc
         if path == "/api/admin/update_all_prices":
-            pin = str(body.get("pin", "")).strip() or self.headers.get("X-Admin-PIN", "").strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             prices = body.get("prices")
             if not isinstance(prices, dict):
@@ -1412,9 +1851,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Khôi phục bảng giá về mặc định
         if path == "/api/admin/reset_prices":
-            pin = str(body.get("pin", "")).strip() or self.headers.get("X-Admin-PIN", "").strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             db.reset_default_prices()
             self._send_json(200, {
@@ -1426,9 +1863,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Tạo mã giảm giá mới (Hỗ trợ 1 mã hoặc nhiều mã cùng lúc cách nhau bằng dấu phẩy)
         if path == "/api/admin/add_code":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
 
             raw_code = str(body.get("code", "")).strip().upper()
@@ -1441,8 +1876,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 return
 
             max_uses = int(body.get("max_uses", 0) or 0)
-            
-            import re
+
             code_list = [c.strip().upper() for c in re.split(r"[,;\s\n\r]+", raw_code) if len(c.strip()) >= 2]
             
             if not code_list:
@@ -1460,9 +1894,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Xóa mã giảm giá
         if path == "/api/admin/del_code":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             code = str(body.get("code", "")).strip().upper()
             success = db.del_code(code)
@@ -1474,9 +1906,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Tra cứu UID qua API CTV
         if path == "/api/admin/check_uid":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             identifier = str(body.get("identifier", "")).strip()
             service = str(body.get("service", "locket")).strip()
@@ -1492,9 +1922,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Kích hoạt gói thủ công trực tiếp lên máy chủ API CTV
         if path == "/api/admin/manual_activate":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             username = str(body.get("username", "")).strip()
             package_code = str(body.get("package_code", "LKGVV")).strip()
@@ -1521,9 +1949,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Duyệt đơn và kích hoạt tự động 1-chạm
         if path == "/api/admin/approve_order":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             order_id = str(body.get("order_id", "")).strip()
             order = db.get_order(order_id)
@@ -1555,9 +1981,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Từ chối / Hủy đơn hàng
         if path == "/api/admin/reject_order":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             order_id = str(body.get("order_id", "")).strip()
             reason = str(body.get("reason", "Admin hủy đơn thủ công")).strip()
@@ -1566,7 +1990,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(404, {"ok": False, "error": "Không tìm thấy đơn hàng"})
                 return
             
-            from datetime import datetime
             if not db.update_order(
                 order_id, expected_statuses=db.UNPAID_ORDER_STATUSES,
                 status="rejected", rejected_reason=reason, rejected_at=datetime.now().isoformat(),
@@ -1591,9 +2014,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Khóa / Mở khóa khách hàng
         if path == "/api/admin/toggle_ban":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             user_id = str(body.get("user_id", "")).strip()
             should_ban = bool(body.get("ban", True))
@@ -1608,11 +2029,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Thêm / Cập nhật Khung Widget CTV lên locket.2707226.xyz
         if path == "/api/admin/ctv/frames":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
-            url_img = str(body.get("url", "")).strip()
+            url_img = _unwrap_media_url(str(body.get("url", "")).strip())
             name = str(body.get("name", "")).strip()
             target_uid = str(body.get("targetUid", "ALL")).strip() or "ALL"
             target_uids = body.get("targetUids")
@@ -1635,9 +2054,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Thêm / Cập nhật Brand Caption hoặc Caption khách hàng lên locket.2707226.xyz
         if path == "/api/admin/ctv/captions":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             text_val = str(body.get("text", "")).strip()
             if not text_val:
@@ -1665,9 +2082,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Bật / Tắt Bộ Lọc Màu LUT trên locket.2707226.xyz
         if path == "/api/admin/ctv/filters/toggle":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             filter_id = str(body.get("filterId", "")).strip()
             enabled = bool(body.get("enabled", True))
@@ -1683,9 +2098,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Upload 3D LUT .cube dạng JSON Base64 (dự phòng khi không dùng multipart)
         if path == "/api/admin/ctv/filters/upload":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             filename = os.path.basename(str(body.get("filename", "")).strip() or "custom.cube")
             file_b64 = str(body.get("file_b64", "")).strip()
@@ -1694,7 +2107,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": "Vui lòng gửi file .cube hợp lệ!"})
                 return
             try:
-                import base64
                 if "," in file_b64:
                     file_b64 = file_b64.split(",", 1)[1]
                 file_bytes = base64.b64decode(file_b64)
@@ -1709,9 +2121,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Admin: Tải & Thêm 3D LUT (.cube) từ Link bên ngoài (Drive, Dropbox, GitHub, Web)
         if path == "/api/admin/ctv/filters/upload_url":
-            pin = str(body.get("pin", "")).strip()
-            if pin != getattr(config, "ADMIN_PIN", "2802"):
-                self._send_json(401, {"ok": False, "error": "Mã PIN không chính xác"})
+            if not self._require_admin(body=body):
                 return
             ext_url = str(body.get("url", "")).strip()
             lut_name = str(body.get("name", "")).strip()
@@ -1727,10 +2137,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # API Upload ảnh khung PNG từ máy tính (Admin PIN hoặc Khách VIP đã xác thực)
         if path == "/api/upload_frame_image":
-            pin = str(body.get("pin", "")).strip()
+            pin = self._extract_admin_pin(params=params, body=body)
             ident = str(body.get("identifier", "")).strip()
-            is_admin = (pin == getattr(config, "ADMIN_PIN", "2802"))
-            if not is_admin:
+            if pin:
+                if not self._require_admin(params=params, body=body):
+                    return
+            else:
                 if not ident:
                     self._send_json(401, {"ok": False, "error": "Vui lòng kết nối tài khoản Locket VIP trước khi tải khung ảnh lên!"})
                     return
@@ -1738,14 +2150,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 if not is_vip:
                     self._send_json(403, {"ok": False, "error": info.get("error") or "Tài khoản chưa kích hoạt Locket Gold VIP để tải khung lên máy chủ."})
                     return
+                up_ok, up_reason = check_upload_rate_limit(client_ip)
+                if not up_ok:
+                    self._send_json(429, {"ok": False, "error": up_reason})
+                    return
 
             img_b64 = str(body.get("image_b64", "")).strip()
             if not img_b64:
                 self._send_json(400, {"ok": False, "error": "Thiếu dữ liệu ảnh khung!"})
                 return
             try:
-                import base64
-                import uuid
                 if "," in img_b64:
                     img_b64 = img_b64.split(",", 1)[1]
                 raw_img = base64.b64decode(img_b64)
@@ -1768,10 +2182,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     f_out.write(raw_img)
 
                 base_web = getattr(config, "WEBSITE_URL", "https://alopremium.shop").rstrip("/")
+                allowed_host = urlparse(base_web).netloc.lower()
                 host_hdr = self.headers.get("Host", "").strip()
-                proto_hdr = self.headers.get("X-Forwarded-Proto", "https").strip()
-                if host_hdr and "localhost" not in host_hdr and "127.0.0.1" not in host_hdr:
-                    public_url = f"{proto_hdr}://{host_hdr}/assets/uploads/frames/{fname}"
+                if host_hdr and (host_hdr.lower() == allowed_host or host_hdr.lower().endswith(".onrender.com")):
+                    public_url = f"https://{host_hdr}/assets/uploads/frames/{fname}"
                 else:
                     public_url = f"{base_web}/assets/uploads/frames/{fname}"
                 self._send_json(200, {"ok": True, "url": public_url, "local_path": f"/assets/uploads/frames/{fname}"})
@@ -1790,6 +2204,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
             if "error" in info:
                 self._send_json(400, {"ok": False, "error": info["error"]})
                 return
+            if isinstance(info, dict) and info.get("avatar"):
+                info["avatar"] = _proxy_media_url(info["avatar"])
 
             verified_uid = info["uid"]
             verified_uname = info["username"]
@@ -1824,6 +2240,15 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         customer_captions = cap_res2.get("captions", []) or []
                 except Exception:
                     pass
+            masked_captions = []
+            for cp in customer_captions:
+                if isinstance(cp, dict):
+                    cpc = dict(cp)
+                    if cpc.get("symbolPreviewUrl"):
+                        cpc["symbolPreviewUrl"] = _proxy_media_url(cpc["symbolPreviewUrl"])
+                    masked_captions.append(cpc)
+                else:
+                    masked_captions.append(cp)
 
             # Lấy danh sách Khung riêng của chính khách hàng từ CTV (ẩn tuyệt đối UID khách khác)
             customer_frames = []
@@ -1837,13 +2262,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         str(x).strip() for x in (fr.get("targetUids") or []) if str(x).strip()
                     ]
                     if verified_uid in t_list or verified_uname in t_list:
+                        masked_u = _proxy_media_url(fr.get("url"))
                         customer_frames.append({
                             "id": fr.get("id"),
                             "name": fr.get("name") or "Khung Của Bạn",
                             "category": "Khung Cá Nhân Đã Nạp",
                             "group": "my_frames",
-                            "image": fr.get("url"),
-                            "rawImage": fr.get("url"),
+                            "image": masked_u,
+                            "rawImage": masked_u,
                             "badge": "Đã Gán Tài Khoản",
                             "source": "customer_assigned",
                         })
@@ -1851,13 +2277,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 pass
 
             q_info = db.get_caption_quota_info(verified_uid, verified_uname)
-            used_cap = len(customer_captions)
+            used_cap = len(masked_captions)
             total_cap = int(q_info.get("total_quota", free_q))
 
             self._send_json(200, {
                 "ok": True,
                 "account": info,
-                "customer_captions": customer_captions,
+                "customer_captions": masked_captions,
                 "customer_frames": customer_frames,
                 "caption_quota": {
                     "free": q_info.get("free_quota", free_q),
@@ -1872,7 +2298,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
         # 1.2 API Khách hàng VIP áp dụng Khung Widget trực tiếp lên tài khoản Locket của chính mình
         if path == "/api/features/apply_frame":
             raw_id = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
-            frame_url = str(body.get("url", "")).strip()
+            frame_url = _unwrap_media_url(str(body.get("url", "")).strip())
             frame_name = str(body.get("name", "")).strip() or "Khung Widget VIP"
             if not raw_id or not frame_url:
                 self._send_json(400, {"ok": False, "error": "Thiếu Username Locket hoặc URL khung viền!"})
@@ -1885,6 +2311,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
             if "error" in info:
                 self._send_json(400, {"ok": False, "error": info["error"]})
                 return
+            if isinstance(info, dict) and info.get("avatar"):
+                info["avatar"] = _proxy_media_url(info["avatar"])
             if not is_vip:
                 self._send_json(403, {
                     "ok": False,
@@ -1925,6 +2353,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
             if "error" in info:
                 self._send_json(400, {"ok": False, "error": info["error"]})
                 return
+            if isinstance(info, dict) and info.get("avatar"):
+                info["avatar"] = _proxy_media_url(info["avatar"])
             if not is_vip:
                 self._send_json(403, {
                     "ok": False,
@@ -2017,7 +2447,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             try:
                 if service == "spotify":
-                    import re
                     if not re.search(r"spotify\.com/user/[a-zA-Z0-9._-]+", raw_id, re.I):
                         self._send_json(400, {
                             "ok": False,
@@ -2039,7 +2468,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "service": "spotify",
                         "uid": uid,
                         "display_name": display,
-                        "avatar": avatar,
+                        "avatar": _proxy_media_url(avatar),
                         "plan": plan,
                         "is_bound": is_bound,
                         "status_text": "Đã kết nối IP thiết bị" if is_bound else "Chưa khóa IP (Sẵn sàng nâng cấp)"
@@ -2048,7 +2477,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
                 else:
                     # Gói Locket Gold / Combo (Dòng 1) / VIP All-in-One: CHỈ NHẬN USERNAME LOCKET, CHẶN MỌI ĐƯỜNG LINK
-                    import re
                     if re.search(r"(https?://|/|spotify\.com|locket\.cam)", raw_id, re.I):
                         self._send_json(400, {
                             "ok": False,
@@ -2083,7 +2511,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "service": "locket",
                         "uid": uid,
                         "display_name": display,
-                        "avatar": avatar,
+                        "avatar": _proxy_media_url(avatar),
                     })
                     return
             except Exception as e:
@@ -2205,7 +2633,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 if pending_same_order:
                     p_id = pending_same_order["order_id"]
                     p_price = pending_same_order["price"]
-                    qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
+                    qr_url = _get_masked_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
                     self._send_json(200, {
                         "ok": True,
                         "order_id": p_id,
@@ -2226,10 +2654,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     return
 
                 order_id = utils.gen_order_id()
-                if applied_code:
-                    chk_use = utils.check_and_apply_coupon(applied_code, orig_price)
-                    if chk_use.get("ok") and chk_use.get("is_db"):
-                        db.use_code(applied_code)
+                # Không trừ used_count lúc tạo đơn để tránh spam đốt hết mã giảm giá;
+                # chỉ trừ trong order_service khi đơn thanh toán & kích hoạt thành công.
 
                 # Lưu vào Database dùng chung với Bot Telegram
                 extra_fields = {
@@ -2256,8 +2682,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     **extra_fields
                 )
 
-                # Sinh link VietQR chuẩn
-                qr_url = utils.get_vietqr_url(amount=price, add_info=f"ORDER_{order_id}")
+                # Sinh link VietQR chuẩn (ẩn domain qua proxy nội bộ)
+                qr_url = _get_masked_vietqr_url(amount=price, add_info=f"ORDER_{order_id}")
 
                 # Gửi thông báo đến Admin qua Telegram Bot (siêu tốc <0.2s, đa kênh)
                 dispatch_admin_order_alert(order_id, pv, plnv, display_name, identifier, price, orig_price, applied_code, discount_amount)
@@ -2289,24 +2715,40 @@ class WebAppHandler(BaseHTTPRequestHandler):
             parent_order_id = str(body.get("parent_order_id", "") or body.get("order_id", "")).strip()
             identifier = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
             display_name = str(body.get("display_name", "")).strip() or identifier
-            if not identifier and parent_order_id:
-                p_ord = db.get_order(parent_order_id)
-                if p_ord:
-                    identifier = p_ord.get("display_name") or p_ord.get("uid") or p_ord.get("username")
-                    display_name = identifier
+            p_ord = db.get_order(parent_order_id) if parent_order_id else None
+            if not identifier and p_ord:
+                identifier = p_ord.get("display_name") or p_ord.get("uid") or p_ord.get("username")
+                display_name = identifier
 
             if not identifier:
                 self._send_json(400, {"ok": False, "error": "Thiếu tài khoản Locket cần mở Studio"})
                 return
 
+            has_parent_done = bool(p_ord and p_ord.get("status") == "done")
+            is_vip, info = self._verify_customer_locket_vip(identifier)
+            if not is_vip and not has_parent_done:
+                self._send_json(403, {"ok": False, "error": "Tài khoản chưa mua gói Locket Gold VIP hợp lệ tại shop!"})
+                return
+
             from order_service import payment_deadline
+            clean_ident = utils.clean_input(identifier).lower().lstrip("@")
+            pending_count_user = 0
+            for od in db.get_orders().values():
+                deadline = payment_deadline(od)
+                if od.get("status") in ("waiting_payment", "pending") and deadline is not None and time.time() < deadline:
+                    if clean_ident in (str(od.get("uid", "")).lower().lstrip("@"), str(od.get("account_target", "")).lower().lstrip("@")):
+                        pending_count_user += 1
+            if pending_count_user >= 5:
+                self._send_json(429, {"ok": False, "error": "Bạn đang có quá nhiều đơn chưa thanh toán. Vui lòng hoàn tất đơn cũ hoặc chờ 5 phút."})
+                return
+
             sub_order_id = utils.gen_order_id()
             studio_price = getattr(config, "STUDIO_CAPTION_PRICE", 10000)
 
             order = db.create_order(
                 order_id=sub_order_id,
                 user_id=0,
-                username=f"web_{identifier[:15]}",
+                username=f"web_{clean_ident[:15]}",
                 product="studio_caption",
                 plan="extra",
                 price=studio_price,
@@ -2317,8 +2759,17 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 source="web",
                 status="waiting_payment"
             )
+            dispatch_admin_order_alert(
+                sub_order_id,
+                {"name": "Studio Chú Thích & Khung Viền"},
+                {"label": "Gói Studio"},
+                display_name,
+                identifier,
+                studio_price,
+                studio_price,
+            )
 
-            qr_url = utils.get_vietqr_url(amount=studio_price, add_info=f"ORDER_{sub_order_id}")
+            qr_url = _get_masked_vietqr_url(amount=studio_price, add_info=f"ORDER_{sub_order_id}")
             self._send_json(200, {
                 "ok": True,
                 "order_id": sub_order_id,
@@ -2338,7 +2789,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # 2.2 API Tạo đơn Nạp Lượt Filter AI cho người dùng cuối (20: 7.000đ, 50: 17.000đ, 100: 33.000đ)
         if path == "/api/create_filter_order":
-            import re
             pack = str(body.get("pack") or body.get("plan") or "").strip()
             raw_ident = str(body.get("identifier") or body.get("username") or body.get("uid") or "").strip()
             packs_map = getattr(config, "FILTER_TOPUP_PACKS", {})
@@ -2399,7 +2849,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             if pending_same_order:
                 p_id = pending_same_order["order_id"]
                 p_price = pending_same_order["price"]
-                qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
+                qr_url = _get_masked_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
                 self._send_json(200, {
                     "ok": True,
                     "order_id": p_id,
@@ -2447,7 +2897,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 price,
                 price
             )
-            qr_url = utils.get_vietqr_url(amount=price, add_info=f"ORDER_{sub_order_id}")
+            qr_url = _get_masked_vietqr_url(amount=price, add_info=f"ORDER_{sub_order_id}")
             self._send_json(200, {
                 "ok": True,
                 "order_id": sub_order_id,
@@ -2469,7 +2919,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # 2.3 API Tạo đơn Mua Thêm Gói Caption VIP (+10 Caption: 5.000đ, +30 Caption: 10.000đ)
         if path == "/api/create_caption_order":
-            import re
             pack = str(body.get("pack") or body.get("plan") or "").strip()
             raw_ident = str(body.get("identifier") or body.get("username") or body.get("uid") or "").strip()
             packs_map = getattr(config, "CAPTION_TOPUP_PACKS", {})
@@ -2526,7 +2975,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             if pending_same_order:
                 p_id = pending_same_order["order_id"]
                 p_price = pending_same_order["price"]
-                qr_url = utils.get_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
+                qr_url = _get_masked_vietqr_url(amount=p_price, add_info=f"ORDER_{p_id}")
                 self._send_json(200, {
                     "ok": True,
                     "order_id": p_id,
@@ -2574,7 +3023,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 price,
                 price
             )
-            qr_url = utils.get_vietqr_url(amount=price, add_info=f"ORDER_{cap_order_id}")
+            qr_url = _get_masked_vietqr_url(amount=price, add_info=f"ORDER_{cap_order_id}")
             self._send_json(200, {
                 "ok": True,
                 "order_id": cap_order_id,
@@ -2594,14 +3043,44 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 3. API Reset thiết bị Spotify
+        # 3. API Reset thiết bị Spotify (BẮT BUỘC ĐÃ TỪNG MUA GÓI HỢP LỆ)
         if path == "/api/reset_spotify":
-            uid = str(body.get("uid", "")).strip()
-            if not uid:
-                self._send_json(400, {"ok": False, "error": "Vui lòng nhập UID Spotify cần reset"})
+            raw_sp = str(body.get("uid", "")).strip()
+            if not raw_sp:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập UID hoặc Link Profile Spotify cần reset"})
+                return
+            sp_uid = utils.extract_spotify_uid(raw_sp) or raw_sp
+            sp_clean = sp_uid.lower().strip()
+            raw_clean = raw_sp.lower().strip()
+            has_paid_sp = False
+            for od in db.get_orders().values():
+                if od.get("status") == "done" and od.get("product") in ("spotify", "combo", "locket_spotify", "locket_ai"):
+                    cands = {
+                        str(od.get("uid", "")).lower().strip(),
+                        str(od.get("spotify_uid", "")).lower().strip(),
+                        str(od.get("identifier", "")).lower().strip(),
+                        str(od.get("account_target", "")).lower().strip(),
+                        str(od.get("display_name", "")).lower().strip(),
+                    }
+                    if sp_clean in cands or raw_clean in cands:
+                        has_paid_sp = True
+                        break
+            if not has_paid_sp:
+                try:
+                    sp_chk = api.check_uid_details(sp_uid, "spotify")
+                    dt = sp_chk.get("data", {}) if isinstance(sp_chk, dict) else {}
+                    if (dt.get("active") is True or dt.get("status") == "ACTIVE") and (dt.get("isMine") is True):
+                        has_paid_sp = True
+                except Exception:
+                    pass
+            if not has_paid_sp:
+                self._send_json(403, {
+                    "ok": False,
+                    "error": "Tài khoản Spotify này chưa từng mua gói Spotify Premium tại cửa hàng hoặc chưa kích hoạt!"
+                })
                 return
             try:
-                res = api.spotify_reset(uid)
+                res = api.spotify_reset(sp_uid)
                 self._send_json(200, {
                     "ok": True,
                     "message": "Reset phiên IP thiết bị Spotify thành công! Bạn có thể kết nối ngay trên thiết bị mới."
@@ -2617,14 +3096,26 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": "Vui lòng nhập Username hoặc Link Locket cần chuyển máy"})
                 return
             cleaned = utils.clean_input(raw_id)
+            cleaned_l = cleaned.lower().lstrip("@")
             try:
-                # Kiểm tra tài khoản này đã từng mua gói bản quyền Locket hợp lệ chưa
+                # Kiểm tra tài khoản này đã từng mua gói bản quyền Locket hợp lệ chưa (gồm cả locket_spotify)
                 has_paid_order = False
                 for od in db.get_orders().values():
-                    if od.get("product") in ("locket", "combo", "locket_ai") and od.get("status") == "done":
-                        if str(od.get("identifier", "")).lower() == cleaned.lower() or str(od.get("uid", "")).lower() == cleaned.lower() or str(od.get("display_name", "")).lower() == cleaned.lower() or str(od.get("account_target", "")).lower() == cleaned.lower():
+                    if od.get("product") in ("locket", "combo", "locket_spotify", "locket_ai") and od.get("status") == "done":
+                        cands = {
+                            str(od.get("identifier", "")).lower().lstrip("@"),
+                            str(od.get("uid", "")).lower().lstrip("@"),
+                            str(od.get("display_name", "")).lower().lstrip("@"),
+                            str(od.get("account_target", "")).lower().lstrip("@"),
+                            str(od.get("locket_username", "")).lower().lstrip("@"),
+                        }
+                        if cleaned_l in cands:
                             has_paid_order = True
                             break
+
+                if not has_paid_order:
+                    is_vip, _ = self._verify_customer_locket_vip(cleaned)
+                    has_paid_order = bool(is_vip)
 
                 if not has_paid_order:
                     self._send_json(403, {
@@ -2663,7 +3154,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
             expected_token = getattr(config, "SEPAY_API_TOKEN", "").strip()
 
             # Lớp 1: Bắt buộc xác thực bí mật SePay API Token trong Header Authorization
-            import hmac
             accepted_headers = (f"Apikey {expected_token}", f"Bearer {expected_token}", expected_token)
             if not expected_token or not any(
                 hmac.compare_digest(auth_header.encode(), value.encode()) for value in accepted_headers
@@ -2703,7 +3193,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             matches = [
                 order for order in db.get_orders().values()
-                if payment_matches_order(order, account_num, str(body.get("content", "")), amount_in)
+                if order and order.get("status") in (*db.UNPAID_ORDER_STATUSES, "cancelled", "rejected")
+                and payment_matches_order(order, account_num, str(body.get("content", "")), amount_in)
             ]
             if len(matches) != 1:
                 self._send_json(200, {"success": True, "message": "No unique matching order"})
@@ -2714,7 +3205,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
             # Lớp 5: XÁC THỰC 2 CHIỀU ĐỘC LẬP VỚI SEPAY API SERVER
             # Gọi trực tiếp SePay API để kiểm tra xem TPBank thực sự có tiền về hay không!
             try:
-                import urllib.request
                 v_url = f"https://my.sepay.vn/userapi/transactions/details/{tx_id}"
                 v_req = urllib.request.Request(
                     v_url,
@@ -2753,10 +3243,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
         self._send_json(404, {"ok": False, "error": "Endpoint not found"})
 
     def log_message(self, format, *args):
-        # Giữ log sạch sẽ, chỉ log lỗi hoặc request API
+        # Giữ log sạch sẽ, che PIN/token khỏi URL query string nếu có
         msg = format % args
         if "GET /health" not in msg and "HEAD" not in msg and "GET /ping" not in msg:
-            logger.info(f"HTTP: {msg}")
+            msg_safe = re.sub(r"([?&](?:pin|token|apikey|secret)=)[^&\s\"]+", r"\1***", msg, flags=re.I)
+            logger.info(f"HTTP: {msg_safe}")
 
 
 def start_web_server(bot=None, loop=None, port=None):

@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="vi" class="dark">
 
 <head>
@@ -7,6 +6,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AloPremium.Shop Admin Dashboard • Quản Trị Hệ Thống 24/7</title>
     <link rel="icon" type="image/png" href="/favicon.png?v=locket2">
+    <script id="apDevtoolsShield">
+        (function () {
+            'use strict';
+            if (window.__apShieldInstalled) return;
+            window.__apShieldInstalled = true;
+            window.__AP_DEVTOOLS_LOCKED__ = false;
+
+            const _con = window.console;
+            const _log = (_con && typeof _con.log === 'function') ? _con.log.bind(_con) : function () {};
+            const _clr = (_con && typeof _con.clear === 'function') ? _con.clear.bind(_con) : function () {};
+
+            function _wipeSensitiveData() {
+                try {
+                    ['cachedOrders', 'cachedUsers', 'currentPin'].forEach(function (k) {
+                        try { window[k] = null; } catch (e) {}
+                    });
+                } catch (e) {}
+            }
+
+            function _showBlockToast(msg) {
+                try {
+                    if (!document.body) { alert(msg); return; }
+                    let el = document.getElementById('apSecurityWarnToast');
+                    if (!el) {
+                        el = document.createElement('div');
+                        el.id = 'apSecurityWarnToast';
+                        el.style.cssText = 'position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:2147483647;background:#991B1B;color:#FFFFFF;border:2px solid #FCA5A5;padding:10px 18px;border-radius:12px;font-family:sans-serif;font-size:13px;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.45);max-width:92vw;text-align:center;';
+                        document.body.appendChild(el);
+                    }
+                    el.textContent = msg;
+                    el.style.display = 'block';
+                    clearTimeout(window.__apWarnTimer);
+                    window.__apWarnTimer = setTimeout(function () {
+                        if (el) el.style.display = 'none';
+                    }, 3000);
+                } catch (e) {}
+            }
+
+            function _lockPage(reason) {
+                if (window.__AP_DEVTOOLS_LOCKED__) return;
+                window.__AP_DEVTOOLS_LOCKED__ = true;
+                _wipeSensitiveData();
+                try { _clr(); } catch (e) {}
+                const renderErr = function () {
+                    const msgBox =
+                        '<div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;background:#030712;color:#F8FAFC;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;padding:24px;box-sizing:border-box;">' +
+                        '<div style="max-width:480px;width:100%;background:#111827;border:2px solid #EF4444;border-radius:20px;padding:28px 24px;text-align:center;box-shadow:0 25px 60px rgba(239,68,68,.25);">' +
+                        '<div style="width:64px;height:64px;margin:0 auto 14px;border-radius:9999px;background:rgba(239,68,68,.15);border:2px solid #EF4444;display:flex;align-items:center;justify-content:center;font-size:30px;">⛔</div>' +
+                        '<h1 style="margin:0 0 8px;font-size:20px;font-weight:900;color:#FCA5A5;">LỖI BẢO MẬT ADMIN (ERR_403)</h1>' +
+                        '<p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:#E2E8F0;">Hệ thống phát hiện thao tác mở <b>DevTools (F12 / Inspect)</b> trên trang Quản trị.</p>' +
+                        '<div style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);border-radius:12px;padding:10px 12px;font-size:12px;color:#FECACA;margin-bottom:18px;">' +
+                        'Mọi mã nguồn &amp; phiên quản trị đã bị khóa bảo vệ!' +
+                        '</div>' +
+                        '<button type="button" onclick="window.location.reload()" style="padding:11px 22px;border-radius:12px;border:none;background:#EF4444;color:#FFFFFF;font-weight:800;font-size:13px;cursor:pointer;">🔄 Đóng F12 và Tải Lại Trang</button>' +
+                        '</div></div>';
+                    try {
+                        if (document.body) document.body.innerHTML = msgBox;
+                        else document.documentElement.innerHTML = '<body>' + msgBox + '</body>';
+                    } catch (e) {}
+                };
+                if (document.body) renderErr();
+                else document.addEventListener('DOMContentLoaded', renderErr);
+            }
+            window.__apTriggerSecurityError = _lockPage;
+
+            try {
+                const noop = function () {};
+                ['log', 'debug', 'info', 'warn', 'error', 'table', 'dir', 'trace'].forEach(function (m) {
+                    if (window.console) window.console[m] = noop;
+                });
+            } catch (e) {}
+
+            document.addEventListener('contextmenu', function (e) {
+                const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+                if (tag === 'INPUT' || tag === 'TEXTAREA') return true;
+                e.preventDefault();
+                e.stopPropagation();
+                _showBlockToast('⛔ Lỗi 403: Tính năng chuột phải và Inspect đã bị khóa!');
+                return false;
+            }, true);
+
+            document.addEventListener('keydown', function (e) {
+                const k = String(e.key || '').toLowerCase();
+                const isF12 = (e.keyCode === 123 || k === 'f12');
+                const isDevShortcut = (e.ctrlKey || e.metaKey) && e.shiftKey && ['i', 'j', 'c', 'k'].includes(k);
+                const isViewSource = (e.ctrlKey || e.metaKey) && (k === 'u' || k === 's');
+                const isMacDev = e.metaKey && e.altKey && ['i', 'j', 'c', 'u'].includes(k);
+                if (isF12 || isDevShortcut || isViewSource || isMacDev) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    _lockPage('KEY_BLOCKED');
+                    return false;
+                }
+            }, true);
+
+            setInterval(function () {
+                if (window.__AP_DEVTOOLS_LOCKED__) return;
+                try {
+                    let triggered = false;
+                    const bait = new Image();
+                    Object.defineProperty(bait, 'id', {
+                        get: function () {
+                            triggered = true;
+                            _lockPage('CONSOLE_TRAP');
+                            return 'ap';
+                        }
+                    });
+                    _log('%c', bait);
+                    _clr();
+                    if (triggered) return;
+                } catch (e) {}
+
+                try {
+                    const t0 = performance.now();
+                    (function () {}).constructor('debugger')();
+                    if (performance.now() - t0 > 120) {
+                        _lockPage('DEBUGGER_TIMING');
+                    }
+                } catch (e) {}
+            }, 1000);
+        })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -810,8 +931,8 @@
                                     <input type="file" id="adminFrameFileInput" accept="image/png,image/webp"
                                         onchange="handleAdminFrameFileSelect(event)"
                                         class="w-full sm:w-60 px-2 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs text-[#1E1B18] file:mr-2 file:py-0.5 file:px-2 file:rounded file:border file:border-[#1E1B18] file:bg-[#FFF8E1] file:text-xs file:font-bold cursor-pointer">
-                                    <input type="url" id="adminFrameUrl" oninput="handleAdminFrameUrlChange(this.value)"
-                                        placeholder="https://doh.2707226.xyz/uploads/frame.png"
+                                    <input type="text" id="adminFrameUrl" oninput="handleAdminFrameUrlChange(this.value)"
+                                        placeholder="Dán link ảnh khung PNG (https://...)"
                                         class="flex-1 px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
                                 </div>
                             </div>
@@ -1040,7 +1161,7 @@
                             <div id="admCapPreviewPill"
                                 class="px-5 py-2 rounded-full border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] inline-flex items-center gap-1.5 text-white font-black text-xs"
                                 style="background: linear-gradient(135deg, #FF5E3A, #FF2A68);">
-                                <img id="admCapPrevSvg" src="https://locket.2707226.xyz/assets/sf-symbols/sparkles.svg"
+                                <img id="admCapPrevSvg" src="/api/default_symbol?name=sparkles"
                                     class="w-4 h-4 brightness-0 invert">
                                 <span id="admCapPrevIcon" class="hidden">✨</span>
                                 <span id="admCapPrevText">Xem trước viền caption</span>
@@ -1393,7 +1514,7 @@
     </footer>
 
     <!-- JAVASCRIPT LOGIC -->
-    <script>
+    <script data-protected="1">
         let currentPin = sessionStorage.getItem('admin_pin') || '';
         let currentTab = 'analytics';
         let cachedOrders = [];
@@ -1409,6 +1530,37 @@
 
         function formatVND(amount) {
             return Number(amount || 0).toLocaleString('vi-VN') + ' đ';
+        }
+
+        function escapeAdminHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapeAdminJsAttr(str) {
+            return escapeAdminHtml(
+                String(str ?? '')
+                    .replace(/\\/g, '\\\\')
+                    .replace(/'/g, "\\'")
+                    .replace(/\r/g, ' ')
+                    .replace(/\n/g, ' ')
+            );
+        }
+
+        function safeAdminUrl(url, fallback = '') {
+            const s = String(url || '').trim();
+            if (!s) return fallback;
+            if (s.startsWith('https://') || s.startsWith('http://') || (s.startsWith('/') && !s.startsWith('//'))) return s;
+            if (/^(logo\.png|assets\/)/i.test(s)) return s;
+            return fallback;
+        }
+
+        function adminHeaders(extra = {}) {
+            return { 'X-Admin-PIN': currentPin, ...extra };
         }
 
         async function handleLogin(e) {
@@ -1517,7 +1669,7 @@
         // ==========================================
         async function loadStats() {
             try {
-                const res = await fetch(`/api/admin/stats?pin=${encodeURIComponent(currentPin)}`);
+                const res = await fetch('/api/admin/stats', { headers: adminHeaders() });
                 const data = await res.json();
                 if (!data.ok) return;
 
@@ -1557,14 +1709,14 @@
         async function loadOrders() {
             const tbody = document.getElementById('ordersTableBody');
             try {
-                const res = await fetch(`/api/admin/orders?pin=${encodeURIComponent(currentPin)}`);
+                const res = await fetch('/api/admin/orders', { headers: adminHeaders() });
                 const data = await res.json();
                 if (!data.ok) return;
 
                 cachedOrders = data.orders || [];
                 renderOrdersTable();
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-400">Lỗi tải đơn: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-400">Lỗi tải đơn: ${escapeAdminHtml(err.message)}</td></tr>`;
             }
         }
 
@@ -1630,13 +1782,16 @@
                     statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">🚫 Đã Hủy</span>';
                 }
 
+                const safeOid = escapeAdminHtml(o.order_id);
+                const safeDisp = escapeAdminHtml(o.display_name || o.username || 'Khách');
+                const safeUid = escapeAdminHtml(o.uid || '@' + (o.username || ''));
                 const svcIcon = o.product === 'locket' ? '💛' : (o.product === 'spotify' ? '🎵' : '📦');
-                const svcName = o.product === 'locket' ? 'Locket Gold' : (o.product === 'spotify' ? 'Spotify VIP' : o.product);
-                const planName = o.plan || '';
-                const timeStr = (o.created_at || '').substring(0, 16).replace('T', ' ');
+                const svcName = escapeAdminHtml(o.product === 'locket' ? 'Locket Gold' : (o.product === 'spotify' ? 'Spotify VIP' : o.product));
+                const planName = escapeAdminHtml(o.plan || '');
+                const timeStr = escapeAdminHtml((o.created_at || '').substring(0, 16).replace('T', ' '));
 
                 let actionBtns = `
-                    <button onclick="viewOrderDetail('${o.order_id}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition-all cursor-pointer">
+                    <button onclick="viewOrderDetail('${safeOid}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition-all cursor-pointer">
                         👁 Xem
                     </button>
                 `;
@@ -1644,11 +1799,11 @@
                 if (isPending) {
                     actionBtns = `
                         <div class="flex items-center justify-end gap-1.5">
-                            <button onclick="approveOrder('${o.order_id}')" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1">
+                            <button onclick="approveOrder('${safeOid}')" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1">
                                 ⚡ Duyệt
                             </button>
-                            ${o.status === 'paid_review' ? '' : `<button onclick="rejectOrder('${o.order_id}')" class="px-2 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">✕</button>`}
-                            <button onclick="viewOrderDetail('${o.order_id}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all cursor-pointer">
+                            ${o.status === 'paid_review' ? '' : `<button onclick="rejectOrder('${safeOid}')" class="px-2 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">✕</button>`}
+                            <button onclick="viewOrderDetail('${safeOid}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all cursor-pointer">
                                 👁
                             </button>
                         </div>
@@ -1657,10 +1812,10 @@
 
                 return `
                     <tr class="hover:bg-slate-800/40 transition-colors">
-                        <td class="py-3 px-4 font-mono font-bold text-amber-400">ORDER_${o.order_id}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-amber-400">ORDER_${safeOid}</td>
                         <td class="py-3 px-4">
-                            <div class="font-bold text-white">${o.display_name || o.username || 'Khách'}</div>
-                            <div class="text-[11px] text-slate-400 font-mono truncate max-w-[150px]">${o.uid || '@' + (o.username || '')}</div>
+                            <div class="font-bold text-white">${safeDisp}</div>
+                            <div class="text-[11px] text-slate-400 font-mono truncate max-w-[150px]">${safeUid}</div>
                         </td>
                         <td class="py-3 px-4">
                             <div class="flex items-center gap-1.5 font-semibold text-slate-200">
@@ -1731,20 +1886,29 @@
             document.getElementById('modalOrderId').textContent = `ORDER_${order.order_id}`;
             const isPending = ['pending', 'waiting_payment', 'pending_approval', 'paid_review'].includes(order.status);
 
+            const safeOid = escapeAdminHtml(order.order_id);
+            const safeDisp = escapeAdminHtml(order.display_name || order.username || 'Khách');
+            const safeUidText = escapeAdminHtml((order.user_id ? order.user_id + ' ' : '') + '(@' + (order.username || 'web') + ')');
+            const safeProdPlan = escapeAdminHtml(`${order.product || ''} - ${order.plan || ''}`);
+            const safeTarget = escapeAdminHtml(order.uid || order.identifier || 'N/A');
+            const safeDns = escapeAdminHtml(safeAdminUrl(order.dns_link));
+            const safeCreated = escapeAdminHtml(order.created_at || '---');
+            const safeDone = escapeAdminHtml(order.done_at || '---');
+
             const body = document.getElementById('modalOrderBody');
             body.innerHTML = `
                 <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                     <div>
                         <span class="text-slate-400">Khách hàng:</span>
-                        <div class="font-bold text-white">${order.display_name || order.username || 'Khách'}</div>
+                        <div class="font-bold text-white">${safeDisp}</div>
                     </div>
                     <div>
                         <span class="text-slate-400">User ID / Username:</span>
-                        <div class="font-mono text-amber-400 font-bold">${order.user_id ? order.user_id : ''} (@${order.username || 'web'})</div>
+                        <div class="font-mono text-amber-400 font-bold">${safeUidText}</div>
                     </div>
                     <div>
                         <span class="text-slate-400">Dịch vụ & Gói:</span>
-                        <div class="font-bold text-slate-200">${order.product} - ${order.plan}</div>
+                        <div class="font-bold text-slate-200">${safeProdPlan}</div>
                     </div>
                     <div>
                         <span class="text-slate-400">Giá thanh toán:</span>
@@ -1754,32 +1918,32 @@
 
                 <div class="space-y-1.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                     <div class="text-slate-400">Tài khoản đích / UID:</div>
-                    <div class="font-mono font-bold text-white break-all bg-slate-900 p-2 rounded-xl border border-slate-800">${order.uid || order.identifier || 'N/A'}</div>
+                    <div class="font-mono font-bold text-white break-all bg-slate-900 p-2 rounded-xl border border-slate-800">${safeTarget}</div>
                 </div>
 
-                ${order.dns_link ? `
+                ${safeDns ? `
                     <div class="space-y-1.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                         <div class="text-slate-400">DNS Profile Link iOS:</div>
-                        <div class="font-mono text-emerald-400 text-xs break-all bg-slate-900 p-2 rounded-xl border border-slate-800">${order.dns_link}</div>
-                        <a href="/api/download_profile?order_id=${order.order_id}" class="inline-block mt-2 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-xs hover:bg-amber-500/20">
+                        <div class="font-mono text-emerald-400 text-xs break-all bg-slate-900 p-2 rounded-xl border border-slate-800">${safeDns}</div>
+                        <a href="/api/download_profile?order_id=${encodeURIComponent(order.order_id)}" class="inline-block mt-2 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-xs hover:bg-amber-500/20">
                             📥 Tải file .mobileconfig
                         </a>
                     </div>
                 ` : ''}
 
                 <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
-                    <div>Ngày tạo: <span class="text-slate-300 font-mono">${order.created_at || '---'}</span></div>
-                    <div>Hoàn thành: <span class="text-slate-300 font-mono">${order.done_at || '---'}</span></div>
+                    <div>Ngày tạo: <span class="text-slate-300 font-mono">${safeCreated}</span></div>
+                    <div>Hoàn thành: <span class="text-slate-300 font-mono">${safeDone}</span></div>
                 </div>
             `;
 
             const actions = document.getElementById('modalOrderActions');
             if (isPending) {
                 actions.innerHTML = `
-                    <button onclick="approveOrder('${order.order_id}')" class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs transition-all cursor-pointer">
+                    <button onclick="approveOrder('${safeOid}')" class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs transition-all cursor-pointer">
                         ⚡ Duyệt & Kích Hoạt Tự Động
                     </button>
-                    <button onclick="rejectOrder('${order.order_id}')" class="py-2.5 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">
+                    <button onclick="rejectOrder('${safeOid}')" class="py-2.5 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">
                         Hủy Đơn
                     </button>
                 `;
@@ -1804,14 +1968,14 @@
         async function loadUsers() {
             const tbody = document.getElementById('usersTableBody');
             try {
-                const res = await fetch(`/api/admin/users?pin=${encodeURIComponent(currentPin)}`);
+                const res = await fetch('/api/admin/users', { headers: adminHeaders() });
                 const data = await res.json();
                 if (!data.ok) return;
 
                 cachedUsers = data.users || [];
                 renderUsersTable();
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-400">Lỗi tải user: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-400">Lỗi tải user: ${escapeAdminHtml(err.message)}</td></tr>`;
             }
         }
 
@@ -1843,15 +2007,18 @@
                     ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">Bị Khóa</span>'
                     : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Bình Thường</span>';
 
+                const safeUserId = escapeAdminHtml(u.user_id);
+                const safeFirst = escapeAdminHtml(u.first_name || 'Khách Hàng');
+                const safeUname = escapeAdminHtml(u.username ? '@' + u.username : '---');
                 const toggleBtn = isBanned
-                    ? `<button onclick="toggleBanUser('${u.user_id}', false)" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs transition-all cursor-pointer">Mở Khóa</button>`
-                    : `<button onclick="toggleBanUser('${u.user_id}', true)" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">Chặn</button>`;
+                    ? `<button onclick="toggleBanUser('${safeUserId}', false)" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs transition-all cursor-pointer">Mở Khóa</button>`
+                    : `<button onclick="toggleBanUser('${safeUserId}', true)" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">Chặn</button>`;
 
                 return `
                     <tr class="hover:bg-slate-800/40 transition-colors">
-                        <td class="py-3 px-4 font-mono font-bold text-slate-300">${u.user_id}</td>
-                        <td class="py-3 px-4 font-bold text-white">${u.first_name || 'Khách Hàng'}</td>
-                        <td class="py-3 px-4 font-mono text-amber-400 font-semibold">${u.username ? '@' + u.username : '---'}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-300">${safeUserId}</td>
+                        <td class="py-3 px-4 font-bold text-white">${safeFirst}</td>
+                        <td class="py-3 px-4 font-mono text-amber-400 font-semibold">${safeUname}</td>
                         <td class="py-3 px-4 text-center font-bold text-slate-200">${u.orders_count || 0}</td>
                         <td class="py-3 px-4 text-right font-mono font-black text-amber-400">${formatVND(u.total_spent)}</td>
                         <td class="py-3 px-4 text-center">${statusBadge}</td>
@@ -1889,7 +2056,7 @@
         async function loadCodes() {
             const tbody = document.getElementById('codesTableBody');
             try {
-                const res = await fetch(`/api/admin/codes?pin=${encodeURIComponent(currentPin)}`);
+                const res = await fetch('/api/admin/codes', { headers: adminHeaders() });
                 const data = await res.json();
                 if (!data.ok) return;
 
@@ -1900,15 +2067,17 @@
                 }
 
                 tbody.innerHTML = codes.map(c => {
-                    const limitText = c.max_uses === 0 ? '<span class="text-emerald-400">Không giới hạn</span>' : `${c.used_count || 0} / ${c.max_uses}`;
+                    const safeCode = escapeAdminHtml(c.code);
+                    const safeCreated = escapeAdminHtml(c.created_at || '---');
+                    const limitText = c.max_uses === 0 ? '<span class="text-emerald-400">Không giới hạn</span>' : `${Number(c.used_count || 0)} / ${Number(c.max_uses)}`;
                     return `
                         <tr class="hover:bg-slate-800/40 transition-colors">
-                            <td class="py-3 px-4 font-mono font-black text-amber-400 text-sm">${c.code}</td>
-                            <td class="py-3 px-4 font-bold text-emerald-400">-${c.discount_pct}%</td>
+                            <td class="py-3 px-4 font-mono font-black text-amber-400 text-sm">${safeCode}</td>
+                            <td class="py-3 px-4 font-bold text-emerald-400">-${Number(c.discount_pct || 0)}%</td>
                             <td class="py-3 px-4 text-slate-300 font-semibold">${limitText}</td>
-                            <td class="py-3 px-4 text-slate-400 text-[11px]">${c.created_at || '---'}</td>
+                            <td class="py-3 px-4 text-slate-400 text-[11px]">${safeCreated}</td>
                             <td class="py-3 px-4 text-right">
-                                <button onclick="deleteCode('${c.code}')" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold transition-all cursor-pointer">
+                                <button onclick="deleteCode('${safeCode}')" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold transition-all cursor-pointer">
                                     🗑 Xóa
                                 </button>
                             </td>
@@ -2015,7 +2184,7 @@
             }
             const toast = document.createElement('div');
             toast.className = 'pointer-events-auto px-4 py-3 rounded-2xl bg-slate-900 border border-amber-500/40 text-white text-xs font-bold shadow-2xl flex items-center gap-2 transform transition-all duration-300 translate-y-4 opacity-0';
-            toast.innerHTML = msg;
+            toast.textContent = msg;
             container.appendChild(toast);
             setTimeout(() => {
                 toast.classList.remove('translate-y-4', 'opacity-0');
@@ -2031,10 +2200,10 @@
             if (!grid) return;
 
             try {
-                const res = await fetch('/api/admin/prices?pin=' + encodeURIComponent(currentPin));
+                const res = await fetch('/api/admin/prices', { headers: adminHeaders() });
                 const data = await res.json();
                 if (!data.ok || !data.products) {
-                    grid.innerHTML = '<div class="p-8 text-center text-red-400 font-bold col-span-3">❌ Lỗi tải bảng giá: ' + (data.error || 'Không thể lấy dữ liệu') + '</div>';
+                    grid.innerHTML = '<div class="p-8 text-center text-red-400 font-bold col-span-3">❌ Lỗi tải bảng giá: ' + escapeAdminHtml(data.error || 'Không thể lấy dữ liệu') + '</div>';
                     return;
                 }
 
@@ -2052,7 +2221,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                grid.innerHTML = '<div class="p-8 text-center text-red-400 font-bold col-span-3">❌ Lỗi kết nối: ' + err.message + '</div>';
+                grid.innerHTML = '<div class="p-8 text-center text-red-400 font-bold col-span-3">❌ Lỗi kết nối: ' + escapeAdminHtml(err.message) + '</div>';
             }
         }
 
@@ -2309,7 +2478,7 @@
             }
 
             try {
-                const res = await fetch(`/api/admin/api_info?pin=${encodeURIComponent(currentPin)}&service=${encodeURIComponent(currentApiSvcFilter)}`);
+                const res = await fetch(`/api/admin/api_info?service=${encodeURIComponent(currentApiSvcFilter)}`, { headers: adminHeaders() });
                 const data = await res.json();
                 if (!data.ok) return;
 
@@ -2352,14 +2521,16 @@
             }
 
             tbody.innerHTML = packages.map(pkg => {
-                const code = pkg.code || pkg.packageCode || '---';
-                const name = pkg.name || '---';
-                const price = pkg.priceCoin !== undefined ? pkg.priceCoin : '---';
-                const wholesale = pkg.wholesaleCoin !== undefined ? pkg.wholesaleCoin : '---';
-                const days = pkg.durationDays >= 9999 ? 'Vĩnh viễn' : (pkg.durationDays ? `${pkg.durationDays} ngày` : '---');
+                const rawCode = pkg.code || pkg.packageCode || '---';
+                const rawName = pkg.name || '---';
+                const code = escapeAdminHtml(rawCode);
+                const name = escapeAdminHtml(rawName);
+                const price = escapeAdminHtml(pkg.priceCoin !== undefined ? pkg.priceCoin : '---');
+                const wholesale = escapeAdminHtml(pkg.wholesaleCoin !== undefined ? pkg.wholesaleCoin : '---');
+                const days = pkg.durationDays >= 9999 ? 'Vĩnh viễn' : (pkg.durationDays ? `${Number(pkg.durationDays)} ngày` : '---');
                 let svcEmoji = '💛';
                 let svcName = 'Locket';
-                if (code.startsWith('SP') || name.toLowerCase().includes('spotify')) {
+                if (rawCode.startsWith('SP') || rawName.toLowerCase().includes('spotify')) {
                     svcEmoji = '🎵';
                     svcName = 'Spotify';
                 }
@@ -2415,15 +2586,6 @@
             ['#FF5E3A', '#FF2A68'], ['#D946EF', '#9333EA'], ['#00C6FF', '#0072FF'], ['#11998E', '#38EF7D'],
             ['#FFB800', '#FF8008'], ['#570AE6', '#2A0845'], ['#F4F4F5', '#D4D4D8'], ['#27272A', '#09090B']
         ];
-
-        function escapeAdminHtml(str) {
-            return String(str || '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
 
         function switchAdminStudioTab(key) {
             ['frames', 'captions', 'slots', 'topup_filter', 'filters'].forEach(k => {
@@ -2504,7 +2666,7 @@
             }
 
             try {
-                const res = await fetch(`/api/admin/ctv/overview?pin=${encodeURIComponent(currentPin)}`);
+                const res = await fetch('/api/admin/ctv/overview', { headers: adminHeaders() });
                 const data = await res.json();
                 if (!data.ok) throw new Error(data.error || 'Lỗi tải dữ liệu CTV');
 
@@ -2551,7 +2713,7 @@
 
         async function loadAdminPresetFrames() {
             try {
-                const res = await fetch('/api/frames');
+                const res = await fetch('/api/frames', { headers: adminHeaders() });
                 const data = await res.json();
                 if (data && Array.isArray(data.frames)) {
                     adminPresetFrames = data.frames;
@@ -2568,8 +2730,11 @@
             const kw = (document.getElementById('admPresetSearch')?.value || '').trim().toLowerCase();
             const list = adminPresetFrames.filter(fr => !kw || (fr.name || '').toLowerCase().includes(kw) || (fr.category || '').toLowerCase().includes(kw));
             grid.innerHTML = list.map(fr => {
-                const imgUrl = escapeAdminHtml(fr.rawImage || fr.image);
+                const rawUrl = safeAdminUrl(fr.rawImage || fr.image, '/assets/index/sim-demos/demo-1.jpg');
+                const imgUrl = escapeAdminHtml(rawUrl);
+                const jsImgUrl = escapeAdminJsAttr(rawUrl);
                 const sName = escapeAdminHtml(fr.name);
+                const jsName = escapeAdminJsAttr(fr.name);
                 return `
                     <div class="bg-[#FFFDF5] rounded-2xl p-2.5 border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] flex flex-col justify-between">
                         <div>
@@ -2579,7 +2744,7 @@
                             </div>
                             <div class="font-bold text-xs text-[#1E1B18] truncate">${sName}</div>
                         </div>
-                        <button type="button" onclick="pickAdminPresetToEditor('${imgUrl}', '${sName}')"
+                        <button type="button" onclick="pickAdminPresetToEditor('${jsImgUrl}', '${jsName}')"
                             class="mt-2 w-full py-1.5 rounded-lg bg-[#FFD84D] hover:bg-[#FFC928] border border-[#1E1B18] text-[10px] font-black cursor-pointer">
                             ⚡ Chọn &amp; Dùng Khung
                         </button>
@@ -2633,9 +2798,14 @@
             }
 
             el.innerHTML = view.map((fr, idx) => {
-                const safeUrl = escapeAdminHtml(fr.url || '');
+                const rawUrl = safeAdminUrl(fr.url || '', '/assets/index/sim-demos/demo-1.jpg');
+                const safeUrl = escapeAdminHtml(rawUrl);
+                const jsUrl = escapeAdminJsAttr(rawUrl);
                 const safeName = escapeAdminHtml(fr.name || 'Không tên');
-                const targetTxt = escapeAdminHtml(fr.targetUid || (fr.targetUids || []).join(',') || 'ALL');
+                const jsName = escapeAdminJsAttr(fr.name || 'Không tên');
+                const rawTarget = fr.targetUid || (fr.targetUids || []).join(',') || 'ALL';
+                const targetTxt = escapeAdminHtml(rawTarget);
+                const jsTarget = escapeAdminJsAttr(rawTarget);
                 const isAll = targetTxt.toUpperCase() === 'ALL';
                 const active = fr.active !== false;
                 return `
@@ -2654,7 +2824,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="button" onclick="fillAdminFrameForm('${safeUrl}', '${safeName}', '${targetTxt}', ${active})"
+                            <button type="button" onclick="fillAdminFrameForm('${jsUrl}', '${jsName}', '${jsTarget}', ${active})"
                                 class="px-2.5 py-1 rounded-md border border-[#1E1B18] bg-[#FFD84D] text-[10px] font-black cursor-pointer shrink-0">
                                 ✏️ Chọn / Sửa
                             </button>
@@ -2776,18 +2946,21 @@
             clearTimeout(adminSymTimer);
             adminSymTimer = setTimeout(async () => {
                 try {
-                    const res = await fetch(`/api/features/symbols?category=all&q=${encodeURIComponent(q || '')}`);
+                    const res = await fetch(`/api/features/symbols?category=all&q=${encodeURIComponent(q || '')}`, { headers: adminHeaders() });
                     const data = await res.json();
                     const grid = document.getElementById('adminSymbolsGrid');
                     if (grid && data.ok) {
                         const syms = (data.symbols || []).slice(0, 64);
-                        grid.innerHTML = syms.map(s => `
-                            <button type="button" onclick="pickAdminSymbol('${escapeAdminHtml(s.name)}', '${escapeAdminHtml(s.previewUrl)}')"
+                        grid.innerHTML = syms.map(s => {
+                            const symUrl = safeAdminUrl(s.previewUrl, '');
+                            return `
+                            <button type="button" onclick="pickAdminSymbol('${escapeAdminJsAttr(s.name)}', '${escapeAdminJsAttr(symUrl)}')"
                                 title="${escapeAdminHtml(s.title)} (${escapeAdminHtml(s.name)})"
                                 class="aspect-square rounded-lg border border-zinc-300 hover:border-[#1E1B18] hover:bg-amber-50 flex items-center justify-center p-1.5 cursor-pointer bg-white">
-                                <img src="${escapeAdminHtml(s.previewUrl)}" loading="lazy" class="w-5 h-5 object-contain">
+                                <img src="${escapeAdminHtml(symUrl)}" loading="lazy" class="w-5 h-5 object-contain">
                             </button>
-                        `).join('');
+                        `;
+                        }).join('');
                     }
                 } catch (e) { }
             }, 250);
@@ -2807,7 +2980,7 @@
         async function adminLookupCaptions() {
             const uidQ = document.getElementById('adminCaptionLookupUid').value.trim();
             try {
-                const res = await fetch(`/api/admin/ctv/captions?pin=${encodeURIComponent(currentPin)}&uid=${encodeURIComponent(uidQ)}`);
+                const res = await fetch(`/api/admin/ctv/captions?uid=${encodeURIComponent(uidQ)}`, { headers: adminHeaders() });
                 const data = await res.json();
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Tra cứu thất bại');
                 renderAdminCtvCaptions(data.captions || [], data.mode || (uidQ ? 'customer' : 'brand'));
@@ -2935,8 +3108,14 @@
                 const cnt = m.id === 'all' ? adminCtvSampleLuts.length : adminCtvSampleLuts.filter(x => String(x.category || '').toLowerCase() === m.id).length;
                 if (m.id !== 'all' && cnt === 0) return '';
                 const act = adminLutCategory === m.id;
-                return `<button type="button" onclick="adminLutCategory='${m.id}'; renderAdminLutPills(); renderAdminLutGrid();" class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] font-bold cursor-pointer ${act ? 'bg-[#FFD84D] text-[#1E1B18]' : 'bg-white hover:bg-[#FFF5D6]'}">${m.label} (${cnt})</button>`;
+                return `<button type="button" onclick="selectAdminLutCat('${escapeAdminJsAttr(m.id)}')" class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] font-bold cursor-pointer ${act ? 'bg-[#FFD84D] text-[#1E1B18]' : 'bg-white hover:bg-[#FFF5D6]'}">${m.label} (${cnt})</button>`;
             }).join('');
+        }
+
+        function selectAdminLutCat(catId) {
+            adminLutCategory = catId;
+            renderAdminLutPills();
+            renderAdminLutGrid();
         }
 
         function renderAdminLutGrid() {
@@ -3044,7 +3223,7 @@
                 fd.append('file', file);
                 if (nameInput && nameInput.value.trim()) fd.append('name', nameInput.value.trim());
 
-                const res = await fetch(`/api/admin/ctv/filters/upload?pin=${encodeURIComponent(currentPin)}`, { method: 'POST', body: fd });
+                const res = await fetch('/api/admin/ctv/filters/upload', { method: 'POST', headers: adminHeaders(), body: fd });
                 const data = await res.json();
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Upload .cube thất bại');
 
@@ -3086,27 +3265,33 @@
                     const info = data.data.data || data.data;
                     const isActive = info.active === true || info.status === 'ACTIVE';
                     const pkg = info.package || {};
-                    const avatar = info.avatarUrl || 'logo.png';
-                    const username = info.username || ident;
+                    const avatar = safeAdminUrl(info.avatarUrl, 'logo.png');
+                    const username = String(info.username || ident);
+                    const safeAvatar = escapeAdminHtml(avatar);
+                    const safeUser = escapeAdminHtml(username);
+                    const safeUid = escapeAdminHtml(info.uid || '---');
+                    const safePkgName = escapeAdminHtml(pkg.name || (isActive ? 'Gói Gold' : 'Chưa có gói'));
+                    const safeSvc = escapeAdminHtml(svc);
+                    const safeSelectId = 'manualPkgSelect_' + safeUser.replace(/[^A-Za-z0-9_-]/g, '_');
 
                     let html = `
                         <div class="bg-slate-900 border ${isActive ? 'border-emerald-500/40' : 'border-amber-500/40'} rounded-2xl p-4 space-y-4">
                             <div class="flex items-center justify-between flex-wrap gap-3">
                                 <div class="flex items-center gap-3">
-                                    <img src="${avatar}" class="w-12 h-12 rounded-full border-2 ${isActive ? 'border-emerald-400' : 'border-amber-400'} object-cover" onerror="this.src='logo.png'">
+                                    <img src="${safeAvatar}" class="w-12 h-12 rounded-full border-2 ${isActive ? 'border-emerald-400' : 'border-amber-400'} object-cover" onerror="this.src='logo.png'">
                                     <div>
                                         <div class="flex items-center gap-2">
-                                            <span class="font-black text-white text-base">@${username}</span>
+                                            <span class="font-black text-white text-base">@${safeUser}</span>
                                             <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}">
                                                 ${isActive ? '● ĐÃ KÍCH HOẠT (ACTIVE)' : '○ CHƯA KÍCH HOẠT'}
                                             </span>
                                         </div>
-                                        <p class="text-[11px] text-slate-400 font-mono mt-0.5">UID: ${info.uid || '---'}</p>
+                                        <p class="text-[11px] text-slate-400 font-mono mt-0.5">UID: ${safeUid}</p>
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-xs font-bold text-amber-400">${pkg.name || (isActive ? 'Gói Gold' : 'Chưa có gói')}</div>
-                                    <div class="text-[11px] text-slate-400">Hạn: ${info.expiresAt ? new Date(info.expiresAt).toLocaleDateString('vi-VN') : '---'}</div>
+                                    <div class="text-xs font-bold text-amber-400">${safePkgName}</div>
+                                    <div class="text-[11px] text-slate-400">Hạn: ${info.expiresAt ? escapeAdminHtml(new Date(info.expiresAt).toLocaleDateString('vi-VN')) : '---'}</div>
                                 </div>
                             </div>
                     `;
@@ -3130,7 +3315,7 @@
                         <div class="pt-2 border-t border-slate-800 flex items-center justify-between flex-wrap gap-2">
                             <span class="text-xs text-slate-400 font-semibold">${isActive ? '🔄 Gia hạn / Nâng gói khác:' : '⚡ Kích hoạt lên Gold ngay:'}</span>
                             <div class="flex items-center gap-2">
-                                <select id="manualPkgSelect_${username}" class="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-amber-400 text-xs font-bold focus:outline-none">
+                                <select id="${safeSelectId}" class="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-amber-400 text-xs font-bold focus:outline-none">
                                     <option value="LKGVV">Locket Vĩnh Viễn (31 Coin)</option>
                                     <option value="LKG1Y">Locket 1 Năm (15 Coin)</option>
                                     <option value="LKG6M">Locket 6 Tháng (8 Coin)</option>
@@ -3140,7 +3325,7 @@
                                     <option value="SP6M">Spotify 6 Tháng (8 Coin)</option>
                                     <option value="SPT">Spotify Test 3 Ngày (0 Coin)</option>
                                 </select>
-                                <button onclick="manualActivateDirect('${username}', '${svc}')" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs transition-all cursor-pointer shadow-md">
+                                <button onclick="manualActivateDirect('${safeUser}', '${safeSvc}', '${safeSelectId}')" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs transition-all cursor-pointer shadow-md">
                                     ⚡ Kích Hoạt Ngay
                                 </button>
                             </div>
@@ -3149,18 +3334,18 @@
 
                     resBox.innerHTML = html;
                 } else {
-                    resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi: ${data.error || 'Không tìm thấy dữ liệu'}</span>`;
+                    resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi: ${escapeAdminHtml(data.error || 'Không tìm thấy dữ liệu')}</span>`;
                 }
             } catch (err) {
-                resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi kết nối: ${err.message}</span>`;
+                resBox.innerHTML = `<span class="text-red-400 font-bold">❌ Lỗi kết nối: ${escapeAdminHtml(err.message)}</span>`;
             } finally {
                 btn.innerHTML = 'Kiểm Tra API ➔';
                 btn.disabled = false;
             }
         }
 
-        async function manualActivateDirect(username, defaultSvc) {
-            const select = document.getElementById(`manualPkgSelect_${username}`);
+        async function manualActivateDirect(username, defaultSvc, customSelectId) {
+            const select = document.getElementById(customSelectId || `manualPkgSelect_${username}`);
             const pkgCode = select ? select.value : 'LKGVV';
             let svc = defaultSvc || 'locket';
             if (pkgCode.startsWith('SP')) svc = 'spotify';
@@ -3199,7 +3384,7 @@
         // ==========================================
         async function loadSystemInfo() {
             try {
-                const res = await fetch(`/api/admin/system_info?pin=${encodeURIComponent(currentPin)}`);
+                const res = await fetch('/api/admin/system_info', { headers: adminHeaders() });
                 const data = await res.json();
                 if (!data.ok) return;
 
@@ -3211,23 +3396,6 @@
                 console.error(err);
             }
         }
-    </script>
-
-    <!-- BẢO VỆ ADMIN: CHỐNG F12 & BẢO VỆ MÃ NGUỒN -->
-    <script>
-        (function () {
-            'use strict';
-            try {
-                const noop = function () { };
-                ['log', 'debug', 'info', 'warn', 'error', 'table'].forEach(m => window.console[m] = noop);
-            } catch (e) { }
-            document.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
-            document.addEventListener('keydown', e => {
-                if (e.keyCode === 123 || e.key === 'F12') { e.preventDefault(); return false; }
-                if (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase())) { e.preventDefault(); return false; }
-                if (e.ctrlKey && ['u', 's'].includes(e.key.toLowerCase())) { e.preventDefault(); return false; }
-            });
-        })();
     </script>
 
 </body>

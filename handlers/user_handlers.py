@@ -941,8 +941,6 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             discount_amount = coupon_candidate["discount_amount"]
             applied_coupon_code = coupon_candidate["code"]
             discount_desc = coupon_candidate.get("desc", "")
-            if coupon_candidate.get("is_db"):
-                db.use_code(applied_coupon_code)
 
         extra_order_fields["discount_code"] = applied_coupon_code
         extra_order_fields["discount_amount"] = discount_amount
@@ -1874,9 +1872,6 @@ async def _apply_and_respond_coupon(update: Update, ctx: ContextTypes.DEFAULT_TY
     discount_amount = chk["discount_amount"]
     applied_code = chk["code"]
     desc = chk.get("desc", "")
-
-    if chk.get("is_db"):
-        db.use_code(applied_code)
 
     db.update_order(
         order_id,
