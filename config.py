@@ -81,7 +81,7 @@ PRODUCTS = {
         "service": "locket",
         "description": "Mở khoá toàn bộ tính năng Locket Gold – Widget ảnh live trên màn hình chính.",
         "plans": {
-            "test": {"label": "Test 3 Ngày", "packageCode": "LKGT3D",   "price": 5000, "durationDays": 3},
+            "test": {"label": "Test 3 Ngày", "packageCode": "LKGT3D",   "price": 5000, "durationDays": 3, "priceCoin": 0},
             "6m":   {"label": "6 Tháng",     "packageCode": "LKG6M",    "price": 40000},
             "1y":   {"label": "1 Năm",       "packageCode": "LKG1Y",    "price": 60000},
             "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "LKGVV",    "price": 160000},
@@ -93,7 +93,7 @@ PRODUCTS = {
         "service": "spotify",
         "description": "Nghe nhạc không giới hạn, không quảng cáo, tải nhạc offline – Spotify Premium DNS.",
         "plans": {
-            "test": {"label": "Test 3 Ngày", "packageCode": "SPT",      "price": 5000, "durationDays": 3},
+            "test": {"label": "Test 3 Ngày", "packageCode": "SPT",      "price": 5000, "durationDays": 3, "priceCoin": 0},
             "6m":   {"label": "6 Tháng",     "packageCode": "SP6M",     "price": 40000},
             "1y":   {"label": "1 Năm",       "packageCode": "SPOTIFY1Y", "price": 60000},
             "ltm":  {"label": "Vĩnh Viễn",   "packageCode": "SPVV",      "price": 180000},

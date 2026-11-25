@@ -1770,9 +1770,13 @@
             tbody.innerHTML = filtered.map(o => {
                 const isPending = ['pending', 'waiting_payment', 'pending_approval', 'paid_review'].includes(o.status);
                 const isDone = o.status === 'done';
+                const expTimeMs = o.expires_at ? new Date(o.expires_at).getTime() : NaN;
+                const isExpiredDone = isDone && Number.isFinite(expTimeMs) && Date.now() >= expTimeMs;
 
                 let statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">Khác</span>';
-                if (isDone) {
+                if (isExpiredDone) {
+                    statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">⏰ Hết Hạn</span>';
+                } else if (isDone) {
                     statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✅ Đã Kích Hoạt</span>';
                 } else if (o.status === 'paid_review') {
                     statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400">Đã nhận tiền · Đối soát</span>';
@@ -1934,6 +1938,7 @@
                 <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
                     <div>Ngày tạo: <span class="text-slate-300 font-mono">${safeCreated}</span></div>
                     <div>Hoàn thành: <span class="text-slate-300 font-mono">${safeDone}</span></div>
+                    ${order.expires_at ? `<div class="col-span-2">Hạn sử dụng: <span class="text-amber-400 font-mono">${escapeAdminHtml(new Date(order.expires_at).toLocaleString('vi-VN'))}</span></div>` : ''}
                 </div>
             `;
 
@@ -3350,7 +3355,9 @@
             let svc = defaultSvc || 'locket';
             if (pkgCode.startsWith('SP')) svc = 'spotify';
 
-            if (!confirm(`Xác nhận kích hoạt gói [${pkgCode}] cho tài khoản @${username}? Coin sẽ được trừ tự động trên máy chủ CTV.`)) {
+            const isFreeCoinTest = pkgCode === 'LKGT3D' || pkgCode === 'SPT';
+            const coinNote = isFreeCoinTest ? 'Gói này 0 Coin (không trừ Coin CTV).' : 'Coin sẽ được trừ tự động trên máy chủ CTV.';
+            if (!confirm(`Xác nhận kích hoạt gói [${pkgCode}] cho tài khoản @${username}? ${coinNote}`)) {
                 return;
             }
 

@@ -9,7 +9,7 @@ import math
 import asyncio
 import re
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 try:
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup
     from telegram.constants import ParseMode
@@ -32,6 +32,15 @@ _processing_orders = set()
 _processing_lock = threading.Lock()
 _sepay_fetch_lock = threading.Lock()
 _sepay_scan_lock = threading.Lock()
+
+
+def _resolve_dns_url() -> str:
+    """Lấy URL DNS hồ sơ chính chủ từ cấu hình động."""
+    cur_base = str(getattr(config, "DNS_BASE_URL", DNS_BASE_URL) or "").strip()
+    cur_slug = str(getattr(config, "DNS_SLUG", DNS_SLUG) or "").strip()
+    if cur_base and cur_slug:
+        return f"{cur_base}/{cur_slug}"
+    return str(getattr(config, "DNS_COMBO_URL", "https://doh.2707226.xyz/alopremiumshop") or "https://doh.2707226.xyz/alopremiumshop").strip()
 
 
 def resolve_order_product_meta(order: dict) -> tuple[dict, dict]:
@@ -255,7 +264,7 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             return False, "Đơn hàng thiếu thông tin tài khoản (UID / Username)."
 
         target_account = candidate_accounts[0]
-        dns_link = f"{DNS_BASE_URL}/{DNS_SLUG}" if DNS_BASE_URL and DNS_SLUG else getattr(config, "DNS_COMBO_URL", "https://doh.2707226.xyz/alopremiumshop")
+        dns_link = _resolve_dns_url()
         dns_link_locket = dns_link
         dns_link_spotify = dns_link
 
@@ -303,7 +312,7 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             )
         elif product_key in ("combo", "locket_spotify"):
             # GÓI COMBO DUO CHÍNH CHỦ (LOCKET + SPOTIFY QUA API CTV locket.2707226.xyz)
-            dns_base = f"{DNS_BASE_URL}/{DNS_SLUG}" if DNS_BASE_URL and DNS_SLUG else "https://doh.2707226.xyz/alopremiumshop"
+            dns_base = _resolve_dns_url()
             dns_link = dns_base
             dns_link_locket = dns_base
             dns_link_spotify = dns_base
@@ -382,34 +391,78 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 dns_link_spotify=dns_base
             )
         else:
-            # Gói Locket hoặc Spotify đơn lẻ: tự động fallback các candidate nếu dính 404
-            act_success = False
-            last_err = None
-            for acc in candidate_accounts:
-                try:
-                    result = await asyncio.to_thread(
-                        api.create_subscription,
-                        uid=acc,
-                        package_code=plnv["packageCode"],
-                        service=pv["service"],
-                        note=f"Order {order_id} via Telegram Bot"
-                    )
-                    act_success = True
-                    target_account = acc
-                    if acc != order.get("uid"):
-                        db.update_order(order_id, uid=acc, account_target=acc)
-                    break
-                except Exception as e_act:
-                    last_err = e_act
-                    err_str = str(e_act).lower()
-                    if "404" not in err_str and "không tồn tại" not in err_str:
-                        # Nếu không phải lỗi 404 không tồn tại (vd: hết coin 402, 401...) thì ngắt ngay
+            pkg_code = str(plnv.get("packageCode") or "").strip().upper()
+            is_test_3d = (plan_key == "test" or pkg_code in ("LKGT3D", "SPT"))
+            now_dt = datetime.now()
+
+            if is_test_3d:
+                # Gói Test 3 Ngày (LKGT3D / SPT): Bỏ qua gọi API trừ Coin CTV, cấp DNS & gia hạn đúng 3 ngày nội bộ tại shop
+                duration_days = int(plnv.get("durationDays") or 3)
+                cand_set = {c.lower().lstrip("@") for c in candidate_accounts if c}
+                base_ts = now_dt.timestamp()
+                for od_id_ex, od_ex in db.get_orders().items():
+                    if od_id_ex == order_id or od_ex.get("product") != product_key:
+                        continue
+                    if not utils.is_order_vip_active(od_ex, base_ts):
+                        continue
+                    od_cands = {
+                        str(od_ex.get("identifier", "")).lower().lstrip("@"),
+                        str(od_ex.get("uid", "")).lower().lstrip("@"),
+                        str(od_ex.get("account_target", "")).lower().lstrip("@"),
+                        str(od_ex.get("display_name", "")).lower().lstrip("@"),
+                        str(od_ex.get("locket_username", "")).lower().lstrip("@"),
+                        str(od_ex.get("spotify_uid", "")).lower().lstrip("@"),
+                    }
+                    if cand_set & od_cands:
+                        ex_ts = utils.parse_order_expiry_ts(od_ex)
+                        if ex_ts is not None and ex_ts > base_ts:
+                            base_ts = ex_ts
+                exp_dt = datetime.fromtimestamp(base_ts) + timedelta(days=duration_days)
+                db.update_order(
+                    order_id,
+                    status="done",
+                    done_at=now_dt.isoformat(),
+                    expires_at=exp_dt.isoformat(),
+                    duration_days=duration_days,
+                    dns_link=dns_link,
+                    skip_upstream_coin_api=True,
+                )
+            else:
+                # Gói Locket hoặc Spotify đơn lẻ (6M / 1Y / LTM): tự động fallback các candidate nếu dính 404
+                act_success = False
+                last_err = None
+                result = None
+                for acc in candidate_accounts:
+                    try:
+                        result = await asyncio.to_thread(
+                            api.create_subscription,
+                            uid=acc,
+                            package_code=plnv["packageCode"],
+                            service=pv["service"],
+                            note=f"Order {order_id} via Telegram Bot"
+                        )
+                        act_success = True
+                        target_account = acc
+                        if acc != order.get("uid"):
+                            db.update_order(order_id, uid=acc, account_target=acc)
                         break
-            if not act_success:
-                return False, str(last_err or "Kích hoạt thất bại")
+                    except Exception as e_act:
+                        last_err = e_act
+                        err_str = str(e_act).lower()
+                        if "404" not in err_str and "không tồn tại" not in err_str:
+                            # Nếu không phải lỗi 404 không tồn tại (vd: hết coin 402, 401...) thì ngắt ngay
+                            break
+                if not act_success:
+                    return False, str(last_err or "Kích hoạt thất bại")
 
-            db.update_order(order_id, status="done", done_at=datetime.now().isoformat(), dns_link=dns_link)
+                up_dt = result.get("data", {}) if isinstance(result, dict) and isinstance(result.get("data"), dict) else (result if isinstance(result, dict) else {})
+                exp_val = up_dt.get("expiresAt")
+                update_kw = {"status": "done", "done_at": now_dt.isoformat(), "dns_link": dns_link}
+                if exp_val and not str(exp_val).startswith("2099"):
+                    update_kw["expires_at"] = exp_val
+                db.update_order(order_id, **update_kw)
 
+        order = db.get_order(order_id) or order
         db.record_sale(product_key, plan_key, order["price"])
 
         # Trừ lượt mã giảm giá chỉ khi thanh toán & kích hoạt thành công (chống spam đốt mã)
@@ -515,7 +568,7 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     logger.error(f"Error sending Filter Topup delivery: {e_ft_send}")
 
             elif product_key in ("combo", "locket_spotify"):
-                dns_base = f"{DNS_BASE_URL}/{DNS_SLUG}" if DNS_BASE_URL and DNS_SLUG else "https://doh.2707226.xyz/alopremiumshop"
+                dns_base = _resolve_dns_url()
                 try:
                     qr_combo = utils.generate_qr_code(dns_base)
                     await bot.send_photo(
@@ -611,12 +664,16 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             await _send_zalo_group_reminder(bot, order["user_id"])
 
         if bot:
+            is_test_order = (plan_key == "test" or str(plnv.get("packageCode") or "").upper() in ("LKGT3D", "SPT"))
             if product_key == "filter_topup":
                 admin_header = "🎭 <b>[CẦN CỘNG LƯỢT FILTER AI — ĐÃ THANH TOÁN]</b>"
             elif product_key == "caption_pack":
                 admin_header = "💬 <b>[ĐÃ CỘNG QUOTA CAPTION TỰ ĐỘNG]</b>"
+            elif is_test_order:
+                admin_header = "🎁 <b>[KÍCH HOẠT TEST 3 NGÀY — KHÔNG TRỪ COIN]</b>"
             else:
                 admin_header = "💰 <b>[KÍCH HOẠT THÀNH CÔNG]</b>"
+            exp_note = f"\n• Hết hạn: <code>{utils.fmt_datetime(order.get('expires_at'))}</code>" if order.get("expires_at") else ""
             for aid in config.ADMIN_IDS:
                 try:
                     await bot.send_message(
@@ -627,7 +684,7 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                             f"• Gói: <b>{pv['name']} ({plnv['label']})</b>\n"
                             f"• Khách: {order.get('display_name')} (<code>@{order.get('uid')}</code>)\n"
                             f"• Nguồn: <b>{order.get('source', 'Telegram').upper()}</b>\n"
-                            f"• Số tiền: <b>{utils.fmt_price(order['price'])}</b>"
+                            f"• Số tiền: <b>{utils.fmt_price(order['price'])}</b>{exp_note}"
                         ),
                         parse_mode=ParseMode.HTML
                     )
@@ -638,6 +695,8 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             return True, "Đã xác nhận thanh toán gói Nạp Lượt Filter AI!"
         if product_key == "caption_pack":
             return True, f"Đã cộng thêm lượt Caption ({plnv['label']}) tự động!"
+        if plan_key == "test" or str(plnv.get("packageCode") or "").upper() in ("LKGT3D", "SPT"):
+            return True, "Đã cấp DNS dùng thử 3 ngày (0 Coin) và lưu hạn sử dụng thành công!"
         return True, "Kích hoạt API CTV thành công!"
 
     except Exception as e:

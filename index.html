@@ -5321,7 +5321,10 @@
                 // GÓI ĐƠN LẺ (LOCKET GOLD HOẶC SPOTIFY): DÙNG LINK ĐƯỢC CẤP TỪ SERVER SAU THANH TOÁN
                 if (btnToggleQr) btnToggleQr.classList.remove('hidden');
                 if (guideBox) guideBox.classList.remove('hidden');
-                if (modalSubtitle) modalSubtitle.textContent = 'Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.';
+                const expTestNote = (currentOrderData && currentOrderData.expires_at && (currentOrderData.plan === 'test'))
+                    ? ` (Hạn 3 ngày đến ${new Date(currentOrderData.expires_at).toLocaleString('vi-VN')})`
+                    : '';
+                if (modalSubtitle) modalSubtitle.textContent = 'Gói dịch vụ đã sẵn sàng cài đặt trên iPhone của bạn.' + expTestNote;
                 if (singleBox) singleBox.classList.remove('hidden');
 
                 const rawPaidSingle = (currentOrderData && (currentOrderData.direct_safari_url || currentOrderData.download_url || currentOrderData.dns_link)) || `/api/download_profile?order_id=${encodeURIComponent(orderId)}`;
@@ -5651,7 +5654,8 @@
 
                 box.innerHTML = '';
                 ordersList.forEach(od => {
-                    const isDone = od.status === 'done';
+                    const isExpired = od.status === 'expired' || od.is_expired === true;
+                    const isDone = od.status === 'done' && !isExpired;
                     if (isDone && od.product !== 'filter_topup' && od.product !== 'caption_pack') saveProfileLocally(od);
 
                     const card = document.createElement('div');
@@ -5683,6 +5687,7 @@
                     const safeDlUrl = escapeFeatureHtml(dlUrl);
                     const safeSafariUrl = escapeFeatureHtml(safariUrl);
                     const safeStudioUrl = escapeFeatureHtml(studioUrl);
+                    const expStr = od.expires_at ? ` • Hết hạn: <b>${escapeFeatureHtml(new Date(od.expires_at).toLocaleString('vi-VN'))}</b>` : '';
 
                     card.innerHTML = `
                         <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-[#F0E4C8]">
@@ -5691,11 +5696,11 @@
                                 <div>
                                     <div class="flex items-center gap-2">
                                         <span class="font-fredoka font-black text-base text-[#1E1B18]">@${safeDisp}</span>
-                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${isDone ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
-                                            ${isDone ? ((isFilterTopup || isCaptionPack) ? '✅ ĐÃ THANH TOÁN' : '✅ ĐÃ KÍCH HOẠT GOLD') : '⏳ CHỜ THANH TOÁN'}
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${isDone ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : (isExpired ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-amber-100 text-amber-800 border border-amber-300')}">
+                                            ${isDone ? ((isFilterTopup || isCaptionPack) ? '✅ ĐÃ THANH TOÁN' : '✅ ĐÃ KÍCH HOẠT GOLD') : (isExpired ? '⏰ ĐÃ HẾT HẠN' : '⏳ CHỜ THANH TOÁN')}
                                         </span>
                                     </div>
-                                    <p class="text-xs text-[#6E6659] mt-0.5">${prodEmoji} <b>${safeProdName}</b> (${safePlan}) • Mã: <span class="font-mono font-bold text-[#1E1B18]">${safeOrderId}</span></p>
+                                    <p class="text-xs text-[#6E6659] mt-0.5">${prodEmoji} <b>${safeProdName}</b> (${safePlan}) • Mã: <span class="font-mono font-bold text-[#1E1B18]">${safeOrderId}</span>${expStr}</p>
                                 </div>
                             </div>
                         </div>
@@ -5795,11 +5800,18 @@
                                     </ol>
                                 </div>
                             </div>
-                        `) : `
+                        `) : (isExpired ? `
+                            <div class="p-4 bg-rose-50 rounded-2xl border border-rose-200 text-xs text-rose-800 space-y-2">
+                                <div class="font-bold">⏰ Gói dùng thử / VIP của bạn đã hết hạn${od.expires_at ? ` vào lúc ${escapeFeatureHtml(new Date(od.expires_at).toLocaleString('vi-VN'))}` : ''}.</div>
+                                <button type="button" onclick="switchMainTab('store')" class="px-4 py-2 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs cursor-pointer shadow-xs">
+                                    🔄 Gia Hạn Ngay (Từ 5.000đ) →
+                                </button>
+                            </div>
+                        ` : `
                             <div class="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-800">
                                 Đơn hàng đang chờ thanh toán. Vui lòng thanh toán theo mã đơn để hệ thống tự động kích hoạt gói VIP cho bạn.
                             </div>
-                        `}
+                        `)}
                     `;
                     box.appendChild(card);
                 });

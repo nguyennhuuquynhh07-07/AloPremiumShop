@@ -555,24 +555,33 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 pass
 
         has_paid_order = False
+        best_exp_ts = -1.0
+        best_shop_exp = None
         cleaned_l = cleaned.lower().lstrip("@")
         uid_l = uid.lower()
         uname_l = username.lower().lstrip("@")
         for od in db.get_orders().values():
-            if od.get("status") == "done" and od.get("product") in ("locket", "combo", "locket_spotify", "locket_ai"):
+            if od.get("product") in ("locket", "combo", "locket_spotify", "locket_ai") and utils.is_order_vip_active(od):
                 cand = [
                     str(od.get("identifier", "")).lower().lstrip("@"),
                     str(od.get("uid", "")).lower(),
                     str(od.get("display_name", "")).lower().lstrip("@"),
                     str(od.get("account_target", "")).lower().lstrip("@"),
+                    str(od.get("locket_username", "")).lower().lstrip("@"),
                 ]
                 if cleaned_l in cand or (uid_l and uid_l in cand) or (uname_l and uname_l in cand):
                     has_paid_order = True
-                    if not package_name:
-                        package_name = od.get("plan_label") or od.get("plan") or "Locket Gold VIP"
-                    break
+                    cur_ts = utils.parse_order_expiry_ts(od)
+                    cur_rank = float("inf") if cur_ts is None else cur_ts
+                    if cur_rank > best_exp_ts:
+                        best_exp_ts = cur_rank
+                        best_shop_exp = od.get("expires_at")
+                        if not package_name or cur_rank == float("inf"):
+                            package_name = od.get("plan_label") or od.get("plan") or "Locket Gold VIP"
 
         is_vip = bool(is_active or has_paid_order)
+        if not expires_at and has_paid_order:
+            expires_at = best_shop_exp
         if not uid and not is_vip:
             return False, {"error": f"Không tìm thấy tài khoản Locket '@{cleaned}' trên hệ thống!"}
 
@@ -1222,6 +1231,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 status = "expired"
 
             is_done = order.get("status") == "done"
+            is_sub_expired = bool(is_done and utils.is_order_expired(order))
+            if is_sub_expired:
+                status = "expired"
             prod_key = order.get("product")
             is_locket_ai = (prod_key == "locket_ai")
             is_filter_topup = (prod_key == "filter_topup")
@@ -1230,7 +1242,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             has_studio = order.get("has_studio", False) or (prod_key == "studio_caption")
             studio_url = "/#section_features" if has_studio else None
 
-            if is_locket_ai or is_filter_topup or is_caption_pack:
+            if is_locket_ai or is_filter_topup or is_caption_pack or is_sub_expired:
                 download_url = None
             else:
                 download_url = f"/api/download_profile?order_id={order_id}" if is_done else None
@@ -1239,7 +1251,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "ok": True,
                 "order_id": order_id,
                 "status": status,
-                "is_paid": is_done,
+                "is_paid": is_done and not is_sub_expired,
+                "is_expired": is_sub_expired,
+                "expires_at": order.get("expires_at"),
                 "expires_at_ms": int(deadline * 1000) if deadline is not None else None,
                 "product": order.get("product"),
                 "plan": order.get("plan"),
@@ -1255,24 +1269,29 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "is_caption_pack": is_caption_pack,
                 "contact_admin": is_locket_ai or is_filter_topup,
                 "has_studio": has_studio,
-                "studio_url": studio_url if is_done else None,
+                "studio_url": studio_url if (is_done and not is_sub_expired) else None,
                 "vip_download_url": None,
             })
             return
 
-        # 5. API Tải file .mobileconfig (BẢO VỆ CHẶT CHẼ: CHỈ CHO ĐƠN ĐÃ THANH TOÁN THẬT)
+        # 5. API Tải file .mobileconfig (BẢO VỆ CHẶT CHẼ: CHỈ CHO ĐƠN ĐÃ THANH TOÁN & CÒN HẠN)
         if path == "/api/download_profile" or (path.endswith(".mobileconfig") and not path.endswith("Free.mobileconfig") and not path.endswith("LocketNgon.mobileconfig")):
             order_id = params.get("order_id", [""])[0].strip()
             username = params.get("username", [""])[0].strip() or params.get("uid", [""])[0].strip()
 
             order = None
+            expired_found = False
             if order_id:
                 o_check = db.get_order(order_id)
                 if o_check and o_check.get("status") == "done":
-                    order = o_check
+                    if utils.is_order_vip_active(o_check):
+                        order = o_check
+                    else:
+                        expired_found = True
 
-            if not order and username:
+            if not order and username and not order_id:
                 clean_u = utils.clean_input(username).lower().lstrip("@")
+                best_exp_rank = -1.0
                 for od in db.get_orders().values():
                     if od.get("status") == "done":
                         u_list = [
@@ -1283,8 +1302,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
                             str(od.get("account_target", "")).lower().lstrip("@")
                         ]
                         if clean_u in u_list:
-                            order = od
-                            break
+                            if utils.is_order_vip_active(od):
+                                exp_ts = utils.parse_order_expiry_ts(od)
+                                rank = float("inf") if exp_ts is None else exp_ts
+                                if rank > best_exp_rank:
+                                    best_exp_rank = rank
+                                    order = od
+                            else:
+                                expired_found = True
                 # Fallback: kiểm tra trực tiếp trên máy chủ API CTV (chỉ cho tài khoản của chính shop)
                 if not order and len(clean_u) >= 3:
                     try:
@@ -1301,12 +1326,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     except Exception:
                         pass
 
-            # Nếu không tìm thấy đơn hàng ĐÃ THANH TOÁN (status == done) -> TỪ CHỐI TẢI
+            # Nếu không tìm thấy đơn hàng ĐÃ THANH TOÁN & CÒN HẠN -> TỪ CHỐI TẢI
             if not order:
-                self._send_json(403, {
-                    "ok": False,
-                    "error": "⛔ Không thể tải cấu hình: Đơn hàng chưa thanh toán hoặc chưa kích hoạt thành công!"
-                })
+                err_msg = (
+                    "⏰ Gói dùng thử / VIP của bạn đã hết hạn sử dụng! Vui lòng gia hạn hoặc mua gói mới tại AloPremium.Shop để tiếp tục cài DNS."
+                    if expired_found
+                    else "⛔ Không thể tải cấu hình: Đơn hàng chưa thanh toán hoặc chưa kích hoạt thành công!"
+                )
+                self._send_json(403, {"ok": False, "error": err_msg})
                 return
 
             product_key = order.get("product", "locket")
@@ -1368,13 +1395,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
                 if match:
                     is_done = od.get("status") == "done"
+                    is_expired = bool(is_done and utils.is_order_expired(od))
                     prod_k = od.get("product") or "locket"
                     is_ai = (prod_k == "locket_ai")
                     is_filter = (prod_k == "filter_topup")
                     is_cap = (prod_k == "caption_pack")
                     u_disp = od.get("display_name") or od.get("username") or od.get("identifier") or "Khách VIP"
                     u_clean = utils.clean_input(str(u_disp)).lstrip("@")
-                    if is_ai or is_filter or is_cap:
+                    if is_ai or is_filter or is_cap or is_expired:
                         exact_safari = None
                         exact_dl = None
                     else:
@@ -1387,7 +1415,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "plan": od.get("plan") or "VIP",
                         "plan_label": od.get("plan_label"),
                         "price": od.get("price", 0),
-                        "status": od.get("status"),
+                        "status": "expired" if is_expired else od.get("status"),
+                        "is_expired": is_expired,
+                        "expires_at": od.get("expires_at"),
                         "uid": od.get("uid"),
                         "display_name": u_disp,
                         "avatar": _proxy_media_url(od.get("avatar")),
@@ -2746,7 +2776,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": "Thiếu tài khoản Locket cần mở Studio"})
                 return
 
-            has_parent_done = bool(p_ord and p_ord.get("status") == "done")
+            has_parent_done = bool(p_ord and utils.is_order_vip_active(p_ord))
             is_vip, info = self._verify_customer_locket_vip(identifier)
             if not is_vip and not has_parent_done:
                 self._send_json(403, {"ok": False, "error": "Tài khoản chưa mua gói Locket Gold VIP hợp lệ tại shop!"})
@@ -3076,7 +3106,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             raw_clean = raw_sp.lower().strip()
             has_paid_sp = False
             for od in db.get_orders().values():
-                if od.get("status") == "done" and od.get("product") in ("spotify", "combo", "locket_spotify", "locket_ai"):
+                if utils.is_order_vip_active(od) and od.get("product") in ("spotify", "combo", "locket_spotify", "locket_ai"):
                     cands = {
                         str(od.get("uid", "")).lower().strip(),
                         str(od.get("spotify_uid", "")).lower().strip(),
@@ -3123,7 +3153,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 # Kiểm tra tài khoản này đã từng mua gói bản quyền Locket hợp lệ chưa (gồm cả locket_spotify)
                 has_paid_order = False
                 for od in db.get_orders().values():
-                    if od.get("product") in ("locket", "combo", "locket_spotify", "locket_ai") and od.get("status") == "done":
+                    if od.get("product") in ("locket", "combo", "locket_spotify", "locket_ai") and utils.is_order_vip_active(od):
                         cands = {
                             str(od.get("identifier", "")).lower().lstrip("@"),
                             str(od.get("uid", "")).lower().lstrip("@"),
