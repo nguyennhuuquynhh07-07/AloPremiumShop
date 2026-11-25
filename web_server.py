@@ -822,12 +822,23 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Bot Locket Gold + Spotify is running 24/7!")
             return
 
-        # 1.1 Gói Free đã tạm đóng -> trả 410 Gone thay vì cho tải lén .mobileconfig Free
+        # 1.1 Phục vụ file cấu hình Free.mobileconfig cho iOS Safari (Gói miễn phí)
         if raw_path in ("/Free.mobileconfig", "/LocketNgon.mobileconfig"):
-            self._send_json(410, {
-                "ok": False,
-                "error": "Gói Locket Gold Free đã tạm ngưng phát hành. Vui lòng chọn gói VIP từ 5.000đ!"
-            })
+            cfg_name = "Free.mobileconfig"
+            cfg_path = os.path.join(os.path.dirname(__file__), cfg_name)
+            if os.path.exists(cfg_path) and os.path.isfile(cfg_path):
+                with open(cfg_path, "rb") as f:
+                    cfg_data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/x-apple-aspen-config")
+                self.send_header("Content-Disposition", f'attachment; filename="{cfg_name}"')
+                self.send_header("Content-Length", str(len(cfg_data)))
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(cfg_data)
+            else:
+                self._send_json(404, {"ok": False, "error": f"{cfg_name} not found"})
             return
 
         # 1.2 Phục vụ trang Hướng dẫn cài đặt DNS (Clean URL)

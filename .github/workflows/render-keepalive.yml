@@ -1,0 +1,19 @@
+name: Render Auto Keep-Alive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render health endpoint
+        env:
+          TARGET_URL: ${{ secrets.RENDER_HEALTH_URL }}
+        run: |
+          URL="${TARGET_URL:-https://alopremium.shop/health}"
+          curl -fsSL -A "GitHubKeepAlive/1.0" --max-time 25 "$URL"
+          echo ""
+          echo "Keep-alive ping succeeded for $URL"

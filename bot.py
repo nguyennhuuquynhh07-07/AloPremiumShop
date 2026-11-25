@@ -168,16 +168,18 @@ async def sepay_worker(bot):
         await asyncio.sleep(4)
 
 async def keep_alive_worker():
-    """Tự động ping server Render mỗi 10 phút để giữ máy chủ và bot luôn thức 24/7 (Async, không nghẽn)"""
+    """Tự động ping server Render mỗi 8 phút để giữ máy chủ và bot luôn thức 24/7 (Async, không nghẽn)"""
     import httpx
-    url = "https://alopremium.shop/health"
+    base = (os.getenv("RENDER_EXTERNAL_URL") or getattr(config, "WEBSITE_URL", "https://alopremium.shop") or "https://alopremium.shop").strip().rstrip("/")
+    url = f"{base}/health"
+    await asyncio.sleep(60)
     while True:
-        await asyncio.sleep(600)
         try:
-            async with httpx.AsyncClient(timeout=5) as client:
+            async with httpx.AsyncClient(timeout=8) as client:
                 await client.get(url, headers={"User-Agent": "RenderKeepAlive/1.0"})
         except Exception:
             pass
+        await asyncio.sleep(480)
 
 
 async def post_init(application):
