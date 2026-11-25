@@ -4978,6 +4978,9 @@
                 }
 
                 if (version !== accountCheckVersion) return;
+                if (selectedPlan === 'test' && data.used_test_trial) {
+                    throw new Error('Mỗi tài khoản chỉ được dùng thử gói Test 3 Ngày 1 lần! Tài khoản này đã dùng thử trước đó, vui lòng chọn gói 6 Tháng, 1 Năm hoặc Vĩnh Viễn để tiếp tục.');
+                }
                 verifiedAccountData = data;
                 
                 // Show profile
@@ -5032,6 +5035,7 @@
                         plan: selectedPlan,
                         identifier: ((selectedProduct === 'locket' || selectedProduct === 'locket_ai' || selectedProduct === 'combo' || selectedProduct === 'locket_spotify') && account.display_name) ? account.display_name : (account.uid || account.display_name),
                         display_name: account.display_name,
+                        locket_uid: account.uid || '',
                         spotify_uid: account.spotify_uid || '',
                         avatar: account.avatar,
                         token: account.token || '',
@@ -5804,7 +5808,7 @@
                             <div class="p-4 bg-rose-50 rounded-2xl border border-rose-200 text-xs text-rose-800 space-y-2">
                                 <div class="font-bold">⏰ Gói dùng thử / VIP của bạn đã hết hạn${od.expires_at ? ` vào lúc ${escapeFeatureHtml(new Date(od.expires_at).toLocaleString('vi-VN'))}` : ''}.</div>
                                 <button type="button" onclick="switchMainTab('store')" class="px-4 py-2 rounded-xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-xs cursor-pointer shadow-xs">
-                                    🔄 Gia Hạn Ngay (Từ 5.000đ) →
+                                    🔄 Nâng Cấp Gói VIP Ngay →
                                 </button>
                             </div>
                         ` : `

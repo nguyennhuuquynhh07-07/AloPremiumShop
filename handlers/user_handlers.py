@@ -929,6 +929,17 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 "avatar": avatar_url,
             }
 
+        # Chặn dùng thử Test 3 Ngày lần 2 trên cùng một tài khoản
+        if plan_key == "test" or str(plnv.get("packageCode") or "").upper() in ("LKGT3D", "SPT"):
+            trial_cands = [
+                uid, raw_identifier, display,
+                extra_order_fields.get("locket_username", ""),
+                extra_order_fields.get("spotify_uid", ""),
+                extra_order_fields.get("account_target", ""),
+            ]
+            if utils.has_used_test_trial(product_key, trial_cands):
+                raise ValueError("Mỗi tài khoản chỉ được dùng thử gói Test 3 Ngày 1 lần! Tài khoản này đã dùng thử trước đó — vui lòng bấm Quay lại để chọn gói 6 Tháng, 1 Năm hoặc Vĩnh Viễn.")
+
         # Tính toán giá sau giảm nếu khách gửi kèm mã giảm giá
         orig_price = plnv["price"]
         final_price = orig_price

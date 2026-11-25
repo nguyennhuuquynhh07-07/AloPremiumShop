@@ -127,6 +127,72 @@ def is_order_vip_active(order: dict | None, now_ts: float | None = None) -> bool
     return isinstance(order, dict) and order.get("status") == "done" and not is_order_expired(order, now_ts)
 
 
+def _is_test_plan_order(order: dict | None) -> bool:
+    if not isinstance(order, dict):
+        return False
+    if str(order.get("plan") or "").strip().lower() == "test":
+        return True
+    if str(order.get("package_code") or "").strip().upper() in ("LKGT3D", "SPT"):
+        return True
+    if "TEST" in str(order.get("plan_label") or "").upper():
+        return True
+    try:
+        if int(order.get("duration_days") or order.get("durationDays") or 0) == 3:
+            return True
+    except (TypeError, ValueError):
+        pass
+    return False
+
+
+def has_used_test_trial(
+    product_key: str,
+    identifiers: list[str] | set[str] | tuple[str, ...],
+    orders: dict | None = None,
+    exclude_order_id: str = "",
+) -> dict | None:
+    """Kiểm tra tài khoản đã từng dùng thử gói Test 3 Ngày thành công (1 lần duy nhất) cho dịch vụ này chưa."""
+    cand_set = set()
+    for raw in identifiers:
+        s = str(raw or "").strip()
+        if not s:
+            continue
+        if "spotify.com/user/" in s.lower() or s.lower().startswith("spotify:user:"):
+            s = extract_spotify_uid(s)
+        norm = s.lower().lstrip("@").strip()
+        if norm:
+            cand_set.add(norm)
+    if not cand_set:
+        return None
+
+    if orders is None:
+        import database as db
+        orders = db.get_orders()
+
+    target_prod = str(product_key or "").strip().lower()
+    for oid, od in (orders or {}).items():
+        if exclude_order_id and oid == exclude_order_id:
+            continue
+        if not isinstance(od, dict) or od.get("status") != "done":
+            continue
+        if target_prod and str(od.get("product") or "").strip().lower() != target_prod:
+            continue
+        if not _is_test_plan_order(od):
+            continue
+        od_cands = {
+            str(od.get("identifier", "")).lower().lstrip("@").strip(),
+            str(od.get("uid", "")).lower().lstrip("@").strip(),
+            str(od.get("locket_uid", "")).lower().lstrip("@").strip(),
+            str(od.get("display_name", "")).lower().lstrip("@").strip(),
+            str(od.get("account_target", "")).lower().lstrip("@").strip(),
+            str(od.get("locket_username", "")).lower().lstrip("@").strip(),
+            str(od.get("spotify_uid", "")).lower().lstrip("@").strip(),
+        }
+        od_cands.discard("")
+        if cand_set & od_cands:
+            return od
+    return None
+
+
 def fmt_datetime(iso: str | None) -> str:
     if not iso:
         return "—"

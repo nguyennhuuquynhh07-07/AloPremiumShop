@@ -2515,6 +2515,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     plan = data.get("plan") or data.get("product") or "Free"
                     is_bound = data.get("isBound", False)
 
+                    used_trial = bool(utils.has_used_test_trial("spotify", [uid, cleaned_sp, display, raw_id]))
                     self._send_json(200, {
                         "ok": True,
                         "service": "spotify",
@@ -2523,6 +2524,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "avatar": _proxy_media_url(avatar),
                         "plan": plan,
                         "is_bound": is_bound,
+                        "used_test_trial": used_trial,
                         "status_text": "Đã kết nối IP thiết bị" if is_bound else "Chưa khóa IP (Sẵn sàng nâng cấp)"
                     })
                     return
@@ -2557,6 +2559,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     uid = data.get("uid") or data.get("id") or locket_username
                     display = locket_username
                     avatar = data.get("avatar") or data.get("avatarUrl")
+                    used_trial = bool(utils.has_used_test_trial("locket", [uid, locket_username, cleaned]))
 
                     self._send_json(200, {
                         "ok": True,
@@ -2564,6 +2567,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "uid": uid,
                         "display_name": display,
                         "avatar": _proxy_media_url(avatar),
+                        "used_test_trial": used_trial,
                     })
                     return
             except Exception as e:
@@ -2636,6 +2640,30 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 plnv = pv["plans"][plan]
                 price = plnv["price"]
                 orig_price = price
+
+                locket_uid_param = str(body.get("locket_uid") or "").strip()
+                if plan == "test" or str(plnv.get("packageCode") or "").upper() in ("LKGT3D", "SPT"):
+                    trial_cands = [raw_ident, identifier, display_name, spotify_uid, locket_uid_param]
+                    if product == "locket" and not locket_uid_param:
+                        try:
+                            r_lk = api.locket_resolve(identifier)
+                            r_dt = r_lk.get("data") if isinstance(r_lk, dict) and isinstance(r_lk.get("data"), dict) else (r_lk if isinstance(r_lk, dict) else {})
+                            resolved_uid = str(r_dt.get("uid") or r_dt.get("id") or "").strip()
+                            resolved_uname = str(r_dt.get("username") or "").strip()
+                            if resolved_uid:
+                                locket_uid_param = resolved_uid
+                                trial_cands.append(resolved_uid)
+                            if resolved_uname:
+                                trial_cands.append(resolved_uname)
+                        except Exception:
+                            pass
+                    if utils.has_used_test_trial(product, trial_cands):
+                        self._send_json(403, {
+                            "ok": False,
+                            "used_test_trial": True,
+                            "error": "⛔ Mỗi tài khoản chỉ được dùng thử gói Test 3 Ngày tối đa 1 lần! Tài khoản này đã thử trước đó, vui lòng chọn gói 6 Tháng, 1 Năm hoặc Vĩnh Viễn để tiếp tục."
+                        })
+                        return
 
                 # Gói VIP ALL-IN-ONE (locket_ai) mặc định đã bao gồm sẵn bản quyền Studio (trọn bộ)
                 has_studio = True if product == "locket_ai" else bool(body.get("has_studio", False))
@@ -2715,6 +2743,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     "avatar": avatar,
                     "token": token,
                     "account_target": identifier,  # Luôn lưu UID thực tế, không dùng display_name
+                    "locket_uid": locket_uid_param,
                     "spotify_uid": spotify_uid,
                     "discount_code": applied_code,
                     "discount_amount": discount_amount,

@@ -396,28 +396,16 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             now_dt = datetime.now()
 
             if is_test_3d:
-                # Gói Test 3 Ngày (LKGT3D / SPT): Bỏ qua gọi API trừ Coin CTV, cấp DNS & gia hạn đúng 3 ngày nội bộ tại shop
+                # Mỗi tài khoản chỉ được dùng thử gói Test 3 Ngày duy nhất 1 lần (chặn lần 2)
+                trial_cands = list(candidate_accounts)
+                if order.get("locket_uid"):
+                    trial_cands.append(str(order["locket_uid"]))
+                if utils.has_used_test_trial(product_key, trial_cands, exclude_order_id=order_id):
+                    return False, "Mỗi tài khoản chỉ được dùng thử gói Test 3 Ngày 1 lần! Tài khoản này đã dùng thử trước đó."
+
+                # Bỏ qua gọi API trừ Coin CTV, cấp DNS & lưu hạn dùng đúng 3 ngày tại shop
                 duration_days = int(plnv.get("durationDays") or 3)
-                cand_set = {c.lower().lstrip("@") for c in candidate_accounts if c}
-                base_ts = now_dt.timestamp()
-                for od_id_ex, od_ex in db.get_orders().items():
-                    if od_id_ex == order_id or od_ex.get("product") != product_key:
-                        continue
-                    if not utils.is_order_vip_active(od_ex, base_ts):
-                        continue
-                    od_cands = {
-                        str(od_ex.get("identifier", "")).lower().lstrip("@"),
-                        str(od_ex.get("uid", "")).lower().lstrip("@"),
-                        str(od_ex.get("account_target", "")).lower().lstrip("@"),
-                        str(od_ex.get("display_name", "")).lower().lstrip("@"),
-                        str(od_ex.get("locket_username", "")).lower().lstrip("@"),
-                        str(od_ex.get("spotify_uid", "")).lower().lstrip("@"),
-                    }
-                    if cand_set & od_cands:
-                        ex_ts = utils.parse_order_expiry_ts(od_ex)
-                        if ex_ts is not None and ex_ts > base_ts:
-                            base_ts = ex_ts
-                exp_dt = datetime.fromtimestamp(base_ts) + timedelta(days=duration_days)
+                exp_dt = now_dt + timedelta(days=duration_days)
                 db.update_order(
                     order_id,
                     status="done",
