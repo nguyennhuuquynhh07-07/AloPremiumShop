@@ -139,6 +139,17 @@ def _unwrap_media_url(raw_url: str) -> str:
     return s
 
 
+def _resolve_frame_url(raw_url: str) -> str:
+    """Giải mã token media proxy và quy đổi đường dẫn nội bộ /assets/... thành https:// đầy đủ."""
+    resolved = _unwrap_media_url(raw_url)
+    if resolved.startswith("/") and not resolved.startswith("//"):
+        base_web = getattr(config, "WEBSITE_URL", "https://alopremium.shop").rstrip("/")
+        if base_web.startswith("http://"):
+            base_web = "https://" + base_web[len("http://"):]
+        return f"{base_web}{resolved}"
+    return resolved
+
+
 def _get_masked_vietqr_url(amount: int, add_info: str) -> str:
     raw = utils.get_vietqr_url(amount=amount, add_info=add_info)
     return _proxy_media_url(raw) or raw
@@ -2042,7 +2053,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
         if path == "/api/admin/ctv/frames":
             if not self._require_admin(body=body):
                 return
-            url_img = _unwrap_media_url(str(body.get("url", "")).strip())
+            url_img = _resolve_frame_url(str(body.get("url", "")).strip())
             name = str(body.get("name", "")).strip()
             target_uid = str(body.get("targetUid", "ALL")).strip() or "ALL"
             target_uids = body.get("targetUids")
@@ -2309,13 +2320,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
         # 1.2 API Khách hàng VIP áp dụng Khung Widget trực tiếp lên tài khoản Locket của chính mình
         if path == "/api/features/apply_frame":
             raw_id = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
-            frame_url = _unwrap_media_url(str(body.get("url", "")).strip())
+            frame_url = _resolve_frame_url(str(body.get("url", "")).strip())
             frame_name = str(body.get("name", "")).strip() or "Khung Widget VIP"
             if not raw_id or not frame_url:
-                self._send_json(400, {"ok": False, "error": "Thiếu Username Locket hoặc URL khung viền!"})
+                self._send_json(400, {"ok": False, "error": "Thiếu Username Locket hoặc ảnh khung viền!"})
                 return
             if not frame_url.startswith("https://"):
-                self._send_json(400, {"ok": False, "error": "URL khung viền phải là đường dẫn https:// hợp lệ!"})
+                self._send_json(400, {"ok": False, "error": "Ảnh khung viền không hợp lệ, vui lòng tải lại file ảnh PNG/WEBP!"})
                 return
 
             is_vip, info = self._verify_customer_locket_vip(raw_id)

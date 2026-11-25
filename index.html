@@ -1594,16 +1594,14 @@
 
                             <div class="space-y-2">
                                 <label class="block text-xs font-bold text-[#1E1B18]">
-                                    2. Tải ảnh khung lên (PNG trong suốt) hoặc dán Link URL:
+                                    2. Tải ảnh khung lên (PNG trong suốt / WEBP):
                                 </label>
-                                <div class="flex flex-col sm:flex-row gap-2">
+                                <div>
                                     <input type="file" id="editorFrameFileInput" accept="image/png,image/webp" onchange="handleEditorFrameFileSelect(event)"
-                                           class="w-full sm:w-64 px-2.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold file:mr-2 file:py-1 file:px-2.5 file:rounded file:border file:border-[#1E1B18] file:bg-[#FFF8E1] file:text-xs file:font-bold cursor-pointer">
-                                    <input type="text" id="editorFrameUrlInput" oninput="handleEditorFrameUrlInput(this.value)" placeholder="Hoặc dán link ảnh khung PNG"
-                                           class="flex-1 px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
+                                           class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold file:mr-2.5 file:py-1 file:px-3 file:rounded file:border file:border-[#1E1B18] file:bg-[#FFF8E1] file:text-xs file:font-bold cursor-pointer">
                                 </div>
                                 <p class="text-[11px] text-amber-800 italic">
-                                    💡 Mẹo: Để chọn nhanh từ 79 mẫu khung có sẵn, hãy bấm tab <b>Kho Khung Mẫu</b> ở trên!
+                                    💡 Mẹo: Chọn ảnh khung từ máy rồi bấm Lưu, hoặc chọn nhanh từ 79 mẫu trong tab <b>Kho Khung Mẫu</b> ở trên!
                                 </p>
                             </div>
 
@@ -3027,6 +3025,7 @@
         let currentModalFrame = null;
         let pendingEditorFrameFileB64 = '';
         let pendingEditorFrameFileName = '';
+        let pendingEditorFrameGalleryUrl = '';
 
         let allSymbolsCache = [];
         let symbolCategoriesCache = [];
@@ -3301,19 +3300,10 @@
             r.onload = ev => {
                 pendingEditorFrameFileB64 = ev.target.result;
                 pendingEditorFrameFileName = file.name;
-                document.getElementById('editorFrameUrlInput').value = '';
+                pendingEditorFrameGalleryUrl = '';
                 showEditorPreviewImg(ev.target.result, file.name);
             };
             r.readAsDataURL(file);
-        }
-
-        function handleEditorFrameUrlInput(val) {
-            pendingEditorFrameFileB64 = '';
-            pendingEditorFrameFileName = '';
-            const u = (val || '').trim();
-            if (u.startsWith('http') || u.startsWith('/api/media?') || u.startsWith('/assets/')) {
-                showEditorPreviewImg(u, document.getElementById('editorFrameNameInput')?.value || 'Khung URL');
-            }
         }
 
         function showEditorPreviewImg(src, title = '') {
@@ -3329,7 +3319,7 @@
 
         async function saveEditorFrameToLocket() {
             const nameVal = (document.getElementById('editorFrameNameInput')?.value || '').trim() || 'Khung Custom VIP';
-            let urlVal = (document.getElementById('editorFrameUrlInput')?.value || '').trim();
+            let urlVal = pendingEditorFrameGalleryUrl.trim();
             const ident = connectedAccount ? connectedAccount.username : (document.getElementById('featureUsernameInput')?.value || '').trim();
 
             if (!ident) {
@@ -3338,8 +3328,8 @@
                 showToast('⚠️ Vui lòng nhập & kết nối Username Locket ở thanh trên trước khi lưu khung!');
                 return;
             }
-            if (!urlVal && !pendingEditorFrameFileB64) {
-                alert('⚠️ Vui lòng chọn ảnh khung PNG hoặc dán Link ảnh khung trước khi lưu!');
+            if (!pendingEditorFrameFileB64 && !urlVal) {
+                alert('⚠️ Vui lòng chọn ảnh khung PNG/WEBP từ máy (hoặc chọn từ Kho Khung Mẫu) trước khi lưu!');
                 return;
             }
 
@@ -3347,7 +3337,7 @@
             if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Đang xử lý &amp; nạp lên máy chủ...'; }
 
             try {
-                if (!urlVal && pendingEditorFrameFileB64) {
+                if (pendingEditorFrameFileB64) {
                     const upRes = await fetch('/api/upload_frame_image', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -3364,6 +3354,10 @@
 
                 await applyFrameToLocketApi(urlVal, nameVal, null);
                 pendingEditorFrameFileB64 = '';
+                pendingEditorFrameFileName = '';
+                pendingEditorFrameGalleryUrl = '';
+                const fInp = document.getElementById('editorFrameFileInput');
+                if (fInp) fInp.value = '';
             } catch (err) {
                 alert('❌ ' + err.message);
             } finally {
@@ -3650,8 +3644,11 @@
 
         function pickGalleryFrameToEditor(url, name) {
             document.getElementById('editorFrameNameInput').value = name;
-            document.getElementById('editorFrameUrlInput').value = url;
+            pendingEditorFrameGalleryUrl = url;
             pendingEditorFrameFileB64 = '';
+            pendingEditorFrameFileName = '';
+            const fInp = document.getElementById('editorFrameFileInput');
+            if (fInp) fInp.value = '';
             showEditorPreviewImg(url, name);
             switchFrameStudioMode('editor');
             showToast('✅ Đã nạp "' + name + '" vào Bộ Chỉnh Sửa & Giả Lập Widget!');
