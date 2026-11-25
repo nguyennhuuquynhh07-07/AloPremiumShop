@@ -2800,7 +2800,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": "Vui lòng nhập Username Locket của bạn!"})
                 return
             if re.search(r"(https?://|/|spotify\.com|locket\.cam)", raw_ident, re.I):
-                self._send_json(400, {"ok": False, "error": "Chỉ điền Username Locket (ví dụ: camsitup), không dán đường link!"})
+                self._send_json(400, {"ok": False, "error": "Chỉ điền Username Locket (ví dụ: AloPremiumShop), không dán đường link!"})
                 return
 
             cleaned = utils.clean_input(raw_ident).lstrip("@")
