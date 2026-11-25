@@ -57,11 +57,11 @@ Hãy kiểm tra cấu trúc thực tế trước khi kết luận chức năng c
 ## 8. Quy trình làm việc
 1. Phân tích yêu cầu.
 2. Kiểm tra source code.
-3. Đề xuất phương án.
+3. Đề xuất phương án (nếu cần làm rõ yêu cầu mơ hồ).
 4. Thực hiện chỉnh sửa trong workspace.
-5. Chạy kiểm thử.
-6. Báo cáo kết quả.
-7. Liệt kê các vấn đề còn tồn tại.
+5. Chạy kiểm thử (Python, JavaScript, luồng chức năng & bảo mật).
+6. Tự động đồng bộ GitHub & Render: Sau khi sửa code và kiểm thử đạt, **luôn tự động `git add` (chỉ các file code liên quan, kiểm tra tuyệt đối không gồm `.env`, API key/token, hay dữ liệu thật `data/` chưa được phép), `git commit` và `git push origin main`** để kích hoạt Render tự động build & deploy — **KHÔNG cần hỏi lại người dùng** có muốn đẩy lên GitHub/Render hay không.
+7. Báo cáo kết quả (kèm thông tin commit đã đẩy lên GitHub/Render) và liệt kê các vấn đề còn tồn tại (nếu có).
 
 ## 9. Ngôn ngữ
 Luôn giao tiếp bằng tiếng Việt.

@@ -17,7 +17,7 @@ def main_menu_kb() -> InlineKeyboardMarkup:
     rows = [
         [
             InlineKeyboardButton("🌐 Mở Website Mua Hàng", url=web_url),
-            InlineKeyboardButton("🎁 Gói FREE (0đ)", callback_data="free_locket")
+            InlineKeyboardButton("🚫 Gói FREE (Đã tắt)", callback_data="free_locket")
         ]
     ]
     for pk, pv in prods.items():
