@@ -5,8 +5,7 @@ utils.py – Các hàm tiện ích dùng chung
 import config
 import random
 import string
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from config import PRODUCTS
 
@@ -74,57 +73,6 @@ def check_and_apply_coupon(code: str, original_price: int) -> dict:
 
     return {"ok": False, "error": f"Mã giảm giá '{code_clean}' không tồn tại hoặc đã hết hạn."}
 
-
-
-def _parse_iso_ts(iso_str: str | None) -> float | None:
-    s = str(iso_str or "").strip()
-    if not s:
-        return None
-    try:
-        dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
-        if dt.year >= 2099:
-            return None
-        return dt.timestamp()
-    except (ValueError, TypeError, OverflowError):
-        return None
-
-
-def parse_order_expiry_ts(order: dict | None) -> float | None:
-    """Trả về Unix timestamp hết hạn của đơn hàng (None nếu vĩnh viễn / không giới hạn)."""
-    if not isinstance(order, dict):
-        return None
-    exp_raw = str(order.get("expires_at") or "").strip()
-    if exp_raw:
-        return _parse_iso_ts(exp_raw)
-
-    raw_days = order.get("duration_days") or order.get("durationDays") or 0
-    try:
-        days = int(raw_days)
-    except (TypeError, ValueError):
-        days = 0
-    if days <= 0 and str(order.get("plan") or "").strip().lower() == "test":
-        days = 3
-    if days > 0:
-        anchor_ts = _parse_iso_ts(order.get("done_at")) or _parse_iso_ts(order.get("created_at"))
-        if anchor_ts is not None:
-            return anchor_ts + (days * 86400)
-    return None
-
-
-def is_order_expired(order: dict | None, now_ts: float | None = None) -> bool:
-    """Kiểm tra đơn hàng có thời hạn đã hết hạn chưa."""
-    if not isinstance(order, dict) or order.get("status") != "done":
-        return False
-    exp_ts = parse_order_expiry_ts(order)
-    if exp_ts is None:
-        return False
-    cur = time.time() if now_ts is None else now_ts
-    return cur >= exp_ts
-
-
-def is_order_vip_active(order: dict | None, now_ts: float | None = None) -> bool:
-    """Đơn hàng đã hoàn tất và vẫn còn trong thời hạn sử dụng."""
-    return isinstance(order, dict) and order.get("status") == "done" and not is_order_expired(order, now_ts)
 
 
 def _is_test_plan_order(order: dict | None) -> bool:

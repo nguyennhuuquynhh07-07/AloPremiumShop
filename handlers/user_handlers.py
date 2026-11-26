@@ -1258,13 +1258,11 @@ async def cb_buy_studio(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 def _build_success_message(order, pv, plnv, dns_link: str) -> str:
     is_test = order.get("plan") == "test" or plnv.get("packageCode") in ["LKGT3D", "SPT"]
     if is_test:
-        days = int(order.get("duration_days") or plnv.get("durationDays") or 3)
+        days = int(plnv.get("durationDays") or 3)
         hours = days * 24
-        exp_line = f"📅 <b>Hết hạn lúc:</b> <code>{utils.fmt_datetime(order['expires_at'])}</code>\n" if order.get("expires_at") else ""
         duration_note = (
             f"⏱️ <b>Thời hạn dùng thử:</b> <b>{days} Ngày ({hours} Giờ)</b>\n"
-            f"{exp_line}"
-            f"⚠️ <i>Lưu ý: Sau đúng {days} ngày, gói dùng thử sẽ tự động hết hạn (bạn có thể gia hạn bất cứ lúc nào).</i>"
+            f"⚠️ <i>Lưu ý: Hết {days} ngày, hệ thống API & DNS sẽ tự động ngắt kích hoạt cho tài khoản này.</i>"
         )
     else:
         duration_note = f"💡 <i>Chỉ cần cài 1 lần là dùng theo thời hạn gói. Nếu đổi thiết bị hãy nhắn Admin để reset.</i>"

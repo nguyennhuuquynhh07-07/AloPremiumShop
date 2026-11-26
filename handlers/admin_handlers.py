@@ -1145,7 +1145,7 @@ async def coin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"🛡️ <b>Trạng thái:</b> {status_text}\n"
             f"🌐 <b>API URL:</b> <code>{config.API_BASE_URL}</code>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"💡 <i>Các gói trả phí sẽ trừ Coin tương ứng; riêng gói Test 3 Ngày (LKGT3D/SPT) là 0 Coin và không cần trừ Coin khi kích hoạt.</i>"
+            f"💡 <i>Mỗi đơn kích hoạt Locket/Spotify sẽ tự động trừ Coin tương ứng. Nếu Coin sắp hết hãy nạp thêm trên Dashboard!</i>"
         )
         await msg.edit_text(text, parse_mode=ParseMode.HTML)
     except Exception as e:
