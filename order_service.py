@@ -112,6 +112,23 @@ def payment_matches_order(order: dict, account: str, content: str, amount: float
     return False
 
 
+def is_zalo_group_eligible_order(order: dict | None) -> bool:
+    """Chỉ gửi nhắc nhở tham gia Nhóm Zalo cho gói 6 Tháng, 1 Năm hoặc Vĩnh Viễn (ẩn với gói 5k / Test 3 Ngày / gói lẻ)."""
+    if not isinstance(order, dict):
+        return False
+    prod = str(order.get("product") or "").strip().lower()
+    plan = str(order.get("plan") or "").strip().lower()
+    if prod in ("filter_topup", "caption_pack", "studio_caption"):
+        return False
+    if plan == "test":
+        return False
+    if prod == "locket_ai":
+        return True
+    if plan in ("6m", "1y", "ltm"):
+        return True
+    return False
+
+
 async def _send_zalo_group_reminder(bot, chat_id: int) -> None:
     """Gửi nhắc nhở khách tham gia nhóm Zalo kèm ảnh QR (nếu có) sau khi thanh toán thành công."""
     zalo_url = getattr(config, "ZALO_GROUP_URL", "").strip()
@@ -626,8 +643,8 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     )
                 except Exception as e:
                     logger.error(f"Error sending Locket delivery: {e}")
-        # ── GỬI NHẮC NHỞ THAM GIA NHÓM ZALO SAU KHI THANH TOÁN THÀNH CÔNG ──
-        if bot and isinstance(order.get("user_id"), int) and order.get("user_id") > 0:
+        # ── GỬI NHẮC NHỞ THAM GIA NHÓM ZALO SAU KHI THANH TOÁN THÀNH CÔNG (CHỈ GÓI 6M / 1Y / LTM) ──
+        if bot and isinstance(order.get("user_id"), int) and order.get("user_id") > 0 and is_zalo_group_eligible_order(order):
             await _send_zalo_group_reminder(bot, order["user_id"])
 
         if bot:
