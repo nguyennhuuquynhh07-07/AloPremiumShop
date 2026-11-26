@@ -1497,7 +1497,7 @@
                 <div id="studioSubTabsBar" class="hidden border-t-2 border-dashed border-[#D6CEBC] pt-3 flex flex-wrap items-center gap-2">
                     <button type="button" onclick="switchFeatureSubTab('frames')" id="subTabBtn_frames"
                             class="px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] bg-[#FFD84D] text-[#1E1B18] font-bold text-xs cursor-pointer transition-all">
-                        Khung Widget (<span id="subTabFrameBadgeCount">0</span>/30)
+                        Khung Widget (<span id="subTabFrameBadgeCount">0</span>/1)
                     </button>
                     <button type="button" onclick="switchFeatureSubTab('captions')" id="subTabBtn_captions"
                             class="px-3.5 py-2 rounded-lg border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer transition-all">
@@ -1562,7 +1562,7 @@
                     <div class="flex items-center gap-2">
                         <button type="button" onclick="switchFrameStudioMode('editor')" id="frameModeBtn_editor"
                                 class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] text-[#1E1B18] font-bold text-xs cursor-pointer">
-                            Tự Thiết Kế &amp; Quản Lý (<span id="frameModeMyCount">0</span>/30)
+                            Tự Thiết Kế &amp; Quản Lý (<span id="frameModeMyCount">0</span>/1)
                         </button>
                         <button type="button" onclick="switchFrameStudioMode('gallery')" id="frameModeBtn_gallery"
                                 class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer">
@@ -1617,13 +1617,16 @@
                                     class="w-full py-2.5 px-4 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs sm:text-sm font-black text-[#1E1B18] cursor-pointer flex items-center justify-center gap-2">
                                 <span>💾</span> Lưu khung ảnh &amp; Nạp lên Locket
                             </button>
+                            <p class="text-[11px] text-[#6E6659] text-center">
+                                🛡️ Giới hạn <b>1 khung / tài khoản</b> để app Locket ổn định — nạp khung mới sẽ tự thay thế khung cũ.
+                            </p>
                         </div>
 
                         <!-- DANH SÁCH KHUNG -->
                         <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 sm:p-5 space-y-3">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <h4 class="font-bold text-xs sm:text-sm text-[#1E1B18]">
-                                    Danh Sách Khung (<span id="myFramesListTotal">0</span>/30)
+                                    Danh Sách Khung (<span id="myFramesListTotal">0</span>/1)
                                 </h4>
                                 <div class="flex items-center gap-1.5 text-[11px]">
                                     <button type="button" onclick="filterMyFramesScope('all')" class="myframe-scope-btn px-2.5 py-1 rounded-md border border-[#1E1B18] bg-[#FFD84D] font-black cursor-pointer" data-scope="all">
@@ -1986,11 +1989,11 @@
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-[#6E6659] font-semibold">Giới hạn khung cá nhân:</span>
-                                <span class="font-black text-[#1E1B18]">Tối đa 30 khung</span>
+                                <span class="font-black text-[#1E1B18]">1 khung / tài khoản (tự thay thế)</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-[#6E6659] font-semibold">Đang sử dụng:</span>
-                                <span class="font-bold text-[#1E1B18]"><span id="slotFrameUsedCount">0</span>/30 khung</span>
+                                <span class="font-bold text-[#1E1B18]"><span id="slotFrameUsedCount">0</span>/1 khung</span>
                             </div>
                             <div class="flex items-center justify-between pt-1 border-t border-black/10">
                                 <span class="text-[#6E6659] font-semibold">Chi phí mở khóa:</span>
@@ -3233,14 +3236,15 @@
             allFramesData = merged;
 
             const ctvAndMine = allFramesData.filter(f => f.source === 'ctv_live' || f.source === 'customer_assigned');
+            const myPersonalCount = Array.isArray(customerFramesLive) ? customerFramesLive.length : 0;
             const b1 = document.getElementById('subTabFrameBadgeCount');
             const b2 = document.getElementById('frameModeMyCount');
             const b3 = document.getElementById('frameModeSampleCount');
             const b4 = document.getElementById('slotFrameUsedCount');
-            if (b1) b1.textContent = `${ctvAndMine.length}`;
-            if (b2) b2.textContent = `${ctvAndMine.length}`;
+            if (b1) b1.textContent = `${myPersonalCount}`;
+            if (b2) b2.textContent = `${myPersonalCount}`;
             if (b3) b3.textContent = `${baseLibraryFrames.length}`;
-            if (b4) b4.textContent = `${ctvAndMine.length}`;
+            if (b4) b4.textContent = `${myPersonalCount}`;
 
             // Tự động gán khung đầu tiên lên trình giả lập Widget iPhone để đẹp mắt
             const firstPreview = ctvAndMine[0] || allFramesData[0];
@@ -3391,7 +3395,7 @@
             const elAll = document.getElementById('scopeCntAll');
             const elSh = document.getElementById('scopeCntShared');
             const elPr = document.getElementById('scopeCntPrivate');
-            if (elTot) elTot.textContent = allList.length;
+            if (elTot) elTot.textContent = priv.length;
             if (elAll) elAll.textContent = allList.length;
             if (elSh) elSh.textContent = shared.length;
             if (elPr) elPr.textContent = priv.length;
@@ -3405,7 +3409,11 @@
                 return;
             }
 
-            listEl.innerHTML = viewList.map((fr, idx) => {
+            const limitWarnHtml = priv.length > 1
+                ? `<div class="p-2.5 rounded-xl bg-rose-100 border border-rose-400 text-[11px] font-bold text-rose-900">⚠️ Tài khoản đang có ${priv.length} khung (giới hạn 1 khung/người). Hãy xóa bớt hoặc nạp khung mới để hệ thống tự động dọn về 1 khung!</div>`
+                : '';
+
+            listEl.innerHTML = limitWarnHtml + viewList.map((fr, idx) => {
                 const rawImgUrl = safeHttpUrl(fr.rawImage || fr.image, '/assets/index/sim-demos/demo-1.jpg');
                 const imgUrl = escapeFeatureHtml(rawImgUrl);
                 const jsImgUrl = escapeJsAttr(rawImgUrl);
@@ -3419,6 +3427,12 @@
                 const statusTag = idx === 0
                     ? `<span class="px-2 py-0.5 rounded bg-emerald-200 border border-[#1E1B18] text-[10px] font-black text-emerald-950">● ĐANG ÁP DỤNG (MỚI NHẤT)</span>`
                     : `<span class="px-2 py-0.5 rounded bg-white border border-zinc-400 text-[10px] font-bold text-zinc-700">Sẵn sàng</span>`;
+                const delBtnHtml = isPriv
+                    ? `<button type="button" onclick="deleteCustomerFrameLive('${jsId}', '${jsName}', this)"
+                               class="px-2.5 py-1 rounded-md border border-rose-700 bg-rose-50 hover:bg-rose-200 text-rose-800 font-bold cursor-pointer">
+                           🗑️ Xóa khung
+                       </button>`
+                    : '';
                 return `
                     <div class="p-3 rounded-xl border-2 border-[#1E1B18] bg-emerald-50/70 space-y-2">
                         <div class="flex items-center justify-between gap-2.5 flex-wrap">
@@ -3440,7 +3454,8 @@
                                 ✓ Xem giả lập
                             </button>
                         </div>
-                        <div class="flex items-center justify-end gap-1.5 pt-1 border-t border-black/10 text-[10px]">
+                        <div class="flex items-center justify-end gap-1.5 flex-wrap pt-1 border-t border-black/10 text-[10px]">
+                            ${delBtnHtml}
                             <button type="button" onclick="applyFrameToLocketApi('${jsImgUrl}', '${jsName}', this)"
                                     class="px-2.5 py-1 rounded-md border border-[#1E1B18] bg-white hover:bg-[#FFD84D] font-bold cursor-pointer">
                                 👤 Nạp vào tài khoản
@@ -3453,6 +3468,33 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        async function deleteCustomerFrameLive(frameId, frameName = '', triggerBtn = null) {
+            if (!connectedAccount || !connectedAccount.is_vip) {
+                alert('🔒 Vui lòng kết nối tài khoản VIP trước!');
+                return;
+            }
+            if (!confirm(`Bạn có chắc muốn xóa khung "${frameName || frameId}" khỏi tài khoản @${connectedAccount.username}?`)) {
+                return;
+            }
+            const origHtml = triggerBtn ? triggerBtn.innerHTML : '';
+            if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.innerHTML = '⏳...'; }
+            try {
+                const res = await fetch('/api/features/delete_frame', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: connectedAccount.username, frame_id: frameId })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Không thể xóa khung');
+                showToast('🗑️ ' + (data.message || 'Đã xóa khung khỏi tài khoản Locket!'));
+                await connectFeatureAccount(true);
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.innerHTML = origHtml; }
+            }
         }
 
         async function connectFeatureAccount(silent = false) {
@@ -3683,6 +3725,12 @@
                 showToast('⚠️ Vui lòng nhập & kết nối Username Locket ở trên để nạp khung!');
                 return;
             }
+            if (Array.isArray(customerFramesLive) && customerFramesLive.length >= 1) {
+                const curName = customerFramesLive[0]?.name || 'khung hiện tại';
+                if (!confirm(`Mỗi tài khoản chỉ giữ tối đa 1 khung để tránh lỗi.\nNạp "${frameName}" sẽ tự động xóa "${curName}" và thay bằng khung mới. Bạn muốn tiếp tục?`)) {
+                    return;
+                }
+            }
             const origText = triggerBtn ? triggerBtn.innerHTML : '';
             if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.innerHTML = '⏳...'; }
             try {
@@ -3695,7 +3743,7 @@
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Không thể nạp khung lên máy chủ');
                 showToast('🎉 ' + (data.message || 'Nạp khung thành công! Mở lại app Locket để thấy thay đổi.'));
                 closeTryFrameModal();
-                await connectFeatureAccount();
+                await connectFeatureAccount(true);
             } catch (err) {
                 alert('❌ ' + err.message);
             } finally {
@@ -3986,6 +4034,7 @@
             if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang lưu lên hệ thống VIP...'; }
             try {
                 const isSym = currentIconMode === 'symbol';
+                const groupName = (document.getElementById('captionGroupSelect')?.value || '').trim();
                 const res = await fetch('/api/features/save_caption', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -3996,7 +4045,8 @@
                         icon: isSym ? selectedSymbol.name : selectedSymbol.icon,
                         iconType: isSym ? 'symbol' : 'emoji',
                         symbolName: isSym ? selectedSymbol.name : '',
-                        colors: selectedGradient.hex
+                        colors: selectedGradient.hex,
+                        groupName: groupName
                     })
                 });
                 const data = await res.json();
@@ -4074,6 +4124,9 @@
             listEl.innerHTML = list.map((cp, idx) => {
                 const col0 = (cp.colors && cp.colors[0]) || '#570AE6';
                 const col1 = (cp.colors && cp.colors[1]) || '#2A0845';
+                const jsCapId = escapeJsAttr(cp.id || '');
+                const jsCapText = escapeJsAttr(cp.text || '');
+                const grpText = cp.groupName ? `${escapeFeatureHtml(cp.groupName)} · ` : '';
                 const symImg = cp.symbolPreviewUrl
                     ? `<img src="${escapeFeatureHtml(cp.symbolPreviewUrl)}" class="w-4 h-4 object-contain brightness-0 invert">`
                     : (cp.icon && cp.icon.trim() && cp.icon !== '\u200b' ? `<span>${escapeFeatureHtml(cp.icon)}</span>` : '');
@@ -4084,22 +4137,78 @@
                             ${symImg}
                             <span class="truncate">${escapeFeatureHtml(cp.text)}</span>
                         </div>
-                        <div class="flex items-center justify-between text-[10px] text-[#6E6659] px-1">
-                            <span>Hiển thị: <b class="text-emerald-700">Riêng tài khoản bạn</b></span>
-                            <button type="button" onclick="applyPresetCaptionToComposer(${idx})"
-                                    class="px-2 py-0.5 rounded border border-[#1E1B18] bg-[#FAF6EA] font-bold text-[#1E1B18] cursor-pointer">
-                                ✏️ Sửa caption này
-                            </button>
+                        <div class="flex items-center justify-between gap-2 text-[10px] text-[#6E6659] px-1">
+                            <span class="truncate">${grpText}Hiển thị: <b class="text-emerald-700">Riêng tài khoản bạn</b></span>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" onclick="applyPresetCaptionToComposer(${idx})"
+                                        class="px-2 py-0.5 rounded border border-[#1E1B18] bg-[#FAF6EA] font-bold text-[#1E1B18] cursor-pointer">
+                                    ✏️ Sửa
+                                </button>
+                                ${cp.id ? `<button type="button" onclick="deleteCustomerCaptionLive('${jsCapId}', '${jsCapText}', this)"
+                                        class="px-2 py-0.5 rounded border border-rose-700 bg-rose-50 hover:bg-rose-200 font-bold text-rose-800 cursor-pointer">
+                                    🗑️ Xóa
+                                </button>` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
+        async function deleteCustomerCaptionLive(captionId, captionText = '', triggerBtn = null) {
+            if (!connectedAccount || !connectedAccount.is_vip) {
+                alert('🔒 Vui lòng kết nối tài khoản VIP trước!');
+                return;
+            }
+            if (!confirm(`Bạn có chắc muốn xóa Caption "${captionText || captionId}" khỏi tài khoản Locket?`)) {
+                return;
+            }
+            const origHtml = triggerBtn ? triggerBtn.innerHTML : '';
+            if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.innerHTML = '⏳'; }
+            try {
+                const res = await fetch('/api/features/delete_caption', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: connectedAccount.username, caption_id: captionId })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Không thể xóa Caption');
+                if (editingCaptionId === captionId) editingCaptionId = '';
+                if (Array.isArray(data.customer_captions)) customerCaptionsLive = data.customer_captions;
+                if (data.caption_quota) captionQuotaState = data.caption_quota;
+                updateCaptionQuotaUI();
+                renderActiveCaptionsList();
+                renderDarkSimGroups();
+                showToast('🗑️ ' + (data.message || 'Đã xóa Caption khỏi Locket!'));
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.innerHTML = origHtml; }
+            }
+        }
+
         function applyPresetCaptionToComposer(idx) {
             const cp = customerCaptionsLive[idx];
             if (!cp) return;
             document.getElementById('captionTextInput').value = cp.text || '';
+            const grpSel = document.getElementById('captionGroupSelect');
+            if (grpSel && cp.groupName) {
+                const hasOpt = Array.from(grpSel.options).some(o => o.value === cp.groupName);
+                if (!hasOpt) {
+                    const opt = document.createElement('option');
+                    opt.value = cp.groupName;
+                    opt.textContent = cp.groupName;
+                    grpSel.appendChild(opt);
+                }
+                grpSel.value = cp.groupName;
+            }
+            if (cp.iconType === 'symbol' && (cp.symbolName || cp.icon)) {
+                switchIconMode('symbol');
+                selectSymbol(cp.symbolName || cp.icon, '✨', cp.symbolPreviewUrl || '');
+            } else if (cp.icon) {
+                switchIconMode('emoji');
+                selectEmojiIcon(cp.icon);
+            }
             const c0 = (cp.colors && cp.colors[0]) || '#FF5E3A';
             const c1 = (cp.colors && cp.colors[1]) || '#FF2A68';
             editingCaptionId = cp.id || '';

@@ -2824,14 +2824,37 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="button" onclick="fillAdminFrameForm('${jsUrl}', '${jsName}', '${jsTarget}', ${active})"
-                                class="px-2.5 py-1 rounded-md border border-[#1E1B18] bg-[#FFD84D] text-[10px] font-black cursor-pointer shrink-0">
-                                ✏️ Chọn / Sửa
-                            </button>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <button type="button" onclick="fillAdminFrameForm('${jsUrl}', '${jsName}', '${jsTarget}', ${active})"
+                                    class="px-2.5 py-1 rounded-md border border-[#1E1B18] bg-[#FFD84D] text-[10px] font-black cursor-pointer">
+                                    ✏️ Chọn / Sửa
+                                </button>
+                                ${fr.id ? `<button type="button" onclick="adminDeleteCtvFrame('${escapeAdminJsAttr(fr.id)}', '${jsName}')"
+                                    class="px-2.5 py-1 rounded-md border border-rose-700 bg-rose-50 hover:bg-rose-200 text-rose-800 text-[10px] font-bold cursor-pointer">
+                                    🗑️ Xóa
+                                </button>` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        async function adminDeleteCtvFrame(frameId, frameName = '') {
+            if (!confirm(`Xóa khung "${frameName || frameId}" khỏi máy chủ locket.2707226.xyz?`)) return;
+            try {
+                const res = await fetch('/api/admin/ctv/frames/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, frame_id: frameId })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Xóa khung thất bại');
+                showAdminToast('🗑️ ' + (data.message || 'Đã xóa khung khỏi máy chủ CTV!'));
+                loadCtvFeaturesOverview();
+            } catch (err) {
+                alert('❌ ' + err.message);
+            }
         }
 
         function fillAdminFrameForm(url, name, targetUid, active) {
@@ -3026,11 +3049,37 @@
                         </div>
                         <div class="flex items-center justify-between text-[10px] text-[#6E6659] px-1">
                             <span>${escapeAdminHtml(cp.groupName || mode)} · <b>${cp.active !== false ? 'Đang bật' : 'Tắt'}</b></span>
-                            <span class="font-mono">${escapeAdminHtml(cp.targetUid || mode)}</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-mono">${escapeAdminHtml(cp.targetUid || mode)}</span>
+                                ${cp.id ? `<button type="button" onclick="adminDeleteCtvCaption('${escapeAdminJsAttr(cp.id)}', '${escapeAdminJsAttr(mode === 'brand' ? '' : (cp.targetUid || ''))}', '${escapeAdminJsAttr(cp.text || '')}')"
+                                    class="px-2 py-0.5 rounded border border-rose-700 bg-rose-50 hover:bg-rose-200 text-rose-800 font-bold cursor-pointer">
+                                    🗑️ Xóa
+                                </button>` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        async function adminDeleteCtvCaption(captionId, targetUid = '', textLabel = '') {
+            if (!confirm(`Xóa Caption "${textLabel || captionId}" khỏi máy chủ locket.2707226.xyz?`)) return;
+            const lookupUid = (document.getElementById('adminCaptionLookupUid')?.value || '').trim();
+            const resolvedUid = targetUid || lookupUid;
+            try {
+                const res = await fetch('/api/admin/ctv/captions/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, caption_id: captionId, uid: resolvedUid })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Xóa caption thất bại');
+                showAdminToast('🗑️ ' + (data.message || 'Đã xóa Caption khỏi máy chủ CTV!'));
+                if (lookupUid) adminLookupCaptions();
+                else loadCtvFeaturesOverview();
+            } catch (err) {
+                alert('❌ ' + err.message);
+            }
         }
 
         async function adminSaveCtvCaption(e) {

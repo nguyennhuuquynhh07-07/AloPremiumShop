@@ -2075,6 +2075,21 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": str(e_fr)})
             return
 
+        # API Admin: Xóa Khung Widget CTV trên locket.2707226.xyz
+        if path == "/api/admin/ctv/frames/delete":
+            if not self._require_admin(body=body):
+                return
+            frame_id = str(body.get("frame_id") or body.get("id") or "").strip()
+            if not frame_id:
+                self._send_json(400, {"ok": False, "error": "Thiếu ID khung cần xóa!"})
+                return
+            try:
+                res = api.ctv_delete_frame(frame_id)
+                self._send_json(200, res)
+            except Exception as e_dfr:
+                self._send_json(400, {"ok": False, "error": str(e_dfr)})
+            return
+
         # API Admin: Thêm / Cập nhật Brand Caption hoặc Caption khách hàng lên locket.2707226.xyz
         if path == "/api/admin/ctv/captions":
             if not self._require_admin(body=body):
@@ -2097,10 +2112,27 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     colors=body.get("colors") if isinstance(body.get("colors"), list) else None,
                     target_uid=target_uid,
                     active=bool(body.get("active", True)),
+                    group_name=str(body.get("groupName") or "").strip(),
                 )
                 self._send_json(200, res)
             except Exception as e_cp:
                 self._send_json(400, {"ok": False, "error": str(e_cp)})
+            return
+
+        # API Admin: Xóa Caption CTV / Caption khách hàng trên locket.2707226.xyz
+        if path == "/api/admin/ctv/captions/delete":
+            if not self._require_admin(body=body):
+                return
+            caption_id = str(body.get("caption_id") or body.get("id") or "").strip()
+            uid_val = str(body.get("uid") or "").strip()
+            if not caption_id:
+                self._send_json(400, {"ok": False, "error": "Thiếu ID Caption cần xóa!"})
+                return
+            try:
+                res = api.ctv_delete_caption(caption_id, uid=uid_val)
+                self._send_json(200, res)
+            except Exception as e_dcp:
+                self._send_json(400, {"ok": False, "error": str(e_dcp)})
             return
 
         # API Admin: Bật / Tắt Bộ Lọc Màu LUT trên locket.2707226.xyz
@@ -2274,17 +2306,31 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     masked_captions.append(cp)
 
             # Lấy danh sách Khung riêng của chính khách hàng từ CTV (ẩn tuyệt đối UID khách khác)
+            def _extract_frame_targets(fr_obj):
+                raw_t = str(fr_obj.get("targetUid") or "")
+                return [x.strip() for x in raw_t.split(",") if x.strip()] + [
+                    str(x).strip() for x in (fr_obj.get("targetUids") or []) if str(x).strip()
+                ]
+
+            def _is_user_exclusive_frame(fr_obj, v_uid, v_uname):
+                t_list = _extract_frame_targets(fr_obj)
+                if not t_list:
+                    return False
+                allowed_low = {s.lower().lstrip("@") for s in (v_uid, v_uname) if s}
+                t_low = {x.lower().lstrip("@") for x in t_list}
+                if "all" in t_low:
+                    return False
+                return bool(t_low) and t_low.issubset(allowed_low)
+
             customer_frames = []
             try:
-                fr_res = api.ctv_get_frames()
+                fr_res = api.ctv_get_frames(force_refresh=True)
+                v_keys_low = {s.lower().lstrip("@") for s in (verified_uid, verified_uname) if s}
                 for fr in (fr_res.get("frames", []) or []):
                     if not isinstance(fr, dict) or not fr.get("active", True):
                         continue
-                    raw_t = str(fr.get("targetUid") or "")
-                    t_list = [x.strip() for x in raw_t.split(",") if x.strip()] + [
-                        str(x).strip() for x in (fr.get("targetUids") or []) if str(x).strip()
-                    ]
-                    if verified_uid in t_list or verified_uname in t_list:
+                    t_list_low = {x.lower().lstrip("@") for x in _extract_frame_targets(fr)}
+                    if t_list_low & v_keys_low:
                         masked_u = _proxy_media_url(fr.get("url"))
                         customer_frames.append({
                             "id": fr.get("id"),
@@ -2308,6 +2354,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "account": info,
                 "customer_captions": masked_captions,
                 "customer_frames": customer_frames,
+                "frame_limit": 1,
                 "caption_quota": {
                     "free": q_info.get("free_quota", free_q),
                     "extra": q_info.get("extra_quota", 0),
@@ -2318,7 +2365,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 1.2 API Khách hàng VIP áp dụng Khung Widget trực tiếp lên tài khoản Locket của chính mình
+        # 1.2 API Khách hàng VIP áp dụng Khung Widget (GIỚI HẠN NGHIÊM NGẶT 1 KHUNG / TÀI KHOẢN)
         if path == "/api/features/apply_frame":
             raw_id = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
             frame_url = _resolve_frame_url(str(body.get("url", "")).strip())
@@ -2344,7 +2391,26 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 return
 
             verified_uid = info["uid"]
+            verified_uname = info["username"]
             try:
+                # Thu thập khung cũ thuộc sở hữu riêng của tài khoản này để tự động thay thế (giới hạn 1 khung/người)
+                old_personal_ids = []
+                try:
+                    cur_frames_res = api.ctv_get_frames(force_refresh=True)
+                    allowed_low = {s.lower().lstrip("@") for s in (verified_uid, verified_uname) if s}
+                    for fr in (cur_frames_res.get("frames", []) or []):
+                        if not isinstance(fr, dict) or not fr.get("id"):
+                            continue
+                        raw_t = str(fr.get("targetUid") or "")
+                        t_list = [x.strip() for x in raw_t.split(",") if x.strip()] + [
+                            str(x).strip() for x in (fr.get("targetUids") or []) if str(x).strip()
+                        ]
+                        t_low = {x.lower().lstrip("@") for x in t_list}
+                        if t_low and "all" not in t_low and t_low.issubset(allowed_low):
+                            old_personal_ids.append(str(fr["id"]))
+                except Exception:
+                    old_personal_ids = []
+
                 res = api.ctv_save_frame(
                     url_img=frame_url,
                     name=frame_name,
@@ -2352,13 +2418,77 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     target_uids=[verified_uid],
                     active=True,
                 )
+                saved_frame = res.get("frame") if isinstance(res, dict) else None
+                new_id = str(saved_frame.get("id") or "") if isinstance(saved_frame, dict) else ""
+
+                replaced_count = 0
+                for old_fid in old_personal_ids:
+                    if new_id and old_fid == new_id:
+                        continue
+                    try:
+                        api.ctv_delete_frame(old_fid)
+                        replaced_count += 1
+                    except Exception as e_del_old:
+                        logger.warning(f"Cleanup old personal frame {old_fid} failed: {e_del_old}")
+
+                if replaced_count > 0:
+                    msg = f"Đã thay thế khung cũ và nạp '{frame_name}' cho @{info['username']} (giới hạn 1 khung/tài khoản)!"
+                else:
+                    msg = f"Đã nạp khung '{frame_name}' cho tài khoản @{info['username']} thành công!"
                 self._send_json(200, {
                     "ok": True,
-                    "message": f"Đã nạp khung '{frame_name}' cho tài khoản @{info['username']} thành công!",
-                    "frame": res.get("frame"),
+                    "message": msg,
+                    "frame": saved_frame,
+                    "replaced_count": replaced_count,
+                    "frame_limit": 1,
                 })
             except Exception as e_af:
                 self._send_json(400, {"ok": False, "error": str(e_af)})
+            return
+
+        # 1.2b API Khách hàng VIP xóa khung cá nhân của chính mình trên locket.2707226.xyz
+        if path == "/api/features/delete_frame":
+            raw_id = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
+            frame_id = str(body.get("frame_id") or body.get("id") or "").strip()
+            if not raw_id or not frame_id:
+                self._send_json(400, {"ok": False, "error": "Thiếu Username Locket hoặc ID khung cần xóa!"})
+                return
+
+            is_vip, info = self._verify_customer_locket_vip(raw_id)
+            if "error" in info:
+                self._send_json(400, {"ok": False, "error": info["error"]})
+                return
+            if not is_vip:
+                self._send_json(403, {"ok": False, "error": f"Tài khoản @{info['username']} chưa kích hoạt Locket Gold VIP!"})
+                return
+
+            verified_uid = info["uid"]
+            verified_uname = info["username"]
+            try:
+                cur_frames_res = api.ctv_get_frames(force_refresh=True)
+                allowed_low = {s.lower().lstrip("@") for s in (verified_uid, verified_uname) if s}
+                target_fr = None
+                for fr in (cur_frames_res.get("frames", []) or []):
+                    if isinstance(fr, dict) and str(fr.get("id") or "") == frame_id:
+                        target_fr = fr
+                        break
+                if not target_fr:
+                    self._send_json(404, {"ok": False, "error": "Không tìm thấy khung cần xóa trên hệ thống!"})
+                    return
+
+                raw_t = str(target_fr.get("targetUid") or "")
+                t_list = [x.strip() for x in raw_t.split(",") if x.strip()] + [
+                    str(x).strip() for x in (target_fr.get("targetUids") or []) if str(x).strip()
+                ]
+                t_low = {x.lower().lstrip("@") for x in t_list}
+                if not t_low or "all" in t_low or not t_low.issubset(allowed_low):
+                    self._send_json(403, {"ok": False, "error": "Bạn chỉ được xóa khung cá nhân thuộc tài khoản của chính mình!"})
+                    return
+
+                api.ctv_delete_frame(frame_id)
+                self._send_json(200, {"ok": True, "message": "Đã xóa khung cá nhân khỏi tài khoản Locket!"})
+            except Exception as e_df:
+                self._send_json(400, {"ok": False, "error": str(e_df)})
             return
 
         # 1.3 API Khách hàng VIP lưu & gửi Caption SF Symbol lên tài khoản Locket của chính mình
@@ -2392,6 +2522,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             symbol_name = str(body.get("symbolName", "") or icon_val).strip()
             colors = body.get("colors") if isinstance(body.get("colors"), list) else ["#FFB800", "#FF8008"]
             caption_id = str(body.get("caption_id") or body.get("id") or "").strip()
+            group_name = str(body.get("groupName") or "").strip()
 
             try:
                 caps_before = []
@@ -2435,6 +2566,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     colors=colors,
                     active=True,
                     caption_id=caption_id,
+                    group_name=group_name,
                 )
                 caps_now = caps_before
                 try:
@@ -2442,12 +2574,21 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     caps_now = c_res.get("captions", []) or []
                 except Exception:
                     pass
-                used_after = len(caps_now)
+                masked_caps_now = []
+                for cp in caps_now:
+                    if isinstance(cp, dict):
+                        cpc = dict(cp)
+                        if cpc.get("symbolPreviewUrl"):
+                            cpc["symbolPreviewUrl"] = _proxy_media_url(cpc["symbolPreviewUrl"])
+                        masked_caps_now.append(cpc)
+                    else:
+                        masked_caps_now.append(cp)
+                used_after = len(masked_caps_now)
                 self._send_json(200, {
                     "ok": True,
                     "message": res.get("message") or f"Đã nạp Caption riêng lên tài khoản @{verified_uname}!",
                     "caption": res.get("caption"),
-                    "customer_captions": caps_now,
+                    "customer_captions": masked_caps_now,
                     "caption_quota": {
                         "free": q_info.get("free_quota", 5),
                         "extra": q_info.get("extra_quota", 0),
@@ -2458,6 +2599,81 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 })
             except Exception as e_sc:
                 self._send_json(400, {"ok": False, "error": str(e_sc)})
+            return
+
+        # 1.3b API Khách hàng VIP xóa Caption cá nhân của chính mình trên locket.2707226.xyz
+        if path == "/api/features/delete_caption":
+            raw_id = str(body.get("identifier", "") or body.get("username", "") or body.get("uid", "")).strip()
+            caption_id = str(body.get("caption_id") or body.get("id") or "").strip()
+            if not raw_id or not caption_id:
+                self._send_json(400, {"ok": False, "error": "Thiếu Username Locket hoặc ID Caption cần xóa!"})
+                return
+
+            is_vip, info = self._verify_customer_locket_vip(raw_id)
+            if "error" in info:
+                self._send_json(400, {"ok": False, "error": info["error"]})
+                return
+            if not is_vip:
+                self._send_json(403, {"ok": False, "error": f"Tài khoản @{info['username']} chưa kích hoạt Locket Gold VIP!"})
+                return
+
+            verified_uid = info["uid"]
+            verified_uname = info["username"]
+            try:
+                caps_before = []
+                owner_uid = verified_uid
+                try:
+                    cb_res = api.ctv_get_captions(uid=verified_uid)
+                    if isinstance(cb_res, dict) and cb_res.get("ok"):
+                        caps_before = cb_res.get("captions", []) or []
+                except Exception:
+                    try:
+                        cb_res2 = api.ctv_get_captions(uid=verified_uname)
+                        if isinstance(cb_res2, dict) and cb_res2.get("ok"):
+                            caps_before = cb_res2.get("captions", []) or []
+                            owner_uid = verified_uname
+                    except Exception:
+                        caps_before = []
+
+                if not any(str(c.get("id") or "") == caption_id for c in caps_before):
+                    self._send_json(403, {"ok": False, "error": "Bạn chỉ được xóa Caption thuộc tài khoản của chính mình!"})
+                    return
+
+                api.ctv_delete_caption(caption_id, uid=owner_uid)
+                caps_now = []
+                try:
+                    c_res = api.ctv_get_captions(uid=owner_uid)
+                    caps_now = c_res.get("captions", []) or []
+                except Exception:
+                    caps_now = [c for c in caps_before if str(c.get("id") or "") != caption_id]
+
+                masked_caps_now = []
+                for cp in caps_now:
+                    if isinstance(cp, dict):
+                        cpc = dict(cp)
+                        if cpc.get("symbolPreviewUrl"):
+                            cpc["symbolPreviewUrl"] = _proxy_media_url(cpc["symbolPreviewUrl"])
+                        masked_caps_now.append(cpc)
+                    else:
+                        masked_caps_now.append(cp)
+
+                q_info = db.get_caption_quota_info(verified_uid, verified_uname)
+                total_cap = int(q_info.get("total_quota", 5))
+                used_after = len(masked_caps_now)
+                self._send_json(200, {
+                    "ok": True,
+                    "message": "Đã xóa Caption khỏi tài khoản Locket!",
+                    "customer_captions": masked_caps_now,
+                    "caption_quota": {
+                        "free": q_info.get("free_quota", 5),
+                        "extra": q_info.get("extra_quota", 0),
+                        "total": total_cap,
+                        "used": used_after,
+                        "remaining": max(0, total_cap - used_after),
+                    },
+                })
+            except Exception as e_dc:
+                self._send_json(400, {"ok": False, "error": str(e_dc)})
             return
 
         # 1. API Kiểm tra tài khoản Locket / Spotify trước khi mua (TÁCH BIỆT NGHIÊM NGẶT)

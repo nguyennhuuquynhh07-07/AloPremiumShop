@@ -252,6 +252,7 @@ def ctv_save_frame(
     target_uid: str = "ALL",
     target_uids: list | None = None,
     active: bool = True,
+    frame_id: str = "",
 ) -> dict:
     """
     POST /api/v1/ctv/frames
@@ -263,6 +264,8 @@ def ctv_save_frame(
         "url": url_img.strip(),
         "active": bool(active),
     }
+    if frame_id and frame_id.strip():
+        payload["id"] = frame_id.strip()
     if name:
         payload["name"] = name.strip()
     if target_uids is not None:
@@ -273,6 +276,30 @@ def ctv_save_frame(
         payload["targetUid"] = target_uid.strip()
 
     resp = _client.post(endpoint, json=payload, headers=_headers(), timeout=20)
+    if resp.is_error:
+        raise Exception(parse_api_error(resp))
+    _frames_cache_time = 0.0
+    return resp.json()
+
+
+def ctv_delete_frame(frame_id: str) -> dict:
+    """
+    DELETE /api/v1/ctv/frames?id=...
+    Xóa khung widget trên máy chủ locket.2707226.xyz theo ID.
+    """
+    global _frames_cache_time
+    fid = (frame_id or "").strip()
+    if not fid:
+        raise ValueError("Thiếu ID khung cần xóa")
+    endpoint = f"{API_BASE_URL}/api/v1/ctv/frames"
+    resp = _client.request(
+        "DELETE",
+        endpoint,
+        params={"id": fid},
+        json={"id": fid},
+        headers=_headers(),
+        timeout=15,
+    )
     if resp.is_error:
         raise Exception(parse_api_error(resp))
     _frames_cache_time = 0.0
@@ -302,6 +329,7 @@ def ctv_save_caption(
     target_uid: str = "",
     active: bool = True,
     caption_id: str = "",
+    group_name: str = "",
 ) -> dict:
     """
     POST /api/v1/ctv/captions
@@ -326,8 +354,37 @@ def ctv_save_caption(
         payload["symbolName"] = symbol_name.strip()
     if colors and isinstance(colors, list):
         payload["colors"] = [str(c).strip() for c in colors if str(c).strip()][:2]
+    if group_name and group_name.strip():
+        payload["groupName"] = group_name.strip()[:60]
 
     resp = _client.post(url, json=payload, headers=_headers(), timeout=15)
+    if resp.is_error:
+        raise Exception(parse_api_error(resp))
+    return resp.json()
+
+
+def ctv_delete_caption(caption_id: str, uid: str = "") -> dict:
+    """
+    DELETE /api/v1/ctv/captions?id=...&uid=...
+    Xóa Caption của khách hàng (khi truyền uid) hoặc Brand Caption CTV (khi không truyền uid).
+    """
+    cid = (caption_id or "").strip()
+    if not cid:
+        raise ValueError("Thiếu ID Caption cần xóa")
+    url = f"{API_BASE_URL}/api/v1/ctv/captions"
+    req_params = {"id": cid}
+    payload = {"id": cid}
+    if uid and uid.strip():
+        req_params["uid"] = uid.strip()
+        payload["uid"] = uid.strip()
+    resp = _client.request(
+        "DELETE",
+        url,
+        params=req_params,
+        json=payload,
+        headers=_headers(),
+        timeout=15,
+    )
     if resp.is_error:
         raise Exception(parse_api_error(resp))
     return resp.json()
