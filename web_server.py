@@ -1003,7 +1003,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "products": config.PRODUCTS,
                 "banner": db.get_banner_config(),
                 "zalo_group_url": getattr(config, "ZALO_GROUP_URL", "").strip(),
-                "zalo_group_qr": "/zalo_group_qr.png",
+                "zalo_group_qr": "/zalo_group_qr.png?v=2",
                 "support_phone": getattr(config, "SUPPORT_PHONE", "0345222802"),
                 "support_telegram": getattr(config, "SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28"),
                 "bank_id": getattr(config, "BANK_ID", "TPB"),
