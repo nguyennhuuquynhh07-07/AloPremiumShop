@@ -765,6 +765,36 @@
                 </div>
             </div>
 
+            <!-- BẬT / TẮT GÓI LOCKET GOLD FREE (0Đ) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🎁</span>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="text-base font-black text-white">Gói Dùng Thử Locket Gold Free (0đ)</h3>
+                            <span id="adminFreeStatusBadge"
+                                class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                🚫 Đang TẠM ĐÓNG
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Khi bật: Khách có thể tải hồ sơ <code>/Free.mobileconfig</code> trên Web, Trang hướng dẫn &amp; Bot Telegram. Khi tắt: Tự động ẩn banner 0đ và chặn tải miễn phí (HTTP 410).
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                    <label class="flex items-center gap-2 cursor-pointer select-none px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700">
+                        <input type="checkbox" id="adminFreeEnabled" onchange="toggleAdminFreeTier(this.checked)"
+                            class="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-400 cursor-pointer">
+                        <span class="text-xs font-bold text-slate-200">Mở gói Free 0đ</span>
+                    </label>
+                    <button type="button" onclick="toggleAdminFreeTier()" id="btnToggleFreeCard"
+                        class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs cursor-pointer transition-all">
+                        🟢 Mở Gói Free
+                    </button>
+                </div>
+            </div>
+
             <!-- 3 PRODUCT PRICE CARDS (Locket, Spotify, Combo) -->
             <div id="adminPricesGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="p-8 text-center text-slate-500 col-span-3">Đang tải danh sách bảng giá...</div>
@@ -1091,7 +1121,7 @@
                         </button>
                         <button type="button" onclick="switchAdminFrameMode('gallery')" id="admFrameModeBtn_gallery"
                             class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer">
-                            Kho Khung Mẫu (<span id="admCntPresetFrames">79</span>)
+                            Kho Khung Mẫu (<span id="admCntPresetFrames">0</span>)
                         </button>
                     </div>
                     <span class="text-xs font-extrabold text-emerald-700">Kết nối Live locket.2707226.xyz</span>
@@ -1263,15 +1293,47 @@
                     </div>
                 </div>
 
-                <!-- MODE B: KHO KHUNG MẪU (79) -->
+                <!-- MODE B: KHO KHUNG MẪU ĐỒNG BỘ TỪ WEB CHÍNH -->
                 <div id="admFrameView_gallery" class="hidden space-y-3">
+                    <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] p-4 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h4 class="font-black text-xs sm:text-sm text-[#1E1B18]">🔄 Đồng Bộ Kho Khung Mẫu Dùng Chung Từ Web Chính (<code>locket.2707226.xyz</code>)</h4>
+                                <p class="text-[11px] text-[#6E6659]">Thay thế kho tĩnh cũ bằng đúng các khung cộng đồng đang có trên <code>/api/ctv/brand</code> (không tốn quota 30 slot của CTV).</p>
+                            </div>
+                            <a href="https://locket.2707226.xyz/api/ctv/brand" target="_blank"
+                                class="px-3 py-1.5 rounded-lg bg-[#FFF8DC] hover:bg-[#FFD84D] border-2 border-[#1E1B18] text-[11px] font-black text-[#1E1B18] shrink-0">
+                                🔗 Mở /api/ctv/brand ↗
+                            </a>
+                        </div>
+                        <textarea id="admSyncBrandJsonInput" rows="2"
+                            placeholder='Dán JSON từ https://locket.2707226.xyz/api/ctv/brand vào đây (khi bạn đang đăng nhập web chính)...'
+                            class="w-full px-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-mono text-[#1E1B18] focus:outline-none"></textarea>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button type="button" onclick="adminSyncFrameLibrary('sync')" id="btnAdmSyncFrameLib"
+                                class="px-4 py-1.5 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                                ✅ Đồng Bộ Thay Kho Mẫu Mới
+                            </button>
+                            <button type="button" onclick="adminSyncFrameLibrary('clear')"
+                                class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border-2 border-rose-700 text-xs font-bold text-rose-800 cursor-pointer">
+                                🗑️ Chỉ Dùng Khung Live CTV (Tắt Kho Tĩnh)
+                            </button>
+                            <span id="admFrameLibStatusTxt" class="text-[11px] text-[#6E6659] font-semibold"></span>
+                        </div>
+                    </div>
+
                     <div
-                        class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] p-4 flex items-center justify-between gap-2">
+                        class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] p-4 flex flex-wrap items-center justify-between gap-2">
                         <input type="text" id="admPresetSearch" oninput="renderAdminPresetGallery()"
-                            placeholder="Tìm khung trong 79 mẫu (Kuromi, Shin, Kitty, Conan, Gojo...)"
-                            class="flex-1 px-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
-                        <span class="px-3 py-1.5 rounded-lg bg-[#FFD84D] border border-[#1E1B18] text-xs font-black">79
-                            Mẫu</span>
+                            placeholder="Tìm khung theo tên, tác giả, nhóm..."
+                            class="flex-1 min-w-[200px] px-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="loadAdminPresetFrames(true)" id="btnAdmRefreshPresets"
+                                class="px-3 py-1.5 rounded-lg bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                                🔄 Làm mới kho
+                            </button>
+                            <span id="admCntPresetBadge" class="px-3 py-1.5 rounded-lg bg-[#FFD84D] border border-[#1E1B18] text-xs font-black">0 Mẫu</span>
+                        </div>
                     </div>
                     <div id="admPresetGalleryGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3"></div>
                 </div>
@@ -1722,6 +1784,10 @@
                         <span>🛠️</span> Bảo Trì Cache &amp; Kiểm Tra SePay Live
                     </h3>
                     <div class="flex flex-wrap gap-3">
+                        <button type="button" onclick="toggleAdminFreeTier()" id="btnSysToggleFree"
+                            class="px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-xs font-black cursor-pointer">
+                            🎁 Gói Free 0đ: Đang ĐÓNG (Bấm để Mở)
+                        </button>
                         <button type="button" onclick="adminClearApiCache()" id="btnAdminClearCache"
                             class="px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-black cursor-pointer">
                             🧹 Xóa Cache API (30s) &amp; Làm Mới Giá
@@ -2597,6 +2663,9 @@
                     if (tag && data.banner.tag) tag.value = data.banner.tag;
                     if (txt && data.banner.text) txt.value = data.banner.text;
                 }
+                if (typeof data.free_enabled === 'boolean') {
+                    syncAdminFreeUI(data.free_enabled);
+                }
             } catch (err) {
                 console.error(err);
                 grid.innerHTML = '<div class="p-8 text-center text-red-400 font-bold col-span-3">❌ Lỗi kết nối: ' + escapeAdminHtml(err.message) + '</div>';
@@ -3108,30 +3177,95 @@
             }
         }
 
-        async function loadAdminPresetFrames() {
+        async function loadAdminPresetFrames(forceRefresh = false) {
+            const refBtn = document.getElementById('btnAdmRefreshPresets');
+            if (forceRefresh && refBtn) {
+                refBtn.disabled = true;
+                refBtn.textContent = '⏳ Đang tải...';
+            }
             try {
-                const res = await fetch('/api/frames', { headers: adminHeaders() });
+                const res = await fetch(`/api/frames${forceRefresh ? '?refresh=1' : ''}`, { headers: adminHeaders() });
                 const data = await res.json();
                 if (data && Array.isArray(data.frames)) {
                     adminPresetFrames = data.frames;
                     const cnt = document.getElementById('admCntPresetFrames');
+                    const badge = document.getElementById('admCntPresetBadge');
+                    const stTxt = document.getElementById('admFrameLibStatusTxt');
                     if (cnt) cnt.textContent = adminPresetFrames.length;
+                    if (badge) badge.textContent = `${adminPresetFrames.length} Mẫu`;
+                    if (stTxt) {
+                        const srcLabel = data.library_source === 'locket_2707226_brand'
+                            ? 'Đã đồng bộ từ web chính'
+                            : (data.library_source === 'ctv_live_only' ? 'Chỉ dùng khung Live CTV' : 'Kho cũ (chưa đồng bộ web chính)');
+                        stTxt.textContent = `Nguồn hiện tại: ${srcLabel}`;
+                    }
                     renderAdminPresetGallery();
+                    if (forceRefresh) showAdminToast(`🔄 Đã làm mới kho (${adminPresetFrames.length} khung)!`);
                 }
             } catch (e) { }
+            finally {
+                if (forceRefresh && refBtn) {
+                    refBtn.disabled = false;
+                    refBtn.textContent = '🔄 Làm mới kho';
+                }
+            }
+        }
+
+        async function adminSyncFrameLibrary(mode = 'sync') {
+            const rawJson = (document.getElementById('admSyncBrandJsonInput')?.value || '').trim();
+            if (mode === 'sync' && !rawJson) {
+                alert('Vui lòng mở https://locket.2707226.xyz/api/ctv/brand khi đang đăng nhập, copy JSON và dán vào ô trên trước!');
+                return;
+            }
+            const confirmMsg = mode === 'clear'
+                ? 'Xác nhận tắt kho tĩnh cũ và chỉ hiển thị khung Live từ API CTV?'
+                : 'Xác nhận thay thế toàn bộ kho mẫu cũ bằng danh sách khung mới dán từ web chính?';
+            if (!confirm(confirmMsg)) return;
+            const btn = document.getElementById('btnAdmSyncFrameLib');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang đồng bộ...'; }
+            try {
+                const res = await fetch('/api/admin/ctv/sync_frame_library', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, action: mode, raw_json: rawJson })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Đồng bộ kho khung thất bại');
+                showAdminToast('✅ ' + (data.message || 'Đồng bộ kho khung thành công!'));
+                if (mode === 'sync' && document.getElementById('admSyncBrandJsonInput')) {
+                    document.getElementById('admSyncBrandJsonInput').value = '';
+                }
+                await loadAdminPresetFrames(true);
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '✅ Đồng Bộ Thay Kho Mẫu Mới'; }
+            }
         }
 
         function renderAdminPresetGallery() {
             const grid = document.getElementById('admPresetGalleryGrid');
             if (!grid) return;
             const kw = (document.getElementById('admPresetSearch')?.value || '').trim().toLowerCase();
-            const list = adminPresetFrames.filter(fr => !kw || (fr.name || '').toLowerCase().includes(kw) || (fr.category || '').toLowerCase().includes(kw));
+            const list = adminPresetFrames.filter(fr =>
+                !kw
+                || (fr.name || '').toLowerCase().includes(kw)
+                || (fr.category || '').toLowerCase().includes(kw)
+                || (fr.author || '').toLowerCase().includes(kw)
+            );
+            if (!list.length) {
+                grid.innerHTML = '<div class="col-span-full py-8 text-center text-xs text-zinc-500 font-bold">Chưa có khung mẫu nào phù hợp.</div>';
+                return;
+            }
             grid.innerHTML = list.map(fr => {
                 const rawUrl = safeAdminUrl(fr.rawImage || fr.image, '/assets/index/sim-demos/demo-1.jpg');
                 const imgUrl = escapeAdminHtml(rawUrl);
                 const jsImgUrl = escapeAdminJsAttr(rawUrl);
                 const sName = escapeAdminHtml(fr.name);
                 const jsName = escapeAdminJsAttr(fr.name);
+                const metaTxt = fr.author
+                    ? `<div class="flex justify-between text-[10px] text-[#6E6659] mt-0.5"><span>Bởi: @${escapeAdminHtml(fr.author)}</span><span>${Number(fr.usedCount || 0) > 0 ? Number(fr.usedCount) + ' CTV' : ''}</span></div>`
+                    : '';
                 return `
                     <div class="bg-[#FFFDF5] rounded-2xl p-2.5 border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] flex flex-col justify-between">
                         <div>
@@ -3140,6 +3274,7 @@
                                 <img src="${imgUrl}" loading="lazy" class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none">
                             </div>
                             <div class="font-bold text-xs text-[#1E1B18] truncate">${sName}</div>
+                            ${metaTxt}
                         </div>
                         <button type="button" onclick="pickAdminPresetToEditor('${jsImgUrl}', '${jsName}')"
                             class="mt-2 w-full py-1.5 rounded-lg bg-[#FFD84D] hover:bg-[#FFC928] border border-[#1E1B18] text-[10px] font-black cursor-pointer">
@@ -4268,8 +4403,58 @@
                 document.getElementById('sysAccountHolder').textContent = inf.account_holder || 'NGUYEN NHU QUYNH';
                 if (document.getElementById('sysDnsComboUrl')) document.getElementById('sysDnsComboUrl').textContent = inf.dns_combo_url || 'https://doh.2707226.xyz/alopremiumshop';
                 if (document.getElementById('sysCountsSummary')) document.getElementById('sysCountsSummary').textContent = `${inf.free_caption_quota ?? 5} free · ${inf.users_count ?? 0} users · ${inf.orders_count ?? 0} đơn`;
+                if (typeof inf.free_enabled === 'boolean') syncAdminFreeUI(inf.free_enabled);
             } catch (err) {
                 console.error(err);
+            }
+        }
+
+        function syncAdminFreeUI(enabled) {
+            const isOn = Boolean(enabled);
+            const chk = document.getElementById('adminFreeEnabled');
+            if (chk) chk.checked = isOn;
+
+            const badge = document.getElementById('adminFreeStatusBadge');
+            if (badge) {
+                badge.textContent = isOn ? '🟢 Đang MỞ phát hành 0đ' : '🚫 Đang TẠM ĐÓNG';
+                badge.className = isOn
+                    ? 'px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : 'px-2.5 py-0.5 rounded-full text-[11px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/30';
+            }
+
+            const btnCard = document.getElementById('btnToggleFreeCard');
+            if (btnCard) {
+                btnCard.textContent = isOn ? '🚫 Tạm Đóng Gói Free' : '🟢 Mở Gói Free';
+                btnCard.className = isOn
+                    ? 'px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-black text-xs cursor-pointer transition-all'
+                    : 'px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs cursor-pointer transition-all';
+            }
+
+            const btnSys = document.getElementById('btnSysToggleFree');
+            if (btnSys) {
+                btnSys.textContent = isOn ? '🎁 Gói Free 0đ: Đang MỞ (Bấm để Đóng)' : '🎁 Gói Free 0đ: Đang ĐÓNG (Bấm để Mở)';
+                btnSys.className = isOn
+                    ? 'px-4 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-black cursor-pointer'
+                    : 'px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-xs font-black cursor-pointer';
+            }
+        }
+
+        async function toggleAdminFreeTier(explicitState) {
+            const chk = document.getElementById('adminFreeEnabled');
+            const targetState = typeof explicitState === 'boolean' ? explicitState : !(chk ? chk.checked : false);
+            try {
+                const res = await fetch('/api/admin/toggle_free', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, enabled: targetState })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Không thể cập nhật trạng thái Gói Free');
+                syncAdminFreeUI(data.free_enabled);
+                showAdminToast((data.free_enabled ? '🟢 ' : '🚫 ') + (data.message || 'Đã cập nhật trạng thái Gói Free!'));
+            } catch (err) {
+                alert('❌ ' + err.message);
+                loadSystemInfo();
             }
         }
     </script>

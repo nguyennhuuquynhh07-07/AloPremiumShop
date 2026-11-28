@@ -17,6 +17,7 @@ DB_USERS = "data/users.json"
 DB_CODES = "data/codes.json"
 DB_PRICES = "data/prices.json"
 DB_BANNER = "data/banner.json"
+DB_SETTINGS = "data/settings.json"
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -712,6 +713,34 @@ def update_banner_config(tag: str, text: str, enabled: bool = True) -> dict:
     }
     _save(DB_BANNER, data)
     return data
+
+
+# ── CẤU HÌNH HỆ THỐNG (BẬT / TẮT GÓI FREE 0Đ) ────────────────────────────────
+DEFAULT_SETTINGS = {
+    "free_enabled": False,
+}
+
+
+def get_system_settings() -> dict:
+    cfg = _load(DB_SETTINGS, None)
+    if not isinstance(cfg, dict):
+        return DEFAULT_SETTINGS.copy()
+    merged = DEFAULT_SETTINGS.copy()
+    merged.update(cfg)
+    return merged
+
+
+def is_free_tier_enabled() -> bool:
+    return bool(get_system_settings().get("free_enabled", False))
+
+
+def set_free_tier_enabled(enabled: bool) -> dict:
+    with _db_lock:
+        cfg = get_system_settings()
+        cfg["free_enabled"] = bool(enabled)
+        cfg["updated_at"] = datetime.now().isoformat()
+        _save(DB_SETTINGS, cfg)
+        return cfg
 
 # Tự động đồng bộ bảng giá tuỳ chỉnh ngay khi nạp module
 try:

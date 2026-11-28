@@ -894,12 +894,29 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Bot Locket Gold + Spotify is running 24/7!")
             return
 
-        # 1.1 Gói Free đã tạm đóng -> trả 410 Gone thay vì cho tải lén .mobileconfig Free
+        # 1.1 Phục vụ /Free.mobileconfig khi Admin bật gói Free; trả 410 Gone khi tạm đóng
         if raw_path in ("/Free.mobileconfig", "/LocketNgon.mobileconfig"):
-            self._send_json(410, {
-                "ok": False,
-                "error": "Gói Locket Gold Free đã tạm ngưng phát hành. Vui lòng chọn gói VIP từ 5.000đ!"
-            })
+            if not db.is_free_tier_enabled():
+                self._send_json(410, {
+                    "ok": False,
+                    "error": "Gói Locket Gold Free đã tạm ngưng phát hành. Vui lòng chọn gói VIP từ 5.000đ!"
+                })
+                return
+            cfg_name = "Free.mobileconfig"
+            cfg_path = os.path.join(os.path.dirname(__file__), cfg_name)
+            if os.path.exists(cfg_path) and os.path.isfile(cfg_path):
+                with open(cfg_path, "rb") as f:
+                    cfg_data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/x-apple-aspen-config")
+                self.send_header("Content-Disposition", f'attachment; filename="{cfg_name}"')
+                self.send_header("Content-Length", str(len(cfg_data)))
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(cfg_data)
+            else:
+                self._send_json(404, {"ok": False, "error": f"{cfg_name} not found"})
             return
 
         # 1.2 Phục vụ trang Hướng dẫn cài đặt DNS (Clean URL)
@@ -1053,6 +1070,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "filter_topup_packs": getattr(config, "FILTER_TOPUP_PACKS", {}),
                 "caption_topup_packs": getattr(config, "CAPTION_TOPUP_PACKS", {}),
                 "free_caption_quota": int(getattr(config, "FREE_CAPTION_QUOTA", 5) or 5),
+                "free_enabled": db.is_free_tier_enabled(),
                 "banner": db.get_banner_config(),
                 "zalo_group_url": getattr(config, "ZALO_GROUP_URL", "").strip(),
                 "zalo_group_qr": "/zalo_group_qr.png?v=2",
@@ -1082,13 +1100,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
         if path == "/api/frames":
             if not self._require_vip_or_admin(params=params):
                 return
+            force_ref = params.get("refresh", [""])[0].strip() in ("1", "true", "yes")
             all_frames = []
             seen_urls = set()
 
             # 1. Lấy khung Live CTV dành cho ALL (ẩn hoàn toàn UID cá nhân của khách khác)
             ctv_connected = False
             try:
-                ctv_res = api.ctv_get_frames()
+                ctv_res = api.ctv_get_frames(force_refresh=force_ref)
                 if isinstance(ctv_res, dict) and ctv_res.get("ok"):
                     ctv_connected = True
                     for fr in ctv_res.get("frames", []):
@@ -1110,16 +1129,22 @@ class WebAppHandler(BaseHTTPRequestHandler):
                                     "rawImage": masked_img,
                                     "badge": "Nổi Bật",
                                     "source": "ctv_live",
+                                    "author": str(fr.get("author") or "").strip().lstrip("@"),
+                                    "usedCount": fr.get("usedCount", 0),
                                 })
             except Exception as e_ctv_fr:
                 logger.warning(f"Fetch CTV live frames failed: {e_ctv_fr}")
 
-            # 2. Nạp thêm 79 khung thư viện từ data/frames.json
+            # 2. Nạp thêm Kho Khung Mẫu Dùng Chung từ data/frames.json
             frames_path = os.path.join(os.path.dirname(__file__), "data", "frames.json")
+            synced_at = ""
+            lib_source = "legacy"
             if os.path.exists(frames_path):
                 try:
                     with open(frames_path, "r", encoding="utf-8") as f:
                         f_data = json.load(f)
+                    synced_at = str(f_data.get("syncedAt") or "")
+                    lib_source = str(f_data.get("source") or "legacy")
                     for fr in f_data.get("frames", []):
                         raw_u = str(fr.get("rawImage") or fr.get("image") or "").strip()
                         if raw_u and raw_u not in seen_urls:
@@ -1138,6 +1163,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "success": True,
                 "ctv_connected": ctv_connected,
                 "count": len(all_frames),
+                "library_source": lib_source,
+                "synced_at": synced_at,
                 "frames": all_frames,
             })
             return
@@ -1678,7 +1705,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "ok": True,
                 "products": db.get_all_admin_pricing(),
                 "custom_prices": db.get_custom_prices(),
-                "banner": db.get_banner_config()
+                "banner": db.get_banner_config(),
+                "free_enabled": db.is_free_tier_enabled(),
             })
             return
 
@@ -1814,6 +1842,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     "admin_count": len(getattr(config, "ADMIN_IDS", [])),
                     "users_count": len(db.get_users()),
                     "orders_count": len(db.get_orders()),
+                    "free_enabled": db.is_free_tier_enabled(),
                     "server_status": "ONLINE 24/7"
                 }
             })
@@ -1902,6 +1931,22 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "ok": True,
                 "message": "Đã cập nhật banner thông báo ưu đãi thành công!",
                 "banner": saved_banner
+            })
+            return
+
+        # API Admin: Bật / Tắt Gói Free 0đ (Đồng bộ Web & Bot Telegram)
+        if path == "/api/admin/toggle_free":
+            if not self._require_admin(body=body):
+                return
+            if "enabled" in body:
+                new_state = bool(body.get("enabled"))
+            else:
+                new_state = not db.is_free_tier_enabled()
+            saved = db.set_free_tier_enabled(new_state)
+            self._send_json(200, {
+                "ok": True,
+                "free_enabled": bool(saved.get("free_enabled", False)),
+                "message": "Đã MỞ lại gói Locket Gold Free (0đ)!" if new_state else "Đã TẠM ĐÓNG gói Locket Gold Free (0đ)!",
             })
             return
 
@@ -2543,6 +2588,179 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(200, res)
             except Exception as e_dfr:
                 self._send_json(400, {"ok": False, "error": str(e_dfr)})
+            return
+
+        # API Admin: Đồng bộ Kho Khung Mẫu Dùng Chung từ web chính (locket.2707226.xyz/api/ctv/brand)
+        if path == "/api/admin/ctv/sync_frame_library":
+            if not self._require_admin(body=body):
+                return
+            action = str(body.get("action") or "sync").strip().lower()
+            raw_json = body.get("raw_json")
+            raw_frames = body.get("frames")
+            cookie_val = str(body.get("cookie") or "").strip()
+
+            def _pick_group(nm: str, cat: str) -> str:
+                txt = f"{nm} {cat}".lower()
+                if any(k in txt for k in ("sanrio", "kitty", "kuromi", "melody", "cinnamoroll", "pompom")):
+                    return "sanrio"
+                if "shin" in txt or "bút chì" in txt:
+                    return "shin"
+                if any(k in txt for k in ("conan", "killua", "gojo", "luffy", "one piece", "dragon ball", "doraemon", "sukuna", "zenitsu", "kimetsu", "totoro", "anime")):
+                    return "anime"
+                if any(k in txt for k in ("chiikawa", "gấu", "thỏ", "mèo", "vịt", "heo", "cáo", "teddy", "lotso", "dễ thương", "cute")):
+                    return "cute"
+                if any(k in txt for k in ("noel", "halloween", "christmas", "20/10", "phụ nữ", "lễ hội", "tết")):
+                    return "holiday"
+                if any(k in txt for k in ("bá khí", "sang trọng", "galaxy", "huyền thoại", "cr7")):
+                    return "luxury"
+                return "community"
+
+            def _extract_shared_list(obj) -> list:
+                if isinstance(obj, list):
+                    return obj
+                if isinstance(obj, dict):
+                    inner = obj.get("data") if isinstance(obj.get("data"), dict) else obj
+                    for key in ("sharedFrames", "communityFrames", "templates", "shared", "catalog", "library", "presetFrames", "items", "frames"):
+                        val = inner.get(key)
+                        if isinstance(val, list):
+                            return val
+                    if isinstance(obj.get("data"), list):
+                        return obj["data"]
+                return []
+
+            source_payload = raw_frames if raw_frames is not None else raw_json
+            if action != "clear" and not source_payload and cookie_val:
+                try:
+                    brand_url = f"{config.API_BASE_URL}/api/ctv/brand"
+                    with httpx.Client(timeout=15.0) as br_client:
+                        br_resp = br_client.get(
+                            brand_url,
+                            headers={
+                                "Cookie": cookie_val,
+                                "User-Agent": "AloPremiumAdmin/2.0",
+                                "Accept": "application/json",
+                            },
+                        )
+                    if br_resp.status_code == 401:
+                        self._send_json(401, {"ok": False, "error": "Cookie phiên đăng nhập web chính đã hết hạn hoặc không hợp lệ (HTTP 401)."})
+                        return
+                    if br_resp.is_error:
+                        self._send_json(400, {"ok": False, "error": f"Web chính trả về HTTP {br_resp.status_code}."})
+                        return
+                    source_payload = br_resp.json()
+                except Exception as e_ck:
+                    self._send_json(400, {"ok": False, "error": f"Không thể tải từ /api/ctv/brand: {e_ck}"})
+                    return
+
+            normalized = []
+            if action != "clear":
+                if isinstance(source_payload, str):
+                    s_trim = source_payload.strip()
+                    if not s_trim:
+                        self._send_json(400, {"ok": False, "error": "Vui lòng dán JSON từ https://locket.2707226.xyz/api/ctv/brand hoặc Cookie đăng nhập!"})
+                        return
+                    try:
+                        source_payload = json.loads(s_trim)
+                    except Exception as e_js:
+                        self._send_json(400, {"ok": False, "error": f"Dữ liệu JSON không hợp lệ: {e_js}"})
+                        return
+
+                raw_items = _extract_shared_list(source_payload)
+                if not raw_items:
+                    self._send_json(400, {"ok": False, "error": "Không tìm thấy danh sách khung mẫu hợp lệ trong dữ liệu gửi lên."})
+                    return
+
+                seen_u = set()
+                for idx, it in enumerate(raw_items):
+                    if not isinstance(it, dict):
+                        continue
+                    u_raw = str(it.get("rawImage") or it.get("url") or it.get("image") or it.get("src") or "").strip()
+                    if not u_raw or not (u_raw.startswith("https://") or u_raw.startswith("http://")):
+                        continue
+                    if u_raw in seen_u:
+                        continue
+                    seen_u.add(u_raw)
+
+                    author = str(
+                        it.get("author")
+                        or it.get("creator")
+                        or it.get("createdBy")
+                        or it.get("ownerUsername")
+                        or it.get("username")
+                        or (it.get("user") or {}).get("username")
+                        or ""
+                    ).strip().lstrip("@")
+                    try:
+                        used_cnt = int(it.get("usedCount") or it.get("ctvUsed") or it.get("usageCount") or it.get("uses") or 0)
+                    except (TypeError, ValueError):
+                        used_cnt = 0
+                    fr_name = str(it.get("name") or it.get("title") or f"Khung Mẫu #{len(normalized)+1}").strip()
+                    fr_cat = str(it.get("category") or it.get("groupName") or (f"@{author}" if author else "Kho Khung Chung")).strip()
+                    fr_badge = str(it.get("badge") or (f"@{author}" if author else fr_cat)).strip()
+                    normalized.append({
+                        "id": str(it.get("id") or it.get("_id") or f"shared_{len(normalized)+1}").strip(),
+                        "name": fr_name,
+                        "category": fr_cat,
+                        "group": _pick_group(fr_name, fr_cat),
+                        "image": u_raw,
+                        "rawImage": u_raw,
+                        "badge": fr_badge,
+                        "author": author,
+                        "usedCount": used_cnt,
+                    })
+
+                if not normalized:
+                    self._send_json(400, {"ok": False, "error": "Không có khung nào có URL ảnh HTTP/HTTPS hợp lệ."})
+                    return
+
+            frames_path = os.path.join(os.path.dirname(__file__), "data", "frames.json")
+            backup_path = os.path.join(os.path.dirname(__file__), "data", "frames.backup.json")
+            os.makedirs(os.path.dirname(frames_path), exist_ok=True)
+            if os.path.exists(frames_path) and not os.path.exists(backup_path):
+                try:
+                    import shutil
+                    shutil.copy2(frames_path, backup_path)
+                except Exception:
+                    pass
+
+            out_doc = {
+                "success": True,
+                "source": "ctv_live_only" if action == "clear" else "locket_2707226_brand",
+                "count": len(normalized),
+                "frames": normalized,
+                "syncedAt": datetime.now().isoformat(),
+            }
+            import tempfile
+            fd, tmp_p = tempfile.mkstemp(dir=os.path.dirname(frames_path), suffix=".json")
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as tf:
+                    json.dump(out_doc, tf, ensure_ascii=False, indent=2)
+                os.replace(tmp_p, frames_path)
+            except Exception as e_wr:
+                if os.path.exists(tmp_p):
+                    try:
+                        os.remove(tmp_p)
+                    except OSError:
+                        pass
+                self._send_json(500, {"ok": False, "error": f"Không thể lưu data/frames.json: {e_wr}"})
+                return
+
+            try:
+                api.clear_all_caches()
+            except Exception:
+                pass
+
+            msg_ok = (
+                "Đã tắt kho mẫu tĩnh cũ — chỉ dùng khung Live từ API CTV!"
+                if action == "clear"
+                else f"Đã đồng bộ thành công {len(normalized)} khung mẫu từ web chính!"
+            )
+            self._send_json(200, {
+                "ok": True,
+                "count": len(normalized),
+                "frames": normalized,
+                "message": msg_ok,
+            })
             return
 
         # API Admin: Thêm / Cập nhật Brand Caption hoặc Caption khách hàng lên locket.2707226.xyz

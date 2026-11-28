@@ -11,13 +11,15 @@ from config import PRODUCTS, SUPPORT_USERNAME, SUPPORT_TELEGRAM, SUPPORT_PHONE
 # ── MENU CHÍNH ────────────────────────────────────────────────────────────────
 
 def main_menu_kb() -> InlineKeyboardMarkup:
+    import database as db
     import utils
     prods = getattr(utils, "get_dynamic_products", lambda: PRODUCTS)()
     web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop")
+    free_label = "🎁 Gói FREE (0đ)" if db.is_free_tier_enabled() else "🚫 Gói FREE (Đã tắt)"
     rows = [
         [
             InlineKeyboardButton("🌐 Mở Website Mua Hàng", url=web_url),
-            InlineKeyboardButton("🚫 Gói FREE (Đã tắt)", callback_data="free_locket")
+            InlineKeyboardButton(free_label, callback_data="free_locket")
         ]
     ]
     for pk, pv in prods.items():
@@ -342,7 +344,9 @@ def admin_approval_kb(order_id: str) -> InlineKeyboardMarkup:
 
 
 def admin_kb(pending_count: int = 0) -> InlineKeyboardMarkup:
+    import database as db
     pending_label = f"⚡ Duyệt đơn chờ ({pending_count})" if pending_count > 0 else "⚡ Đơn chờ duyệt"
+    free_btn_label = "🟢 Gói Free 0đ: ĐANG MỞ (Bấm để tắt)" if db.is_free_tier_enabled() else "🔴 Gói Free 0đ: ĐANG TẮT (Bấm để mở)"
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(pending_label,           callback_data="admin:orders:pending"),
@@ -371,6 +375,9 @@ def admin_kb(pending_count: int = 0) -> InlineKeyboardMarkup:
         [
             InlineKeyboardButton("🔄 Reset máy Spotify",  callback_data="admin:reset_menu"),
             InlineKeyboardButton("🎁 Cấp Caption VIP",    callback_data="admin:grant_caption_menu"),
+        ],
+        [
+            InlineKeyboardButton(free_btn_label,          callback_data="admin:toggle_free"),
         ],
         [
             InlineKeyboardButton("📢 Gửi thông báo toàn bot", callback_data="admin:broadcast"),

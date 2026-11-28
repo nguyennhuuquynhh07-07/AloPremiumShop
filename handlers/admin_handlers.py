@@ -59,6 +59,9 @@ def build_admin_menu_text() -> tuple[str, int]:
     if pending_count > 0:
         header += f"🔔 <b>Đang có {pending_count} đơn hàng chờ xử lý!</b> Bấm nút 'Duyệt đơn chờ' để kích hoạt ngay.\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
 
+    free_state = "🟢 <b>ĐANG MỞ</b> (Khách có thể tải Free 0đ)" if db.is_free_tier_enabled() else "🚫 <b>TẠM ĐÓNG</b> (Đang ẩn/chặn tải Free 0đ)"
+    header += f"🎁 Gói Locket Gold Free (0đ): {free_state}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+
     admin_controls = (
         "<b>Lệnh quản trị nhanh</b>\n"
         "<pre>\n"
@@ -1223,6 +1226,20 @@ async def cb_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             "<i>(Gõ /cancel để huỷ)</i>",
             parse_mode=ParseMode.HTML,
             reply_markup=back_admin_kb()
+        )
+
+    elif action == "toggle_free":
+        new_state = not db.is_free_tier_enabled()
+        db.set_free_tier_enabled(new_state)
+        await query.answer(
+            "✅ Đã MỞ gói Locket Gold Free 0đ!" if new_state else "🚫 Đã TẠM ĐÓNG gói Locket Gold Free 0đ!",
+            show_alert=True,
+        )
+        text, pending = build_admin_menu_text()
+        await query.edit_message_text(
+            text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=admin_kb(pending),
         )
 
     elif action == "close":

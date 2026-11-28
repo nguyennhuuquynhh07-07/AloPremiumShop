@@ -706,7 +706,7 @@
                 <!-- CAROUSEL CUỘN NGANG TRÊN MOBILE / GRID 4 CỘT TRÊN DESKTOP -->
                 
                 <!-- BANNER NHAN GOI FREE 0D -->
-                <div class="mb-4 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                <div id="freePromoBanner" class="hidden mb-4 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 flex flex-wrap items-center justify-between gap-3 shadow-xs">
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">🎁</span>
                         <div>
@@ -891,7 +891,7 @@
                             <ul class="space-y-2 text-xs text-[#1E1B18]">
                                 <li class="flex items-center gap-2.5">
                                     <span class="w-4 h-4 rounded-full bg-[#FFB800] text-[#1E1B18] flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
-                                    <span class="font-semibold text-[#1E1B18]">👑 <strong>Locket Gold VIP:</strong> Viền vàng, 60s, 79+ khung, 4K</span>
+                                    <span class="font-semibold text-[#1E1B18]">👑 <strong>Locket Gold VIP:</strong> Viền vàng, 60s, Kho Khung Studio, 4K</span>
                                 </li>
                                 <li class="flex items-center gap-2.5">
                                     <span class="w-4 h-4 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">✓</span>
@@ -1037,7 +1037,7 @@
                                     <div class="flex flex-wrap gap-1.5 mt-2">
                                         <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-[#FFB800]/50 text-[10px] font-bold text-[#92400E]">👑 Viền Vàng VIP</span>
                                         <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-purple-300 text-[10px] font-bold text-purple-800">🎭 AI Filters</span>
-                                        <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-pink-300 text-[10px] font-bold text-pink-800">🎨 79+ Khung Studio</span>
+                                        <span class="px-2 py-0.5 rounded-lg bg-white/80 border border-pink-300 text-[10px] font-bold text-pink-800">🎨 Kho Khung Studio</span>
                                     </div>
                                 </div>
                             </div>
@@ -1316,34 +1316,34 @@
         <div id="section_free" class="hidden space-y-6">
             <div class="bg-white rounded-[32px] p-6 sm:p-8 shadow-xl border-2 border-[#FFE29A]">
                 <div class="text-center max-w-xl mx-auto mb-8">
-                    <span class="text-xs font-fredoka font-bold uppercase tracking-wider text-rose-700 bg-rose-100 px-3.5 py-1 rounded-full border border-rose-200">ĐÃ TẠM ĐÓNG</span>
+                    <span id="freeHeaderStatusBadge" class="text-xs font-fredoka font-bold uppercase tracking-wider text-rose-700 bg-rose-100 px-3.5 py-1 rounded-full border border-rose-200">ĐÃ TẠM ĐÓNG</span>
                     <h2 class="font-fredoka text-2xl sm:text-3xl font-black text-[#1E1B18] mt-3">Locket Gold FREE</h2>
-                    <p class="text-xs sm:text-sm text-[#8A7E68] mt-2">Gói dùng thử miễn phí hiện đã tạm đóng để nâng cấp hệ thống chứng chỉ máy chủ. Quý khách vui lòng chọn các gói VIP bản quyền chính chủ từ 5.000đ.</p>
+                    <p id="freeHeaderDesc" class="text-xs sm:text-sm text-[#8A7E68] mt-2">Gói dùng thử miễn phí hiện đã tạm đóng để nâng cấp hệ thống chứng chỉ máy chủ. Quý khách vui lòng chọn các gói VIP bản quyền chính chủ từ 5.000đ.</p>
                 </div>
 
                 <!-- THE EXACT FREE PRICING CARD + DONATE QR SIDE BY SIDE -->
                 <div class="flex flex-col md:flex-row items-center md:items-stretch justify-center gap-6 my-6">
-                    <div class="w-full max-w-[340px] bg-zinc-50/90 rounded-[36px] border-2 border-zinc-200 p-6 sm:p-7 shadow-sm relative flex flex-col justify-between opacity-85">
+                    <div id="freePricingCard" class="w-full max-w-[340px] bg-zinc-50/90 rounded-[36px] border-2 border-zinc-200 p-6 sm:p-7 shadow-sm relative flex flex-col justify-between opacity-85">
                         <div>
                             <!-- Free Badge -->
                             <div class="text-center mb-3">
-                                <span class="inline-block bg-zinc-300 text-zinc-700 text-xs font-fredoka font-black px-4 py-1 rounded-full">TẠM ĐÓNG</span>
+                                <span id="freeCardBadge" class="inline-block bg-zinc-300 text-zinc-700 text-xs font-fredoka font-black px-4 py-1 rounded-full">TẠM ĐÓNG</span>
                             </div>
 
                             <!-- Product Top -->
-                            <div class="flex items-center gap-3 mb-4 grayscale opacity-80">
+                            <div id="freeCardBrandRow" class="flex items-center gap-3 mb-4 grayscale opacity-80">
                                 <img src="/assets/logos/flat_yellow.webp" alt="Locket Gold" class="w-12 h-12 rounded-2xl shadow-sm shrink-0">
                                 <div>
-                                    <div class="font-fredoka font-black text-lg text-zinc-700">Locket Gold FREE</div>
-                                    <div class="text-xs text-zinc-500 font-semibold">Bản quyền thử nghiệm (Tạm ngưng)</div>
+                                    <div id="freeCardTitle" class="font-fredoka font-black text-lg text-zinc-700">Locket Gold FREE</div>
+                                    <div id="freeCardSub" class="text-xs text-zinc-500 font-semibold">Bản quyền thử nghiệm (Tạm ngưng)</div>
                                 </div>
                             </div>
 
                             <!-- Price -->
                             <div class="mb-2">
-                                <div class="font-fredoka font-black text-3xl sm:text-4xl text-zinc-500 line-through">0đ</div>
+                                <div id="freeCardPrice" class="font-fredoka font-black text-3xl sm:text-4xl text-zinc-500 line-through">0đ</div>
                                 <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">Đã tạm đóng gói Free</span>
+                                    <span id="freeCardStatusTag" class="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">Đã tạm đóng gói Free</span>
                                 </div>
                             </div>
 
@@ -1351,28 +1351,34 @@
                             <div class="border-t border-dashed border-zinc-200 my-4"></div>
 
                             <!-- Perks List -->
-                            <ul class="space-y-3 mb-6 text-xs sm:text-sm font-semibold text-zinc-400">
-                                <li class="flex items-center gap-2.5 line-through">
-                                    <span class="w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
+                            <ul id="freePerksList" class="space-y-3 mb-6 text-xs sm:text-sm font-semibold text-zinc-400">
+                                <li class="free-perk-item flex items-center gap-2.5 line-through">
+                                    <span class="free-perk-icon w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
                                     <span>Quay video 30s</span>
                                 </li>
-                                <li class="flex items-center gap-2.5 line-through">
-                                    <span class="w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
+                                <li class="free-perk-item flex items-center gap-2.5 line-through">
+                                    <span class="free-perk-icon w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
                                     <span>Đầy đủ 7 đặc quyền VIP Locket Gold cao cấp</span>
                                 </li>
-                                <li class="flex items-center gap-2.5 line-through">
-                                    <span class="w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
+                                <li class="free-perk-item flex items-center gap-2.5 line-through">
+                                    <span class="free-perk-icon w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
                                     <span>Đăng ảnh/video thư viện, xem ai xem, bạn bè vô hạn</span>
                                 </li>
-                                <li class="flex items-center gap-2.5 line-through">
-                                    <span class="w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
+                                <li class="free-perk-item flex items-center gap-2.5 line-through">
+                                    <span class="free-perk-icon w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0">✕</span>
                                     <span>Caption dài hơn, không quảng cáo</span>
                                 </li>
                             </ul>
                         </div>
 
-                        <!-- Button Cài Đặt Ngay -> Disabled Notice Box -->
-                        <div class="w-full py-3.5 px-4 rounded-2xl bg-zinc-100 text-zinc-400 font-fredoka font-black text-center border-2 border-zinc-300 shadow-sm block text-sm select-none">
+                        <!-- Button Cài Đặt Ngay (Khi Admin Mở) -->
+                        <a id="freeDownloadEnabledBox" href="/Free.mobileconfig" download="Free.mobileconfig"
+                           class="hidden w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#FFB800] to-[#FFA500] hover:brightness-105 text-[#1E1B18] font-fredoka font-black text-center border-2 border-[#E59B00] shadow-md transition-all text-sm">
+                            📥 Nâng cấp ngay (Tải DNS Free.mobileconfig)
+                        </a>
+
+                        <!-- Button Cài Đặt Ngay -> Disabled Notice Box (Khi Admin Đóng) -->
+                        <div id="freeDownloadDisabledBox" class="w-full py-3.5 px-4 rounded-2xl bg-zinc-100 text-zinc-400 font-fredoka font-black text-center border-2 border-zinc-300 shadow-sm block text-sm select-none">
                             <span class="line-through decoration-rose-500 decoration-2">📥 Nâng cấp ngay (Tải DNS Free)</span>
                             <div class="text-[11px] text-rose-600 font-bold mt-1">⚠️ Gói Free đã tạm ngưng phát hành</div>
                         </div>
@@ -1431,8 +1437,28 @@
                     </div>
                 </div>
 
+                <!-- HƯỚNG DẪN NHANH 3 BƯỚC (KHI MỞ GÓI FREE) -->
+                <div id="freeQuickGuideEnabledBox" class="hidden max-w-xl mx-auto mt-8 p-5 sm:p-6 rounded-2xl bg-amber-50/70 border border-amber-200">
+                    <h3 class="font-fredoka font-bold text-sm sm:text-base text-[#1E1B18] mb-3 flex items-center gap-2">
+                        <span>⚡</span> Cách cài đặt cấu hình Free trong 30 giây:
+                    </h3>
+                    <ol class="space-y-2 text-xs sm:text-sm text-[#3A3121] list-decimal list-inside font-medium">
+                        <li>Bấm nút <b>"Nâng cấp ngay"</b> ở trên bằng Safari để tải file <code>Free.mobileconfig</code> về máy.</li>
+                        <li>Vào <b>Cài đặt (Settings)</b> trên iPhone → Bấm vào <b>Đã tải về hồ sơ</b> ở đầu danh sách → Bấm <b>Cài đặt</b>.</li>
+                        <li>Mở app Locket và thưởng thức đầy đủ các đặc quyền Locket Gold!</li>
+                    </ol>
+                    <div class="mt-4 pt-3 border-t border-amber-200/60 flex flex-wrap gap-3 justify-between items-center">
+                        <a href="/huong-dan" target="_blank" class="text-xs font-bold text-amber-900 hover:underline flex items-center gap-1">
+                            📖 Xem hướng dẫn 15 bước có hình ảnh chi tiết →
+                        </a>
+                        <button type="button" onclick="switchMainTab('store')" class="text-xs font-bold text-amber-700 hover:text-amber-900 cursor-pointer">
+                            👑 Cần gói VIP đổi máy trọn đời? Xem gói VIP →
+                        </button>
+                    </div>
+                </div>
+
                 <!-- THÔNG BÁO TẠM ĐÓNG GÓI FREE -->
-                <div class="max-w-xl mx-auto mt-8 p-5 sm:p-6 rounded-2xl bg-rose-50/80 border border-rose-200">
+                <div id="freeQuickGuideDisabledBox" class="max-w-xl mx-auto mt-8 p-5 sm:p-6 rounded-2xl bg-rose-50/80 border border-rose-200">
                     <h3 class="font-fredoka font-bold text-sm sm:text-base text-rose-900 mb-2 flex items-center gap-2">
                         <span>⚠️</span> Thông báo: Gói Free đã tạm ngưng phát hành
                     </h3>
@@ -1567,10 +1593,10 @@
                         </button>
                         <button type="button" onclick="switchFrameStudioMode('gallery')" id="frameModeBtn_gallery"
                                 class="px-3.5 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white hover:bg-[#FFF5D6] text-[#1E1B18] font-bold text-xs cursor-pointer">
-                            Kho Khung Mẫu (<span id="frameModeSampleCount">79</span>)
+                            Kho Khung Mẫu (<span id="frameModeSampleCount">...</span>)
                         </button>
                     </div>
-                    <span class="text-xs font-extrabold text-emerald-700">Kho 79+ Khung Đẹp · Đồng Bộ Tức Thì</span>
+                    <span id="frameCatalogSummaryText" class="text-xs font-extrabold text-emerald-700">Kho Khung Đẹp · Đồng Bộ Tức Thì</span>
                 </div>
 
                 <!-- CHẾ ĐỘ A: BỘ CHỈNH SỬA KHUNG + GIẢ LẬP WIDGET LOCKET THẬT -->
@@ -1602,7 +1628,7 @@
                                            class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold file:mr-2.5 file:py-1 file:px-3 file:rounded file:border file:border-[#1E1B18] file:bg-[#FFF8E1] file:text-xs file:font-bold cursor-pointer">
                                 </div>
                                 <p class="text-[11px] text-amber-800 italic">
-                                    💡 Mẹo: Chọn ảnh khung từ máy rồi bấm Lưu, hoặc chọn nhanh từ 79 mẫu trong tab <b>Kho Khung Mẫu</b> ở trên!
+                                    💡 Mẹo: Chọn ảnh khung từ máy rồi bấm Lưu, hoặc chọn nhanh trong tab <b>Kho Khung Mẫu</b> ở trên!
                                 </p>
                             </div>
 
@@ -1717,19 +1743,25 @@
                     </div>
                 </div>
 
-                <!-- CHẾ ĐỘ B: KHO KHUNG MẪU (79 KHUNG) -->
+                <!-- CHẾ ĐỘ B: KHO KHUNG MẪU DÙNG CHUNG -->
                 <div id="frameStudioPane_gallery" class="hidden space-y-4">
                     <div class="bg-[#FFFDF5] rounded-2xl border-2 border-[#1E1B18] shadow-[4px_4px_0px_#1E1B18] p-4 space-y-3">
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
                             <div class="relative flex-1">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs">🔍</span>
                                 <input type="text" id="frameSearchInput" oninput="handleFrameSearch(this.value)"
-                                       placeholder="Tìm kiếm trong 79+ khung mẫu: Kuromi, Shin, Kitty, Conan, Gojo, Luffy, CR7..."
+                                       placeholder="Tìm kiếm khung mẫu theo tên, tác giả, chủ đề..."
                                        class="w-full pl-8 pr-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-semibold focus:outline-none">
                             </div>
-                            <span id="frameCountBadge" class="px-3 py-1.5 rounded-lg bg-[#FFD84D] border-2 border-[#1E1B18] text-xs font-black text-[#1E1B18] text-center shrink-0">
-                                79 khung
-                            </span>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button type="button" onclick="loadLiveFrames(true)" id="btnRefreshFrameGallery"
+                                        class="px-3 py-1.5 rounded-lg bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                                    🔄 Làm mới kho
+                                </button>
+                                <span id="frameCountBadge" class="px-3 py-1.5 rounded-lg bg-[#FFD84D] border-2 border-[#1E1B18] text-xs font-black text-[#1E1B18] text-center shrink-0">
+                                    Đang tải...
+                                </span>
+                            </div>
                         </div>
 
                         <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[11px]">
@@ -1745,7 +1777,7 @@
                     </div>
 
                     <div id="framesGridContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
-                        <div class="col-span-full py-10 text-center text-xs font-bold">⏳ Đang tải 79+ khung mẫu...</div>
+                        <div class="col-span-full py-10 text-center text-xs font-bold">⏳ Đang tải kho khung mẫu...</div>
                     </div>
                 </div>
             </div>
@@ -3199,27 +3231,42 @@
             } catch (e) {}
         }
 
-        async function loadLiveFrames() {
+        async function loadLiveFrames(forceRefresh = false) {
             const statusPill = document.getElementById('ctvApiStatusPill');
+            const refBtn = document.getElementById('btnRefreshFrameGallery');
             const ident = (connectedAccount && connectedAccount.username) ? connectedAccount.username : '';
             if (!ident) return false;
+            if (forceRefresh && refBtn) {
+                refBtn.disabled = true;
+                refBtn.textContent = '⏳ Đang làm mới...';
+            }
             try {
-                const res = await fetch(`/api/frames?identifier=${encodeURIComponent(ident)}`);
+                const res = await fetch(`/api/frames?identifier=${encodeURIComponent(ident)}${forceRefresh ? '&refresh=1' : ''}`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && Array.isArray(data.frames)) {
                         baseLibraryFrames = data.frames;
                         mergeAllFrames();
+                        const summaryEl = document.getElementById('frameCatalogSummaryText');
+                        if (summaryEl) {
+                            summaryEl.textContent = `Kho ${baseLibraryFrames.length} Khung Đẹp · Đồng Bộ Tức Thì`;
+                        }
                         if (statusPill) {
                             statusPill.textContent = data.ctv_connected
                                 ? '● Đã đồng bộ hệ thống Locket Live'
-                                : '● Kho Offline (79 Khung)';
+                                : `● Kho Dự Phòng (${baseLibraryFrames.length} Khung)`;
                         }
+                        if (forceRefresh) showToast(`🔄 Đã làm mới kho (${baseLibraryFrames.length} khung)!`);
                         return true;
                     }
                 }
             } catch (e) {
                 console.warn('Load /api/frames failed:', e);
+            } finally {
+                if (forceRefresh && refBtn) {
+                    refBtn.disabled = false;
+                    refBtn.textContent = '🔄 Làm mới kho';
+                }
             }
             return false;
         }
@@ -3413,7 +3460,7 @@
             if (currentMyFrameScope === 'private') viewList = priv;
 
             if (viewList.length === 0) {
-                listEl.innerHTML = '<div class="p-4 rounded-xl border border-dashed border-zinc-400 text-center text-xs text-[#6E6659]">Chưa có khung nào trong mục này. Hãy chọn từ <b>Kho Khung Mẫu (79)</b> hoặc tải ảnh PNG ở trên!</div>';
+                listEl.innerHTML = '<div class="p-4 rounded-xl border border-dashed border-zinc-400 text-center text-xs text-[#6E6659]">Chưa có khung nào trong mục này. Hãy chọn từ <b>Kho Khung Mẫu</b> hoặc tải ảnh PNG ở trên!</div>';
                 return;
             }
 
@@ -3672,6 +3719,14 @@
                 const safeName = escapeFeatureHtml(item.name);
                 const jsName = escapeJsAttr(item.name);
                 const jsId = escapeJsAttr(item.id);
+                const authorTxt = item.author ? `Bởi: @${escapeFeatureHtml(item.author)}` : '';
+                const usedTxt = Number(item.usedCount || 0) > 0 ? `${Number(item.usedCount)} CTV đã dùng` : '';
+                const metaHtml = (authorTxt || usedTxt)
+                    ? `<div class="flex items-center justify-between text-[10px] text-[#6E6659] mt-0.5 gap-1 truncate">
+                           <span class="truncate">${authorTxt}</span>
+                           <span class="shrink-0 font-bold">${usedTxt}</span>
+                       </div>`
+                    : '';
                 return `
                     <div class="bg-[#FFFDF5] rounded-2xl p-3 border-2 border-[#1E1B18] shadow-[3px_3px_0px_#1E1B18] flex flex-col justify-between">
                         <div>
@@ -3681,6 +3736,7 @@
                                 <span class="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded bg-[#1E1B18]/85 text-white text-[9px] font-black">${badgeText}</span>
                             </div>
                             <h4 class="font-bold text-xs text-[#1E1B18] truncate" title="${safeName}">${safeName}</h4>
+                            ${metaHtml}
                         </div>
                         <div class="flex gap-1.5 mt-2.5">
                             <button type="button" onclick="pickGalleryFrameToEditor('${jsImgUrl}', '${jsName}')"
@@ -4630,6 +4686,10 @@
                             }
                         });
                     }
+                    // Đồng bộ trạng thái Bật / Tắt Gói Free 0đ từ Admin
+                    if (typeof data.free_enabled === 'boolean') {
+                        syncFreeTierUI(data.free_enabled);
+                    }
                     // Cập nhật cấu hình Nhóm Zalo Hỗ Trợ
                     if (data.zalo_group_url) {
                         window.zaloGroupUrl = data.zalo_group_url;
@@ -4660,6 +4720,94 @@
                 switchMainTab('zalo_group');
             }
             selectProduct('locket');
+        }
+
+        // Chọn sản phẩm (locket / spotify / combo / locket_spotify / locket_ai)
+        function syncFreeTierUI(enabled) {
+            const isOn = Boolean(enabled);
+            const tabBtn = document.getElementById('tabBtn_free');
+            if (tabBtn) tabBtn.textContent = isOn ? '🎁 Gói Free (0đ)' : '🚫 Gói Free (Tạm đóng)';
+
+            const promoBanner = document.getElementById('freePromoBanner');
+            if (promoBanner) promoBanner.classList.toggle('hidden', !isOn);
+
+            const hdrBadge = document.getElementById('freeHeaderStatusBadge');
+            if (hdrBadge) {
+                hdrBadge.textContent = isOn ? 'TRẢI NGHIỆM MIỄN PHÍ' : 'ĐÃ TẠM ĐÓNG';
+                hdrBadge.className = isOn
+                    ? 'text-xs font-fredoka font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3.5 py-1 rounded-full border border-emerald-200'
+                    : 'text-xs font-fredoka font-bold uppercase tracking-wider text-rose-700 bg-rose-100 px-3.5 py-1 rounded-full border border-rose-200';
+            }
+            const hdrDesc = document.getElementById('freeHeaderDesc');
+            if (hdrDesc) {
+                hdrDesc.textContent = isOn
+                    ? 'Cài đặt hồ sơ DNS Locket Gold hoàn toàn miễn phí (0đ) trong 30 giây — trải nghiệm ngay các đặc quyền VIP.'
+                    : 'Gói dùng thử miễn phí hiện đã tạm đóng để nâng cấp hệ thống chứng chỉ máy chủ. Quý khách vui lòng chọn các gói VIP bản quyền chính chủ từ 5.000đ.';
+            }
+
+            const card = document.getElementById('freePricingCard');
+            if (card) {
+                card.className = isOn
+                    ? 'w-full max-w-[340px] bg-white rounded-[36px] border-2 border-[#FFB800] p-6 sm:p-7 shadow-xl relative flex flex-col justify-between'
+                    : 'w-full max-w-[340px] bg-zinc-50/90 rounded-[36px] border-2 border-zinc-200 p-6 sm:p-7 shadow-sm relative flex flex-col justify-between opacity-85';
+            }
+            const cBadge = document.getElementById('freeCardBadge');
+            if (cBadge) {
+                cBadge.textContent = isOn ? 'MIỄN PHÍ 0Đ' : 'TẠM ĐÓNG';
+                cBadge.className = isOn
+                    ? 'inline-block bg-[#FFB800] text-[#1E1B18] text-xs font-fredoka font-black px-4 py-1 rounded-full shadow-xs'
+                    : 'inline-block bg-zinc-300 text-zinc-700 text-xs font-fredoka font-black px-4 py-1 rounded-full';
+            }
+            const brandRow = document.getElementById('freeCardBrandRow');
+            if (brandRow) {
+                brandRow.className = isOn ? 'flex items-center gap-3 mb-4' : 'flex items-center gap-3 mb-4 grayscale opacity-80';
+            }
+            const cTitle = document.getElementById('freeCardTitle');
+            if (cTitle) cTitle.className = isOn ? 'font-fredoka font-black text-lg text-[#1E1B18]' : 'font-fredoka font-black text-lg text-zinc-700';
+            const cSub = document.getElementById('freeCardSub');
+            if (cSub) {
+                cSub.textContent = isOn ? 'Hồ sơ DNS Locket Gold iOS' : 'Bản quyền thử nghiệm (Tạm ngưng)';
+                cSub.className = isOn ? 'text-xs text-[#6E6659] font-semibold' : 'text-xs text-zinc-500 font-semibold';
+            }
+            const cPrice = document.getElementById('freeCardPrice');
+            if (cPrice) {
+                cPrice.className = isOn
+                    ? 'font-fredoka font-black text-3xl sm:text-4xl text-emerald-600'
+                    : 'font-fredoka font-black text-3xl sm:text-4xl text-zinc-500 line-through';
+            }
+            const cTag = document.getElementById('freeCardStatusTag');
+            if (cTag) {
+                cTag.textContent = isOn ? 'Đang mở tải miễn phí' : 'Đã tạm đóng gói Free';
+                cTag.className = isOn
+                    ? 'text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md'
+                    : 'text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md';
+            }
+
+            const perksUl = document.getElementById('freePerksList');
+            if (perksUl) {
+                perksUl.className = isOn
+                    ? 'space-y-3 mb-6 text-xs sm:text-sm font-semibold text-[#1E1B18]'
+                    : 'space-y-3 mb-6 text-xs sm:text-sm font-semibold text-zinc-400';
+                perksUl.querySelectorAll('.free-perk-item').forEach(li => {
+                    li.classList.toggle('line-through', !isOn);
+                });
+                perksUl.querySelectorAll('.free-perk-icon').forEach(ic => {
+                    ic.textContent = isOn ? '✓' : '✕';
+                    ic.className = isOn
+                        ? 'free-perk-icon w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-xs shrink-0'
+                        : 'free-perk-icon w-5 h-5 rounded-full bg-zinc-300 text-zinc-600 flex items-center justify-center font-black text-xs shrink-0';
+                });
+            }
+
+            const enBtn = document.getElementById('freeDownloadEnabledBox');
+            const disBox = document.getElementById('freeDownloadDisabledBox');
+            if (enBtn) { enBtn.classList.toggle('hidden', !isOn); enBtn.classList.toggle('block', isOn); }
+            if (disBox) { disBox.classList.toggle('hidden', isOn); disBox.classList.toggle('block', !isOn); }
+
+            const enGuide = document.getElementById('freeQuickGuideEnabledBox');
+            const disGuide = document.getElementById('freeQuickGuideDisabledBox');
+            if (enGuide) enGuide.classList.toggle('hidden', !isOn);
+            if (disGuide) disGuide.classList.toggle('hidden', isOn);
         }
 
         // Chọn sản phẩm (locket / spotify / combo / locket_spotify / locket_ai)
