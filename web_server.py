@@ -44,6 +44,11 @@ def set_bot_context(bot, loop):
     BOT_INSTANCE = bot
     BOT_LOOP = loop
 
+
+def _get_frames_library_paths() -> tuple[str, str]:
+    base_dir = os.path.join(os.path.dirname(__file__), "data")
+    return os.path.join(base_dir, "frames.json"), os.path.join(base_dir, "frames.backup.json")
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
     allow_reuse_address = True
@@ -1136,7 +1141,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 logger.warning(f"Fetch CTV live frames failed: {e_ctv_fr}")
 
             # 2. Nạp thêm Kho Khung Mẫu Dùng Chung từ data/frames.json
-            frames_path = os.path.join(os.path.dirname(__file__), "data", "frames.json")
+            frames_path, _ = _get_frames_library_paths()
             synced_at = ""
             lib_source = "legacy"
             if os.path.exists(frames_path):
@@ -2713,8 +2718,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     self._send_json(400, {"ok": False, "error": "Không có khung nào có URL ảnh HTTP/HTTPS hợp lệ."})
                     return
 
-            frames_path = os.path.join(os.path.dirname(__file__), "data", "frames.json")
-            backup_path = os.path.join(os.path.dirname(__file__), "data", "frames.backup.json")
+            frames_path, backup_path = _get_frames_library_paths()
             os.makedirs(os.path.dirname(frames_path), exist_ok=True)
             if os.path.exists(frames_path) and not os.path.exists(backup_path):
                 try:
