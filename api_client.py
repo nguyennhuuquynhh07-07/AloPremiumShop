@@ -4,6 +4,8 @@ Tích hợp bảng tra cứu và phân loại mã lỗi HTTP chuẩn:
   400, 401, 402, 403, 404, 409, 429
 """
 
+import threading
+import time
 import httpx
 from config import API_KEY, API_BASE_URL
 
@@ -12,6 +14,15 @@ _client = httpx.Client(
     limits=httpx.Limits(max_keepalive_connections=20, max_connections=50),
     headers={"User-Agent": "AloPremiumBot/2.0"}
 )
+
+
+class ApiError(Exception):
+    """Lỗi có cấu trúc khi gọi máy chủ API CTV, giữ tương thích str() với Exception thường."""
+
+    def __init__(self, message: str, status_code: int | None = None, error_code: str = ""):
+        super().__init__(message)
+        self.status_code = status_code
+        self.error_code = error_code
 
 
 # ─── BẢNG TRA CỨU MÃ LỖI THEO TÀI LIỆU API CTV ─────────────────────────────
@@ -27,42 +38,53 @@ API_ERROR_CODES = {
     "INTERNAL_SERVER_ERROR": "Lỗi máy chủ API xử lý. Liên hệ Admin hệ thống để được hỗ trợ.",
 
     # Mã lỗi HTTP Status Code
-    400: "Dữ liệu gửi lên không hợp lệ, UID/Username không tồn tại hoặc không đủ Coin.",
-    401: "Secret Key sai, hết hạn hoặc chưa kích hoạt tài khoản CTV.",
-    402: "Số dư tài khoản CTV không đủ để thanh toán gói này.",
+    400: "Dữ liệu gửi lên không hợp lệ, UID/Username không tồn tại hoặc thiếu trường bắt buộc.",
+    401: "Secret Key sai, đã bị đổi mới hoặc thiếu header Authorization: Bearer sk_...",
+    402: "Số dư Coin CTV không đủ để thanh toán gói này. Cần nạp thêm Coin trên Dashboard.",
     403: "Tài khoản CTV mới tạo chưa nạp đủ 150.000đ kích hoạt ban đầu.",
-    404: "Gói cước hoặc UID không tồn tại trên hệ thống.",
+    404: "Gói cước hoặc UID không tồn tại trên hệ thống (hoặc gói đã bị ẩn).",
     409: "UID này đã được mua bởi CTV khác và vẫn đang còn hạn dùng.",
     413: "Dung lượng file tải lên vượt quá giới hạn cho phép (tối đa 20MB).",
-    429: "Thao tác quá nhanh, vượt quá tần suất cho phép trong 1 giờ. Vui lòng thử lại sau.",
+    429: "Tra cứu quá nhiều – vượt quá tần suất Rate Limit cho phép trong 1 giờ. Vui lòng thử lại sau.",
     500: "Lỗi máy chủ API. Vui lòng liên hệ Admin để được hỗ trợ.",
 }
 
 
-def parse_api_error(resp: httpx.Response) -> str:
-    """Chuyển đổi lỗi HTTP trả về từ API thành thông báo chuẩn theo bảng tra cứu."""
+def _extract_error_parts(resp: httpx.Response) -> tuple[str, int, str]:
     status = resp.status_code
     err_code = ""
     msg = ""
     try:
         data = resp.json()
-        err_code = data.get("error") or ""
-        msg = data.get("message") or ""
+        err_code = str(data.get("error") or "").strip()
+        msg = str(data.get("message") or "").strip()
     except Exception:
-        msg = resp.text
+        msg = (resp.text or "").strip()
 
-    # Ưu tiên bắt theo mã lỗi chuỗi từ hệ thống
     if err_code and err_code in API_ERROR_CODES:
-        return f"[{err_code}] {API_ERROR_CODES[err_code]}"
+        text = f"[{err_code}] {API_ERROR_CODES[err_code]}"
+        if msg and msg.lower() not in text.lower():
+            text += f"\n• Chi tiết: {msg}"
+        return text, status, err_code
 
-    # Bắt theo mã HTTP Status
     if status in API_ERROR_CODES:
         detail = f"[HTTP {status}] {API_ERROR_CODES[status]}"
         if msg:
             detail += f"\n• Chi tiết: {msg}"
-        return detail
+        return detail, status, err_code
 
-    return f"Lỗi máy chủ API (Mã {status}): {msg or resp.text}"
+    return f"Lỗi máy chủ API (Mã {status}): {msg or resp.text}", status, err_code
+
+
+def parse_api_error(resp: httpx.Response) -> str:
+    """Chuyển đổi lỗi HTTP trả về từ API thành thông báo chuẩn theo bảng tra cứu."""
+    text, _, _ = _extract_error_parts(resp)
+    return text
+
+
+def _raise_api_error(resp: httpx.Response) -> None:
+    text, status, err_code = _extract_error_parts(resp)
+    raise ApiError(text, status_code=status, error_code=err_code)
 
 
 def _headers() -> dict:
@@ -78,95 +100,239 @@ def _auth_only_headers() -> dict:
     }
 
 
+# ─── CACHE 30S CHỐNG HTTP 429 & PARSE RESPONSE CHUẨN ─────────────────────────
+
+_lookup_cache_lock = threading.Lock()
+_lookup_cache: dict[tuple[str, str, str], tuple[float, dict]] = {}
+_LOOKUP_CACHE_TTL = 30.0
+_ACCOUNT_CACHE_TTL = 30.0
+_account_info_cache: tuple[float, dict | None] = (0.0, None)
+
+
+def _get_cached_lookup(op: str, key: str, service: str = "", ttl: float = _LOOKUP_CACHE_TTL) -> dict | None:
+    cache_key = (op, key.strip().lower(), service.strip().lower())
+    now = time.time()
+    with _lookup_cache_lock:
+        entry = _lookup_cache.get(cache_key)
+        if entry and (now - entry[0] < ttl):
+            return entry[1]
+    return None
+
+
+def _set_cached_lookup(op: str, key: str, value: dict, service: str = "") -> None:
+    cache_key = (op, key.strip().lower(), service.strip().lower())
+    now = time.time()
+    with _lookup_cache_lock:
+        if len(_lookup_cache) > 500:
+            expired = [k for k, (ts, _) in _lookup_cache.items() if now - ts >= _LOOKUP_CACHE_TTL]
+            for k in expired:
+                _lookup_cache.pop(k, None)
+            if len(_lookup_cache) > 500:
+                _lookup_cache.clear()
+        _lookup_cache[cache_key] = (now, value)
+
+
+def invalidate_uid_cache(identifier: str = "", service: str = "") -> None:
+    """Xóa cache tra cứu (30s) cho UID/username sau khi kích hoạt gói hoặc reset Spotify."""
+    global _account_info_cache, _uids_cache_time
+    ident_l = (identifier or "").strip().lower().lstrip("@")
+    svc_l = (service or "").strip().lower()
+    with _lookup_cache_lock:
+        if not ident_l:
+            _lookup_cache.clear()
+        else:
+            to_del = []
+            for k in _lookup_cache:
+                _, k_id, k_svc = k
+                if svc_l and k_svc and k_svc != svc_l:
+                    continue
+                if ident_l in k_id or k_id in ident_l:
+                    to_del.append(k)
+            for k in to_del:
+                _lookup_cache.pop(k, None)
+    _account_info_cache = (0.0, None)
+    _uids_cache_time = 0.0
+
+
+def parse_spotify_check_data(res: dict) -> dict:
+    """Chuẩn hóa JSON trả về từ GET /api/spotify/check (đọc đúng object lồng spotify.isBound/deviceSig...)."""
+    data = res.get("data") if isinstance(res, dict) and isinstance(res.get("data"), dict) else (res if isinstance(res, dict) else {})
+    sp_obj = data.get("spotify") if isinstance(data.get("spotify"), dict) else {}
+    is_bound = sp_obj.get("isBound") if "isBound" in sp_obj else data.get("isBound", False)
+    active = bool(data.get("active") is True or str(data.get("status") or "").upper() == "ACTIVE")
+    return {
+        "uid": str(data.get("uid") or data.get("id") or "").strip(),
+        "username": str(data.get("displayName") or data.get("username") or data.get("name") or "").strip(),
+        "avatar_url": data.get("avatarUrl") or data.get("avatar") or data.get("image") or "",
+        "found": bool(data.get("found", True)),
+        "active": active,
+        "status": str(data.get("status") or ("ACTIVE" if active else "INACTIVE")),
+        "expires_at": data.get("expiresAt"),
+        "is_mine": data.get("isMine"),
+        "is_bound": bool(is_bound),
+        "client_ip": str(sp_obj.get("clientIp") or "").strip(),
+        "device_sig": str(sp_obj.get("deviceSig") or "").strip(),
+        "last_seen_at": sp_obj.get("lastSeenAt"),
+        "raw": data,
+    }
+
+
+def parse_uid_check_data(res: dict) -> dict:
+    """Chuẩn hóa JSON trả về từ GET /api/uid/check."""
+    data = res.get("data") if isinstance(res, dict) and isinstance(res.get("data"), dict) else (res if isinstance(res, dict) else {})
+    pkg = data.get("package") if isinstance(data.get("package"), dict) else {}
+    active = bool(data.get("active") is True or str(data.get("status") or "").upper() == "ACTIVE")
+    return {
+        "uid": str(data.get("uid") or data.get("id") or "").strip(),
+        "username": str(data.get("username") or "").strip(),
+        "service": str(data.get("service") or "").strip(),
+        "avatar_url": data.get("avatarUrl") or data.get("avatar") or "",
+        "found": bool(data.get("found", False)),
+        "active": active,
+        "status": str(data.get("status") or ("ACTIVE" if active else "INACTIVE")),
+        "expires_at": data.get("expiresAt"),
+        "created_at": data.get("createdAt"),
+        "is_mine": data.get("isMine"),
+        "package": pkg,
+        "package_code": str(pkg.get("code") or "").strip(),
+        "package_name": str(pkg.get("name") or "").strip(),
+        "duration_days": pkg.get("durationDays"),
+        "price_coin": pkg.get("priceCoin"),
+        "raw": data,
+    }
+
+
 # ─── THÔNG TIN TÀI KHOẢN CTV & SỐ DƯ COIN ────────────────────────────────────
 
-def get_account_info() -> dict:
+def get_account_info(force_refresh: bool = False) -> dict:
     """
-    GET /api/keys/me
-    Tra cứu thông tin tài khoản CTV: username, email, balanceCoin, role...
+    GET /api/keys/me (300 lần/giờ)
+    Tra cứu thông tin tài khoản CTV: username, email, balanceCoin, isActivated, role...
     """
+    global _account_info_cache
+    now = time.time()
+    cached_ts, cached_val = _account_info_cache
+    if not force_refresh and cached_val is not None and (now - cached_ts < _ACCOUNT_CACHE_TTL):
+        return cached_val
+
     url = f"{API_BASE_URL}/api/keys/me"
     resp = _client.get(url, headers=_headers(), timeout=15)
     if resp.is_error:
-        raise Exception(parse_api_error(resp))
-    return resp.json()
+        _raise_api_error(resp)
+    res = resp.json()
+    _account_info_cache = (time.time(), res)
+    return res
 
 
 def get_packages(service: str = "all") -> dict:
     """
-    GET /api/packages?service=all|spotify|locket
+    GET /api/packages?service=all|spotify|locket (Cache 5s ở upstream)
     Lấy danh sách các gói cước và giá coin từ máy chủ.
     """
     url = f"{API_BASE_URL}/api/packages"
     resp = _client.get(url, params={"service": service}, headers=_headers(), timeout=15)
     if resp.is_error:
-        raise Exception(parse_api_error(resp))
+        _raise_api_error(resp)
     return resp.json()
 
 
-def check_uid_details(username: str, service: str = "locket") -> dict:
+def check_uid_details(username: str, service: str = "locket", force_refresh: bool = False) -> dict:
     """
-    GET /api/uid/check?username=...&service=...
-    Kiểm tra thông tin chi tiết gói, hạn dùng, trạng thái kích hoạt của UID.
+    GET /api/uid/check?username=...&service=... (1200 lần/giờ, cache nội bộ 30s)
+    Kiểm tra thông tin chi tiết gói, hạn dùng, trạng thái kích hoạt và quyền sở hữu isMine của UID.
     """
+    if not force_refresh:
+        cached = _get_cached_lookup("uid_check", username, service)
+        if cached is not None:
+            return cached
+
     url = f"{API_BASE_URL}/api/uid/check"
     resp = _client.get(url, params={"username": username, "service": service}, headers=_headers(), timeout=15)
     if resp.is_error:
-        raise Exception(parse_api_error(resp))
-    return resp.json()
+        _raise_api_error(resp)
+    res = resp.json()
+    _set_cached_lookup("uid_check", username, res, service)
+    return res
 
 
 # ─── SPOTIFY ──────────────────────────────────────────────────────────────────
 
-def spotify_check(uid_or_link: str) -> dict:
+def spotify_check(uid_or_link: str, force_refresh: bool = False) -> dict:
     """
-    GET /api/spotify/check?uid=...
-    Kiểm tra tài khoản & Profile Spotify.
+    GET /api/spotify/check?uid=... (600 lần/giờ, cache nội bộ 30s)
+    Kiểm tra tài khoản, Profile Spotify & Phiên IP hoạt động (spotify.isBound/deviceSig/clientIp).
     """
+    if not force_refresh:
+        cached = _get_cached_lookup("spotify_check", uid_or_link, "spotify")
+        if cached is not None:
+            return cached
+
     url = f"{API_BASE_URL}/api/spotify/check"
     resp = _client.get(url, params={"uid": uid_or_link}, headers=_headers(), timeout=15)
     if resp.is_error:
-        raise Exception(parse_api_error(resp))
-    return resp.json()
+        _raise_api_error(resp)
+    res = resp.json()
+    _set_cached_lookup("spotify_check", uid_or_link, res, "spotify")
+    return res
 
 
 def spotify_reset(uid: str) -> dict:
     """
-    POST /api/spotify/reset
-    Giải phóng phiên IP Spotify (chuyển máy tức thì).
+    POST /api/spotify/reset (60 lần/giờ)
+    Giải phóng phiên IP Spotify ngay lập tức (chuyển máy tức thì thay vì chờ ân hạn 20-25s).
     Body: {"uid": "<uid>"}
     """
     url = f"{API_BASE_URL}/api/spotify/reset"
     resp = _client.post(url, json={"uid": uid}, headers=_headers(), timeout=15)
     if resp.is_error:
-        raise Exception(parse_api_error(resp))
+        _raise_api_error(resp)
+    invalidate_uid_cache(uid, "spotify")
     return resp.json()
 
 
-# ─── LOCKET ───────────────────────────────────────────────────────────────────
+# ─── RESOLVE UID (LOCKET & SPOTIFY) ──────────────────────────────────────────
 
-def locket_resolve(identifier: str) -> dict:
+def resolve_uid(identifier: str, service: str = "locket", force_refresh: bool = False) -> dict:
     """
-    POST /api/uid/resolve
-    Tra cứu Link / Username ra UID & Avatar.
+    POST /api/uid/resolve (300 lần/giờ, cache nội bộ 30s)
+    Tra cứu Username Locket hoặc Link/UID Spotify ra UID & Avatar mà không tạo đơn/trừ Coin.
     """
+    svc = (service or "locket").strip().lower()
+    if svc not in ("locket", "spotify"):
+        svc = "locket"
+
+    if not force_refresh:
+        cached = _get_cached_lookup("uid_resolve", identifier, svc)
+        if cached is not None:
+            return cached
+
     url = f"{API_BASE_URL}/api/uid/resolve"
     resp = _client.post(
         url,
-        json={"identifier": identifier, "service": "locket"},
+        json={"identifier": identifier, "service": svc},
         headers=_headers(),
         timeout=15,
     )
     if resp.is_error:
-        raise Exception(parse_api_error(resp))
-    return resp.json()
+        _raise_api_error(resp)
+    res = resp.json()
+    _set_cached_lookup("uid_resolve", identifier, res, svc)
+    return res
+
+
+def locket_resolve(identifier: str, force_refresh: bool = False) -> dict:
+    """
+    POST /api/uid/resolve (service='locket')
+    Tra cứu Username Locket ra UID & Avatar.
+    """
+    return resolve_uid(identifier=identifier, service="locket", force_refresh=force_refresh)
 
 
 # ─── MUA GÓI / GIA HẠN (Trừ Coin CTV) ────────────────────────────────────────
 
 def create_subscription(uid: str, package_code: str, service: str, note: str = "Order from Telegram Bot") -> dict:
     """
-    POST /api/uid/create
+    POST /api/uid/create (300 lần/giờ)
     Mua gói mới / Gia hạn (Trừ Coin CTV)
     Body: { "username": "<uid>", "packageCode": "<code>", "service": "<service>", "note": "..." }
     """
@@ -183,11 +349,11 @@ def create_subscription(uid: str, package_code: str, service: str, note: str = "
         timeout=20,
     )
     if resp.is_error:
-        raise Exception(parse_api_error(resp))
-    return resp.json()
+        _raise_api_error(resp)
+    res = resp.json()
+    invalidate_uid_cache(uid, service)
+    return res
 
-
-import time
 
 _uids_cache = []
 _uids_cache_time = 0.0

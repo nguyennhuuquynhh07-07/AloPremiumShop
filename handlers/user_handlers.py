@@ -143,11 +143,13 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "<b>Bước 4</b>: Cài file cấu hình ngay sau khi kích hoạt\n\n"
         "<b>Các lệnh có sẵn</b>\n"
         "<pre>\n"
-        "/start    Menu chính\n"
-        "/account  Tài khoản\n"
-        "/apidocs  Tài liệu API\n"
-        "/setlang  Đổi ngôn ngữ\n"
-        "/help     Hướng dẫn\n"
+        "/start        Menu chính\n"
+        "/account      Tài khoản của tôi\n"
+        "/check [user] Kiểm tra gói & IP Spotify\n"
+        "/resetspotify Reset thiết bị Spotify\n"
+        "/apidocs      Tài liệu API\n"
+        "/setlang      Đổi ngôn ngữ\n"
+        "/help         Hướng dẫn\n"
         "</pre>\n\n"
         f"Liên hệ hỗ trợ @{SUPPORT_USERNAME}"
     )
@@ -180,15 +182,16 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
 
-async def account_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Lệnh /account – Xem thông tin tài khoản người dùng."""
-    user = update.effective_user
-    db.upsert_user(user.id, user.username, user.first_name, user.last_name)
-    banned, reason = db.is_banned(user.id)
-    if banned:
-        await update.message.reply_text(f"⛔ Tài khoản đã bị khoá: {reason}")
-        return
+def _format_exp_vn(exp_str: str | None) -> str:
+    if not exp_str:
+        return ""
+    s = str(exp_str).strip()
+    if s.startswith("2099") or s.startswith("2100"):
+        return "Vĩnh viễn"
+    return utils.fmt_datetime(s)
 
+
+def _render_account_summary(user) -> tuple[str, InlineKeyboardMarkup]:
     orders = db.get_user_orders(user.id)
     done_orders = [o for o in orders if o.get("status") == "done"]
     lang = db.get_user_lang(user.id)
@@ -218,10 +221,12 @@ async def account_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             dns_link = latest_done.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
             link_label = "🌐 <b>Link DNS Profile iOS:</b>"
 
-        for o in sorted(done_orders, key=lambda x: x["created_at"], reverse=True)[:5]:
+        for o in sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[:5]:
             prod = PRODUCTS.get(o["product"], {}).get("name", o["product"])
             plan = PRODUCTS.get(o["product"], {}).get("plans", {}).get(o["plan"], {}).get("label", o["plan"])
-            lines.append(f"• <b>{prod} ({plan})</b> — UID: <code>{o.get('uid')}</code>")
+            exp_txt = _format_exp_vn(o.get("expires_at"))
+            exp_suffix = f" · Hạn: <code>{exp_txt}</code>" if exp_txt else ""
+            lines.append(f"• <b>{prod} ({plan})</b> — UID: <code>{o.get('uid')}</code>{exp_suffix}")
         lines.extend([
             "\n━━━━━━━━━━━━━━━━━━━━━━━━━",
             f"{link_label}\n<code>{dns_link}</code>",
@@ -233,8 +238,21 @@ async def account_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         lines.append("\n💡 <i>Bấm <b>'Mua gói ngay'</b> bên dưới để kích hoạt bản quyền VIP nhé!</i>")
         kb = account_kb(dns_link=None)
 
+    return "\n".join(lines), kb
+
+
+async def account_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Lệnh /account – Xem thông tin tài khoản người dùng."""
+    user = update.effective_user
+    db.upsert_user(user.id, user.username, user.first_name, user.last_name)
+    banned, reason = db.is_banned(user.id)
+    if banned:
+        await update.message.reply_text(f"⛔ Tài khoản đã bị khoá: {reason}")
+        return
+
+    text, kb = _render_account_summary(user)
     await update.message.reply_text(
-        "\n".join(lines),
+        text,
         parse_mode=ParseMode.HTML,
         reply_markup=kb
     )
@@ -247,22 +265,32 @@ def build_api_docs_text() -> str:
         "🌐 <b>Base URL:</b> <code>https://locket.2707226.xyz</code>\n"
         "🔑 <b>Authentication:</b> <code>Bearer &lt;YOUR_API_KEY&gt;</code>\n"
         "Header: <code>Content-Type: application/json</code>\n\n"
-        "📌 <b>CÁC ENDPOINTS CHÍNH:</b>\n\n"
-        "1️⃣ <b>Kiểm tra tài khoản & Số dư Coin CTV:</b>\n"
+        "📌 <b>CÁC ENDPOINTS CHÍNH (16 ENDPOINTS):</b>\n\n"
+        "1️⃣ <b>Tài khoản CTV & Số dư Coin (300/giờ):</b>\n"
         "• <code>GET /api/keys/me</code>\n\n"
-        "2️⃣ <b>Danh sách bảng giá gói cước:</b>\n"
+        "2️⃣ <b>Bảng giá gói cước (Cache 5s, Public):</b>\n"
         "• <code>GET /api/packages?service=all|spotify|locket</code>\n\n"
-        "3️⃣ <b>Tra cứu Locket Username ra UID & Avatar:</b>\n"
+        "3️⃣ <b>Resolve Link/Username ra UID & Avatar (300/giờ):</b>\n"
         "• <code>POST /api/uid/resolve</code>\n"
-        "• Body: <code>{\"identifier\": \"conlaigii\", \"service\": \"locket\"}</code>\n\n"
-        "4️⃣ <b>Mua gói / Kích hoạt tự động:</b>\n"
-        "• <code>POST /api/uid/create</code>\n"
-        "• Body: <code>{\"username\": \"UID\", \"packageCode\": \"LKG1Y\", \"service\": \"locket\"}</code>\n\n"
-        "5️⃣ <b>Reset thiết bị Spotify:</b>\n"
-        "• <code>POST /api/spotify/reset</code>\n"
-        "• Body: <code>{\"uid\": \"spotify_uid\"}</code>\n\n"
-        "6️⃣ <b>Kiểm tra Profile Spotify:</b>\n"
+        "• Body: <code>{\"identifier\": \"...\", \"service\": \"locket|spotify\"}</code>\n\n"
+        "4️⃣ <b>Kiểm tra chi tiết gói & trạng thái UID (1200/giờ):</b>\n"
+        "• <code>GET /api/uid/check?username=...&amp;service=locket|spotify</code>\n"
+        "  ↳ <i>Trả về active, status, expiresAt, isMine, package</i>\n\n"
+        "5️⃣ <b>Kiểm tra Profile & Phiên IP Spotify (600/giờ):</b>\n"
         "• <code>GET /api/spotify/check?uid=...</code>\n"
+        "  ↳ <i>Phiên nằm trong <code>data.spotify</code> (isBound, clientIp, deviceSig, lastSeenAt)</i>\n\n"
+        "6️⃣ <b>Mua gói / Gia hạn tự động (300/giờ):</b>\n"
+        "• <code>POST /api/uid/create</code>\n"
+        "• Body: <code>{\"username\": \"UID\", \"packageCode\": \"LKG1Y\", \"service\": \"locket|spotify\"}</code>\n\n"
+        "7️⃣ <b>Giải phóng phiên IP Spotify tức thì (60/giờ):</b>\n"
+        "• <code>POST /api/spotify/reset</code>\n"
+        "• Body: <code>{\"uid\": \"spotify_uid\"}</code> <i>(Mặc định tự chuyển sau 20–25s)</i>\n\n"
+        "8️⃣ <b>Link tải cấu hình DNS riêng của CTV (Public):</b>\n"
+        "• <code>GET /:slug_ctv</code> <i>(doh.2707226.xyz/&lt;slug&gt;)</i>\n\n"
+        "9️⃣ <b>Locket Custom Studio (Frames, Captions, LUT Filters):</b>\n"
+        "• <code>GET|POST|DELETE /api/v1/ctv/frames</code> &amp; <code>/captions</code>\n"
+        "• <code>POST /api/v1/ctv/filters/toggle</code> (300/giờ)\n"
+        "• <code>POST /api/v1/ctv/filters/upload</code> (.cube tối đa 20MB, 60/giờ)\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "💡 <i>Bấm nút bên dưới để xem <b>Bảng Tra Cứu Mã Lỗi HTTP</b> hoặc liên hệ hỗ trợ.</i>"
     )
@@ -290,6 +318,8 @@ def build_api_errors_text() -> str:
         "🔴 <b>HTTP 409 | \"UID thuộc về người khác\"</b>\n"
         "• <b>Nguyên nhân:</b> UID này đã được mua bởi CTV khác và vẫn đang còn hạn dùng.\n"
         "• <b>Cách xử lý:</b> Khách phải chờ hết hạn cũ hoặc dùng đúng tài khoản CTV ban đầu gia hạn.\n\n"
+        "🟡 <b>HTTP 413 | File .cube quá dung lượng</b>\n"
+        "• <b>Nguyên nhân:</b> Upload file 3D LUT vượt quá giới hạn tối đa 20MB.\n\n"
         "🔴 <b>HTTP 429 | \"Tra cứu quá nhiều – thử lại sau\"</b>\n"
         "• <b>Nguyên nhân:</b> Vượt quá tần suất rate limit cho phép trong 1 giờ.\n"
         "• <b>Cách xử lý:</b> Thêm cache ở bot (ví dụ cache 30 giây cho cùng một khách) để giảm tải request.\n"
@@ -371,59 +401,17 @@ async def cb_my_account(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     user = query.from_user
     db.upsert_user(user.id, user.username, user.first_name, user.last_name)
-    orders = db.get_user_orders(user.id)
-    done_orders = [o for o in orders if o.get("status") == "done"]
-    lang = db.get_user_lang(user.id)
-    lang_name = "Tiếng Việt 🇻🇳" if lang == "vi" else "English 🇬🇧"
-
-    lines = [
-        "👤 <b>THÔNG TIN TÀI KHOẢN CÁ NHÂN</b>",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━",
-        f"🆔 <b>Telegram ID:</b> <code>{user.id}</code>",
-        f"👤 <b>Họ tên:</b> {user.full_name}",
-        f"🔗 <b>Username:</b> @{user.username or 'Chưa đặt'}",
-        f"🌐 <b>Ngôn ngữ:</b> {lang_name}",
-        f"📦 <b>Tổng đơn hàng:</b> <b>{len(orders)}</b> (Đã kích hoạt: {len(done_orders)})\n",
-        "💎 <b>DỊCH VỤ ĐÃ KÍCH HOẠT:</b>"
-    ]
-
-    if done_orders:
-        latest_done = sorted(done_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
-        prod_k = latest_done.get("product")
-        if prod_k in ("combo", "locket_spotify"):
-            dns_link = latest_done.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
-            link_label = "👑 <b>Link DNS Combo Duo VIP (Locket & Spotify):</b>"
-        elif prod_k == "locket_ai":
-            dns_link = latest_done.get("vip_download_url") or latest_done.get("dns_link") or getattr(config, "VIP_DOWNLOAD_URL", "https://locket.jayteam.click/download.php?token=jt_8b08db1702f75cc06d1c4516989913a0&server=1")
-            link_label = "✨ <b>Link Cài Đặt VIP ALL-IN-ONE:</b>"
-        else:
-            dns_link = latest_done.get("dns_link") or f"{DNS_BASE_URL}/{DNS_SLUG}"
-            link_label = "🌐 <b>Link DNS Profile iOS:</b>"
-
-        for o in sorted(done_orders, key=lambda x: x["created_at"], reverse=True)[:5]:
-            prod = PRODUCTS.get(o["product"], {}).get("name", o["product"])
-            plan = PRODUCTS.get(o["product"], {}).get("plans", {}).get(o["plan"], {}).get("label", o["plan"])
-            lines.append(f"• <b>{prod} ({plan})</b> — UID: <code>{o.get('uid')}</code>")
-        lines.extend([
-            "\n━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"{link_label}\n<code>{dns_link}</code>",
-            "💡 <i>Mở link trên Safari để tải & cài đặt cấu hình VPN & DNS.</i>"
-        ])
-        kb = account_kb(dns_link=dns_link)
-    else:
-        lines.append("<i>Chưa có gói dịch vụ nào đang kích hoạt.</i>")
-        lines.append("\n💡 <i>Bấm <b>'Mua gói ngay'</b> bên dưới để kích hoạt bản quyền VIP nhé!</i>")
-        kb = account_kb(dns_link=None)
+    text, kb = _render_account_summary(user)
 
     try:
         await query.edit_message_text(
-            "\n".join(lines),
+            text,
             parse_mode=ParseMode.HTML,
             reply_markup=kb
         )
     except Exception:
         await query.message.reply_text(
-            "\n".join(lines),
+            text,
             parse_mode=ParseMode.HTML,
             reply_markup=kb
         )
@@ -863,30 +851,68 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             res_lk = await asyncio.to_thread(api.locket_resolve, cleaned_username)
             data_lk = res_lk.get("data") if isinstance(res_lk.get("data"), dict) else res_lk
             locket_username = data_lk.get("username") or cleaned_username
+            locket_uid = str(data_lk.get("uid") or data_lk.get("id") or locket_username).strip()
             locket_avatar = data_lk.get("avatar") or data_lk.get("avatarUrl")
+
+            lk_uid_info = {}
+            try:
+                lk_chk = await asyncio.to_thread(api.check_uid_details, locket_username, "locket")
+                lk_uid_info = api.parse_uid_check_data(lk_chk)
+            except Exception:
+                lk_uid_info = {}
+            if lk_uid_info.get("active") and lk_uid_info.get("is_mine") is False:
+                exp_lk = _format_exp_vn(lk_uid_info.get("expires_at"))
+                exp_note = f" (hạn tới {exp_lk})" if exp_lk else ""
+                raise ValueError(
+                    f"Tài khoản Locket @{locket_username} đang dùng gói từ đại lý/CTV khác{exp_note}. "
+                    "Hệ thống tạm chặn mua đè để tránh lỗi giao dịch (HTTP 409)!"
+                )
 
             # 2. Xác thực Spotify
             if not re.search(r"spotify\.com/user/[a-zA-Z0-9._-]+", spotify_part, re.I):
                 raise ValueError("Dòng 2 (Spotify) bắt buộc phải dán đúng Link Profile Spotify (VD: https://open.spotify.com/user/...)!")
             cleaned_sp = utils.extract_spotify_uid(spotify_part)
             res_sp = await asyncio.to_thread(api.spotify_check, spotify_part)
-            data_sp = res_sp.get("data") if isinstance(res_sp.get("data"), dict) else res_sp
-            sp_uid = data_sp.get("uid") or data_sp.get("id") or cleaned_sp
-            sp_display = data_sp.get("displayName") or data_sp.get("username") or data_sp.get("name") or sp_uid
-            sp_avatar = data_sp.get("avatar") or data_sp.get("image") or data_sp.get("avatarUrl")
-            sp_plan = data_sp.get("plan") or data_sp.get("product") or "Free"
+            sp_info = api.parse_spotify_check_data(res_sp)
+            sp_uid = sp_info["uid"] or cleaned_sp
+            sp_display = sp_info["username"] or sp_uid
+            sp_avatar = sp_info["avatar_url"]
+
+            if sp_info["active"] and sp_info["is_mine"] is False:
+                exp_sp = _format_exp_vn(sp_info.get("expires_at"))
+                exp_note = f" (hạn tới {exp_sp})" if exp_sp else ""
+                raise ValueError(
+                    f"Tài khoản Spotify này đang dùng gói từ đại lý/CTV khác{exp_note}. "
+                    "Hệ thống tạm chặn mua đè để tránh lỗi giao dịch (HTTP 409)!"
+                )
+
+            sp_uid_info = {}
+            try:
+                sp_chk = await asyncio.to_thread(api.check_uid_details, sp_uid, "spotify")
+                sp_uid_info = api.parse_uid_check_data(sp_chk)
+            except Exception:
+                sp_uid_info = {}
+            if sp_uid_info.get("active") and sp_uid_info.get("is_mine") is False:
+                raise ValueError("Tài khoản Spotify này đang dùng gói từ đại lý/CTV khác — vui lòng đợi hết hạn hoặc nhắn Admin!")
+
+            sp_plan = sp_uid_info.get("package_name") or ("Đang VIP" if sp_info["active"] else "Free")
+            sp_exp = _format_exp_vn(sp_info.get("expires_at") or sp_uid_info.get("expires_at"))
+            lk_exp = _format_exp_vn(lk_uid_info.get("expires_at"))
+            lk_status_note = f" (Đang {lk_uid_info.get('package_name') or 'VIP'}" + (f", hạn {lk_exp}" if lk_exp else "") + ")" if lk_uid_info.get("active") else ""
+            sp_status_note = f" (Hạn {sp_exp})" if (sp_info["active"] and sp_exp) else ""
 
             uid = f"{locket_username} | {sp_uid}"
             display = f"Locket: @{locket_username} | Spotify: {sp_display}"
             avatar_url = locket_avatar or sp_avatar
             spotify_extra_info = (
-                f"🟡 <b>Locket Username:</b> <code>@{locket_username}</code>\n"
+                f"🟡 <b>Locket Username:</b> <code>@{locket_username}</code>{lk_status_note}\n"
                 f"🎵 <b>Spotify Profile:</b> <code>{sp_display}</code> (UID: <code>{sp_uid}</code>)\n"
-                f"🏷 <b>Gói Spotify hiện tại:</b> <code>{sp_plan}</code>\n"
+                f"🏷 <b>Gói Spotify hiện tại:</b> <code>{sp_plan}</code>{sp_status_note}\n"
             )
             extra_order_fields = {
                 "account_target": locket_username,
                 "locket_username": locket_username,
+                "locket_uid": locket_uid,
                 "spotify_uid": sp_uid,
                 "avatar": avatar_url,
             }
@@ -895,17 +921,40 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 raise ValueError("Phần Spotify chỉ nhận Link Profile Spotify (VD: https://open.spotify.com/user/...). Vui lòng sao chép liên kết hồ sơ từ ứng dụng Spotify!")
             cleaned_sp = utils.extract_spotify_uid(raw_identifier)
             res = await asyncio.to_thread(api.spotify_check, raw_identifier)
-            data = res.get("data") if isinstance(res.get("data"), dict) else res
-            uid  = data.get("uid") or data.get("id") or cleaned_sp
-            display = data.get("displayName") or data.get("username") or data.get("name") or uid
-            avatar_url = data.get("avatar") or data.get("image") or data.get("avatarUrl")
-            current_plan = data.get("plan") or data.get("product") or "Free"
-            is_bound = data.get("isBound")
+            sp_info = api.parse_spotify_check_data(res)
+            uid = sp_info["uid"] or cleaned_sp
+            display = sp_info["username"] or uid
+            avatar_url = sp_info["avatar_url"]
+            is_bound = sp_info["is_bound"]
 
-            bound_text = "Đã kết nối IP thiết bị" if is_bound else "Chưa khoá IP (sẵn sàng)"
+            if sp_info["active"] and sp_info["is_mine"] is False:
+                exp_sp = _format_exp_vn(sp_info.get("expires_at"))
+                exp_note = f" (hạn tới {exp_sp})" if exp_sp else ""
+                raise ValueError(
+                    f"Tài khoản Spotify này đang được kích hoạt bởi đại lý/CTV khác{exp_note}. "
+                    "Hệ thống tạm chặn mua đè để tránh lỗi giao dịch (HTTP 409)!"
+                )
 
+            sp_uid_info = {}
+            try:
+                sp_chk = await asyncio.to_thread(api.check_uid_details, uid, "spotify")
+                sp_uid_info = api.parse_uid_check_data(sp_chk)
+            except Exception:
+                sp_uid_info = {}
+            if sp_uid_info.get("active") and sp_uid_info.get("is_mine") is False:
+                raise ValueError("Tài khoản Spotify này đang dùng gói từ đại lý/CTV khác — vui lòng đợi hết hạn hoặc nhắn Admin!")
+
+            current_plan = sp_uid_info.get("package_name") or ("Đang VIP" if sp_info["active"] else "Free")
+            exp_sp = _format_exp_vn(sp_info.get("expires_at") or sp_uid_info.get("expires_at"))
+            bound_text = (
+                f"Đã khóa IP ({sp_info['device_sig']})" if (is_bound and sp_info["device_sig"])
+                else ("Đã kết nối IP thiết bị" if is_bound else "Chưa khoá IP (sẵn sàng)")
+            )
+
+            exp_line = f"📅 <b>Hạn dùng hiện tại:</b> <code>{exp_sp}</code>\n" if (sp_info["active"] and exp_sp) else ""
             spotify_extra_info = (
                 f"🏷 <b>Gói hiện tại:</b> <code>{current_plan}</code>\n"
+                f"{exp_line}"
                 f"📶 <b>Phiên IP:</b> <i>{bound_text}</i>\n"
             )
             extra_order_fields = {
@@ -920,12 +969,32 @@ async def receive_identifier(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             res = await asyncio.to_thread(api.locket_resolve, cleaned_username)
             data = res.get("data") if isinstance(res.get("data"), dict) else res
             locket_username = data.get("username") or cleaned_username
-            uid  = data.get("uid") or data.get("id") or locket_username
+            uid = data.get("uid") or data.get("id") or locket_username
             display = locket_username
             avatar_url = data.get("avatar") or data.get("avatarUrl")
+
+            lk_uid_info = {}
+            try:
+                lk_chk = await asyncio.to_thread(api.check_uid_details, locket_username, "locket")
+                lk_uid_info = api.parse_uid_check_data(lk_chk)
+            except Exception:
+                lk_uid_info = {}
+            if product_key != "locket_ai" and lk_uid_info.get("active") and lk_uid_info.get("is_mine") is False:
+                exp_lk = _format_exp_vn(lk_uid_info.get("expires_at"))
+                exp_note = f" (hạn tới {exp_lk})" if exp_lk else ""
+                raise ValueError(
+                    f"Tài khoản Locket @{locket_username} đang dùng gói từ đại lý/CTV khác{exp_note}. "
+                    "Hệ thống tạm chặn mua đè để tránh lỗi giao dịch (HTTP 409)!"
+                )
+            if lk_uid_info.get("active"):
+                exp_lk = _format_exp_vn(lk_uid_info.get("expires_at"))
+                pkg_lbl = lk_uid_info.get("package_name") or "Locket Gold VIP"
+                spotify_extra_info = f"👑 <b>Gói hiện tại:</b> <code>{pkg_lbl}</code>" + (f" (Hạn: <code>{exp_lk}</code>)" if exp_lk else "") + "\n"
+
             extra_order_fields = {
                 "account_target": locket_username,
                 "locket_username": locket_username,
+                "locket_uid": uid,
                 "avatar": avatar_url,
             }
 
@@ -1698,6 +1767,129 @@ async def cancel_conv(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # ── /resetspotify: Khách tự giải phóng phiên thiết bị Spotify ─────────────────
 
+async def check_account_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Lệnh /check <username_locket hoặc link_spotify> — Tra cứu gói VIP, hạn dùng & phiên IP Spotify."""
+    user = update.effective_user
+    db.upsert_user(user.id, user.username, user.first_name, user.last_name)
+    if not ctx.args:
+        await update.message.reply_text(
+            "🔍 <b>KIỂM TRA TRẠNG THÁI GÓI VIP & PHIÊN SPOTIFY</b>\n\n"
+            "Gửi kèm <b>Username Locket</b> hoặc <b>Link/UID Spotify</b> theo cú pháp:\n"
+            "• <code>/check conlaigii</code>\n"
+            "• <code>/check https://open.spotify.com/user/...</code>",
+            parse_mode=ParseMode.HTML,
+        )
+        return
+
+    args = list(ctx.args)
+    explicit_svc = None
+    if len(args) >= 2 and args[0].lower() in ("locket", "spotify"):
+        explicit_svc = args[0].lower()
+        raw_target = " ".join(args[1:]).strip()
+    else:
+        raw_target = " ".join(args).strip()
+
+    is_spotify = (
+        explicit_svc == "spotify"
+        or ("spotify.com" in raw_target.lower())
+        or raw_target.lower().startswith("spotify:user:")
+    )
+
+    msg = await update.message.reply_text("⏳ Đang kiểm tra tài khoản trên máy chủ...", parse_mode=ParseMode.HTML)
+    try:
+        if is_spotify:
+            sp_uid = utils.extract_spotify_uid(raw_target) or raw_target
+            sp_res = await asyncio.to_thread(api.spotify_check, raw_target, True)
+            sp = api.parse_spotify_check_data(sp_res)
+            uid = sp["uid"] or sp_uid
+            uid_info = {}
+            try:
+                uid_info = api.parse_uid_check_data(await asyncio.to_thread(api.check_uid_details, uid, "spotify"))
+            except Exception:
+                uid_info = {}
+
+            pkg_name = uid_info.get("package_name") or ("Spotify Premium VIP" if sp["active"] else "Chưa kích hoạt")
+            exp_txt = _format_exp_vn(sp.get("expires_at") or uid_info.get("expires_at")) or "---"
+            status_lbl = "✅ ĐANG HOẠT ĐỘNG" if sp["active"] else "❌ CHƯA KÍCH HOẠT"
+            bound_lbl = f"🔒 Đang khóa IP ({sp['device_sig'] or 'Thiết bị iOS'})" if sp["is_bound"] else "🟢 Chưa khóa IP (Sẵn sàng)"
+            mine_lbl = "AloPremiumShop" if sp["is_mine"] else ("Hệ thống/CTV khác" if sp["active"] and sp["is_mine"] is False else "---")
+
+            await msg.edit_text(
+                f"🎵 <b>KIỂM TRA TÀI KHOẢN SPOTIFY</b>\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"👤 <b>Tên hiển thị:</b> <b>{escape(sp['username'] or uid)}</b>\n"
+                f"🆔 <b>UID:</b> <code>{escape(uid)}</code>\n"
+                f"⚡ <b>Trạng thái:</b> {status_lbl}\n"
+                f"📦 <b>Gói cước:</b> <b>{escape(pkg_name)}</b>\n"
+                f"📅 <b>Hạn dùng:</b> <code>{escape(exp_txt)}</code>\n"
+                f"🛡 <b>Nguồn quản lý:</b> <i>{mine_lbl}</i>\n"
+                f"📶 <b>Phiên IP:</b> {bound_lbl}\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"💡 <i>Nếu đổi mạng/đổi máy mới bị văng nhạc: dừng máy cũ 20–25s sẽ tự chuyển, hoặc bấm <code>/resetspotify {escape(uid)}</code> để giải phóng ngay.</i>",
+                parse_mode=ParseMode.HTML,
+            )
+            return
+
+        cleaned_lk = utils.clean_input(raw_target)
+        res_lk = await asyncio.to_thread(api.locket_resolve, cleaned_lk)
+        dt_lk = res_lk.get("data") if isinstance(res_lk.get("data"), dict) else res_lk
+        locket_username = dt_lk.get("username") or cleaned_lk
+        locket_uid = str(dt_lk.get("uid") or dt_lk.get("id") or locket_username).strip()
+
+        uid_info = {}
+        try:
+            uid_info = api.parse_uid_check_data(await asyncio.to_thread(api.check_uid_details, locket_username, "locket", True))
+        except Exception:
+            uid_info = {}
+
+        is_active = bool(uid_info.get("active"))
+        pkg_name = uid_info.get("package_name") or ("Locket Gold VIP" if is_active else "Chưa kích hoạt")
+        exp_txt = _format_exp_vn(uid_info.get("expires_at")) or "---"
+        status_lbl = "✅ ĐANG KÍCH HOẠT GOLD" if is_active else "❌ CHƯA KÍCH HOẠT"
+        mine_lbl = "AloPremiumShop" if uid_info.get("is_mine") else ("Hệ thống/CTV khác" if is_active and uid_info.get("is_mine") is False else "---")
+
+        await msg.edit_text(
+            f"💛 <b>KIỂM TRA TÀI KHOẢN LOCKET</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"👤 <b>Username:</b> <code>@{escape(locket_username)}</code>\n"
+            f"🆔 <b>UID:</b> <code>{escape(locket_uid)}</code>\n"
+            f"⚡ <b>Trạng thái:</b> {status_lbl}\n"
+            f"📦 <b>Gói cước:</b> <b>{escape(pkg_name)}</b>\n"
+            f"📅 <b>Hạn dùng:</b> <code>{escape(exp_txt)}</code>\n"
+            f"🛡 <b>Nguồn quản lý:</b> <i>{mine_lbl}</i>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━",
+            parse_mode=ParseMode.HTML,
+        )
+    except Exception as e:
+        await msg.edit_text(
+            f"❌ <b>Không thể tra cứu tài khoản!</b>\nChi tiết: <code>{escape(str(e))}</code>",
+            parse_mode=ParseMode.HTML,
+        )
+
+
+def _has_paid_spotify_access(sp_uid: str, raw_target: str = "") -> bool:
+    sp_l = (sp_uid or "").lower().strip()
+    raw_l = (raw_target or "").lower().strip()
+    for od in db.get_orders().values():
+        if od.get("status") == "done" and od.get("product") in ("spotify", "combo", "locket_spotify", "locket_ai"):
+            cands = {
+                str(od.get("uid", "")).lower().strip(),
+                str(od.get("spotify_uid", "")).lower().strip(),
+                str(od.get("identifier", "")).lower().strip(),
+                str(od.get("account_target", "")).lower().strip(),
+                str(od.get("display_name", "")).lower().strip(),
+            }
+            if (sp_l and sp_l in cands) or (raw_l and raw_l in cands):
+                return True
+    try:
+        chk = api.parse_uid_check_data(api.check_uid_details(sp_uid, "spotify"))
+        if chk.get("active") and chk.get("is_mine") is True:
+            return True
+    except Exception:
+        pass
+    return False
+
+
 async def resetspotify_user_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Khách hàng tự reset thiết bị Spotify khi đổi điện thoại / cài lại app (POST /api/spotify/reset)."""
     if not ctx.args:
@@ -1705,32 +1897,58 @@ async def resetspotify_user_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             "🔄 <b>TỰ ĐỘNG RESET THIẾT BỊ SPOTIFY</b>\n\n"
             "Nếu bạn đổi điện thoại hoặc cài lại app Spotify, hãy gửi kèm Link hoặc UID Spotify theo cú pháp:\n"
             "👉 <code>/resetspotify &lt;link_hoặc_uid_spotify&gt;</code>\n\n"
-            "<i>Ví dụ:</i>\n"
-            "<code>/resetspotify 31t3tcqtl7dugzvuubw2ydhqy6km</code>",
+            "💡 <i>Lưu ý: Hệ thống cũng tự động chuyển thiết bị sau 20–25 giây dừng phát ở máy cũ.</i>\n"
+            "<i>Ví dụ:</i> <code>/resetspotify 31t3tcqtl7dugzvuubw2ydhqy6km</code>",
             parse_mode=ParseMode.HTML
         )
         return
 
     raw_target = ctx.args[0].strip()
-    msg = await update.message.reply_text("⏳ Đang kết nối API để giải phóng phiên thiết bị Spotify...", parse_mode=ParseMode.HTML)
+    msg = await update.message.reply_text("⏳ Đang kiểm tra phiên & giải phóng thiết bị Spotify...", parse_mode=ParseMode.HTML)
     try:
-        import re
-        m = re.search(r"user/([a-zA-Z0-9]+)", raw_target)
-        uid = m.group(1) if m else raw_target
+        uid = utils.extract_spotify_uid(raw_target) or raw_target
+        if not await asyncio.to_thread(_has_paid_spotify_access, uid, raw_target):
+            await msg.edit_text(
+                "❌ <b>Không thể Reset!</b>\n"
+                "Tài khoản Spotify này chưa từng mua gói tại AloPremiumShop hoặc chưa kích hoạt.\n"
+                "💡 Nếu cần hỗ trợ kiểm tra đơn hàng, vui lòng bấm /support.",
+                parse_mode=ParseMode.HTML,
+            )
+            return
+
+        sp_info = {}
+        try:
+            sp_res = await asyncio.to_thread(api.spotify_check, raw_target, True)
+            sp_info = api.parse_spotify_check_data(sp_res)
+            if sp_info.get("uid"):
+                uid = sp_info["uid"]
+        except Exception:
+            sp_info = {}
+
+        if sp_info and sp_info.get("is_bound") is False:
+            await msg.edit_text(
+                f"🟢 <b>TÀI KHOẢN HIỆN KHÔNG BỊ KHÓA IP!</b>\n\n"
+                f"🆔 <b>UID:</b> <code>{escape(uid)}</code>\n"
+                f"📶 <b>Trạng thái:</b> Chưa kết nối IP thiết bị nào.\n\n"
+                f"👉 Bạn có thể mở app Spotify trên thiết bị mới và nghe nhạc bình thường ngay!",
+                parse_mode=ParseMode.HTML,
+            )
+            return
 
         res = await asyncio.to_thread(api.spotify_reset, uid)
         resp_msg = res.get("message", "Đã giải phóng phiên thiết bị thành công!")
+        dev_note = f"\n📱 <b>Đã gỡ khóa khỏi:</b> <code>{escape(sp_info['device_sig'])}</code>" if sp_info.get("device_sig") else ""
         await msg.edit_text(
             f"✅ <b>ĐÃ RESET THIẾT BỊ SPOTIFY THÀNH CÔNG!</b>\n\n"
-            f"🆔 <b>UID:</b> <code>{uid}</code>\n"
-            f"💬 <b>Kết quả:</b> {resp_msg}\n\n"
+            f"🆔 <b>UID:</b> <code>{escape(uid)}</code>{dev_note}\n"
+            f"💬 <b>Kết quả:</b> {escape(str(resp_msg))}\n\n"
             f"👉 Bây giờ bạn có thể mở ứng dụng Spotify trên thiết bị mới để kết nối nghe nhạc bình thường!",
             parse_mode=ParseMode.HTML
         )
     except Exception as e:
         await msg.edit_text(
             f"❌ <b>Reset thiết bị thất bại!</b>\n"
-            f"Chi tiết: <code>{e}</code>\n\n"
+            f"Chi tiết: <code>{escape(str(e))}</code>\n\n"
             f"💡 <i>Vui lòng kiểm tra lại UID hoặc liên hệ hỗ trợ /support để được giúp đỡ.</i>",
             parse_mode=ParseMode.HTML
         )
@@ -1813,29 +2031,54 @@ async def cb_show_guide(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def cb_user_reset_spotify_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Khách bấm nút Reset thiết bị Spotify trong menu đơn hàng."""
+    """Khách bấm nút Reset thiết bị Spotify trong menu đơn hàng (hỗ trợ cả đơn Spotify & Combo Duo)."""
     query = update.callback_query
     await query.answer()
     user_id = query.from_user.id
     orders = db.get_user_orders(user_id)
-    spot_orders = [o for o in orders if o.get("product") == "spotify" and o.get("status") == "done"]
+    spot_orders = [
+        o for o in orders
+        if o.get("product") in ("spotify", "combo", "locket_spotify", "locket_ai")
+        and o.get("status") == "done"
+    ]
 
     if spot_orders:
-        latest_spot = sorted(spot_orders, key=lambda x: x["created_at"], reverse=True)[0]
-        uid = latest_spot.get("uid")
-        try:
-            res = await asyncio.to_thread(api.spotify_reset, uid)
-            resp_msg = res.get("message", "Đã giải phóng phiên thiết bị thành công!")
-            text = (
-                f"✅ <b>ĐÃ RESET THIẾT BỊ SPOTIFY THÀNH CÔNG!</b>\n\n"
-                f"🆔 <b>UID:</b> <code>{uid}</code>\n"
-                f"💬 <b>Kết quả:</b> {resp_msg}\n\n"
-                f"👉 Bây giờ bạn có thể mở ứng dụng Spotify trên thiết bị mới để kết nối nghe nhạc bình thường!"
-            )
-            await query.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=orders_kb(True, True))
-            return
-        except Exception as e:
-            logger.warning(f"Auto reset spotify error: {e}")
+        latest_spot = sorted(spot_orders, key=lambda x: x.get("created_at") or "", reverse=True)[0]
+        raw_sp = str(latest_spot.get("spotify_uid") or "").strip()
+        if not raw_sp:
+            raw_uid = str(latest_spot.get("uid") or "").strip()
+            raw_sp = raw_uid.split("|")[-1].strip() if "|" in raw_uid else raw_uid
+        uid = utils.extract_spotify_uid(raw_sp) or raw_sp
+        if uid:
+            try:
+                sp_info = {}
+                try:
+                    sp_info = api.parse_spotify_check_data(await asyncio.to_thread(api.spotify_check, uid, True))
+                except Exception:
+                    sp_info = {}
+                if sp_info and sp_info.get("is_bound") is False:
+                    await query.message.reply_text(
+                        f"🟢 <b>TÀI KHOẢN SPOTIFY HIỆN KHÔNG BỊ KHÓA IP!</b>\n\n"
+                        f"🆔 <b>UID:</b> <code>{escape(uid)}</code>\n"
+                        f"👉 Bạn có thể mở app Spotify nghe nhạc bình thường trên thiết bị mới!",
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=orders_kb(True, True),
+                    )
+                    return
+
+                res = await asyncio.to_thread(api.spotify_reset, uid)
+                resp_msg = res.get("message", "Đã giải phóng phiên thiết bị thành công!")
+                dev_note = f"\n📱 <b>Đã gỡ khỏi:</b> <code>{escape(sp_info['device_sig'])}</code>" if sp_info.get("device_sig") else ""
+                text = (
+                    f"✅ <b>ĐÃ RESET THIẾT BỊ SPOTIFY THÀNH CÔNG!</b>\n\n"
+                    f"🆔 <b>UID:</b> <code>{escape(uid)}</code>{dev_note}\n"
+                    f"💬 <b>Kết quả:</b> {escape(str(resp_msg))}\n\n"
+                    f"👉 Bây giờ bạn có thể mở ứng dụng Spotify trên thiết bị mới để kết nối nghe nhạc bình thường!"
+                )
+                await query.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=orders_kb(True, True))
+                return
+            except Exception as e:
+                logger.warning(f"Auto reset spotify error: {e}")
 
     await query.message.reply_text(
         "🔄 <b>TỰ ĐỘNG RESET THIẾT BỊ SPOTIFY</b>\n\n"

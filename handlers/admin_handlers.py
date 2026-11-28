@@ -503,7 +503,8 @@ async def rs_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    uid = ctx.args[0].strip()
+    raw_target = ctx.args[0].strip()
+    uid = utils.extract_spotify_uid(raw_target) or raw_target
     msg = await update.message.reply_text(f"🔄 Đang reset thiết bị Spotify cho <code>{uid}</code>…", parse_mode=ParseMode.HTML)
     try:
         res = api.spotify_reset(uid)
@@ -860,16 +861,57 @@ async def handle_admin_text_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE
     if action == "check_uid":
         msg = await update.message.reply_text(f"🔍 Đang tra cứu <code>{text_input}</code>…", parse_mode=ParseMode.HTML)
         try:
-            service = "spotify" if "spotify" in text_input.lower() else "locket"
-            res = api.check_uid_details(text_input, service=service)
-            data = res.get("data", {})
-            uid = data.get("uid", text_input)
-            username = data.get("username", "N/A")
-            status = data.get("status", "N/A")
-            active = "Đang kích hoạt ✅" if data.get("active") else "Chưa kích hoạt / Hết hạn ❌"
-            expires = data.get("expiresAt", "Vĩnh viễn")
-            pkg = data.get("package", {})
-            pkg_name = pkg.get("name", "N/A") if isinstance(pkg, dict) else str(pkg)
+            service = "spotify" if ("spotify" in text_input.lower() or len(text_input.strip()) >= 22 and " " not in text_input.strip()) else "locket"
+            sp_session_line = ""
+            if service == "spotify":
+                sp_uid = utils.extract_spotify_uid(text_input) or text_input
+                sp_res = api.spotify_check(text_input, force_refresh=True)
+                sp = api.parse_spotify_check_data(sp_res)
+                uid = sp["uid"] or sp_uid
+                username = sp["username"] or uid
+                status = sp["status"]
+                active = "Đang kích hoạt ✅" if sp["active"] else "Chưa kích hoạt / Hết hạn ❌"
+                expires = sp["expires_at"] or "Chưa có"
+                is_mine = sp["is_mine"]
+                pkg_name = "Spotify Premium" if sp["active"] else "Chưa có gói"
+                try:
+                    u_res = api.parse_uid_check_data(api.check_uid_details(uid, "spotify", force_refresh=True))
+                    if u_res.get("package_name"):
+                        pkg_name = u_res["package_name"]
+                    if is_mine is None:
+                        is_mine = u_res.get("is_mine")
+                except Exception:
+                    pass
+                mine_lbl = "Của shop ✅" if is_mine else ("Thuộc CTV khác ⚠️" if sp["active"] and is_mine is False else "Không rõ")
+                bound_lbl = "🔒 Đang khóa IP" if sp["is_bound"] else "🟢 Chưa khóa IP"
+                sp_session_line = (
+                    f"\n📶 <b>Phiên IP:</b> {bound_lbl}\n"
+                    f"📱 <b>Thiết bị:</b> <code>{sp['device_sig'] or 'N/A'}</code> | IP: <code>{sp['client_ip'] or 'N/A'}</code>"
+                )
+            else:
+                clean_lk = utils.clean_input(text_input)
+                try:
+                    u_res = api.parse_uid_check_data(api.check_uid_details(clean_lk, "locket", force_refresh=True))
+                except Exception:
+                    r_res = api.locket_resolve(clean_lk, force_refresh=True)
+                    dt_r = r_res.get("data", {}) if isinstance(r_res.get("data"), dict) else {}
+                    u_res = {
+                        "uid": dt_r.get("uid") or clean_lk,
+                        "username": dt_r.get("username") or clean_lk,
+                        "status": "INACTIVE",
+                        "active": False,
+                        "expires_at": None,
+                        "package_name": "Chưa có gói",
+                        "is_mine": None,
+                    }
+                uid = u_res.get("uid") or clean_lk
+                username = u_res.get("username") or clean_lk
+                status = u_res.get("status") or "N/A"
+                active = "Đang kích hoạt ✅" if u_res.get("active") else "Chưa kích hoạt / Hết hạn ❌"
+                expires = u_res.get("expires_at") or "Chưa có"
+                pkg_name = u_res.get("package_name") or ("Locket Gold VIP" if u_res.get("active") else "Chưa có gói")
+                is_mine = u_res.get("is_mine")
+                mine_lbl = "Của shop ✅" if is_mine else ("Thuộc CTV khác ⚠️" if u_res.get("active") and is_mine is False else "Không rõ")
 
             result_text = (
                 f"📋 <b>KẾT QUẢ TRA CỨU HỆ THỐNG:</b>\n"
@@ -879,7 +921,9 @@ async def handle_admin_text_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE
                 f"🛠 <b>Dịch vụ:</b> <b>{service.upper()}</b>\n"
                 f"📦 <b>Gói:</b> <b>{pkg_name}</b>\n"
                 f"⚡ <b>Trạng thái:</b> <b>{active}</b> ({status})\n"
-                f"📅 <b>Hạn dùng:</b> <code>{expires}</code>\n"
+                f"🛡 <b>Sở hữu CTV:</b> <b>{mine_lbl}</b>\n"
+                f"📅 <b>Hạn dùng:</b> <code>{expires}</code>"
+                f"{sp_session_line}\n"
                 f"━━━━━━━━━━━━━━━━━━━━━━━━━"
             )
             await msg.edit_text(result_text, parse_mode=ParseMode.HTML)

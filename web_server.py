@@ -155,6 +155,65 @@ def _get_masked_vietqr_url(amount: int, add_info: str) -> str:
     return _proxy_media_url(raw) or raw
 
 
+_spotify_reset_lock = threading.Lock()
+_spotify_reset_cooldowns: dict[str, float] = {}
+
+
+def _mask_client_ip(ip_str: str) -> str:
+    s = str(ip_str or "").strip()
+    if not s:
+        return ""
+    if "." in s:
+        parts = s.split(".")
+        if len(parts) == 4:
+            return f"{parts[0]}.{parts[1]}.***.{parts[3]}"
+    if ":" in s:
+        parts = s.split(":")
+        if len(parts) >= 3:
+            return f"{parts[0]}:***:{parts[-1]}"
+    return s
+
+
+def _format_expiry_vn(exp_str: str | None) -> str:
+    if not exp_str:
+        return ""
+    s = str(exp_str).strip()
+    if not s:
+        return ""
+    if s.startswith("2099") or s.startswith("2100"):
+        return "Vĩnh viễn"
+    try:
+        dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        if dt.year >= 2090:
+            return "Vĩnh viễn"
+        if dt.tzinfo is not None:
+            dt = dt.astimezone()
+        return dt.strftime("%d/%m/%Y")
+    except Exception:
+        return s[:10]
+
+
+def _inspect_upstream_uid_status(ident: str, service: str) -> tuple[str | None, dict]:
+    """Kiểm tra trạng thái gói & quyền sở hữu isMine trên API CTV để chặn sớm lỗi HTTP 409 trước khi khách thanh toán."""
+    if not ident:
+        return None, {}
+    try:
+        res = api.check_uid_details(ident, service)
+        info = api.parse_uid_check_data(res)
+        if info.get("active") and info.get("is_mine") is False:
+            exp_vn = _format_expiry_vn(info.get("expires_at"))
+            exp_note = f" (hạn tới {exp_vn})" if exp_vn else ""
+            svc_label = "Spotify Premium" if service == "spotify" else "Locket Gold"
+            return (
+                f"⛔ Tài khoản {svc_label} này đang được kích hoạt bởi đại lý/CTV khác{exp_note}. "
+                "Hệ thống tạm chặn mua mới để tránh lỗi giao dịch (HTTP 409) — vui lòng đợi hết hạn cũ hoặc nhắn Admin hỗ trợ!",
+                info,
+            )
+        return None, info
+    except Exception:
+        return None, {}
+
+
 def _is_safe_public_url(url: str) -> bool:
     try:
         p = urlparse(url)
@@ -1371,6 +1430,22 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         exact_dl = f"/api/download_profile?order_id={oid}" if is_done else None
                         exact_safari = exact_dl
 
+                    exp_val = od.get("expires_at")
+                    if is_done and not exp_val and prod_k in ("locket", "spotify", "combo", "locket_spotify"):
+                        chk_svc = "spotify" if prod_k == "spotify" else "locket"
+                        chk_target = (
+                            str(od.get("spotify_uid") or od.get("uid") or "").strip()
+                            if chk_svc == "spotify"
+                            else str(od.get("locket_username") or od.get("account_target") or od.get("display_name") or od.get("uid") or "").strip().lstrip("@")
+                        )
+                        if chk_target and " | " not in chk_target:
+                            try:
+                                up_info = api.parse_uid_check_data(api.check_uid_details(chk_target, chk_svc))
+                                if up_info.get("active") and up_info.get("expires_at"):
+                                    exp_val = up_info["expires_at"]
+                            except Exception:
+                                pass
+
                     results.append({
                         "order_id": oid,
                         "product": prod_k,
@@ -1382,6 +1457,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "display_name": u_disp,
                         "avatar": _proxy_media_url(od.get("avatar")),
                         "created_at": od.get("created_at"),
+                        "expires_at": exp_val,
                         "download_url": exact_dl,
                         "direct_safari_url": exact_safari,
                         "dns_link": exact_safari,
@@ -1916,7 +1992,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(404, {"ok": False, "error": f"Không tìm thấy mã {code}"})
             return
 
-        # API Admin: Tra cứu UID qua API CTV
+        # API Admin: Tra cứu UID qua API CTV (gộp đủ thông tin gói + phiên IP Spotify)
         if path == "/api/admin/check_uid":
             if not self._require_admin(body=body):
                 return
@@ -1924,10 +2000,59 @@ class WebAppHandler(BaseHTTPRequestHandler):
             service = str(body.get("service", "locket")).strip()
             try:
                 if service == "spotify":
-                    res = api.spotify_check(identifier)
+                    res_sp = api.spotify_check(identifier, force_refresh=True)
+                    merged = dict(res_sp.get("data", {}) if isinstance(res_sp.get("data"), dict) else res_sp)
+                    cleaned_sp = utils.extract_spotify_uid(identifier) or merged.get("uid") or identifier
+                    try:
+                        uid_res = api.check_uid_details(cleaned_sp, "spotify", force_refresh=True)
+                        uid_dt = uid_res.get("data", {}) if isinstance(uid_res.get("data"), dict) else {}
+                        if uid_dt.get("package") and not merged.get("package"):
+                            merged["package"] = uid_dt["package"]
+                        if uid_dt.get("isMine") is not None and merged.get("isMine") is None:
+                            merged["isMine"] = uid_dt["isMine"]
+                        if uid_dt.get("expiresAt") and not merged.get("expiresAt"):
+                            merged["expiresAt"] = uid_dt["expiresAt"]
+                    except Exception:
+                        pass
+                    self._send_json(200, {"ok": True, "data": {"ok": True, "data": merged}})
                 else:
-                    res = api.check_uid_details(identifier, "locket")
-                self._send_json(200, {"ok": True, "data": res})
+                    clean_lk = utils.clean_input(identifier)
+                    try:
+                        res = api.check_uid_details(clean_lk, "locket", force_refresh=True)
+                    except Exception:
+                        res = api.locket_resolve(clean_lk, force_refresh=True)
+                    data_lk = dict(res.get("data", {}) if isinstance(res.get("data"), dict) else res)
+                    if not data_lk.get("avatarUrl") and not data_lk.get("avatar"):
+                        try:
+                            r_res = api.locket_resolve(clean_lk)
+                            r_dt = r_res.get("data", {}) if isinstance(r_res.get("data"), dict) else {}
+                            if r_dt.get("avatarUrl") or r_dt.get("avatar"):
+                                data_lk["avatarUrl"] = r_dt.get("avatarUrl") or r_dt.get("avatar")
+                            if r_dt.get("uid") and not data_lk.get("uid"):
+                                data_lk["uid"] = r_dt["uid"]
+                        except Exception:
+                            pass
+                    self._send_json(200, {"ok": True, "data": {"ok": True, "data": data_lk}})
+            except Exception as e:
+                self._send_json(400, {"ok": False, "error": str(e)})
+            return
+
+        # API Admin: Giải phóng phiên IP Spotify trực tiếp từ trang Quản Trị
+        if path == "/api/admin/reset_spotify":
+            if not self._require_admin(body=body):
+                return
+            raw_sp = str(body.get("uid", "") or body.get("identifier", "")).strip()
+            if not raw_sp:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập UID hoặc Link Spotify!"})
+                return
+            sp_uid = utils.extract_spotify_uid(raw_sp) or raw_sp
+            try:
+                res = api.spotify_reset(sp_uid)
+                self._send_json(200, {
+                    "ok": True,
+                    "uid": sp_uid,
+                    "message": res.get("message") or f"Đã giải phóng phiên IP Spotify cho UID {sp_uid}!",
+                })
             except Exception as e:
                 self._send_json(400, {"ok": False, "error": str(e)})
             return
@@ -2667,7 +2792,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # 1. API Kiểm tra tài khoản Locket / Spotify trước khi mua (TÁCH BIỆT NGHIÊM NGẶT)
         if path == "/api/check_account":
-            service = body.get("service", "locket")
+            service = str(body.get("service", "locket") or "locket").strip().lower()
             raw_id = str(body.get("identifier", "")).strip()
             if not raw_id:
                 self._send_json(400, {"ok": False, "error": "Vui lòng nhập thông tin tài khoản!"})
@@ -2684,12 +2809,42 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
                     cleaned_sp = utils.extract_spotify_uid(raw_id)
                     res = api.spotify_check(raw_id)
-                    data = res.get("data") if isinstance(res.get("data"), dict) else res
-                    uid = data.get("uid") or data.get("id") or cleaned_sp
-                    display = data.get("displayName") or data.get("username") or data.get("name") or uid
-                    avatar = data.get("avatar") or data.get("image") or data.get("avatarUrl")
-                    plan = data.get("plan") or data.get("product") or "Free"
-                    is_bound = data.get("isBound", False)
+                    sp = api.parse_spotify_check_data(res)
+                    uid = sp["uid"] or cleaned_sp
+                    display = sp["username"] or uid
+                    avatar = sp["avatar_url"]
+                    is_bound = sp["is_bound"]
+                    active = sp["active"]
+                    is_mine = sp["is_mine"]
+                    expires_at = sp["expires_at"]
+                    expires_label = _format_expiry_vn(expires_at)
+
+                    if active and is_mine is False:
+                        exp_note = f" (hạn tới {expires_label})" if expires_label else ""
+                        self._send_json(409, {
+                            "ok": False,
+                            "conflict": True,
+                            "error": f"⛔ Tài khoản Spotify này đang được kích hoạt bởi đại lý/CTV khác{exp_note}. Không thể kích hoạt đè lúc này để tránh lỗi giao dịch — vui lòng đợi hết hạn hoặc nhắn Admin!"
+                        })
+                        return
+
+                    plan_label = "Đang VIP" if active else "Free"
+                    conflict_msg, uid_info = _inspect_upstream_uid_status(uid or cleaned_sp, "spotify")
+                    if conflict_msg:
+                        self._send_json(409, {"ok": False, "conflict": True, "error": conflict_msg})
+                        return
+                    if uid_info.get("package_name"):
+                        plan_label = uid_info["package_name"]
+                    if not expires_at and uid_info.get("expires_at"):
+                        expires_at = uid_info["expires_at"]
+                        expires_label = _format_expiry_vn(expires_at)
+
+                    bound_txt = (
+                        f"Đã khóa IP ({sp['device_sig']})" if (is_bound and sp["device_sig"])
+                        else ("Đã kết nối IP thiết bị" if is_bound else "Chưa khóa IP (Sẵn sàng)")
+                    )
+                    if active and expires_label:
+                        bound_txt = f"{bound_txt} • Hạn: {expires_label}"
 
                     used_trial = bool(utils.has_used_test_trial("spotify", [uid, cleaned_sp, display, raw_id]))
                     self._send_json(200, {
@@ -2698,10 +2853,15 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         "uid": uid,
                         "display_name": display,
                         "avatar": _proxy_media_url(avatar),
-                        "plan": plan,
+                        "plan": plan_label,
+                        "active": active,
+                        "is_mine": is_mine,
+                        "expires_at": expires_at,
+                        "expires_label": expires_label,
                         "is_bound": is_bound,
+                        "device_sig": sp["device_sig"],
                         "used_test_trial": used_trial,
-                        "status_text": "Đã kết nối IP thiết bị" if is_bound else "Chưa khóa IP (Sẵn sàng nâng cấp)"
+                        "status_text": bound_txt,
                     })
                     return
 
@@ -2737,18 +2897,46 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     avatar = data.get("avatar") or data.get("avatarUrl")
                     used_trial = bool(utils.has_used_test_trial("locket", [uid, locket_username, cleaned]))
 
+                    plan_label = ""
+                    status_text = "Sẵn sàng kích hoạt"
+                    active = False
+                    is_mine = None
+                    expires_at = None
+                    expires_label = ""
+
+                    # Kiểm tra trạng thái & quyền sở hữu trên máy chủ CTV (không chặn gói VIP All-in-One dùng luồng riêng)
+                    conflict_msg, uid_info = _inspect_upstream_uid_status(locket_username, "locket")
+                    if conflict_msg and service != "locket_ai":
+                        self._send_json(409, {"ok": False, "conflict": True, "error": conflict_msg})
+                        return
+                    if uid_info:
+                        active = bool(uid_info.get("active"))
+                        is_mine = uid_info.get("is_mine")
+                        expires_at = uid_info.get("expires_at")
+                        expires_label = _format_expiry_vn(expires_at)
+                        if active:
+                            plan_label = uid_info.get("package_name") or "Locket Gold VIP"
+                            status_text = f"Đang VIP ({expires_label})" if expires_label else "Đang kích hoạt VIP"
+
                     self._send_json(200, {
                         "ok": True,
                         "service": "locket",
                         "uid": uid,
                         "display_name": display,
                         "avatar": _proxy_media_url(avatar),
+                        "plan": plan_label,
+                        "active": active,
+                        "is_mine": is_mine,
+                        "expires_at": expires_at,
+                        "expires_label": expires_label,
+                        "status_text": status_text,
                         "used_test_trial": used_trial,
                     })
                     return
             except Exception as e:
                 logger.warning(f"Error checking account: {e}")
-                self._send_json(400, {"ok": False, "error": str(e)})
+                status_err = getattr(e, "status_code", 400) or 400
+                self._send_json(status_err if status_err in (400, 404, 409, 429) else 400, {"ok": False, "error": str(e)})
                 return
 
         # 1.1 API Kiểm tra mã giảm giá
@@ -2839,6 +3027,19 @@ class WebAppHandler(BaseHTTPRequestHandler):
                             "used_test_trial": True,
                             "error": "⛔ Mỗi tài khoản chỉ được dùng thử gói Test 3 Ngày tối đa 1 lần! Tài khoản này đã thử trước đó, vui lòng chọn gói 6 Tháng, 1 Năm hoặc Vĩnh Viễn để tiếp tục."
                         })
+                        return
+
+                # Chặn sớm lỗi HTTP 409 (UID đang thuộc về CTV khác còn hạn) trước khi tạo QR thanh toán
+                if product in ("locket", "combo", "locket_spotify"):
+                    lk_conflict, _ = _inspect_upstream_uid_status(identifier, "locket")
+                    if lk_conflict:
+                        self._send_json(409, {"ok": False, "conflict": True, "error": lk_conflict})
+                        return
+                if product in ("spotify", "combo", "locket_spotify"):
+                    sp_chk_target = spotify_uid or identifier
+                    sp_conflict, _ = _inspect_upstream_uid_status(sp_chk_target, "spotify")
+                    if sp_conflict:
+                        self._send_json(409, {"ok": False, "conflict": True, "error": sp_conflict})
                         return
 
                 # Gói VIP ALL-IN-ONE (locket_ai) mặc định đã bao gồm sẵn bản quyền Studio (trọn bộ)
@@ -3300,9 +3501,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
             })
             return
 
-        # 3. API Reset thiết bị Spotify (BẮT BUỘC ĐÃ TỪNG MUA GÓI HỢP LỆ)
+        # 3. API Kiểm tra & Reset thiết bị Spotify (BẮT BUỘC ĐÃ TỪNG MUA GÓI HỢP LỆ)
         if path == "/api/reset_spotify":
-            raw_sp = str(body.get("uid", "")).strip()
+            raw_sp = str(body.get("uid", "") or body.get("identifier", "")).strip()
+            action = str(body.get("action") or "reset").strip().lower()
+            force_reset = bool(body.get("force", False))
             if not raw_sp:
                 self._send_json(400, {"ok": False, "error": "Vui lòng nhập UID hoặc Link Profile Spotify cần reset"})
                 return
@@ -3336,13 +3539,92 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     "error": "Tài khoản Spotify này chưa từng mua gói Spotify Premium tại cửa hàng hoặc chưa kích hoạt!"
                 })
                 return
+
+            session_info = {
+                "uid": sp_uid,
+                "username": sp_uid,
+                "active": None,
+                "is_bound": None,
+                "device_sig": "",
+                "client_ip": "",
+                "last_seen_at": None,
+                "expires_at": None,
+                "expires_label": "",
+                "package_name": "",
+            }
             try:
-                res = api.spotify_reset(sp_uid)
+                sp_res = api.spotify_check(raw_sp if "spotify.com" in raw_sp.lower() else sp_uid, force_refresh=True)
+                sp_parsed = api.parse_spotify_check_data(sp_res)
+                if sp_parsed.get("uid"):
+                    sp_uid = sp_parsed["uid"]
+                session_info.update({
+                    "uid": sp_uid,
+                    "username": sp_parsed.get("username") or sp_uid,
+                    "active": sp_parsed.get("active"),
+                    "is_bound": sp_parsed.get("is_bound"),
+                    "device_sig": sp_parsed.get("device_sig") or "",
+                    "client_ip": _mask_client_ip(sp_parsed.get("client_ip") or ""),
+                    "last_seen_at": sp_parsed.get("last_seen_at"),
+                    "expires_at": sp_parsed.get("expires_at"),
+                    "expires_label": _format_expiry_vn(sp_parsed.get("expires_at")),
+                })
+            except Exception:
+                pass
+            try:
+                uid_info = api.parse_uid_check_data(api.check_uid_details(sp_uid, "spotify"))
+                if uid_info.get("package_name"):
+                    session_info["package_name"] = uid_info["package_name"]
+                if not session_info["expires_at"] and uid_info.get("expires_at"):
+                    session_info["expires_at"] = uid_info["expires_at"]
+                    session_info["expires_label"] = _format_expiry_vn(uid_info["expires_at"])
+            except Exception:
+                pass
+
+            if action == "check":
                 self._send_json(200, {
                     "ok": True,
-                    "message": "Reset phiên IP thiết bị Spotify thành công! Bạn có thể kết nối ngay trên thiết bị mới."
+                    "action": "check",
+                    "session": session_info,
+                    "message": (
+                        f"Đang kết nối thiết bị {session_info['device_sig'] or 'iOS'}."
+                        if session_info.get("is_bound")
+                        else "Chưa bị khóa IP thiết bị nào — sẵn sàng nghe nhạc trên máy mới."
+                    ),
+                })
+                return
+
+            if session_info.get("is_bound") is False and not force_reset:
+                self._send_json(200, {
+                    "ok": True,
+                    "already_free": True,
+                    "session": session_info,
+                    "message": "Tài khoản hiện không bị khóa IP thiết bị nào! Bạn có thể mở Spotify nghe nhạc ngay trên máy mới (hệ thống cũng tự động chuyển IP sau 20–25 giây dừng phát ở máy cũ)."
+                })
+                return
+
+            now_ts = time.time()
+            with _spotify_reset_lock:
+                last_ts = _spotify_reset_cooldowns.get(sp_clean, 0.0)
+                wait_sec = int(20 - (now_ts - last_ts))
+                if wait_sec > 0:
+                    self._send_json(429, {
+                        "ok": False,
+                        "error": f"Bạn vừa reset tài khoản này! Vui lòng đợi {wait_sec} giây rồi thử lại (tránh vượt giới hạn API)."
+                    })
+                    return
+                _spotify_reset_cooldowns[sp_clean] = now_ts
+
+            try:
+                res = api.spotify_reset(sp_uid)
+                session_info["is_bound"] = False
+                self._send_json(200, {
+                    "ok": True,
+                    "session": session_info,
+                    "message": res.get("message") or "Reset phiên IP thiết bị Spotify thành công! Bạn có thể kết nối ngay trên thiết bị mới."
                 })
             except Exception as e:
+                with _spotify_reset_lock:
+                    _spotify_reset_cooldowns.pop(sp_clean, None)
                 self._send_json(400, {"ok": False, "error": str(e)})
             return
 

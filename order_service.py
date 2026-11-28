@@ -345,9 +345,10 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             # 1. Kích hoạt Locket trên web chính
             locket_ok = False
             last_lk_err = None
+            lk_res = None
             for acc in candidate_accounts:
                 try:
-                    await asyncio.to_thread(
+                    lk_res = await asyncio.to_thread(
                         api.create_subscription,
                         uid=acc,
                         package_code=pkg_map["locket"],
@@ -379,9 +380,10 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
 
             spotify_ok = False
             last_sp_err = None
+            sp_res = None
             for sp_acc in sp_candidates:
                 try:
-                    await asyncio.to_thread(
+                    sp_res = await asyncio.to_thread(
                         api.create_subscription,
                         uid=sp_acc,
                         package_code=pkg_map["spotify"],
@@ -399,14 +401,35 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 if not spotify_ok:
                     return False, str(last_lk_err or "Kích hoạt Combo thất bại")
 
-            db.update_order(
-                order_id, 
-                status="done", 
-                done_at=datetime.now().isoformat(), 
-                dns_link=dns_base,
-                dns_link_locket=dns_base,
-                dns_link_spotify=dns_base
-            )
+            combo_update = {
+                "status": "done",
+                "done_at": datetime.now().isoformat(),
+                "dns_link": dns_base,
+                "dns_link_locket": dns_base,
+                "dns_link_spotify": dns_base,
+            }
+            total_coin = 0
+            for sub_res, sub_key in ((lk_res, "locket"), (sp_res, "spotify")):
+                if not isinstance(sub_res, dict):
+                    continue
+                sub_data = sub_res.get("data") if isinstance(sub_res.get("data"), dict) else sub_res
+                u_obj = sub_data.get("uid") if isinstance(sub_data.get("uid"), dict) else {}
+                o_obj = sub_data.get("order") if isinstance(sub_data.get("order"), dict) else {}
+                exp_val = u_obj.get("expiresAt") or o_obj.get("expiresAt")
+                if exp_val and not combo_update.get("expires_at"):
+                    combo_update["expires_at"] = exp_val
+                if sub_key == "locket" and u_obj.get("uidString"):
+                    combo_update["locket_uid"] = str(u_obj["uidString"]).strip()
+                if sub_key == "spotify" and u_obj.get("uidString"):
+                    combo_update["spotify_uid"] = str(u_obj["uidString"]).strip()
+                try:
+                    total_coin += float(o_obj.get("priceCoin") or 0)
+                except (TypeError, ValueError):
+                    pass
+            if total_coin > 0:
+                combo_update["ctv_cost_coin"] = total_coin
+
+            db.update_order(order_id, **combo_update)
         else:
             pkg_code = str(plnv.get("packageCode") or "").strip().upper()
             is_test_3d = (plan_key == "test" or pkg_code in ("LKGT3D", "SPT"))
@@ -421,6 +444,7 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
             # Gói Locket hoặc Spotify đơn lẻ: tự động fallback các candidate nếu dính 404
             act_success = False
             last_err = None
+            result = None
             for acc in candidate_accounts:
                 try:
                     result = await asyncio.to_thread(
@@ -428,7 +452,7 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                         uid=acc,
                         package_code=plnv["packageCode"],
                         service=pv["service"],
-                        note=f"Order {order_id} via Telegram Bot"
+                        note=f"Order {order_id} via {order.get('source', 'Bot/Web')}"
                     )
                     act_success = True
                     target_account = acc
@@ -437,14 +461,34 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                     break
                 except Exception as e_act:
                     last_err = e_act
+                    err_status = getattr(e_act, "status_code", None)
                     err_str = str(e_act).lower()
-                    if "404" not in err_str and "không tồn tại" not in err_str:
-                        # Nếu không phải lỗi 404 không tồn tại (vd: hết coin 402, 401...) thì ngắt ngay
+                    if err_status != 404 and "404" not in err_str and "không tồn tại" not in err_str:
+                        # Nếu không phải lỗi 404 không tồn tại (vd: hết coin 402, 401, 409...) thì ngắt ngay
                         break
             if not act_success:
                 return False, str(last_err or "Kích hoạt thất bại")
 
-            db.update_order(order_id, status="done", done_at=datetime.now().isoformat(), dns_link=dns_link)
+            single_update = {
+                "status": "done",
+                "done_at": datetime.now().isoformat(),
+                "dns_link": dns_link,
+            }
+            if isinstance(result, dict):
+                res_data = result.get("data") if isinstance(result.get("data"), dict) else result
+                u_obj = res_data.get("uid") if isinstance(res_data.get("uid"), dict) else {}
+                o_obj = res_data.get("order") if isinstance(res_data.get("order"), dict) else {}
+                exp_val = u_obj.get("expiresAt") or o_obj.get("expiresAt")
+                if exp_val:
+                    single_update["expires_at"] = exp_val
+                if u_obj.get("uidString"):
+                    single_update["upstream_uid"] = str(u_obj["uidString"]).strip()
+                    if product_key == "locket" and not order.get("locket_uid"):
+                        single_update["locket_uid"] = str(u_obj["uidString"]).strip()
+                if o_obj.get("priceCoin") is not None:
+                    single_update["ctv_cost_coin"] = o_obj.get("priceCoin")
+
+            db.update_order(order_id, **single_update)
 
         order = db.get_order(order_id) or order
         db.record_sale(product_key, plan_key, order["price"])
@@ -654,6 +698,8 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                 admin_header = "💬 <b>[ĐÃ CỘNG QUOTA CAPTION TỰ ĐỘNG]</b>"
             else:
                 admin_header = "💰 <b>[KÍCH HOẠT THÀNH CÔNG]</b>"
+            coin_line = f"\n• Phí API: <b>{order.get('ctv_cost_coin')} Coin</b>" if order.get("ctv_cost_coin") is not None else ""
+            exp_line = f"\n• Hết hạn: <code>{utils.fmt_datetime(order.get('expires_at'))}</code>" if order.get("expires_at") and not str(order.get("expires_at")).startswith("2099") else ""
             for aid in config.ADMIN_IDS:
                 try:
                     await bot.send_message(
@@ -664,7 +710,7 @@ async def _execute_order_activation(bot, order_id: str) -> tuple[bool, str]:
                             f"• Gói: <b>{pv['name']} ({plnv['label']})</b>\n"
                             f"• Khách: {order.get('display_name')} (<code>@{order.get('uid')}</code>)\n"
                             f"• Nguồn: <b>{order.get('source', 'Telegram').upper()}</b>\n"
-                            f"• Số tiền: <b>{utils.fmt_price(order['price'])}</b>"
+                            f"• Số tiền: <b>{utils.fmt_price(order['price'])}</b>{coin_line}{exp_line}"
                         ),
                         parse_mode=ParseMode.HTML
                     )
@@ -748,6 +794,15 @@ async def process_registered_payment(bot, order_id: str, action: str) -> None:
         adm_kb = None
 
     reason_line = f"\n⚠️ Lý do chưa tự kích hoạt: <code>{err_detail}</code>" if err_detail else ""
+    err_low = str(err_detail or "").lower()
+    hint_line = ""
+    if "402" in err_low or "coin" in err_low or "insufficient" in err_low:
+        hint_line = "\n🚨 <b>KHẨN: Ví Coin CTV không đủ! Vui lòng nạp Coin trên locket.2707226.xyz rồi bấm Duyệt lại.</b>"
+    elif "401" in err_low or "403" in err_low or "unauthorized" in err_low:
+        hint_line = "\n🚨 <b>KHẨN: Lỗi Secret Key hoặc tài khoản CTV chưa kích hoạt 150K!</b>"
+    elif "409" in err_low or "người khác" in err_low:
+        hint_line = "\n⚠️ <b>Lưu ý: UID đang thuộc về CTV khác còn hạn dùng!</b>"
+
     for aid in getattr(config, "ADMIN_IDS", []):
         try:
             await bot.send_message(
@@ -755,7 +810,7 @@ async def process_registered_payment(bot, order_id: str, action: str) -> None:
                 text=(
                     f"💳 <b>ĐÃ NHẬN TIỀN ĐƠN <code>ORDER_{order_id}</code> (CẦN KIỂM TRA)</b>\n"
                     f"• Tài khoản: <b>{order.get('display_name') or order.get('uid')}</b>\n"
-                    f"• Số tiền: <b>{utils.fmt_price(order.get('price', 0))}</b>{reason_line}\n"
+                    f"• Số tiền: <b>{utils.fmt_price(order.get('price', 0))}</b>{reason_line}{hint_line}\n"
                     f"👉 Bấm nút bên dưới để kích hoạt lại nếu cần."
                 ),
                 parse_mode=ParseMode.HTML,

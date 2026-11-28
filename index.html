@@ -2322,11 +2322,18 @@
                                 📋 Dán
                             </button>
                         </div>
+                        <button type="button" onclick="checkSpotifySession()" id="btnCheckSpotifySession"
+                                class="hidden px-5 py-3.5 rounded-2xl bg-white hover:bg-[#FFF5DC] text-[#1E1B18] border-2 border-[#E8D8B0] font-fredoka font-bold text-sm locket-btn-interactive cursor-pointer shrink-0">
+                            🔍 Kiểm Tra IP
+                        </button>
                         <button type="button" onclick="executeDeviceReset()" id="btnExecuteReset"
                                 class="px-7 py-3.5 rounded-2xl bg-[#FFB800] hover:bg-[#FFA500] text-[#1E1B18] font-fredoka font-black text-sm locket-btn-glow locket-btn-interactive cursor-pointer shrink-0">
                             <span id="btnExecuteResetText">⚡ Lấy Cấu Hình Máy Mới</span>
                         </button>
                     </div>
+                    <p id="resetSpotifyHint" class="hidden mt-2.5 text-[11px] text-[#6E6659] leading-relaxed">
+                        💡 <b>Mẹo:</b> Spotify chỉ phát trên 1 thiết bị/IP tại 1 thời điểm. Khi đổi WiFi/4G hoặc máy mới, dừng nhạc ở máy cũ khoảng <b>20–25 giây</b> hệ thống sẽ tự chuyển quyền, hoặc bấm <b>Reset Gỡ Khoá IP</b> để chuyển ngay lập tức!
+                    </p>
                 </div>
 
                 <!-- KẾT QUẢ THÀNH CÔNG CHO LOCKET GOLD -->
@@ -5091,6 +5098,8 @@
                     }
                     data.spotify_uid = dataSp.uid || rawSpId;
                     data.spotify_display = dataSp.display_name || dataSp.uid || rawSpId;
+                    data.spotify_status_text = dataSp.status_text || '';
+                    data.spotify_plan = dataSp.plan || '';
                 }
 
                 if (version !== accountCheckVersion) return;
@@ -5105,7 +5114,9 @@
                 
                 let detailTxt = `UID: ${data.uid}`;
                 if (isComboProd && data.spotify_uid) {
-                    detailTxt = `💛 Locket: @${String(data.display_name || data.uid).replace(/^@/, '')} • 🎵 Spotify: ${data.spotify_display} (${data.spotify_uid})`;
+                    const lkStatus = data.active && data.expires_label ? ` (${data.plan || 'VIP'} • ${data.expires_label})` : '';
+                    const spStatus = data.spotify_status_text ? ` • ${data.spotify_status_text}` : '';
+                    detailTxt = `💛 Locket: @${String(data.display_name || data.uid).replace(/^@/, '')}${lkStatus} • 🎵 Spotify: ${data.spotify_display} (${data.spotify_uid}${spStatus})`;
                 } else {
                     if (data.plan) detailTxt += ` • Gói: ${data.plan}`;
                     if (data.status_text) detailTxt += ` • ${data.status_text}`;
@@ -5855,6 +5866,22 @@
                     const safePlan = escapeFeatureHtml(od.plan || 'VIP');
                     const safeOrderId = escapeFeatureHtml(od.order_id || '');
                     const safeQrBoxId = safeOrderId.replace(/[^A-Za-z0-9_-]/g, '');
+                    let expBadgeHtml = '';
+                    if (od.expires_at) {
+                        const rawExp = String(od.expires_at);
+                        let expLbl = '';
+                        if (rawExp.startsWith('2099') || rawExp.startsWith('2100')) {
+                            expLbl = 'Vĩnh viễn';
+                        } else {
+                            const expDate = new Date(rawExp);
+                            if (!Number.isNaN(expDate.getTime())) {
+                                expLbl = expDate.getFullYear() >= 2090 ? 'Vĩnh viễn' : expDate.toLocaleDateString('vi-VN');
+                            }
+                        }
+                        if (expLbl) {
+                            expBadgeHtml = ` • <span class="font-bold text-amber-700">Hạn: ${escapeFeatureHtml(expLbl)}</span>`;
+                        }
+                    }
                     const safeAvatar = escapeFeatureHtml(avatarUrl);
                     const safeDlUrl = escapeFeatureHtml(dlUrl);
                     const safeSafariUrl = escapeFeatureHtml(safariUrl);
@@ -5871,7 +5898,7 @@
                                             ${isDone ? ((isFilterTopup || isCaptionPack) ? '✅ ĐÃ THANH TOÁN' : '✅ ĐÃ KÍCH HOẠT GOLD') : '⏳ CHỜ THANH TOÁN'}
                                         </span>
                                     </div>
-                                    <p class="text-xs text-[#6E6659] mt-0.5">${prodEmoji} <b>${safeProdName}</b> (${safePlan}) • Mã: <span class="font-mono font-bold text-[#1E1B18]">${safeOrderId}</span></p>
+                                    <p class="text-xs text-[#6E6659] mt-0.5">${prodEmoji} <b>${safeProdName}</b> (${safePlan}) • Mã: <span class="font-mono font-bold text-[#1E1B18]">${safeOrderId}</span>${expBadgeHtml}</p>
                                 </div>
                             </div>
                         </div>
@@ -6035,6 +6062,8 @@
             const label = document.getElementById('resetInputLabel');
             const input = document.getElementById('resetAccountInput');
             const btnText = document.getElementById('btnExecuteResetText');
+            const btnCheckSp = document.getElementById('btnCheckSpotifySession');
+            const hintSp = document.getElementById('resetSpotifyHint');
 
             // Hide previous results
             document.getElementById('resetLocketResultCard').classList.add('hidden');
@@ -6046,12 +6075,78 @@
                 label.textContent = 'Nhập Username Locket hoặc Link Profile:';
                 input.placeholder = 'VD: conlaigii hoặc https://locket.cam/conlaigii';
                 btnText.textContent = '⚡ Lấy Cấu Hình Máy Mới';
+                if (btnCheckSp) btnCheckSp.classList.add('hidden');
+                if (hintSp) hintSp.classList.add('hidden');
             } else {
                 btnSpotify.className = 'locket-pill-interactive px-5 py-2.5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 text-emerald-800 font-fredoka font-black text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow-md';
                 btnLocket.className = 'locket-pill-interactive px-5 py-2.5 rounded-2xl border-2 border-[#E8D8B0] bg-white text-[#6E6659] hover:text-[#1E1B18] font-fredoka font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer';
-                label.textContent = 'Nhập UID Spotify của bạn:';
+                label.textContent = 'Nhập UID Spotify hoặc Link Profile Spotify của bạn:';
                 input.placeholder = 'VD: 31xxxxxxxxxx hoặc https://open.spotify.com/user/...';
                 btnText.textContent = '🔄 Reset Gỡ Khoá IP';
+                if (btnCheckSp) btnCheckSp.classList.remove('hidden');
+                if (hintSp) hintSp.classList.remove('hidden');
+            }
+        }
+
+        function renderSpotifySessionHtml(titleMsg, session, isSuccess = true) {
+            const s = session || {};
+            const boundBadge = s.is_bound === true
+                ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-300">🔒 Đang khóa IP</span>'
+                : (s.is_bound === false
+                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">🟢 Tự do (Chưa khóa IP)</span>'
+                    : '');
+            let lastSeenTxt = '';
+            if (s.last_seen_at) {
+                const dt = new Date(Number(s.last_seen_at) || s.last_seen_at);
+                if (!Number.isNaN(dt.getTime())) lastSeenTxt = dt.toLocaleString('vi-VN');
+            }
+            const metaRows = [];
+            if (s.username || s.uid) metaRows.push(`👤 Tài khoản: <b>${escapeFeatureHtml(s.username || s.uid)}</b> (<code>${escapeFeatureHtml(s.uid || '')}</code>)`);
+            if (s.package_name || s.expires_label) metaRows.push(`📦 Gói: <b>${escapeFeatureHtml(s.package_name || 'Spotify Premium')}</b>${s.expires_label ? ` • Hạn: <b>${escapeFeatureHtml(s.expires_label)}</b>` : ''}`);
+            if (s.device_sig || s.client_ip) metaRows.push(`📱 Thiết bị: <b>${escapeFeatureHtml(s.device_sig || 'iOS Device')}</b>${s.client_ip ? ` • IP: <code>${escapeFeatureHtml(s.client_ip)}</code>` : ''}`);
+            if (lastSeenTxt) metaRows.push(`🕒 Hoạt động cuối: <b>${escapeFeatureHtml(lastSeenTxt)}</b>`);
+
+            return `
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <span class="font-bold">${isSuccess ? '✅' : 'ℹ️'} ${escapeFeatureHtml(titleMsg)}</span>
+                        ${boundBadge}
+                    </div>
+                    ${metaRows.length ? `<div class="pt-2 border-t border-emerald-200/70 space-y-1 text-[11px] text-[#3A3121]">${metaRows.map(r => `<div>${r}</div>`).join('')}</div>` : ''}
+                </div>
+            `;
+        }
+
+        async function checkSpotifySession() {
+            const raw = document.getElementById('resetAccountInput').value.trim();
+            const btn = document.getElementById('btnCheckSpotifySession');
+            const statusBox = document.getElementById('resetGeneralStatus');
+            if (!raw) {
+                alert('Vui lòng điền UID hoặc Link Profile Spotify cần kiểm tra!');
+                return;
+            }
+            btn.disabled = true;
+            const origText = btn.textContent;
+            btn.textContent = '⏳ Đang kiểm tra...';
+            statusBox.classList.add('hidden');
+            try {
+                const res = await fetch('/api/reset_spotify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: raw, action: 'check' })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Không thể kiểm tra tài khoản Spotify');
+                statusBox.className = 'mt-4 p-4 rounded-2xl bg-[#FFF9ED] border border-[#FFE29A] text-[#1E1B18] text-xs font-semibold max-w-xl';
+                statusBox.innerHTML = renderSpotifySessionHtml(data.message || 'Thông tin phiên Spotify', data.session, true);
+                statusBox.classList.remove('hidden');
+            } catch (err) {
+                statusBox.className = 'mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold max-w-xl';
+                statusBox.textContent = '❌ ' + err.message;
+                statusBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = origText;
             }
         }
 
@@ -6105,13 +6200,13 @@
                     const res = await fetch('/api/reset_spotify', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ uid: raw })
+                        body: JSON.stringify({ uid: raw, action: 'reset' })
                     });
                     const data = await res.json();
                     if (!res.ok || !data.ok) throw new Error(data.error || 'Lỗi khi reset Spotify');
 
-                    statusBox.className = 'mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold max-w-xl';
-                    statusBox.textContent = '✅ ' + data.message;
+                    statusBox.className = 'mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold max-w-xl';
+                    statusBox.innerHTML = renderSpotifySessionHtml(data.message, data.session, true);
                     statusBox.classList.remove('hidden');
                 }
             } catch (err) {

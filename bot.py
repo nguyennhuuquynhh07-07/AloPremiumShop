@@ -34,7 +34,7 @@ import config
 from config import BOT_TOKEN, ADMIN_IDS
 from handlers.user_handlers import (
     start, menu_cmd, myorders_cmd, support_cmd,
-    help_cmd, account_cmd, apidocs_cmd, apierrors_cmd, setlang_cmd,
+    help_cmd, account_cmd, apidocs_cmd, apierrors_cmd, setlang_cmd, check_account_cmd,
     cb_product, cb_plan,
     cb_paid, cb_buy, cb_cancel,
     cb_my_orders, cb_order_details, cb_support, cb_my_account,
@@ -194,6 +194,7 @@ async def post_init(application):
         BotCommand("start", "Menu chính & Mua gói"),
         BotCommand("web", "Mở Website AloPremium.Shop"),
         BotCommand("account", "Tài khoản của tôi"),
+        BotCommand("check", "Kiểm tra gói VIP & IP Spotify"),
         BotCommand("myorders", "Đơn hàng đã mua"),
         BotCommand("resetspotify", "Reset thiết bị Spotify"),
         BotCommand("support", "Hỗ trợ CSKH"),
@@ -285,6 +286,7 @@ def main():
             CommandHandler("menu", menu_cmd),
             CommandHandler("web", web_cmd),
             CommandHandler("account", account_cmd),
+            CommandHandler("check", check_account_cmd),
             CommandHandler("help", help_cmd),
             CommandHandler("apidocs", apidocs_cmd),
             CommandHandler("setlang", setlang_cmd),
@@ -313,6 +315,7 @@ def main():
     app.add_handler(CommandHandler("web",       web_cmd))
     app.add_handler(CommandHandler("zalo",      zalo_cmd))
     app.add_handler(CommandHandler("account",   account_cmd))
+    app.add_handler(CommandHandler("check",     check_account_cmd))
     app.add_handler(CommandHandler("apidocs",   apidocs_cmd))
     app.add_handler(CommandHandler("apierrors", apierrors_cmd))
     app.add_handler(CommandHandler("setlang",   setlang_cmd))
