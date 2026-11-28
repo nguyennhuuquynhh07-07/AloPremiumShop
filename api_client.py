@@ -154,6 +154,28 @@ def invalidate_uid_cache(identifier: str = "", service: str = "") -> None:
     _uids_cache_time = 0.0
 
 
+def clear_all_caches() -> dict:
+    """Xóa toàn bộ bộ nhớ đệm API CTV (lookup 30s, account info, activated UIDs, frames, filters, symbols)."""
+    global _account_info_cache, _uids_cache, _uids_cache_time
+    global _frames_cache, _frames_cache_time
+    global _filters_cache, _filters_cache_time
+    global _symbols_all_cache, _symbols_cache_time
+
+    with _lookup_cache_lock:
+        cleared_lookups = len(_lookup_cache)
+        _lookup_cache.clear()
+    _account_info_cache = (0.0, None)
+    _uids_cache = []
+    _uids_cache_time = 0.0
+    _frames_cache = None
+    _frames_cache_time = 0.0
+    _filters_cache = None
+    _filters_cache_time = 0.0
+    _symbols_all_cache = None
+    _symbols_cache_time = 0.0
+    return {"cleared_lookups": cleared_lookups}
+
+
 def parse_spotify_check_data(res: dict) -> dict:
     """Chuẩn hóa JSON trả về từ GET /api/spotify/check (đọc đúng object lồng spotify.isBound/deviceSig...)."""
     data = res.get("data") if isinstance(res, dict) and isinstance(res.get("data"), dict) else (res if isinstance(res, dict) else {})

@@ -396,6 +396,84 @@
                     </div>
                 </div>
 
+                <!-- Combo Duo VIP -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">👑</span>
+                            <div>
+                                <h4 class="font-black text-white text-sm">Combo Duo VIP</h4>
+                                <p class="text-[11px] text-slate-400">Locket Gold + Spotify Premium</p>
+                            </div>
+                        </div>
+                        <span
+                            class="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                            id="statComboCount">0 đơn</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Doanh thu thu về:</span>
+                            <span class="font-black text-white" id="statComboRevenue">0 đ</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Các gói cung cấp:</span>
+                            <span class="text-slate-300 font-semibold">6 Tháng, 1 Năm, Vĩnh Viễn</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIP ALL-IN-ONE -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">✨</span>
+                            <div>
+                                <h4 class="font-black text-white text-sm">VIP ALL-IN-ONE</h4>
+                                <p class="text-[11px] text-slate-400">Locket + AI Filters + Spotify + YT</p>
+                            </div>
+                        </div>
+                        <span
+                            class="text-xs font-bold px-2.5 py-1 rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20"
+                            id="statAiCount">0 đơn</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Doanh thu thu về:</span>
+                            <span class="font-black text-white" id="statAiRevenue">0 đ</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Trạng thái:</span>
+                            <span class="text-slate-300 font-semibold">Vĩnh Viễn All-in-One</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add-ons Studio -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">🎨</span>
+                            <div>
+                                <h4 class="font-black text-white text-sm">Add-ons Studio</h4>
+                                <p class="text-[11px] text-slate-400">Filter AI &amp; Caption VIP Pack</p>
+                            </div>
+                        </div>
+                        <span
+                            class="text-xs font-bold px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20"
+                            id="statAddonCount">0 đơn</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Doanh thu thu về:</span>
+                            <span class="font-black text-white" id="statAddonRevenue">0 đ</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Phân loại:</span>
+                            <span class="text-slate-300 font-semibold">Lượt Filter AI, +10 / +30 Caption</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Trạng thái Hệ thống -->
                 <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-3">
                     <h4 class="font-black text-white text-sm flex items-center gap-2 border-b border-slate-800 pb-3">
@@ -411,12 +489,12 @@
                             <span class="text-amber-400 font-mono font-bold">@AloPremiumShop_Bot</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-slate-400">Cổng SePay:</span>
-                            <span class="text-emerald-400 font-bold">5 Lớp Bảo Vệ Active</span>
-                        </div>
-                        <div class="flex justify-between">
                             <span class="text-slate-400">Số dư Coin CTV:</span>
                             <span class="text-amber-400 font-mono font-black" id="statDashboardCoin">--- Coin</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Tổng Coin API đã dùng:</span>
+                            <span class="text-cyan-400 font-mono font-black" id="statTotalCoinSpent">0 Coin</span>
                         </div>
                     </div>
                 </div>
@@ -717,12 +795,13 @@
                     </div>
                     <div class="text-xl font-black text-white" id="statUsername">---</div>
                     <p class="text-xs text-slate-400 mt-1" id="statEmail">---</p>
-                    <div class="mt-3 flex items-center gap-2">
+                    <div class="mt-3 flex items-center gap-2 flex-wrap">
                         <span id="statRoleBadge"
                             class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">CTV</span>
-                        <span
-                            class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Đã
-                            kích hoạt</span>
+                        <span id="statActivatedBadge"
+                            class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Đang kiểm tra...</span>
+                        <span id="statCoinWarnBadge"
+                            class="hidden text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">⚠️ Coin &lt; 15</span>
                     </div>
                 </div>
 
@@ -783,6 +862,78 @@
                 </div>
             </div>
 
+            <!-- KÍCH HOẠT THỦ CÔNG & RESET IP SPOTIFY NHANH -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <span>⚡ Kích Hoạt Thủ Công (Trừ Coin CTV)</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Cấp gói Locket Gold, Spotify hoặc Combo Duo trực tiếp lên máy chủ <code>POST /api/uid/create</code></p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <select id="manualActService" onchange="onManualServiceChange()"
+                            class="px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:outline-none focus:border-amber-400">
+                            <option value="locket">💛 Locket Gold VIP</option>
+                            <option value="spotify">🎵 Spotify Premium</option>
+                            <option value="combo">👑 Combo Duo (Locket + Spotify)</option>
+                        </select>
+                        <select id="manualActPkgCode"
+                            class="px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-amber-400 font-bold focus:outline-none focus:border-amber-400">
+                            <option value="LKGVV">LKGVV · Locket Vĩnh Viễn</option>
+                            <option value="LKG1Y">LKG1Y · Locket 1 Năm</option>
+                            <option value="LKG6M">LKG6M · Locket 6 Tháng</option>
+                            <option value="LKGT3D">LKGT3D · Locket Test 3 Ngày</option>
+                        </select>
+                    </div>
+                    <input type="text" id="manualActTargetInput" placeholder="Username Locket hoặc Link/UID Spotify..."
+                        class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:border-amber-400">
+                    <input type="text" id="manualActSpotifyInput" placeholder="Link/UID Spotify riêng (khi chọn Combo Duo khác tài khoản)..."
+                        class="hidden w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-emerald-300 text-xs font-mono focus:outline-none focus:border-emerald-400">
+                    <div class="flex gap-2">
+                        <input type="text" id="manualActNoteInput" placeholder="Ghi chú đơn (tuỳ chọn)..."
+                            class="flex-1 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 text-xs focus:outline-none">
+                        <button type="button" onclick="submitManualActivatePanel()" id="btnManualActPanel"
+                            class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs cursor-pointer shrink-0">
+                            ⚡ Kích Hoạt
+                        </button>
+                    </div>
+                    <div id="manualActPanelResult" class="hidden p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs"></div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <span>🔄 Giải Phóng Phiên IP Spotify Nhanh</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Xóa IP lease tức thì khi khách đổi WiFi/4G hoặc chuyển máy (<code>POST /api/spotify/reset</code>)</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2.5">
+                        <input type="text" id="standaloneResetSpotifyInput" placeholder="Dán Link Profile hoặc UID Spotify..."
+                            class="flex-1 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:border-emerald-400">
+                        <button type="button" onclick="submitStandaloneResetSpotify()" id="btnStandaloneResetSp"
+                            class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs cursor-pointer shrink-0">
+                            🔄 Reset IP Ngay
+                        </button>
+                    </div>
+                    <div id="standaloneResetResult" class="hidden p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs"></div>
+
+                    <div class="pt-3 border-t border-slate-800 space-y-2">
+                        <div class="text-xs font-black text-amber-400">📚 Bảng Tra Nhanh Mã Lỗi API CTV</div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[11px] font-mono">
+                            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800"><b class="text-rose-400">400</b> <span class="text-slate-400">Thiếu UID/sai JSON</span></div>
+                            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800"><b class="text-rose-400">401</b> <span class="text-slate-400">Sai Secret Key</span></div>
+                            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800"><b class="text-amber-400">402</b> <span class="text-slate-400">Thiếu Coin CTV</span></div>
+                            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800"><b class="text-rose-400">403</b> <span class="text-slate-400">Chưa nạp 150K</span></div>
+                            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800"><b class="text-amber-400">404</b> <span class="text-slate-400">Sai mã gói/UID</span></div>
+                            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800"><b class="text-slate-300">409</b> <span class="text-slate-400">UID thuộc CTV khác</span></div>
+                            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800"><b class="text-amber-400">413</b> <span class="text-slate-400">File LUT &gt; 20MB</span></div>
+                            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800"><b class="text-rose-400">429</b> <span class="text-slate-400">Vượt Rate Limit</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- BẢNG DANH SÁCH GÓI CƯỚC TỪ API -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -828,6 +979,48 @@
                             <tr>
                                 <td colspan="6" class="py-8 text-center text-slate-500">Đang tải danh sách gói cước từ
                                     API...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- DANH SÁCH TÀI KHOẢN UID ĐÃ KÍCH HOẠT TRÊN MÁY CHỦ CTV -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <span>✅ Danh Sách Tài Khoản Đã Kích Hoạt (<code>GET /api/uid/list</code>)</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Theo dõi các UID đang thuộc quyền quản lý của CTV &amp; đồng bộ về Database Shop để khách tải lại DNS trọn đời</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <input type="text" id="activatedUidSearch" oninput="renderActivatedUidsTable()"
+                            placeholder="🔍 Lọc UID, Username, gói..."
+                            class="px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-400 w-48">
+                        <button type="button" onclick="syncUpstreamToDb()" id="btnSyncUpstreamDb"
+                            class="px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-bold cursor-pointer">
+                            🔄 Đồng Bộ Về DB Web
+                        </button>
+                        <span id="activatedUidsCountBadge"
+                            class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300">0 tài khoản</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-800/80 max-h-96">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/90 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                                <th class="py-3 px-4">Tài Khoản / UID</th>
+                                <th class="py-3 px-4">Dịch Vụ</th>
+                                <th class="py-3 px-4">Gói</th>
+                                <th class="py-3 px-4">Trạng Thái</th>
+                                <th class="py-3 px-4">Hết Hạn</th>
+                                <th class="py-3 px-4 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activatedUidsTableBody" class="divide-y divide-slate-800/60 font-medium">
+                            <tr>
+                                <td colspan="6" class="py-8 text-center text-slate-500">Đang đồng bộ danh sách UID từ máy chủ API...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -963,6 +1156,11 @@
                             <button type="submit" id="btnAdminSaveFrame"
                                 class="w-full py-2.5 px-4 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs sm:text-sm font-black text-[#1E1B18] cursor-pointer">
                                 💾 Lưu khung ảnh lên locket.2707226.xyz
+                            </button>
+                            <input type="hidden" id="adminFrameId" value="">
+                            <button type="button" id="btnCancelFrameEdit" onclick="resetAdminFrameForm()"
+                                class="hidden w-full py-1.5 px-3 rounded-xl bg-white hover:bg-zinc-100 border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18] cursor-pointer">
+                                ✕ Hủy chỉnh sửa (Chuyển về thêm khung mới)
                             </button>
                         </form>
 
@@ -1132,20 +1330,26 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-                            <div class="sm:col-span-7">
+                            <div class="sm:col-span-5">
                                 <label class="block text-xs font-bold text-[#1E1B18] mb-1">✎ Nội dung caption *</label>
                                 <input type="text" id="adminCapText" maxlength="100" required
                                     oninput="updateAdminCapPreview()" placeholder="VD: AloPremium VIP ✨"
                                     class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
                             </div>
-                            <div class="sm:col-span-5">
+                            <div class="sm:col-span-4">
                                 <label class="block text-xs font-bold text-[#1E1B18] mb-1">👤 UID / Username (trống =
                                     ALL Brand)</label>
                                 <input type="text" id="adminCapUid" placeholder="AloPremiumShop hoặc để trống"
                                     class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
                             </div>
+                            <div class="sm:col-span-3">
+                                <label class="block text-xs font-bold text-[#1E1B18] mb-1">📂 Nhóm (tuỳ chọn)</label>
+                                <input type="text" id="adminCapGroupName" maxlength="60" placeholder="VD: VIP, Mood..."
+                                    class="w-full px-3 py-2 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-semibold text-[#1E1B18] focus:outline-none">
+                            </div>
                         </div>
                         <input type="hidden" id="adminCapSymbol" value="sparkles">
+                        <input type="hidden" id="adminCapId" value="">
 
                         <div class="flex items-center justify-between gap-2 flex-wrap">
                             <div class="flex items-center gap-2" id="admCapSwatches"></div>
@@ -1171,6 +1375,10 @@
                         <button type="submit" id="btnAdminSaveCap"
                             class="w-full py-2.5 px-4 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
                             + Thêm &amp; Lưu Caption Lên locket.2707226.xyz
+                        </button>
+                        <button type="button" id="btnCancelCapEdit" onclick="resetAdminCapForm()"
+                            class="hidden w-full py-1.5 px-3 rounded-xl bg-white hover:bg-zinc-100 border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18] cursor-pointer">
+                            ✕ Hủy chỉnh sửa Caption (Chuyển về tạo mới)
                         </button>
                     </form>
 
@@ -1301,7 +1509,24 @@
                             Tra Cứu Khách</button>
                     </div>
                     <div id="admTopupCustResult"
-                        class="hidden p-3 rounded-xl border-2 border-[#1E1B18] bg-emerald-50 text-xs"></div>
+                        class="hidden p-3.5 rounded-xl border-2 border-[#1E1B18] bg-emerald-50 text-xs space-y-2.5"></div>
+                    <div class="p-4 rounded-xl border-2 border-[#1E1B18] bg-[#FAF6EA] space-y-2.5">
+                        <div class="font-bold text-xs text-[#1E1B18]">🎁 Cấp Nhanh Lượt Caption VIP Studio (Lưu vĩnh viễn vào Quota Tracker)</div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <input type="number" id="admGrantCapQty" value="10" min="1" max="1000"
+                                class="w-24 px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white text-xs font-black text-[#1E1B18]">
+                            <button type="button" onclick="adminGrantCaptionQuota(5)"
+                                class="px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white hover:bg-[#FFD84D] text-xs font-black cursor-pointer">+5</button>
+                            <button type="button" onclick="adminGrantCaptionQuota(10)"
+                                class="px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white hover:bg-[#FFD84D] text-xs font-black cursor-pointer">+10</button>
+                            <button type="button" onclick="adminGrantCaptionQuota(30)"
+                                class="px-3 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-white hover:bg-[#FFD84D] text-xs font-black cursor-pointer">+30</button>
+                            <button type="button" onclick="adminGrantCaptionQuota()" id="btnAdminGrantCap"
+                                class="px-4 py-1.5 rounded-lg border-2 border-[#1E1B18] bg-[#FCE176] hover:bg-[#FFD23F] text-xs font-black text-[#1E1B18] cursor-pointer">
+                                🎁 Cộng Theo Số Đã Nhập
+                            </button>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                         <div class="p-4 rounded-xl border-2 border-[#1E1B18] bg-[#FFF8DC] shadow-[2px_2px_0px_#1E1B18]">
                             <div class="font-black text-sm">Gói 20 Lượt Filter AI</div>
@@ -1478,7 +1703,60 @@
                             <span class="font-mono text-slate-300 font-bold">•••• (Cài đặt trong file .env:
                                 ADMIN_PIN)</span>
                         </div>
+                        <div class="flex justify-between py-2 border-t border-slate-800/50">
+                            <span class="text-slate-400">API CTV / DNS Combo:</span>
+                            <span class="font-mono text-emerald-400 font-bold truncate max-w-[230px]" id="sysDnsComboUrl">https://doh.2707226.xyz/alopremiumshop</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-t border-slate-800/50">
+                            <span class="text-slate-400">Hạn mức Caption Free / DB:</span>
+                            <span class="font-mono text-cyan-400 font-bold" id="sysCountsSummary">5 free · Đang tải...</span>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- BẢO TRÌ CACHE, SEPAY LIVE & GỬI TIN NHẮN BOT TELEGRAM -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                    <h3 class="text-base font-black text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+                        <span>🛠️</span> Bảo Trì Cache &amp; Kiểm Tra SePay Live
+                    </h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="button" onclick="adminClearApiCache()" id="btnAdminClearCache"
+                            class="px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-black cursor-pointer">
+                            🧹 Xóa Cache API (30s) &amp; Làm Mới Giá
+                        </button>
+                        <button type="button" onclick="adminTestSepayLive()" id="btnAdminTestSepay"
+                            class="px-4 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-black cursor-pointer">
+                            💳 Test SePay Live API
+                        </button>
+                    </div>
+                    <div id="sysMaintenanceResult" class="hidden p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-xs space-y-2"></div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4" id="tgSendPanel">
+                    <h3 class="text-base font-black text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+                        <span>📢</span> Gửi Tin Nhắn / Broadcast Telegram Bot
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <select id="tgSendMode" onchange="onTgSendModeChange()"
+                            class="px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:outline-none focus:border-amber-400">
+                            <option value="single">💬 Nhắn riêng 1 User ID</option>
+                            <option value="broadcast">📢 Broadcast Toàn Bộ Users Bot</option>
+                        </select>
+                        <input type="text" id="tgSendUserId" placeholder="Telegram User ID (VD: 551234567)"
+                            class="px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-amber-400 font-mono font-bold focus:outline-none focus:border-amber-400">
+                    </div>
+                    <textarea id="tgSendMessage" rows="3" placeholder="Nhập nội dung thông báo (hỗ trợ HTML Telegram <b>, <code>...)..."
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-400"></textarea>
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-[11px] text-slate-400" id="tgSendHint">Gửi trực tiếp tới 1 khách hàng qua Bot</span>
+                        <button type="button" onclick="submitAdminTelegramSend()" id="btnSubmitTgSend"
+                            class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs cursor-pointer">
+                            🚀 Gửi Ngay Qua Bot
+                        </button>
+                    </div>
+                    <div id="tgSendResult" class="hidden p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs"></div>
                 </div>
             </div>
         </div>
@@ -1698,6 +1976,18 @@
                 const spotify = st.spotify || {};
                 document.getElementById('statSpotifyCount').textContent = `${spotify.count || 0} đơn`;
                 document.getElementById('statSpotifyRevenue').textContent = formatVND(spotify.revenue);
+
+                // Combo, VIP All-in-One, Studio Addons & Coin spent
+                const combo = st.combo || {};
+                const ai = st.locket_ai || {};
+                const addons = st.addons || {};
+                if (document.getElementById('statComboCount')) document.getElementById('statComboCount').textContent = `${combo.count || 0} đơn`;
+                if (document.getElementById('statComboRevenue')) document.getElementById('statComboRevenue').textContent = formatVND(combo.revenue);
+                if (document.getElementById('statAiCount')) document.getElementById('statAiCount').textContent = `${ai.count || 0} đơn`;
+                if (document.getElementById('statAiRevenue')) document.getElementById('statAiRevenue').textContent = formatVND(ai.revenue);
+                if (document.getElementById('statAddonCount')) document.getElementById('statAddonCount').textContent = `${addons.count || 0} đơn`;
+                if (document.getElementById('statAddonRevenue')) document.getElementById('statAddonRevenue').textContent = formatVND(addons.revenue);
+                if (document.getElementById('statTotalCoinSpent')) document.getElementById('statTotalCoinSpent').textContent = `${Number(st.total_coin_spent || 0).toLocaleString('vi-VN')} Coin`;
             } catch (err) {
                 console.error(err);
             }
@@ -1770,6 +2060,7 @@
             tbody.innerHTML = filtered.map(o => {
                 const isPending = ['pending', 'waiting_payment', 'pending_approval', 'paid_review'].includes(o.status);
                 const isDone = o.status === 'done';
+                const isFailed = o.status === 'failed';
 
                 let statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">Khác</span>';
                 if (isDone) {
@@ -1778,16 +2069,29 @@
                     statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400">Đã nhận tiền · Đối soát</span>';
                 } else if (isPending) {
                     statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">⏳ Chờ Duyệt</span>';
+                } else if (isFailed) {
+                    statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">❌ Lỗi Kích Hoạt</span>';
                 } else {
                     statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">🚫 Đã Hủy</span>';
                 }
 
+                const PROD_META = {
+                    locket: ['💛', 'Locket Gold'],
+                    spotify: ['🎵', 'Spotify VIP'],
+                    combo: ['👑', 'Combo Duo VIP'],
+                    locket_spotify: ['👑', 'Combo Duo VIP'],
+                    locket_ai: ['✨', 'VIP All-in-One'],
+                    filter_topup: ['🎨', 'Lượt Filter AI'],
+                    caption_pack: ['💬', 'Gói Caption VIP'],
+                    studio_caption: ['🎨', 'Studio VIP']
+                };
+                const [svcIcon, rawSvcName] = PROD_META[o.product] || ['📦', o.product || 'Gói VIP'];
+
                 const safeOid = escapeAdminHtml(o.order_id);
                 const safeDisp = escapeAdminHtml(o.display_name || o.username || 'Khách');
                 const safeUid = escapeAdminHtml(o.uid || '@' + (o.username || ''));
-                const svcIcon = o.product === 'locket' ? '💛' : (o.product === 'spotify' ? '🎵' : '📦');
-                const svcName = escapeAdminHtml(o.product === 'locket' ? 'Locket Gold' : (o.product === 'spotify' ? 'Spotify VIP' : o.product));
-                const planName = escapeAdminHtml(o.plan || '');
+                const svcName = escapeAdminHtml(rawSvcName);
+                const planName = escapeAdminHtml(o.plan_label || o.plan || '');
                 const timeStr = escapeAdminHtml((o.created_at || '').substring(0, 16).replace('T', ' '));
 
                 let actionBtns = `
@@ -1796,13 +2100,13 @@
                     </button>
                 `;
 
-                if (isPending) {
+                if (isPending || isFailed) {
                     actionBtns = `
                         <div class="flex items-center justify-end gap-1.5">
                             <button onclick="approveOrder('${safeOid}')" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1">
-                                ⚡ Duyệt
+                                ${isFailed ? '🔄 Duyệt lại' : '⚡ Duyệt'}
                             </button>
-                            ${o.status === 'paid_review' ? '' : `<button onclick="rejectOrder('${safeOid}')" class="px-2 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">✕</button>`}
+                            ${(o.status === 'paid_review' || isFailed) ? '' : `<button onclick="rejectOrder('${safeOid}')" class="px-2 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">✕</button>`}
                             <button onclick="viewOrderDetail('${safeOid}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all cursor-pointer">
                                 👁
                             </button>
@@ -1885,15 +2189,23 @@
 
             document.getElementById('modalOrderId').textContent = `ORDER_${order.order_id}`;
             const isPending = ['pending', 'waiting_payment', 'pending_approval', 'paid_review'].includes(order.status);
+            const isDone = order.status === 'done';
+            const isCombo = order.product === 'combo' || order.product === 'locket_spotify';
 
             const safeOid = escapeAdminHtml(order.order_id);
             const safeDisp = escapeAdminHtml(order.display_name || order.username || 'Khách');
             const safeUidText = escapeAdminHtml((order.user_id ? order.user_id + ' ' : '') + '(@' + (order.username || 'web') + ')');
-            const safeProdPlan = escapeAdminHtml(`${order.product || ''} - ${order.plan || ''}`);
-            const safeTarget = escapeAdminHtml(order.uid || order.identifier || 'N/A');
+            const safeProdPlan = escapeAdminHtml(`${order.product || ''} - ${order.plan_label || order.plan || ''}`);
+            const rawTarget = order.locket_username || order.uid || order.identifier || order.account_target || '';
+            const safeTarget = escapeAdminHtml(rawTarget || 'N/A');
+            const rawSpTarget = order.spotify_uid || order.spotify_target || order.spotify_username || '';
+            const safeSpTarget = escapeAdminHtml(rawSpTarget);
             const safeDns = escapeAdminHtml(safeAdminUrl(order.dns_link));
             const safeCreated = escapeAdminHtml(order.created_at || '---');
             const safeDone = escapeAdminHtml(order.done_at || '---');
+            const safeExp = escapeAdminHtml(order.expires_at ? String(order.expires_at).substring(0, 19).replace('T', ' ') : '---');
+            const safeCoinCost = order.ctv_cost_coin !== undefined && order.ctv_cost_coin !== null ? `${escapeAdminHtml(order.ctv_cost_coin)} Coin` : '---';
+            const safeCoupon = order.coupon ? escapeAdminHtml(order.coupon) : 'Không';
 
             const body = document.getElementById('modalOrderBody');
             body.innerHTML = `
@@ -1907,19 +2219,42 @@
                         <div class="font-mono text-amber-400 font-bold">${safeUidText}</div>
                     </div>
                     <div>
-                        <span class="text-slate-400">Dịch vụ & Gói:</span>
+                        <span class="text-slate-400">Dịch vụ &amp; Gói:</span>
                         <div class="font-bold text-slate-200">${safeProdPlan}</div>
                     </div>
                     <div>
                         <span class="text-slate-400">Giá thanh toán:</span>
                         <div class="font-mono font-black text-amber-400 text-sm">${formatVND(order.price)}</div>
                     </div>
+                    <div>
+                        <span class="text-slate-400">Mã giảm giá:</span>
+                        <div class="font-mono text-emerald-400 font-bold">${safeCoupon}</div>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">Phí API / Hạn dùng:</span>
+                        <div class="font-mono text-cyan-400 font-bold">${safeCoinCost} · ${safeExp}</div>
+                    </div>
                 </div>
 
                 <div class="space-y-1.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                     <div class="text-slate-400">Tài khoản đích / UID:</div>
                     <div class="font-mono font-bold text-white break-all bg-slate-900 p-2 rounded-xl border border-slate-800">${safeTarget}</div>
+                    ${safeSpTarget ? `<div class="text-[11px] text-emerald-400 font-mono mt-1">Spotify UID: ${safeSpTarget}</div>` : ''}
                 </div>
+
+                ${!isDone ? `
+                    <div class="space-y-2 bg-amber-500/5 p-3.5 rounded-2xl border border-amber-500/30">
+                        <div class="text-xs font-black text-amber-400">✏️ Sửa Username / UID &amp; Duyệt Lại (Tương đương /duyet)</div>
+                        <input type="text" id="editOrderAccInput" value="${escapeAdminHtml(rawTarget)}" placeholder="Nhập Username Locket hoặc Link/UID Spotify đúng..."
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:border-amber-400">
+                        ${isCombo ? `<input type="text" id="editOrderSpInput" value="${safeSpTarget}" placeholder="Link/UID Spotify riêng (nếu khác Locket)..."
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-emerald-300 text-xs font-mono focus:outline-none focus:border-emerald-400">` : ''}
+                        <button type="button" onclick="updateOrderAccountAndApprove('${safeOid}')"
+                            class="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs cursor-pointer">
+                            💾 Lưu Tài Khoản Mới &amp; Kích Hoạt Ngay
+                        </button>
+                    </div>
+                ` : ''}
 
                 ${safeDns ? `
                     <div class="space-y-1.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
@@ -1938,14 +2273,12 @@
             `;
 
             const actions = document.getElementById('modalOrderActions');
-            if (isPending) {
+            if (isPending || order.status === 'failed') {
                 actions.innerHTML = `
                     <button onclick="approveOrder('${safeOid}')" class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs transition-all cursor-pointer">
-                        ⚡ Duyệt & Kích Hoạt Tự Động
+                        ⚡ ${order.status === 'failed' ? 'Thử Kích Hoạt Lại' : 'Duyệt & Kích Hoạt Tự Động'}
                     </button>
-                    <button onclick="rejectOrder('${safeOid}')" class="py-2.5 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">
-                        Hủy Đơn
-                    </button>
+                    ${isPending ? `<button onclick="rejectOrder('${safeOid}')" class="py-2.5 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">Hủy Đơn</button>` : ''}
                 `;
             } else {
                 actions.innerHTML = `
@@ -1956,6 +2289,32 @@
             }
 
             document.getElementById('orderDetailModal').classList.remove('hidden');
+        }
+
+        async function updateOrderAccountAndApprove(orderId) {
+            const newAcc = (document.getElementById('editOrderAccInput')?.value || '').trim();
+            const spAcc = (document.getElementById('editOrderSpInput')?.value || '').trim();
+            if (!newAcc) {
+                alert('Vui lòng nhập Username hoặc UID mới!');
+                return;
+            }
+            if (!confirm(`Cập nhật tài khoản đơn ORDER_${orderId} thành [${newAcc}] và kích hoạt ngay?`)) return;
+            try {
+                showAdminToast('⏳ Đang cập nhật & kích hoạt lại đơn...');
+                const res = await fetch('/api/admin/update_order_account', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, order_id: orderId, new_account: newAcc, spotify_account: spAcc, approve: true })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Kích hoạt thất bại');
+                showAdminToast('🎉 ' + (data.message || 'Cập nhật & kích hoạt thành công!'));
+                closeOrderModal();
+                loadOrders();
+                loadStats();
+            } catch (err) {
+                alert('❌ ' + err.message);
+            }
         }
 
         function closeOrderModal() {
@@ -2008,11 +2367,14 @@
                     : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Bình Thường</span>';
 
                 const safeUserId = escapeAdminHtml(u.user_id);
+                const jsUserId = escapeAdminJsAttr(u.user_id);
                 const safeFirst = escapeAdminHtml(u.first_name || 'Khách Hàng');
                 const safeUname = escapeAdminHtml(u.username ? '@' + u.username : '---');
+                const jsDisp = escapeAdminJsAttr(u.username ? '@' + u.username : (u.first_name || u.user_id));
                 const toggleBtn = isBanned
-                    ? `<button onclick="toggleBanUser('${safeUserId}', false)" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs transition-all cursor-pointer">Mở Khóa</button>`
-                    : `<button onclick="toggleBanUser('${safeUserId}', true)" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">Chặn</button>`;
+                    ? `<button onclick="toggleBanUser('${jsUserId}', false)" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs transition-all cursor-pointer">Mở Khóa</button>`
+                    : `<button onclick="toggleBanUser('${jsUserId}', true)" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs transition-all cursor-pointer">Chặn</button>`;
+                const dmBtn = `<button onclick="openTelegramDmForUser('${jsUserId}', '${jsDisp}')" class="px-2.5 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 font-bold text-xs transition-all cursor-pointer">💬 Nhắn</button>`;
 
                 return `
                     <tr class="hover:bg-slate-800/40 transition-colors">
@@ -2022,7 +2384,7 @@
                         <td class="py-3 px-4 text-center font-bold text-slate-200">${u.orders_count || 0}</td>
                         <td class="py-3 px-4 text-right font-mono font-black text-amber-400">${formatVND(u.total_spent)}</td>
                         <td class="py-3 px-4 text-center">${statusBadge}</td>
-                        <td class="py-3 px-4 text-right">${toggleBtn}</td>
+                        <td class="py-3 px-4 text-right"><div class="flex items-center justify-end gap-1.5">${dmBtn}${toggleBtn}</div></td>
                     </tr>
                 `;
             }).join('');
@@ -2048,6 +2410,22 @@
             } catch (err) {
                 alert('Lỗi kết nối: ' + err.message);
             }
+        }
+
+        function openTelegramDmForUser(userId, displayLabel) {
+            switchTab('system');
+            const modeEl = document.getElementById('tgSendMode');
+            const uidEl = document.getElementById('tgSendUserId');
+            const msgEl = document.getElementById('tgSendMessage');
+            if (modeEl) modeEl.value = 'single';
+            onTgSendModeChange();
+            if (uidEl) uidEl.value = userId || '';
+            if (msgEl) {
+                msgEl.placeholder = `Nhắn riêng cho ${displayLabel || userId}...`;
+                msgEl.focus();
+            }
+            const panel = document.getElementById('tgSendPanel');
+            if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         // ==========================================
@@ -2483,22 +2861,40 @@
                 if (!data.ok) return;
 
                 const acc = data.account || {};
-                const coinText = (acc.balanceCoin !== undefined ? acc.balanceCoin : '0') + ' Coin';
+                const coinNum = Number(acc.balanceCoin !== undefined ? acc.balanceCoin : 0);
+                const coinText = coinNum + ' Coin';
                 document.getElementById('statBalanceCoin').textContent = coinText;
                 document.getElementById('statDashboardCoin').textContent = coinText;
+                if (document.getElementById('admTopupCoinMirror')) document.getElementById('admTopupCoinMirror').textContent = coinText;
                 document.getElementById('statUsername').textContent = acc.username ? `@${acc.username}` : 'quynh28';
                 document.getElementById('statEmail').textContent = acc.email || 'nguyennhuuquynhh07@gmail.com';
                 document.getElementById('statRoleBadge').textContent = acc.role || 'CTV';
 
+                const actBadge = document.getElementById('statActivatedBadge');
+                if (actBadge) {
+                    const isAct = acc.isActivated !== false;
+                    actBadge.textContent = isAct ? '🟢 Đã kích hoạt' : '🔴 Chưa kích hoạt (HTTP 403)';
+                    actBadge.className = isAct
+                        ? 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                        : 'text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse';
+                }
+                const warnCoinBadge = document.getElementById('statCoinWarnBadge');
+                if (warnCoinBadge) {
+                    if (coinNum < 15) warnCoinBadge.classList.remove('hidden');
+                    else warnCoinBadge.classList.add('hidden');
+                }
+
                 renderPackagesTable(data.packages || []);
 
                 const uids = data.activated_uids || [];
+                cachedActivatedUids = Array.isArray(uids) ? uids : [];
+                renderActivatedUidsTable();
                 const badgeSync = document.getElementById('serverSyncBadge');
                 if (badgeSync) {
-                    badgeSync.textContent = `Đã đồng bộ ${uids.length} tài khoản từ máy chủ`;
+                    badgeSync.textContent = `Đã đồng bộ ${cachedActivatedUids.length} tài khoản từ máy chủ`;
                     badgeSync.classList.remove('hidden');
                 }
-                showAdminToast(`✅ Đã đồng bộ thành công (${currentApiSvcFilter})! Nhận ${(data.packages || []).length} gói cước & ${uids.length} tài khoản.`);
+                showAdminToast(`✅ Đã đồng bộ thành công (${currentApiSvcFilter})! Nhận ${(data.packages || []).length} gói cước & ${cachedActivatedUids.length} tài khoản.`);
             } catch (err) {
                 console.error(err);
                 showAdminToast(`❌ Lỗi đồng bộ: ${err.message}`);
@@ -2554,6 +2950,7 @@
         // ==========================================
         // 5.5 CTV FEATURES: LOCKET CUSTOM STUDIO 5 TAB
         // ==========================================
+        let cachedActivatedUids = [];
         let adminPresetFrames = [];
         let adminCtvFramesCache = [];
         let adminCtvCaptionsCache = [];
@@ -2825,7 +3222,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-1.5 shrink-0">
-                                <button type="button" onclick="fillAdminFrameForm('${jsUrl}', '${jsName}', '${jsTarget}', ${active})"
+                                <button type="button" onclick="fillAdminFrameForm('${jsUrl}', '${jsName}', '${jsTarget}', ${active}, '${escapeAdminJsAttr(fr.id || '')}')"
                                     class="px-2.5 py-1 rounded-md border border-[#1E1B18] bg-[#FFD84D] text-[10px] font-black cursor-pointer">
                                     ✏️ Chọn / Sửa
                                 </button>
@@ -2857,13 +3254,30 @@
             }
         }
 
-        function fillAdminFrameForm(url, name, targetUid, active) {
+        function fillAdminFrameForm(url, name, targetUid, active, frameId = '') {
             document.getElementById('adminFrameUrl').value = url;
             document.getElementById('adminFrameName').value = name;
             document.getElementById('adminFrameTargetUid').value = targetUid || 'ALL';
             document.getElementById('adminFrameActive').checked = !!active;
+            if (document.getElementById('adminFrameId')) document.getElementById('adminFrameId').value = frameId || '';
+            const cBtn = document.getElementById('btnCancelFrameEdit');
+            if (cBtn) cBtn.classList.toggle('hidden', !frameId);
+            const sBtn = document.getElementById('btnAdminSaveFrame');
+            if (sBtn) sBtn.textContent = frameId ? '💾 Cập Nhật Khung Đã Chọn' : '💾 Lưu khung ảnh lên locket.2707226.xyz';
             adminPendingFrameB64 = '';
             showAdminFramePreview(url, name);
+        }
+
+        function resetAdminFrameForm() {
+            if (document.getElementById('adminFrameId')) document.getElementById('adminFrameId').value = '';
+            document.getElementById('adminFrameUrl').value = '';
+            document.getElementById('adminFrameName').value = '';
+            document.getElementById('adminFrameTargetUid').value = 'ALL';
+            document.getElementById('adminFrameActive').checked = true;
+            document.getElementById('btnCancelFrameEdit')?.classList.add('hidden');
+            const sBtn = document.getElementById('btnAdminSaveFrame');
+            if (sBtn) sBtn.textContent = '💾 Lưu khung ảnh lên locket.2707226.xyz';
+            adminPendingFrameB64 = '';
         }
 
         async function adminSaveCtvFrame(e) {
@@ -2873,6 +3287,7 @@
             const name = document.getElementById('adminFrameName').value.trim();
             const targetUid = document.getElementById('adminFrameTargetUid').value.trim() || 'ALL';
             const active = document.getElementById('adminFrameActive').checked;
+            const frameId = (document.getElementById('adminFrameId')?.value || '').trim();
 
             if (!url && !adminPendingFrameB64) { alert('Vui lòng chọn ảnh PNG hoặc dán URL khung!'); return; }
             if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang lưu lên locket.2707226.xyz...'; }
@@ -2888,6 +3303,7 @@
                     url = upData.url;
                 }
                 const payload = { pin: currentPin, url, name, targetUid, active };
+                if (frameId) payload.frame_id = frameId;
                 payload.targetUids = targetUid.includes(',') ? targetUid.split(',').map(x => x.trim()).filter(Boolean) : [targetUid];
                 const res = await fetch('/api/admin/ctv/frames', {
                     method: 'POST',
@@ -2897,6 +3313,7 @@
                 const data = await res.json();
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Lưu khung thất bại');
                 adminPendingFrameB64 = '';
+                resetAdminFrameForm();
                 showAdminToast('✅ ' + (data.message || 'Lưu khung thành công lên locket.2707226.xyz!'));
                 loadCtvFeaturesOverview();
             } catch (err) {
@@ -3034,7 +3451,8 @@
                 el.innerHTML = `<div class="py-6 text-center text-zinc-500">Không có Caption nào (${escapeAdminHtml(mode)}).</div>`;
                 return;
             }
-            el.innerHTML = captions.map(cp => {
+            adminCtvCaptionsCache = captions;
+            el.innerHTML = captions.map((cp, idx) => {
                 const c0 = (cp.colors && cp.colors[0]) || '#FFB800';
                 const c1 = (cp.colors && cp.colors[1]) || '#FF8008';
                 const iconHtml = cp.symbolPreviewUrl
@@ -3051,7 +3469,11 @@
                             <span>${escapeAdminHtml(cp.groupName || mode)} · <b>${cp.active !== false ? 'Đang bật' : 'Tắt'}</b></span>
                             <div class="flex items-center gap-1.5">
                                 <span class="font-mono">${escapeAdminHtml(cp.targetUid || mode)}</span>
-                                ${cp.id ? `<button type="button" onclick="adminDeleteCtvCaption('${escapeAdminJsAttr(cp.id)}', '${escapeAdminJsAttr(mode === 'brand' ? '' : (cp.targetUid || ''))}', '${escapeAdminJsAttr(cp.text || '')}')"
+                                ${cp.id ? `<button type="button" onclick="editAdminCtvCaption(${idx})"
+                                    class="px-2 py-0.5 rounded border border-[#1E1B18] bg-[#FFD84D] text-[#1E1B18] font-black cursor-pointer">
+                                    ✏️ Sửa
+                                </button>
+                                <button type="button" onclick="adminDeleteCtvCaption('${escapeAdminJsAttr(cp.id)}', '${escapeAdminJsAttr(mode === 'brand' ? '' : (cp.targetUid || ''))}', '${escapeAdminJsAttr(cp.text || '')}')"
                                     class="px-2 py-0.5 rounded border border-rose-700 bg-rose-50 hover:bg-rose-200 text-rose-800 font-bold cursor-pointer">
                                     🗑️ Xóa
                                 </button>` : ''}
@@ -3060,6 +3482,44 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        function editAdminCtvCaption(idx) {
+            const cp = adminCtvCaptionsCache[idx];
+            if (!cp) return;
+            if (document.getElementById('adminCapId')) document.getElementById('adminCapId').value = cp.id || '';
+            document.getElementById('adminCapText').value = cp.text || '';
+            document.getElementById('adminCapUid').value = (cp.targetUid && cp.targetUid.toUpperCase() !== 'ALL') ? cp.targetUid : '';
+            if (document.getElementById('adminCapGroupName')) document.getElementById('adminCapGroupName').value = cp.groupName || '';
+            const cols = Array.isArray(cp.colors) ? cp.colors : [];
+            if (cols[0]) document.getElementById('adminCapColor1').value = cols[0];
+            if (cols[1]) document.getElementById('adminCapColor2').value = cols[1];
+            if (cp.iconType === 'emoji' && cp.icon) {
+                switchAdminIconMode('emoji');
+                document.getElementById('adminCapSymbol').value = cp.icon;
+            } else if (cp.symbolName || cp.icon) {
+                switchAdminIconMode('symbol');
+                const symVal = cp.symbolName || cp.icon || 'sparkles';
+                document.getElementById('adminCapSymbol').value = symVal;
+                const lbl = document.getElementById('admSelectedSymLabel');
+                if (lbl) lbl.textContent = symVal;
+            }
+            updateAdminCapPreview();
+            document.getElementById('btnCancelCapEdit')?.classList.remove('hidden');
+            const sBtn = document.getElementById('btnAdminSaveCap');
+            if (sBtn) sBtn.textContent = '💾 Cập Nhật Caption Đã Chọn';
+            document.getElementById('adminCapText').focus();
+        }
+
+        function resetAdminCapForm() {
+            if (document.getElementById('adminCapId')) document.getElementById('adminCapId').value = '';
+            document.getElementById('adminCapText').value = '';
+            document.getElementById('adminCapUid').value = '';
+            if (document.getElementById('adminCapGroupName')) document.getElementById('adminCapGroupName').value = '';
+            document.getElementById('btnCancelCapEdit')?.classList.add('hidden');
+            const sBtn = document.getElementById('btnAdminSaveCap');
+            if (sBtn) sBtn.textContent = '+ Thêm & Lưu Caption Lên locket.2707226.xyz';
+            updateAdminCapPreview();
         }
 
         async function adminDeleteCtvCaption(captionId, targetUid = '', textLabel = '') {
@@ -3087,6 +3547,8 @@
             const btn = document.getElementById('btnAdminSaveCap');
             const text = document.getElementById('adminCapText').value.trim();
             const uid = document.getElementById('adminCapUid').value.trim();
+            const groupName = (document.getElementById('adminCapGroupName')?.value || '').trim();
+            const captionId = (document.getElementById('adminCapId')?.value || '').trim();
             const sym = document.getElementById('adminCapSymbol').value.trim() || 'sparkles';
             const c1 = document.getElementById('adminCapColor1').value;
             const c2 = document.getElementById('adminCapColor2').value;
@@ -3097,14 +3559,17 @@
                 const payload = {
                     pin: currentPin, text, uid, targetUid: uid ? '' : 'ALL',
                     icon: sym, iconType: isSym ? 'symbol' : 'emoji',
-                    symbolName: isSym ? sym : '', colors: [c1, c2], active: true
+                    symbolName: isSym ? sym : '', colors: [c1, c2], active: true,
+                    groupName: groupName
                 };
+                if (captionId) payload.caption_id = captionId;
                 const res = await fetch('/api/admin/ctv/captions', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                 });
                 const data = await res.json();
                 if (!res.ok || !data.ok) throw new Error(data.error || 'Lưu caption thất bại');
                 showAdminToast('🎉 ' + (data.message || 'Lưu Caption thành công!'));
+                resetAdminCapForm();
                 if (uid) { document.getElementById('adminCaptionLookupUid').value = uid; adminLookupCaptions(); }
                 else loadCtvFeaturesOverview();
             } catch (err) {
@@ -3119,18 +3584,61 @@
             const box = document.getElementById('admTopupCustResult');
             if (!ident) { alert('Nhập Username/UID khách!'); return; }
             box.classList.remove('hidden');
-            box.textContent = '⏳ Đang tra cứu khách hàng...';
+            box.textContent = '⏳ Đang tra cứu khách hàng & quota Caption...';
             try {
-                const res = await fetch('/api/admin/check_uid', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ pin: currentPin, identifier: ident, service: 'locket' })
-                });
+                const [res, qRes] = await Promise.all([
+                    fetch('/api/admin/check_uid', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pin: currentPin, identifier: ident, service: 'locket' })
+                    }),
+                    fetch('/api/admin/grant_caption_quota', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pin: currentPin, action: 'check', identifier: ident })
+                    })
+                ]);
                 const data = await res.json();
+                const qData = await qRes.json().catch(() => ({}));
                 if (!data.ok) throw new Error(data.error || 'Không tìm thấy');
                 const inf = (data.data && data.data.data) || data.data || {};
-                box.innerHTML = `<b>@${escapeAdminHtml(inf.username || ident)}</b> · UID: <code>${escapeAdminHtml(inf.uid || '---')}</code> · Trạng thái: <b class="${inf.active ? 'text-emerald-700' : 'text-rose-700'}">${inf.active ? 'ACTIVE VIP' : 'Chưa kích hoạt'}</b>`;
+                const quota = qData.caption_quota || {};
+                const quotaLine = qData.ok
+                    ? `<div class="mt-1 text-[11px] text-[#1E1B18]">💬 Quota Caption VIP: <b>Miễn phí ${quota.free ?? 5}</b> · <b>Mua/Cấp thêm +${quota.extra ?? 0}</b> · <b>Tổng ${quota.total ?? 5}</b></div>`
+                    : '';
+                box.innerHTML = `
+                    <div><b>@${escapeAdminHtml(inf.username || ident)}</b> · UID: <code>${escapeAdminHtml(inf.uid || qData.uid || '---')}</code> · Trạng thái: <b class="${inf.active ? 'text-emerald-700' : 'text-rose-700'}">${inf.active ? 'ACTIVE VIP' : 'Chưa kích hoạt'}</b></div>
+                    ${quotaLine}
+                `;
             } catch (err) {
                 box.innerHTML = `<span class="text-rose-700 font-bold">❌ ${escapeAdminHtml(err.message)}</span>`;
+            }
+        }
+
+        async function adminGrantCaptionQuota(presetQty) {
+            const ident = (document.getElementById('admTopupLookupInput')?.value || '').trim();
+            if (!ident) {
+                alert('Vui lòng nhập Username hoặc UID Locket ở ô phía trên trước!');
+                document.getElementById('admTopupLookupInput')?.focus();
+                return;
+            }
+            const qty = presetQty || parseInt(document.getElementById('admGrantCapQty')?.value || '0', 10);
+            if (!qty || qty < 1 || qty > 1000) {
+                alert('Số lượt cộng thêm phải từ 1 đến 1000!');
+                return;
+            }
+            if (!confirm(`Cộng +${qty} lượt Caption VIP cho [${ident}]?`)) return;
+            try {
+                showAdminToast(`⏳ Đang cộng +${qty} Caption VIP...`);
+                const res = await fetch('/api/admin/grant_caption_quota', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, action: 'grant', identifier: ident, extra_captions: qty })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Cộng quota thất bại');
+                showAdminToast('🎁 ' + (data.message || 'Đã cộng lượt Caption VIP thành công!'));
+                adminLookupTopupCustomer();
+            } catch (err) {
+                alert('❌ ' + err.message);
             }
         }
 
@@ -3484,8 +3992,270 @@
         }
 
         // ==========================================
-        // 6. SYSTEM CONFIG INFO
+        // 6. SYSTEM CONFIG INFO & ADMIN TOOLS
         // ==========================================
+        function onManualServiceChange() {
+            const svc = document.getElementById('manualActService')?.value || 'locket';
+            const sel = document.getElementById('manualActPkgCode');
+            const spInp = document.getElementById('manualActSpotifyInput');
+            if (spInp) spInp.classList.toggle('hidden', svc !== 'combo');
+            if (!sel) return;
+            if (svc === 'spotify') {
+                sel.innerHTML = `
+                    <option value="SPVV">SPVV · Spotify Vĩnh Viễn</option>
+                    <option value="SPOTIFY1Y">SPOTIFY1Y · Spotify 1 Năm</option>
+                    <option value="SP6M">SP6M · Spotify 6 Tháng</option>
+                    <option value="SPT">SPT · Spotify Test 3 Ngày</option>`;
+            } else if (svc === 'combo') {
+                sel.innerHTML = `
+                    <option value="COMBOVV">COMBOVV · Combo Vĩnh Viễn (Locket + Spotify)</option>
+                    <option value="COMBO1Y">COMBO1Y · Combo 1 Năm (Locket + Spotify)</option>
+                    <option value="COMBO6M">COMBO6M · Combo 6 Tháng (Locket + Spotify)</option>`;
+            } else {
+                sel.innerHTML = `
+                    <option value="LKGVV">LKGVV · Locket Vĩnh Viễn</option>
+                    <option value="LKG1Y">LKG1Y · Locket 1 Năm</option>
+                    <option value="LKG6M">LKG6M · Locket 6 Tháng</option>
+                    <option value="LKGT3D">LKGT3D · Locket Test 3 Ngày</option>`;
+            }
+        }
+
+        async function submitManualActivatePanel() {
+            const svc = document.getElementById('manualActService')?.value || 'locket';
+            const pkgCode = document.getElementById('manualActPkgCode')?.value || 'LKGVV';
+            const target = (document.getElementById('manualActTargetInput')?.value || '').trim();
+            const spTarget = (document.getElementById('manualActSpotifyInput')?.value || '').trim();
+            const note = (document.getElementById('manualActNoteInput')?.value || '').trim();
+            const resBox = document.getElementById('manualActPanelResult');
+            const btn = document.getElementById('btnManualActPanel');
+            if (!target) { alert('Vui lòng nhập Username Locket hoặc Link/UID Spotify!'); return; }
+            if (!confirm(`Xác nhận kích hoạt [${pkgCode}] (${svc}) cho [${target}]? Coin CTV sẽ được trừ trực tiếp.`)) return;
+
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang kích hoạt...'; }
+            if (resBox) { resBox.classList.remove('hidden'); resBox.textContent = '⏳ Đang gửi yêu cầu kích hoạt...'; }
+            try {
+                const res = await fetch('/api/admin/manual_activate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, service: svc, package_code: pkgCode, username: target, spotify_username: spTarget, note })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Kích hoạt thất bại');
+                showAdminToast('🎉 ' + (data.message || 'Kích hoạt thành công!'));
+                if (resBox) resBox.innerHTML = `<span class="text-emerald-400 font-bold">✅ ${escapeAdminHtml(data.message)}</span>`;
+                syncApiData();
+            } catch (err) {
+                if (resBox) resBox.innerHTML = `<span class="text-rose-400 font-bold">❌ ${escapeAdminHtml(err.message)}</span>`;
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '⚡ Kích Hoạt'; }
+            }
+        }
+
+        async function submitStandaloneResetSpotify() {
+            const raw = (document.getElementById('standaloneResetSpotifyInput')?.value || '').trim();
+            const resBox = document.getElementById('standaloneResetResult');
+            const btn = document.getElementById('btnStandaloneResetSp');
+            if (!raw) { alert('Vui lòng nhập Link Profile hoặc UID Spotify!'); return; }
+            if (!confirm(`Giải phóng phiên IP Spotify cho [${raw}]?`)) return;
+
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang reset...'; }
+            if (resBox) { resBox.classList.remove('hidden'); resBox.textContent = '⏳ Đang gửi lệnh reset IP Spotify...'; }
+            try {
+                const res = await fetch('/api/admin/reset_spotify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, uid: raw })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Reset IP thất bại');
+                showAdminToast('✅ ' + (data.message || 'Đã giải phóng IP Spotify!'));
+                if (resBox) resBox.innerHTML = `<span class="text-emerald-400 font-bold">✅ ${escapeAdminHtml(data.message || 'Thành công!')}</span>`;
+            } catch (err) {
+                if (resBox) resBox.innerHTML = `<span class="text-rose-400 font-bold">❌ ${escapeAdminHtml(err.message)}</span>`;
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '🔄 Reset IP Ngay'; }
+            }
+        }
+
+        function renderActivatedUidsTable() {
+            const tbody = document.getElementById('activatedUidsTableBody');
+            const badge = document.getElementById('activatedUidsCountBadge');
+            if (!tbody) return;
+            const q = (document.getElementById('activatedUidSearch')?.value || '').toLowerCase().trim();
+            let list = cachedActivatedUids || [];
+            if (q) {
+                list = list.filter(item => {
+                    const uStr = String(item.uidString || item.uid || '').toLowerCase();
+                    const uname = String(item.username || '').toLowerCase();
+                    const svc = String(item.service || '').toLowerCase();
+                    const pkg = String(item.packageCode || (item.package && item.package.code) || '').toLowerCase();
+                    return uStr.includes(q) || uname.includes(q) || svc.includes(q) || pkg.includes(q);
+                });
+            }
+            if (badge) badge.textContent = `${list.length} tài khoản`;
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-500">Không có tài khoản UID nào phù hợp.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.slice(0, 150).map(item => {
+                const rawUid = String(item.uidString || item.uid || '---');
+                const rawUname = String(item.username || rawUid);
+                const rawSvc = String(item.service || (String(item.packageCode || '').startsWith('SP') ? 'spotify' : 'locket')).toLowerCase();
+                const pkgCode = String(item.packageCode || (item.package && item.package.code) || '---');
+                const isAct = String(item.status || '').toUpperCase() === 'ACTIVE' || item.active === true;
+                const expTxt = item.expiresAt ? String(item.expiresAt).substring(0, 16).replace('T', ' ') : 'Vĩnh viễn';
+                const jsTarget = escapeAdminJsAttr(rawUname !== '---' ? rawUname : rawUid);
+                const jsUid = escapeAdminJsAttr(rawUid);
+                const jsSvc = escapeAdminJsAttr(rawSvc === 'spotify' ? 'spotify' : 'locket');
+                return `
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="py-2.5 px-4">
+                            <div class="font-bold text-white">@${escapeAdminHtml(rawUname)}</div>
+                            <div class="text-[10px] text-slate-400 font-mono truncate max-w-[170px]">${escapeAdminHtml(rawUid)}</div>
+                        </td>
+                        <td class="py-2.5 px-4 font-bold">${rawSvc === 'spotify' ? '🎵 Spotify' : '💛 Locket'}</td>
+                        <td class="py-2.5 px-4 font-mono text-amber-400 font-bold">${escapeAdminHtml(pkgCode)}</td>
+                        <td class="py-2.5 px-4">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isAct ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}">
+                                ${escapeAdminHtml(item.status || (isAct ? 'ACTIVE' : 'INACTIVE'))}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-4 font-mono text-[11px] text-slate-300">${escapeAdminHtml(expTxt)}</td>
+                        <td class="py-2.5 px-4 text-right space-x-1">
+                            <button type="button" onclick="quickCheckFromUidTable('${jsTarget}', '${jsSvc}')"
+                                class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold cursor-pointer">🔍 Kiểm</button>
+                            ${rawSvc === 'spotify' ? `<button type="button" onclick="adminResetSpotify('${jsUid}')"
+                                class="px-2 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] font-bold cursor-pointer">🔄 Reset</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function quickCheckFromUidTable(target, svc) {
+            const sel = document.getElementById('checkServiceSelect');
+            const inp = document.getElementById('checkIdentifierInput');
+            if (sel) sel.value = svc === 'spotify' ? 'spotify' : 'locket';
+            if (inp) {
+                inp.value = target;
+                inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            performCheckUid();
+        }
+
+        async function syncUpstreamToDb() {
+            const btn = document.getElementById('btnSyncUpstreamDb');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang đồng bộ...'; }
+            try {
+                const res = await fetch('/api/sync_upstream', { headers: adminHeaders() });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Đồng bộ thất bại');
+                showAdminToast(`✅ ${data.message || 'Đã đồng bộ về DB Web thành công!'}`);
+                syncApiData();
+                loadOrders();
+            } catch (err) {
+                alert('❌ ' + err.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '🔄 Đồng Bộ Về DB Web'; }
+            }
+        }
+
+        async function adminClearApiCache() {
+            const btn = document.getElementById('btnAdminClearCache');
+            const box = document.getElementById('sysMaintenanceResult');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang xóa...'; }
+            try {
+                const res = await fetch('/api/admin/clear_cache', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Xóa cache thất bại');
+                showAdminToast('🧹 ' + (data.message || 'Đã xóa cache API!'));
+                if (box) {
+                    box.classList.remove('hidden');
+                    box.innerHTML = `<div class="text-emerald-400 font-bold">✅ ${escapeAdminHtml(data.message)}</div>`;
+                }
+            } catch (err) {
+                if (box) { box.classList.remove('hidden'); box.innerHTML = `<div class="text-rose-400 font-bold">❌ ${escapeAdminHtml(err.message)}</div>`; }
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '🧹 Xóa Cache API (30s) & Làm Mới Giá'; }
+            }
+        }
+
+        async function adminTestSepayLive() {
+            const btn = document.getElementById('btnAdminTestSepay');
+            const box = document.getElementById('sysMaintenanceResult');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang kiểm tra SePay...'; }
+            if (box) { box.classList.remove('hidden'); box.textContent = '⏳ Đang ping SePay API & VietQR...'; }
+            try {
+                const res = await fetch('/api/admin/test_sepay', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin })
+                });
+                const data = await res.json();
+                if (!data.sepay_ok) {
+                    box.innerHTML = `<div class="text-rose-400 font-bold">⚠️ ${escapeAdminHtml(data.error || 'SePay chưa phản hồi 200 OK')}</div>`;
+                    return;
+                }
+                const txRows = (data.recent_transactions || []).map(tx =>
+                    `<div class="p-2 rounded-lg bg-slate-900 border border-slate-800 flex justify-between gap-2 text-[11px]">
+                        <span class="font-mono text-slate-400">${escapeAdminHtml(tx.date || '')}</span>
+                        <span class="truncate flex-1 text-slate-200">${escapeAdminHtml(tx.content || '')}</span>
+                        <span class="font-mono font-bold text-emerald-400">+${formatVND(tx.amount_in || 0)}</span>
+                    </div>`
+                ).join('');
+                box.innerHTML = `
+                    <div class="text-emerald-400 font-bold">✅ ${escapeAdminHtml(data.message)}</div>
+                    <div class="space-y-1.5 mt-2">${txRows || '<div class="text-slate-400">Chưa có giao dịch gần đây.</div>'}</div>
+                `;
+            } catch (err) {
+                if (box) box.innerHTML = `<div class="text-rose-400 font-bold">❌ ${escapeAdminHtml(err.message)}</div>`;
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '💳 Test SePay Live API'; }
+            }
+        }
+
+        function onTgSendModeChange() {
+            const mode = document.getElementById('tgSendMode')?.value || 'single';
+            const uidInp = document.getElementById('tgSendUserId');
+            const hint = document.getElementById('tgSendHint');
+            if (uidInp) uidInp.classList.toggle('hidden', mode === 'broadcast');
+            if (hint) hint.textContent = mode === 'broadcast'
+                ? '⚠️ Cảnh báo: Tin nhắn sẽ gửi tới TẤT CẢ khách hàng đã từng bấm /start bot!'
+                : 'Gửi trực tiếp tới 1 khách hàng qua Bot';
+        }
+
+        async function submitAdminTelegramSend() {
+            const mode = document.getElementById('tgSendMode')?.value || 'single';
+            const userId = (document.getElementById('tgSendUserId')?.value || '').trim();
+            const message = (document.getElementById('tgSendMessage')?.value || '').trim();
+            const btn = document.getElementById('btnSubmitTgSend');
+            const resBox = document.getElementById('tgSendResult');
+            if (!message) { alert('Vui lòng nhập nội dung tin nhắn!'); return; }
+            if (mode === 'single' && !userId) { alert('Vui lòng nhập Telegram User ID!'); return; }
+            const confirmMsg = mode === 'broadcast'
+                ? 'Xác nhận PHÁT SÓNG tin nhắn này tới TOÀN BỘ khách hàng Telegram Bot?'
+                : `Xác nhận gửi tin nhắn Telegram tới User ID [${userId}]?`;
+            if (!confirm(confirmMsg)) return;
+
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang gửi...'; }
+            try {
+                const res = await fetch('/api/admin/telegram_send', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, mode, user_id: userId, message })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Gửi thất bại');
+                showAdminToast('🚀 ' + (data.message || 'Đã gửi thành công!'));
+                if (resBox) { resBox.classList.remove('hidden'); resBox.innerHTML = `<span class="text-emerald-400 font-bold">✅ ${escapeAdminHtml(data.message)}</span>`; }
+            } catch (err) {
+                if (resBox) { resBox.classList.remove('hidden'); resBox.innerHTML = `<span class="text-rose-400 font-bold">❌ ${escapeAdminHtml(err.message)}</span>`; }
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '🚀 Gửi Ngay Qua Bot'; }
+            }
+        }
+
         async function loadSystemInfo() {
             try {
                 const res = await fetch('/api/admin/system_info', { headers: adminHeaders() });
@@ -3496,6 +4266,8 @@
                 document.getElementById('sysBankName').textContent = inf.bank_name || 'TPBank';
                 document.getElementById('sysBankAccount').textContent = inf.bank_account || '34528022007';
                 document.getElementById('sysAccountHolder').textContent = inf.account_holder || 'NGUYEN NHU QUYNH';
+                if (document.getElementById('sysDnsComboUrl')) document.getElementById('sysDnsComboUrl').textContent = inf.dns_combo_url || 'https://doh.2707226.xyz/alopremiumshop';
+                if (document.getElementById('sysCountsSummary')) document.getElementById('sysCountsSummary').textContent = `${inf.free_caption_quota ?? 5} free · ${inf.users_count ?? 0} users · ${inf.orders_count ?? 0} đơn`;
             } catch (err) {
                 console.error(err);
             }

@@ -521,27 +521,48 @@ DEFAULT_PRICES = {
     "combo": {"6m": 65000, "1y": 99000, "ltm": 259000},
     "locket_spotify": {"6m": 65000, "1y": 99000, "ltm": 259000},
     "locket_ai": {"ltm": 250000},
+    "filter_topup": {"20": 7000, "50": 17000, "100": 33000},
+    "caption_pack": {"10": 5000, "30": 10000},
 }
+
 
 def get_custom_prices() -> dict:
     return _load(DB_PRICES, {})
 
+
 def save_custom_prices(prices: dict):
     _save(DB_PRICES, prices)
 
+
+def _apply_addon_pack_price(packs_map: dict, plan_key: str, val: int) -> None:
+    if isinstance(packs_map, dict) and plan_key in packs_map and isinstance(packs_map[plan_key], dict):
+        packs_map[plan_key]["price"] = val
+
+
 def apply_custom_prices():
     prices = get_custom_prices()
+    import config
     from config import PRODUCTS
+    filter_packs = getattr(config, "FILTER_TOPUP_PACKS", {})
+    caption_packs = getattr(config, "CAPTION_TOPUP_PACKS", {})
+
     for prod_key, plans in prices.items():
-        if prod_key in PRODUCTS and isinstance(plans, dict):
-            for plan_key, price_val in plans.items():
-                if plan_key in PRODUCTS[prod_key].get("plans", {}):
-                    try:
-                        p_int = int(price_val.get("price") if isinstance(price_val, dict) else price_val)
-                        if p_int >= 0:
-                            PRODUCTS[prod_key]["plans"][plan_key]["price"] = p_int
-                    except (ValueError, TypeError):
-                        pass
+        if not isinstance(plans, dict):
+            continue
+        for plan_key, price_val in plans.items():
+            try:
+                p_int = int(price_val.get("price") if isinstance(price_val, dict) else price_val)
+            except (ValueError, TypeError):
+                continue
+            if p_int < 0:
+                continue
+            if prod_key in PRODUCTS and plan_key in PRODUCTS[prod_key].get("plans", {}):
+                PRODUCTS[prod_key]["plans"][plan_key]["price"] = p_int
+            elif prod_key == "filter_topup":
+                _apply_addon_pack_price(filter_packs, plan_key, p_int)
+            elif prod_key == "caption_pack":
+                _apply_addon_pack_price(caption_packs, plan_key, p_int)
+
 
 def get_prices() -> dict:
     """Đồng bộ giá tùy chỉnh và trả về toàn bộ cấu trúc PRODUCTS."""
@@ -549,12 +570,63 @@ def get_prices() -> dict:
     from config import PRODUCTS
     return PRODUCTS
 
+
+def get_all_admin_pricing() -> dict:
+    """Trả về toàn bộ PRODUCTS + gói Add-ons (Filter AI, Caption VIP) phục vụ Admin quản lý giá."""
+    apply_custom_prices()
+    import config
+    combined = {}
+    for pk, pv in config.PRODUCTS.items():
+        combined[pk] = pv
+    filter_packs = getattr(config, "FILTER_TOPUP_PACKS", {})
+    if filter_packs:
+        combined["filter_topup"] = {
+            "name": "Nạp Lượt Filter AI (Studio)",
+            "emoji": "🎭",
+            "service": "filter_topup",
+            "description": "Các gói nạp thêm lượt chụp Filter AI trong Locket Custom Studio.",
+            "plans": {
+                k: {
+                    "label": v.get("label", f"{k} Lượt"),
+                    "packageCode": f"FILTER_{k}",
+                    "price": v.get("price", 0),
+                }
+                for k, v in filter_packs.items()
+            },
+        }
+    caption_packs = getattr(config, "CAPTION_TOPUP_PACKS", {})
+    if caption_packs:
+        combined["caption_pack"] = {
+            "name": "Mua Thêm Caption VIP (Studio)",
+            "emoji": "💬",
+            "service": "caption_pack",
+            "description": "Gói cộng thêm slot lưu Caption cá nhân (ngoài 5 Caption miễn phí).",
+            "plans": {
+                k: {
+                    "label": v.get("label", f"+{k} Caption"),
+                    "packageCode": f"CAPTION_{k}",
+                    "price": v.get("price", 0),
+                }
+                for k, v in caption_packs.items()
+            },
+        }
+    return combined
+
+
 def update_plan_price(prod_key: str, plan_key: str, new_price: int) -> bool:
+    import config
     from config import PRODUCTS
-    if prod_key not in PRODUCTS or plan_key not in PRODUCTS[prod_key].get("plans", {}):
+    valid = (
+        (prod_key in PRODUCTS and plan_key in PRODUCTS[prod_key].get("plans", {}))
+        or (prod_key == "filter_topup" and plan_key in getattr(config, "FILTER_TOPUP_PACKS", {}))
+        or (prod_key == "caption_pack" and plan_key in getattr(config, "CAPTION_TOPUP_PACKS", {}))
+    )
+    if not valid:
         return False
     try:
         new_price = int(new_price)
+        if new_price < 0:
+            return False
     except (ValueError, TypeError):
         return False
 
@@ -567,38 +639,56 @@ def update_plan_price(prod_key: str, plan_key: str, new_price: int) -> bool:
         apply_custom_prices()
         return True
 
+
 def update_all_prices(price_map: dict) -> bool:
+    import config
     from config import PRODUCTS
+    filter_packs = getattr(config, "FILTER_TOPUP_PACKS", {})
+    caption_packs = getattr(config, "CAPTION_TOPUP_PACKS", {})
     with _db_lock:
         prices = get_custom_prices()
         for prod_key, plans in price_map.items():
-            if prod_key in PRODUCTS and isinstance(plans, dict):
-                if prod_key not in prices or not isinstance(prices[prod_key], dict):
-                    prices[prod_key] = {}
-                for plan_key, price_val in plans.items():
-                    if plan_key in PRODUCTS[prod_key].get("plans", {}):
-                        try:
-                            p_int = int(price_val.get("price") if isinstance(price_val, dict) else price_val)
-                            if p_int >= 0:
-                                prices[prod_key][plan_key] = p_int
-                        except (ValueError, TypeError):
-                            pass
+            if not isinstance(plans, dict):
+                continue
+            is_valid_prod = (prod_key in PRODUCTS) or prod_key in ("filter_topup", "caption_pack")
+            if not is_valid_prod:
+                continue
+            if prod_key not in prices or not isinstance(prices[prod_key], dict):
+                prices[prod_key] = {}
+            for plan_key, price_val in plans.items():
+                valid_plan = (
+                    (prod_key in PRODUCTS and plan_key in PRODUCTS[prod_key].get("plans", {}))
+                    or (prod_key == "filter_topup" and plan_key in filter_packs)
+                    or (prod_key == "caption_pack" and plan_key in caption_packs)
+                )
+                if not valid_plan:
+                    continue
+                try:
+                    p_int = int(price_val.get("price") if isinstance(price_val, dict) else price_val)
+                    if p_int >= 0:
+                        prices[prod_key][plan_key] = p_int
+                except (ValueError, TypeError):
+                    pass
         save_custom_prices(prices)
         apply_custom_prices()
         return True
 
+
 def reset_default_prices() -> bool:
     with _db_lock:
-        if os.path.exists(DB_PRICES):
-            try:
-                os.remove(DB_PRICES)
-            except Exception:
-                pass
+        save_custom_prices({})
+        import config
         from config import PRODUCTS
+        filter_packs = getattr(config, "FILTER_TOPUP_PACKS", {})
+        caption_packs = getattr(config, "CAPTION_TOPUP_PACKS", {})
         for pk, plans in DEFAULT_PRICES.items():
             for pl, val in plans.items():
                 if pk in PRODUCTS and pl in PRODUCTS[pk]["plans"]:
                     PRODUCTS[pk]["plans"][pl]["price"] = val
+                elif pk == "filter_topup":
+                    _apply_addon_pack_price(filter_packs, pl, val)
+                elif pk == "caption_pack":
+                    _apply_addon_pack_price(caption_packs, pl, val)
         return True
 
 # ── BANNER / THÔNG BÁO ƯU ĐÃI WEB ───────────────────────────────────────────

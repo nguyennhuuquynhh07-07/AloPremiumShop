@@ -120,6 +120,7 @@ from handlers.admin_handlers import (
     rs_cmd, stats_cmd, users_cmd, find_cmd,
     ban_cmd, unban_cmd, orders_cmd, tokens_cmd,
     checkbank_cmd, addcode_cmd, delcode_cmd, codes_cmd, coin_cmd, packages_cmd, duyet_cmd, setprice_cmd,
+    clearcache_cmd, grantcaption_cmd,
     handle_admin_text_input,
 )
 
@@ -217,6 +218,8 @@ async def post_init(application):
         BotCommand("noti", "Gửi thông báo toàn hệ thống"),
         BotCommand("duyet", "Duyệt đơn thủ công"),
         BotCommand("sync", "Đồng bộ đơn hàng từ web chủ"),
+        BotCommand("grantcaption", "Xem/Cấp lượt Caption VIP"),
+        BotCommand("clearcache", "Xóa bộ nhớ đệm API 30s"),
         BotCommand("cancel", "Hủy thao tác đang làm"),
     ]
 
@@ -330,10 +333,12 @@ def main():
     app.add_handler(CommandHandler("cancel",    cancel_conv))
 
     # ── Lệnh Admin ───────────────────────────────────────────────────────────
-    app.add_handler(CommandHandler("admin",     admin_cmd))
-    app.add_handler(CommandHandler("setprice",  setprice_cmd))
-    app.add_handler(CommandHandler("duyet",     duyet_cmd))
-    app.add_handler(CommandHandler("sync",      sync_cmd))
+    app.add_handler(CommandHandler("admin",        admin_cmd))
+    app.add_handler(CommandHandler("setprice",     setprice_cmd))
+    app.add_handler(CommandHandler("duyet",        duyet_cmd))
+    app.add_handler(CommandHandler("sync",         sync_cmd))
+    app.add_handler(CommandHandler("clearcache",   clearcache_cmd))
+    app.add_handler(CommandHandler("grantcaption", grantcaption_cmd))
     app.add_handler(CommandHandler("coin",      coin_cmd))
     app.add_handler(CommandHandler("balance",   coin_cmd))
     app.add_handler(CommandHandler("packages",  packages_cmd))

@@ -2046,10 +2046,10 @@
                     </div>
 
                     <div class="flex flex-wrap gap-2">
-                        <button type="button" onclick="buyCaptionTopupPack('10')" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                        <button type="button" id="btnBuyCap10" onclick="buyCaptionTopupPack('10')" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
                             +10 Caption (5K)
                         </button>
-                        <button type="button" onclick="buyCaptionTopupPack('30')" class="flex-1 py-2 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
+                        <button type="button" id="btnBuyCap30" onclick="buyCaptionTopupPack('30')" class="flex-1 py-2 px-3 rounded-xl bg-[#FCE176] hover:bg-[#FFD23F] border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] text-xs font-black text-[#1E1B18] cursor-pointer">
                             +30 Caption (10K)
                         </button>
                         <button type="button" onclick="switchFeatureSubTab('captions')" class="py-2 px-3 rounded-xl bg-white hover:bg-[#FFF5D6] border-2 border-[#1E1B18] text-xs font-bold text-[#1E1B18] cursor-pointer">
@@ -2089,23 +2089,23 @@
                     <div>
                         <label class="block text-xs font-bold text-[#1E1B18] mb-2">Chọn gói nạp thêm lượt Filter AI:</label>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div onclick="selectFilterPack('20', 7000)" id="filterPackCard_20"
+                            <div onclick="selectFilterPack('20')" id="filterPackCard_20"
                                  class="filter-pack-card p-4 rounded-xl border-2 border-[#1E1B18] bg-[#FFF8DC] shadow-[2px_2px_0px_#1E1B18] cursor-pointer transition-all">
                                 <div class="font-black text-sm text-[#1E1B18]">Gói 20 Lượt Filter AI</div>
                                 <div class="text-xs text-[#6E6659] mt-0.5">+20 lượt chụp AI</div>
-                                <div class="font-black text-base text-amber-700 mt-1.5">7.000đ</div>
+                                <div id="filterPackPrice_20" class="font-black text-base text-amber-700 mt-1.5">7.000đ</div>
                             </div>
-                            <div onclick="selectFilterPack('50', 17000)" id="filterPackCard_50"
+                            <div onclick="selectFilterPack('50')" id="filterPackCard_50"
                                  class="filter-pack-card p-4 rounded-xl border-2 border-[#1E1B18] bg-white hover:bg-[#FFFDF5] cursor-pointer transition-all">
                                 <div class="font-black text-sm text-[#1E1B18]">Gói 50 Lượt Filter AI</div>
                                 <div class="text-xs text-[#6E6659] mt-0.5">+50 lượt chụp AI</div>
-                                <div class="font-black text-base text-amber-700 mt-1.5">17.000đ</div>
+                                <div id="filterPackPrice_50" class="font-black text-base text-amber-700 mt-1.5">17.000đ</div>
                             </div>
-                            <div onclick="selectFilterPack('100', 33000)" id="filterPackCard_100"
+                            <div onclick="selectFilterPack('100')" id="filterPackCard_100"
                                  class="filter-pack-card p-4 rounded-xl border-2 border-[#1E1B18] bg-white hover:bg-[#FFFDF5] cursor-pointer transition-all">
                                 <div class="font-black text-sm text-[#1E1B18]">Gói 100 Lượt Filter AI</div>
                                 <div class="text-xs text-[#6E6659] mt-0.5">+100 lượt chụp AI</div>
-                                <div class="font-black text-base text-amber-700 mt-1.5">33.000đ</div>
+                                <div id="filterPackPrice_100" class="font-black text-base text-amber-700 mt-1.5">33.000đ</div>
                             </div>
                         </div>
                     </div>
@@ -4299,7 +4299,10 @@
         }
 
         function selectFilterPack(cnt, price) {
-            selectedFilterTopupPack = { count: String(cnt), price: Number(price) };
+            const dynPrice = (price !== undefined && price !== null)
+                ? Number(price)
+                : Number((window.dynamicFilterPackPrices && window.dynamicFilterPackPrices[String(cnt)]) || ({ '20': 7000, '50': 17000, '100': 33000 }[String(cnt)] || 7000));
+            selectedFilterTopupPack = { count: String(cnt), price: dynPrice };
             ['20', '50', '100'].forEach(k => {
                 const card = document.getElementById('filterPackCard_' + k);
                 if (!card) return;
@@ -4309,7 +4312,7 @@
             });
             const payBtn = document.getElementById('btnRequestFilterTopup');
             if (payBtn) {
-                payBtn.innerHTML = `💳 Thanh Toán &amp; Nạp Lượt Filter (${Number(price).toLocaleString('vi-VN')}đ)`;
+                payBtn.innerHTML = `💳 Thanh Toán &amp; Nạp Lượt Filter (${dynPrice.toLocaleString('vi-VN')}đ)`;
             }
         }
 
@@ -4600,6 +4603,33 @@
                             }
                         }
                     });
+                    // Đồng bộ bảng giá Add-on Studio (Filter AI & Caption VIP)
+                    if (data.filter_topup_packs) {
+                        window.dynamicFilterPackPrices = window.dynamicFilterPackPrices || { '20': 7000, '50': 17000, '100': 33000 };
+                        ['20', '50', '100'].forEach(k => {
+                            const pkObj = data.filter_topup_packs[k];
+                            if (pkObj && typeof pkObj.price === 'number') {
+                                window.dynamicFilterPackPrices[k] = pkObj.price;
+                                const pEl = document.getElementById('filterPackPrice_' + k);
+                                if (pEl) pEl.textContent = `${pkObj.price.toLocaleString('vi-VN')}đ`;
+                            }
+                        });
+                        if (typeof selectedFilterTopupPack !== 'undefined' && selectedFilterTopupPack && typeof selectFilterPack === 'function') {
+                            selectFilterPack(selectedFilterTopupPack.count);
+                        }
+                    }
+                    if (data.caption_topup_packs) {
+                        ['10', '30'].forEach(k => {
+                            const ckObj = data.caption_topup_packs[k];
+                            const bEl = document.getElementById('btnBuyCap' + k);
+                            if (ckObj && typeof ckObj.price === 'number' && bEl) {
+                                const shortP = ckObj.price >= 1000 && ckObj.price % 1000 === 0
+                                    ? `${ckObj.price / 1000}K`
+                                    : `${ckObj.price.toLocaleString('vi-VN')}đ`;
+                                bEl.textContent = `+${k} Caption (${shortP})`;
+                            }
+                        });
+                    }
                     // Cập nhật cấu hình Nhóm Zalo Hỗ Trợ
                     if (data.zalo_group_url) {
                         window.zaloGroupUrl = data.zalo_group_url;

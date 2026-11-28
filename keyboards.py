@@ -358,7 +358,11 @@ def admin_kb(pending_count: int = 0) -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("🪙 Số dư Coin CTV",     callback_data="admin:balance"),
-            InlineKeyboardButton("💳 Kiểm tra VietQR",    callback_data="admin:checkbank"),
+            InlineKeyboardButton("💳 Kiểm tra VietQR & SePay", callback_data="admin:checkbank"),
+        ],
+        [
+            InlineKeyboardButton("🔄 Đồng bộ Web Chủ",    callback_data="admin:sync_upstream"),
+            InlineKeyboardButton("🧹 Xóa Cache API",      callback_data="admin:clear_cache"),
         ],
         [
             InlineKeyboardButton("🔍 Tìm kiếm đơn/user",   callback_data="admin:find_menu"),
@@ -366,6 +370,9 @@ def admin_kb(pending_count: int = 0) -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("🔄 Reset máy Spotify",  callback_data="admin:reset_menu"),
+            InlineKeyboardButton("🎁 Cấp Caption VIP",    callback_data="admin:grant_caption_menu"),
+        ],
+        [
             InlineKeyboardButton("📢 Gửi thông báo toàn bot", callback_data="admin:broadcast"),
         ],
         [
@@ -407,7 +414,12 @@ def admin_prices_overview_kb() -> InlineKeyboardMarkup:
             InlineKeyboardButton("🎵 Sửa giá Spotify",     callback_data="admin:price_prod:spotify"),
         ],
         [
-            InlineKeyboardButton("👑 Sửa giá Combo Duo VIP", callback_data="admin:price_prod:locket_spotify"),
+            InlineKeyboardButton("👑 Combo Duo VIP",       callback_data="admin:price_prod:locket_spotify"),
+            InlineKeyboardButton("✨ VIP All-in-One",      callback_data="admin:price_prod:locket_ai"),
+        ],
+        [
+            InlineKeyboardButton("🎨 Giá Filter AI",       callback_data="admin:price_prod:filter_topup"),
+            InlineKeyboardButton("💬 Giá Caption VIP",     callback_data="admin:price_prod:caption_pack"),
         ],
         [
             InlineKeyboardButton("🔄 Khôi phục giá mặc định", callback_data="admin:reset_prices_confirm"),
@@ -419,8 +431,9 @@ def admin_prices_overview_kb() -> InlineKeyboardMarkup:
 
 
 def admin_prices_plans_kb(product_key: str) -> InlineKeyboardMarkup:
-    from config import PRODUCTS
-    prod = PRODUCTS.get(product_key, PRODUCTS.get("locket_spotify", {}))
+    import database as db
+    all_pricing = db.get_all_admin_pricing()
+    prod = all_pricing.get(product_key, all_pricing.get("locket_spotify", {}))
     plans = prod.get("plans", {})
     rows = []
     for plan_key, plan_data in plans.items():

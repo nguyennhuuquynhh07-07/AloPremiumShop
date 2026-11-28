@@ -27,6 +27,7 @@ from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 import urllib.parse
 import urllib.request
+import httpx
 
 import config
 import database as db
@@ -1049,6 +1050,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {
                 "ok": True,
                 "products": config.PRODUCTS,
+                "filter_topup_packs": getattr(config, "FILTER_TOPUP_PACKS", {}),
+                "caption_topup_packs": getattr(config, "CAPTION_TOPUP_PACKS", {}),
+                "free_caption_quota": int(getattr(config, "FREE_CAPTION_QUOTA", 5) or 5),
                 "banner": db.get_banner_config(),
                 "zalo_group_url": getattr(config, "ZALO_GROUP_URL", "").strip(),
                 "zalo_group_qr": "/zalo_group_qr.png?v=2",
@@ -1666,13 +1670,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {"ok": True, "orders": all_orders[:50]})
             return
 
-        # API Admin: Lấy danh sách bảng giá & mã gói (kèm cấu hình Banner)
+        # API Admin: Lấy danh sách bảng giá & mã gói (kèm cấu hình Banner & Add-on Studio)
         if path == "/api/admin/prices":
             if not self._require_admin(params=params):
                 return
             self._send_json(200, {
                 "ok": True,
-                "products": config.PRODUCTS,
+                "products": db.get_all_admin_pricing(),
                 "custom_prices": db.get_custom_prices(),
                 "banner": db.get_banner_config()
             })
@@ -1704,6 +1708,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             today_orders = [o for o in done_orders if str(o.get("done_at", "")).startswith(today_str) or str(o.get("created_at", "")).startswith(today_str)]
             today_revenue = sum(o.get("price", 0) for o in today_orders)
+            total_coin_spent = round(sum(float(o.get("ctv_cost_coin", 0) or 0) for o in done_orders), 2)
 
             locket_done = [o for o in done_orders if o.get("product") == "locket"]
             spotify_done = [o for o in done_orders if o.get("product") == "spotify"]
@@ -1716,6 +1721,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 "stats": {
                     "total_revenue": total_revenue,
                     "today_revenue": today_revenue,
+                    "today_count": len(today_orders),
+                    "total_coin_spent": total_coin_spent,
                     "total_orders": len(orders),
                     "done_count": len(done_orders),
                     "pending_count": len(pending_orders),
@@ -1792,13 +1799,21 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {
                 "ok": True,
                 "info": {
+                    "bank_id": getattr(config, "BANK_ID", "TPB"),
                     "bank_name": getattr(config, "BANK_NAME", "TPBank"),
-                    "bank_account": getattr(config, "BANK_ACCOUNT", "34528022007"),
-                    "account_holder": getattr(config, "ACCOUNT_HOLDER", "NGUYEN NHU QUYNH"),
+                    "bank_account": getattr(config, "ACCOUNT_NO", getattr(config, "BANK_ACCOUNT", "34528022007")),
+                    "account_holder": getattr(config, "ACCOUNT_NAME", getattr(config, "ACCOUNT_HOLDER", "NGUYEN NHU QUYNH")),
                     "bot_username": "@AloPremiumShop_Bot",
-                    "domain": "https://alopremium.shop",
+                    "domain": getattr(config, "WEBSITE_URL", "https://alopremium.shop"),
                     "sepay_connected": bool(getattr(config, "SEPAY_API_TOKEN", "")),
                     "api_base_url": getattr(config, "API_BASE_URL", "https://locket.2707226.xyz"),
+                    "dns_combo_url": getattr(config, "DNS_COMBO_URL", "https://doh.2707226.xyz/alopremiumshop"),
+                    "support_phone": getattr(config, "SUPPORT_PHONE", "0345222802"),
+                    "support_telegram": getattr(config, "SUPPORT_TELEGRAM", "https://t.me/nguyennhuquynh28"),
+                    "free_caption_quota": int(getattr(config, "FREE_CAPTION_QUOTA", 5) or 5),
+                    "admin_count": len(getattr(config, "ADMIN_IDS", [])),
+                    "users_count": len(db.get_users()),
+                    "orders_count": len(db.get_orders()),
                     "server_status": "ONLINE 24/7"
                 }
             })
@@ -1916,7 +1931,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {
                 "ok": True,
                 "message": f"Đã cập nhật giá gói thành công!",
-                "products": config.PRODUCTS
+                "products": db.get_all_admin_pricing()
             })
             return
 
@@ -1933,7 +1948,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {
                 "ok": True,
                 "message": "Đã lưu toàn bộ bảng giá mới thành công!",
-                "products": config.PRODUCTS
+                "products": db.get_all_admin_pricing()
             })
             return
 
@@ -1945,7 +1960,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             self._send_json(200, {
                 "ok": True,
                 "message": "Đã khôi phục bảng giá về mặc định thành công!",
-                "products": config.PRODUCTS
+                "products": db.get_all_admin_pricing()
             })
             return
 
@@ -2062,24 +2077,57 @@ class WebAppHandler(BaseHTTPRequestHandler):
             if not self._require_admin(body=body):
                 return
             username = str(body.get("username", "")).strip()
+            spotify_username = str(body.get("spotify_username", "")).strip()
             package_code = str(body.get("package_code", "LKGVV")).strip()
-            service = str(body.get("service", "locket")).strip()
+            service = str(body.get("service", "locket")).strip().lower()
+            note = str(body.get("note", "")).strip()
             if not username:
                 self._send_json(400, {"ok": False, "error": "Vui lòng nhập Username hoặc UID!"})
                 return
             try:
-                clean_target = utils.clean_input(username)
-                res = api.create_subscription(
-                    uid=clean_target,
-                    package_code=package_code,
-                    service=service,
-                    note=f"Admin manual activation for {clean_target}"
-                )
-                self._send_json(200, {
-                    "ok": True, 
-                    "data": res, 
-                    "message": f"Kích hoạt thành công {clean_target} lên gói {package_code} trên máy chủ!"
-                })
+                if service in ("combo", "locket_spotify"):
+                    combo_map = {
+                        "COMBO6M": ("LKG6M", "SP6M"),
+                        "COMBO1Y": ("LKG1Y", "SPOTIFY1Y"),
+                        "COMBOVV": ("LKGVV", "SPVV"),
+                    }
+                    lk_pkg, sp_pkg = combo_map.get(package_code.upper(), ("LKG1Y", "SPOTIFY1Y"))
+                    lk_target = utils.clean_input(username).lstrip("@")
+                    sp_raw = spotify_username or username
+                    sp_target = utils.extract_spotify_uid(sp_raw) or utils.clean_input(sp_raw)
+                    res_lk = api.create_subscription(
+                        uid=lk_target,
+                        package_code=lk_pkg,
+                        service="locket",
+                        note=note or f"Admin manual combo Locket for {lk_target}"
+                    )
+                    res_sp = api.create_subscription(
+                        uid=sp_target,
+                        package_code=sp_pkg,
+                        service="spotify",
+                        note=note or f"Admin manual combo Spotify for {sp_target}"
+                    )
+                    self._send_json(200, {
+                        "ok": True,
+                        "data": {"locket": res_lk, "spotify": res_sp},
+                        "message": f"Kích hoạt Combo ({lk_pkg} + {sp_pkg}) thành công cho Locket: {lk_target} & Spotify: {sp_target}!"
+                    })
+                else:
+                    if service == "spotify":
+                        clean_target = utils.extract_spotify_uid(username) or utils.clean_input(username)
+                    else:
+                        clean_target = utils.clean_input(username).lstrip("@")
+                    res = api.create_subscription(
+                        uid=clean_target,
+                        package_code=package_code,
+                        service=service,
+                        note=note or f"Admin manual activation for {clean_target}"
+                    )
+                    self._send_json(200, {
+                        "ok": True,
+                        "data": res,
+                        "message": f"Kích hoạt thành công {clean_target} lên gói {package_code} ({service}) trên máy chủ!"
+                    })
             except Exception as e:
                 self._send_json(400, {"ok": False, "error": str(e)})
             return
@@ -2164,12 +2212,304 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True, "message": f"Đã mở khóa người dùng {user_id}"})
             return
 
+        # API Admin: Sửa Username / UID đơn hàng lỗi và (tuỳ chọn) Duyệt kích hoạt lại
+        if path == "/api/admin/update_order_account":
+            if not self._require_admin(body=body):
+                return
+            order_id = str(body.get("order_id", "")).strip().upper().replace("ORDER_", "")
+            new_acc_raw = str(body.get("new_account") or body.get("username") or "").strip()
+            sp_acc_raw = str(body.get("spotify_account") or "").strip()
+            approve_now = bool(body.get("approve", True))
+            order = db.get_order(order_id)
+            if not order:
+                self._send_json(404, {"ok": False, "error": "Không tìm thấy đơn hàng trong hệ thống"})
+                return
+            if order.get("status") == "done":
+                self._send_json(400, {"ok": False, "error": "Đơn hàng này đã hoàn tất trước đó rồi"})
+                return
+            if not new_acc_raw:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập Username hoặc UID mới!"})
+                return
+
+            prod = str(order.get("product", "")).strip()
+            if prod == "spotify":
+                clean_acc = utils.extract_spotify_uid(new_acc_raw) or utils.clean_input(new_acc_raw)
+            else:
+                clean_acc = utils.clean_input(new_acc_raw).lstrip("@")
+            if not clean_acc:
+                self._send_json(400, {"ok": False, "error": "Username / UID mới không hợp lệ!"})
+                return
+
+            upd = {
+                "uid": clean_acc,
+                "identifier": clean_acc,
+                "account_target": clean_acc,
+                "display_name": clean_acc,
+            }
+            if prod in ("locket", "combo", "locket_spotify", "locket_ai", "filter_topup", "caption_pack", "studio_caption"):
+                upd["locket_username"] = clean_acc
+            if prod in ("combo", "locket_spotify") and sp_acc_raw:
+                clean_sp = utils.extract_spotify_uid(sp_acc_raw) or utils.clean_input(sp_acc_raw)
+                upd["spotify_uid"] = clean_sp
+                upd["spotify_target"] = clean_sp
+                upd["spotify_username"] = clean_sp
+            if approve_now and order.get("status") in ("failed", "rejected", "cancelled"):
+                upd["status"] = "pending_approval"
+
+            db.update_order(order_id, **upd)
+            if not approve_now:
+                self._send_json(200, {"ok": True, "message": f"Đã cập nhật tài khoản đơn ORDER_{order_id} thành {clean_acc}!"})
+                return
+
+            from order_service import execute_order_activation
+            try:
+                if BOT_LOOP:
+                    future = asyncio.run_coroutine_threadsafe(
+                        execute_order_activation(BOT_INSTANCE, order_id),
+                        BOT_LOOP
+                    )
+                    ok_act, msg_act = future.result(timeout=25)
+                else:
+                    ok_act, msg_act = asyncio.run(execute_order_activation(BOT_INSTANCE, order_id))
+
+                if ok_act:
+                    self._send_json(200, {"ok": True, "message": f"Đã sửa thành [{clean_acc}] và kích hoạt thành công đơn ORDER_{order_id}!"})
+                else:
+                    self._send_json(400, {"ok": False, "error": f"Đã lưu [{clean_acc}] nhưng lỗi kích hoạt API: {msg_act}"})
+            except Exception as e_act:
+                self._send_json(500, {"ok": False, "error": f"Đã lưu [{clean_acc}], lỗi kích hoạt: {e_act}"})
+            return
+
+        # API Admin: Kiểm tra / Cấp thêm lượt Caption VIP cho tài khoản Locket
+        if path == "/api/admin/grant_caption_quota":
+            if not self._require_admin(body=body):
+                return
+            action = str(body.get("action") or "grant").strip().lower()
+            ident = str(body.get("identifier") or body.get("username") or body.get("uid") or "").strip()
+            if not ident:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập Username hoặc UID Locket!"})
+                return
+
+            clean_ident = utils.clean_input(ident).lstrip("@")
+            resolved_uid = clean_ident
+            resolved_uname = clean_ident
+            is_vip = False
+            try:
+                is_vip, v_info = self._verify_customer_locket_vip(clean_ident)
+                if "error" not in v_info:
+                    resolved_uid = str(v_info.get("uid") or resolved_uid).strip()
+                    resolved_uname = str(v_info.get("username") or resolved_uname).strip().lstrip("@")
+            except Exception:
+                pass
+
+            if action == "check":
+                q_raw = db.get_caption_quota_info(resolved_uid, resolved_uname)
+                q_norm = {
+                    "free": q_raw.get("free_quota", 5),
+                    "extra": q_raw.get("extra_quota", 0),
+                    "total": q_raw.get("total_quota", 5),
+                    "granted_orders": q_raw.get("granted_orders", []),
+                }
+                self._send_json(200, {
+                    "ok": True,
+                    "uid": resolved_uid,
+                    "username": resolved_uname,
+                    "is_vip": is_vip,
+                    "caption_quota": q_norm,
+                })
+                return
+
+            try:
+                extra_qty = int(body.get("extra_captions", 0))
+                if not (1 <= extra_qty <= 1000):
+                    raise ValueError()
+            except Exception:
+                self._send_json(400, {"ok": False, "error": "Số lượt cộng thêm phải từ 1 đến 1000!"})
+                return
+
+            q_raw = db.add_caption_quota(
+                uid=resolved_uid,
+                extra_captions=extra_qty,
+                username=resolved_uname,
+                order_id=f"WEB_ADMIN_{uuid.uuid4().hex[:8]}",
+            )
+            q_norm = {
+                "free": q_raw.get("free_quota", 5),
+                "extra": q_raw.get("extra_quota", 0),
+                "total": q_raw.get("total_quota", 5),
+                "granted_orders": q_raw.get("granted_orders", []),
+            }
+            self._send_json(200, {
+                "ok": True,
+                "uid": resolved_uid,
+                "username": resolved_uname,
+                "is_vip": is_vip,
+                "caption_quota": q_norm,
+                "message": f"Đã cộng +{extra_qty} Caption VIP cho @{resolved_uname} (Tổng hạn mức: {q_norm['total']})!",
+            })
+            return
+
+        # API Admin: Xóa toàn bộ bộ nhớ đệm API 30s & đồng bộ bảng giá
+        if path == "/api/admin/clear_cache":
+            if not self._require_admin(body=body):
+                return
+            res_c = api.clear_all_caches()
+            try:
+                db.apply_custom_prices()
+            except Exception:
+                pass
+            self._send_json(200, {
+                "ok": True,
+                "cleared_lookups": res_c.get("cleared_lookups", 0),
+                "message": f"Đã xóa cache API ({res_c.get('cleared_lookups', 0)} mục tra cứu) và làm mới bảng giá!",
+            })
+            return
+
+        # API Admin: Kiểm tra kết nối SePay Live API & VietQR
+        if path == "/api/admin/test_sepay":
+            if not self._require_admin(body=body):
+                return
+            sepay_token = getattr(config, "SEPAY_API_TOKEN", "").strip()
+            qr_url = utils.get_vietqr_url(10000, "TEST_SEPAY_OK")
+            if not sepay_token:
+                self._send_json(200, {
+                    "ok": False,
+                    "sepay_ok": False,
+                    "qr_url": qr_url,
+                    "error": "Chưa cấu hình SEPAY_API_TOKEN trong biến môi trường!",
+                })
+                return
+            try:
+                with httpx.Client(timeout=8.0) as client:
+                    sp_res = client.get(
+                        "https://my.sepay.vn/userapi/transactions/list?limit=5",
+                        headers={"Authorization": f"Bearer {sepay_token}", "User-Agent": "AloPremiumEngine/2.0"}
+                    )
+                    if sp_res.status_code != 200:
+                        self._send_json(200, {
+                            "ok": False,
+                            "sepay_ok": False,
+                            "http_status": sp_res.status_code,
+                            "qr_url": qr_url,
+                            "error": f"SePay API trả về mã HTTP {sp_res.status_code}",
+                        })
+                        return
+                    txs = sp_res.json().get("transactions", []) or []
+                    sample = [
+                        {
+                            "id": str(tx.get("id", "")),
+                            "date": str(tx.get("transaction_date", "")),
+                            "amount_in": tx.get("amount_in", 0),
+                            "content": str(tx.get("transaction_content", ""))[:80],
+                        }
+                        for tx in txs[:5]
+                    ]
+                    self._send_json(200, {
+                        "ok": True,
+                        "sepay_ok": True,
+                        "http_status": 200,
+                        "tx_count": len(txs),
+                        "recent_transactions": sample,
+                        "qr_url": qr_url,
+                        "message": f"SePay Live 200 OK · Nhận {len(txs)} giao dịch gần nhất!",
+                    })
+            except Exception as e_sp:
+                self._send_json(200, {
+                    "ok": False,
+                    "sepay_ok": False,
+                    "qr_url": qr_url,
+                    "error": f"Lỗi kết nối SePay API: {e_sp}",
+                })
+            return
+
+        # API Admin: Gửi tin nhắn Telegram trực tiếp (1 user hoặc Broadcast toàn hệ thống)
+        if path == "/api/admin/telegram_send":
+            if not self._require_admin(body=body):
+                return
+            if not BOT_INSTANCE:
+                self._send_json(503, {"ok": False, "error": "Bot Telegram chưa chạy trong tiến trình hiện tại."})
+                return
+            mode = str(body.get("mode", "single")).strip().lower()
+            message_txt = str(body.get("message", "")).strip()
+            target_uid = str(body.get("user_id", "")).strip()
+            if not message_txt:
+                self._send_json(400, {"ok": False, "error": "Vui lòng nhập nội dung tin nhắn cần gửi!"})
+                return
+
+            async def _send_safe(uid_int: int, txt: str):
+                try:
+                    await BOT_INSTANCE.send_message(chat_id=uid_int, text=txt, parse_mode="HTML")
+                except Exception:
+                    await BOT_INSTANCE.send_message(chat_id=uid_int, text=txt)
+
+            if mode == "single":
+                if not target_uid:
+                    self._send_json(400, {"ok": False, "error": "Thiếu Telegram User ID khách hàng!"})
+                    return
+                try:
+                    uid_int = int(target_uid)
+                    if BOT_LOOP:
+                        fut = asyncio.run_coroutine_threadsafe(_send_safe(uid_int, message_txt), BOT_LOOP)
+                        fut.result(timeout=12)
+                    else:
+                        asyncio.run(_send_safe(uid_int, message_txt))
+                    self._send_json(200, {"ok": True, "message": f"Đã gửi tin nhắn Telegram tới User ID {uid_int}!"})
+                except Exception as e_dm:
+                    self._send_json(400, {"ok": False, "error": f"Gửi thất bại (khách có thể đã chặn bot): {e_dm}"})
+                return
+
+            if mode == "broadcast":
+                user_ids = list(db.get_users().keys())
+                total_u = len(user_ids)
+                if total_u == 0:
+                    self._send_json(400, {"ok": False, "error": "Chưa có người dùng Telegram nào để phát sóng."})
+                    return
+
+                async def _broadcast_bg():
+                    sent_c = 0
+                    fail_c = 0
+                    for uid_s in user_ids:
+                        try:
+                            await _send_safe(int(uid_s), message_txt)
+                            sent_c += 1
+                            await asyncio.sleep(0.05)
+                        except Exception:
+                            fail_c += 1
+                    for aid in getattr(config, "ADMIN_IDS", []):
+                        try:
+                            await BOT_INSTANCE.send_message(
+                                chat_id=aid,
+                                text=(
+                                    f"📢 <b>KẾT QUẢ BROADCAST TỪ WEB ADMIN</b>\n"
+                                    f"✅ Thành công: <b>{sent_c}/{total_u}</b>\n"
+                                    f"❌ Thất bại/Chặn bot: <b>{fail_c}</b>"
+                                ),
+                                parse_mode="HTML",
+                            )
+                        except Exception:
+                            pass
+
+                if BOT_LOOP:
+                    asyncio.run_coroutine_threadsafe(_broadcast_bg(), BOT_LOOP)
+                else:
+                    threading.Thread(target=lambda: asyncio.run(_broadcast_bg()), daemon=True).start()
+                self._send_json(200, {
+                    "ok": True,
+                    "total_users": total_u,
+                    "message": f"Đã bắt đầu phát sóng tin nhắn tới {total_u} người dùng trong nền (báo cáo kết quả sẽ gửi về Bot Admin)!",
+                })
+                return
+
+            self._send_json(400, {"ok": False, "error": "Chế độ gửi không hợp lệ (chọn single hoặc broadcast)."})
+            return
+
         # API Admin: Thêm / Cập nhật Khung Widget CTV lên locket.2707226.xyz
         if path == "/api/admin/ctv/frames":
             if not self._require_admin(body=body):
                 return
             url_img = _resolve_frame_url(str(body.get("url", "")).strip())
             name = str(body.get("name", "")).strip()
+            frame_id = str(body.get("frame_id") or body.get("id") or "").strip()
             target_uid = str(body.get("targetUid", "ALL")).strip() or "ALL"
             target_uids = body.get("targetUids")
             active = bool(body.get("active", True))
@@ -2183,6 +2523,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     target_uid=target_uid,
                     target_uids=target_uids if isinstance(target_uids, list) else None,
                     active=active,
+                    frame_id=frame_id,
                 )
                 self._send_json(200, res)
             except Exception as e_fr:
@@ -2226,6 +2567,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     colors=body.get("colors") if isinstance(body.get("colors"), list) else None,
                     target_uid=target_uid,
                     active=bool(body.get("active", True)),
+                    caption_id=str(body.get("caption_id") or body.get("id") or "").strip(),
                     group_name=str(body.get("groupName") or "").strip(),
                 )
                 self._send_json(200, res)
@@ -3247,6 +3589,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # 2.2 API Tạo đơn Nạp Lượt Filter AI cho người dùng cuối (20: 7.000đ, 50: 17.000đ, 100: 33.000đ)
         if path == "/api/create_filter_order":
+            try:
+                db.apply_custom_prices()
+            except Exception:
+                pass
             pack = str(body.get("pack") or body.get("plan") or "").strip()
             raw_ident = str(body.get("identifier") or body.get("username") or body.get("uid") or "").strip()
             packs_map = getattr(config, "FILTER_TOPUP_PACKS", {})
@@ -3377,6 +3723,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         # 2.3 API Tạo đơn Mua Thêm Gói Caption VIP (+10 Caption: 5.000đ, +30 Caption: 10.000đ)
         if path == "/api/create_caption_order":
+            try:
+                db.apply_custom_prices()
+            except Exception:
+                pass
             pack = str(body.get("pack") or body.get("plan") or "").strip()
             raw_ident = str(body.get("identifier") or body.get("username") or body.get("uid") or "").strip()
             packs_map = getattr(config, "CAPTION_TOPUP_PACKS", {})

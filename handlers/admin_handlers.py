@@ -46,7 +46,10 @@ def build_admin_menu_text() -> tuple[str, int]:
         acc = api.get_account_info().get("data", {})
         coin = acc.get("balanceCoin", 0)
         user = acc.get("username", "quynh28")
-        header += f"👤 CTV: <code>{user}</code> | 🪙 Số dư: <b>{coin:,.0f} Coin</b> ({utils.fmt_price(coin * 1000)})\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        is_act = acc.get("isActivated", True)
+        act_note = "" if is_act else " | 🚨 <b>CHƯA KÍCH HOẠT CTV (403)</b>"
+        coin_warn = " ⚠️ <b>(SẮP HẾT)</b>" if float(coin or 0) < 15 else ""
+        header += f"👤 CTV: <code>{user}</code> | 🪙 Số dư: <b>{coin:,.0f} Coin</b> ({utils.fmt_price(coin * 1000)}){coin_warn}{act_note}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
     except Exception:
         pass
 
@@ -60,18 +63,22 @@ def build_admin_menu_text() -> tuple[str, int]:
         "<b>Lệnh quản trị nhanh</b>\n"
         "<pre>\n"
         "/admin          Bảng điều khiển trực quan\n"
-        "/noti           Broadcast thông báo đa phương tiện\n"
-        "/notistop       Dừng broadcast đang gửi\n"
-        "/stats          Thống kê doanh thu & đơn hàng\n"
+        "/stats          Thống kê doanh thu & sản phẩm\n"
         "/orders         Lịch sử & duyệt đơn hàng\n"
+        "/duyet          Duyệt/Sửa username đơn tay\n"
         "/users [id]     Danh sách & quản lý khách\n"
         "/find [query]   Tìm đơn/khách (mã/username/uid)\n"
-        "/ban [id] [rs]  Khóa khách hàng gian lận\n"
-        "/unban [id]     Mở khóa khách hàng\n"
-        "/tokens         Kiểm tra số dư Coin CTV API\n"
-        "/checkbank      Kiểm tra tài khoản VietQR\n"
-        "/addcode        Tạo mã giảm giá mới\n"
-        "/delcode        Xoá mã giảm giá\n"
+        "/setprice       Chỉnh sửa bảng giá Web & Bot\n"
+        "/grantcaption   Xem/Cấp lượt Caption VIP\n"
+        "/sync           Đồng bộ UID từ web chủ\n"
+        "/clearcache     Xóa bộ nhớ đệm API 30s\n"
+        "/tokens /coin   Kiểm tra số dư Coin CTV API\n"
+        "/packages       Bảng giá gói sỉ từ máy chủ\n"
+        "/checkbank      Kiểm tra VietQR & SePay Live\n"
+        "/rs [uid]       Reset thiết bị Spotify\n"
+        "/addcode /codes Tạo & xem mã giảm giá\n"
+        "/ban /unban     Khóa & mở khóa người dùng\n"
+        "/noti /notistop Broadcast toàn hệ thống\n"
         "</pre>\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "👇 <i>Chọn chức năng bên dưới hoặc bấm nút 'Mở Web Admin' để quản lý trên web:</i>"
@@ -110,8 +117,16 @@ async def stats_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # Thống kê theo sản phẩm
     locket_done = [o for o in done_orders if o.get("product") == "locket"]
     spotify_done = [o for o in done_orders if o.get("product") == "spotify"]
+    combo_done = [o for o in done_orders if o.get("product") in ("combo", "locket_spotify")]
+    ai_done = [o for o in done_orders if o.get("product") == "locket_ai"]
+    addon_done = [o for o in done_orders if o.get("product") in ("filter_topup", "caption_pack", "studio_caption")]
+
     locket_rev = sum(o.get("price", 0) for o in locket_done)
     spotify_rev = sum(o.get("price", 0) for o in spotify_done)
+    combo_rev = sum(o.get("price", 0) for o in combo_done)
+    ai_rev = sum(o.get("price", 0) for o in ai_done)
+    addon_rev = sum(o.get("price", 0) for o in addon_done)
+    total_coin_spent = sum(float(o.get("ctv_cost_coin", 0) or 0) for o in done_orders)
 
     # Lấy thông tin coin CTV
     coin_text = "N/A"
@@ -130,10 +145,14 @@ async def stats_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"  ├ ✅ Thành công: <b>{len(done_orders)}</b> đơn\n"
         f"  ├ ⏳ Đang xử lý: <b>{len(pending_orders)}</b> đơn\n"
         f"  └ 🚫 Đã huỷ/thất bại: <b>{len(rejected_orders)}</b> đơn\n"
-        f"💰 <b>Tổng doanh thu:</b> <b>{utils.fmt_price(total_revenue)}</b>\n\n"
+        f"💰 <b>Tổng doanh thu:</b> <b>{utils.fmt_price(total_revenue)}</b>\n"
+        f"🪙 <b>Tổng Coin API đã dùng:</b> <b>{total_coin_spent:,.1f} Coin</b>\n\n"
         "━━━━━ Phân loại dịch vụ ━━━━━\n"
         f"💛 <b>Locket Gold:</b> {len(locket_done)} đơn | {utils.fmt_price(locket_rev)}\n"
-        f"🎵 <b>Spotify Premium:</b> {len(spotify_done)} đơn | {utils.fmt_price(spotify_rev)}\n\n"
+        f"🎵 <b>Spotify Premium:</b> {len(spotify_done)} đơn | {utils.fmt_price(spotify_rev)}\n"
+        f"👑 <b>Combo Duo VIP:</b> {len(combo_done)} đơn | {utils.fmt_price(combo_rev)}\n"
+        f"✨ <b>VIP All-in-One:</b> {len(ai_done)} đơn | {utils.fmt_price(ai_rev)}\n"
+        f"🎨 <b>Studio Filter/Caption:</b> {len(addon_done)} đơn | {utils.fmt_price(addon_rev)}\n\n"
         "━━━━━ Số dư CTV API ━━━━━\n"
         f"🪙 <b>Ví Coin CTV:</b> <b>{coin_text}</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -284,8 +303,14 @@ async def tokens_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         email = data.get("email", "")
         coin = data.get("balanceCoin", 0)
         role = data.get("role", "CTV")
-        is_act = "Đang kích hoạt ✅" if data.get("isActivated") else "Chưa kích hoạt ⚠️"
+        is_act_bool = bool(data.get("isActivated"))
+        is_act = "Đang kích hoạt ✅" if is_act_bool else "Chưa kích hoạt (HTTP 403 — cần nạp tối thiểu 150.000đ) ⚠️"
         vnd_equiv = coin * 1000
+        warn_lines = ""
+        if not is_act_bool:
+            warn_lines += "\n🚨 <b>CẢNH BÁO HTTP 403:</b> Tài khoản CTV chưa kích hoạt, API tạo đơn có thể bị chặn!"
+        if float(coin or 0) < 15:
+            warn_lines += "\n⚠️ <b>CẢNH BÁO COIN THẤP:</b> Số dư Coin dưới 15 Coin, hãy nạp thêm trên Dashboard CTV!"
 
         # Lấy thông tin các gói từ server
         packages_info = ""
@@ -294,7 +319,7 @@ async def tokens_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             pkgs = pkg_res.get("data", [])
             if isinstance(pkgs, list) and pkgs:
                 packages_info = "\n📦 <b>Bảng giá nhập sỉ từ hệ thống:</b>\n"
-                for p in pkgs[:6]:
+                for p in pkgs[:8]:
                     pname = p.get("name") or p.get("code")
                     pcoin = p.get("priceCoin", 0)
                     packages_info += f"  • <code>{pname}</code>: <b>{pcoin:,.0f} coin</b>\n"
@@ -309,7 +334,8 @@ async def tokens_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"🎖 <b>Vai trò hệ thống:</b> <b>{role}</b> ({is_act})\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"💰 <b>Số dư hiện có:</b> <b>{coin:,.0f} Coin</b>\n"
-            f"💵 <b>Giá trị quy đổi:</b> <b>{utils.fmt_price(vnd_equiv)}</b>\n"
+            f"💵 <b>Giá trị quy đổi:</b> <b>{utils.fmt_price(vnd_equiv)}</b>"
+            f"{warn_lines}\n"
             f"{packages_info}"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"💡 <i>Mỗi khi duyệt đơn thành công, hệ thống tự động trừ Coin tương ứng.</i>"
@@ -523,40 +549,62 @@ async def rs_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # ── /checkbank ────────────────────────────────────────────────────────────────
 
 async def checkbank_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Test STC Bank API & VietQR Gateway."""
+    """Test VietQR Gateway & SePay Live API."""
     if not is_admin(update.effective_user.id):
         return
 
-    msg = await update.message.reply_text("⏳ Đang kiểm tra cổng API thanh toán Ngân hàng…", parse_mode=ParseMode.HTML)
+    is_cb = bool(update.callback_query)
+    if is_cb:
+        await update.callback_query.answer()
+        msg = await update.callback_query.edit_message_text("⏳ Đang kiểm tra cổng VietQR & SePay Live API…", parse_mode=ParseMode.HTML)
+    else:
+        msg = await update.message.reply_text("⏳ Đang kiểm tra cổng VietQR & SePay Live API…", parse_mode=ParseMode.HTML)
+
     test_amount = 10000
     test_memo = "TEST_API_BANK_OK"
     qr_url = utils.get_vietqr_url(test_amount, test_memo)
 
     status_api = "Hoạt động tốt 🟢"
     status_code = 200
+    sepay_status = "Chưa cấu hình ⚠️"
     try:
         async with httpx.AsyncClient(timeout=6.0) as client:
             resp = await client.get(qr_url)
             status_code = resp.status_code
             if resp.status_code != 200:
                 status_api = f"Cảnh báo (HTTP {resp.status_code}) ⚠️"
+
+            sepay_token = getattr(config, "SEPAY_API_TOKEN", "").strip()
+            if sepay_token:
+                sp_resp = await client.get(
+                    "https://my.sepay.vn/userapi/transactions/list?limit=5",
+                    headers={"Authorization": f"Bearer {sepay_token}", "User-Agent": "AloPremiumEngine/2.0"}
+                )
+                if sp_resp.status_code == 200:
+                    txs = sp_resp.json().get("transactions", [])
+                    sepay_status = f"200 OK · {len(txs)} GD gần nhất 🟢"
+                else:
+                    sepay_status = f"HTTP {sp_resp.status_code} ⚠️"
     except Exception as e:
         status_api = f"Lỗi kết nối ({e}) ❌"
 
     text = (
-        f"💳 <b>KẾT QUẢ KIỂM TRA STC BANK & VIETQR API</b>\n"
+        f"💳 <b>KẾT QUẢ KIỂM TRA VIETQR & SEPAY LIVE</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"🏦 <b>Ngân hàng thụ hưởng:</b> <b>{BANK_ID}</b>\n"
         f"🔢 <b>Số tài khoản:</b> <code>{ACCOUNT_NO}</code>\n"
         f"👤 <b>Tên tài khoản:</b> <b>{ACCOUNT_NAME}</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"⚡ <b>Trạng thái Gateway:</b> <b>{status_api}</b> (Code: {status_code})\n"
-        f"🌐 <b>Tạo QR URL:</b> <code>OK</code>\n"
+        f"⚡ <b>VietQR Gateway:</b> <b>{status_api}</b> (HTTP {status_code})\n"
+        f"🏦 <b>SePay API Live:</b> <b>{sepay_status}</b>\n"
         f"📸 <b>Ảnh VietQR mẫu:</b> <a href=\"{qr_url}\">Bấm vào đây để xem ảnh QR</a>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"✅ Hệ thống thanh toán tự động sẵn sàng tiếp nhận giao dịch!"
     )
-    await msg.edit_text(text, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+    if is_cb:
+        await update.callback_query.edit_message_text(text, parse_mode=ParseMode.HTML, reply_markup=back_admin_kb(), disable_web_page_preview=True)
+    else:
+        await msg.edit_text(text, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
 
 
 # ── /addcode [code] [discount%] [limit] ───────────────────────────────────────
@@ -830,8 +878,9 @@ async def handle_admin_text_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE
 
         ok = db.update_plan_price(prod_key, plan_key, new_price)
         if ok:
-            prod_name = PRODUCTS.get(prod_key, {}).get("name", prod_key)
-            plan_label = PRODUCTS.get(prod_key, {}).get("plans", {}).get(plan_key, {}).get("label", plan_key)
+            all_pricing = db.get_all_admin_pricing()
+            prod_name = all_pricing.get(prod_key, {}).get("name", prod_key)
+            plan_label = all_pricing.get(prod_key, {}).get("plans", {}).get(plan_key, {}).get("label", plan_key)
             await update.message.reply_text(
                 f"✅ <b>CẬP NHẬT GIÁ THÀNH CÔNG!</b>\n\n"
                 f"• Dịch vụ: <b>{prod_name}</b>\n"
@@ -843,6 +892,16 @@ async def handle_admin_text_input(update: Update, ctx: ContextTypes.DEFAULT_TYPE
             )
         else:
             await update.message.reply_text("❌ Không thể cập nhật giá. Vui lòng thử lại sau.")
+        return
+
+    # 1.2 Chờ nhập Username Locket & số lượt Caption VIP cần kiểm tra/cấp
+    if action == "waiting_grant_caption":
+        parts_gc = [p for p in text_input.split() if p.strip()]
+        if not parts_gc:
+            await update.message.reply_text("⚠️ Cú pháp: <code>username [so_luot]</code> (VD: <code>camsitup 10</code>)", parse_mode=ParseMode.HTML)
+            return
+        ctx.args = parts_gc
+        await grantcaption_cmd(update, ctx)
         return
 
     # 2. Chờ từ khoá tìm kiếm
@@ -968,21 +1027,7 @@ async def cb_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await users_cmd(update, ctx)
 
     elif action == "checkbank":
-        await query.answer()
-        test_amount = 10000
-        test_memo = "TEST_API_BANK_OK"
-        qr_url = utils.get_vietqr_url(test_amount, test_memo)
-        text = (
-            f"💳 <b>KIỂM TRA CẤU HÌNH STC BANK & VIETQR</b>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"🏦 Ngân hàng: <b>{BANK_ID}</b>\n"
-            f"🔢 STK: <code>{ACCOUNT_NO}</code>\n"
-            f"👤 Chủ TK: <b>{ACCOUNT_NAME}</b>\n"
-            f"📸 QR URL: <a href=\"{qr_url}\">Link test QR</a>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"✅ API hoạt động bình thường!"
-        )
-        await query.edit_message_text(text, parse_mode=ParseMode.HTML, reply_markup=back_admin_kb(), disable_web_page_preview=True)
+        await checkbank_cmd(update, ctx)
 
     elif action == "codes":
         await query.answer()
@@ -1062,6 +1107,127 @@ async def cb_admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             parse_mode=ParseMode.HTML,
             reply_markup=back_admin_kb()
         )
+
+    elif action == "edit_prices":
+        await query.answer()
+        all_pricing = db.get_all_admin_pricing()
+        lines = [
+            "💰 <b>QUẢN LÝ BẢNG GIÁ DỊCH VỤ (WEB & BOT)</b>",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━",
+        ]
+        for pk, pv in all_pricing.items():
+            lines.append(f"<b>{pv.get('emoji', '')} {pv.get('name', pk)}:</b>")
+            for pl_k, pl_v in pv.get("plans", {}).items():
+                lines.append(f" • <b>{pl_v.get('label', pl_k)}:</b> <code>{pl_v.get('price', 0):,}đ</code>")
+            lines.append("")
+        lines.append("👇 <i>Chọn dịch vụ cần chỉnh sửa giá bên dưới:</i>")
+        await query.edit_message_text("\n".join(lines), parse_mode=ParseMode.HTML, reply_markup=admin_prices_overview_kb())
+
+    elif action == "price_prod":
+        await query.answer()
+        prod_key = parts[2] if len(parts) > 2 else "locket"
+        all_pricing = db.get_all_admin_pricing()
+        prod = all_pricing.get(prod_key, {})
+        lines = [
+            f"✏️ <b>CHỈNH SỬA GIÁ: {prod.get('emoji', '')} {prod.get('name', prod_key)}</b>",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━",
+        ]
+        for pl_k, pl_v in prod.get("plans", {}).items():
+            lines.append(f"• <b>{pl_v.get('label', pl_k)}</b> (<code>{pl_k}</code>): <b>{pl_v.get('price', 0):,}đ</b>")
+        lines.append("\n👇 <i>Bấm chọn gói muốn đổi giá bên dưới:</i>")
+        await query.edit_message_text("\n".join(lines), parse_mode=ParseMode.HTML, reply_markup=admin_prices_plans_kb(prod_key))
+
+    elif action == "setprice":
+        await query.answer()
+        prod_key = parts[2] if len(parts) > 2 else "locket"
+        plan_key = parts[3] if len(parts) > 3 else "test"
+        all_pricing = db.get_all_admin_pricing()
+        prod = all_pricing.get(prod_key, {})
+        plan_obj = prod.get("plans", {}).get(plan_key, {})
+        ctx.user_data["admin_action"] = "waiting_new_price"
+        ctx.user_data["price_prod"] = prod_key
+        ctx.user_data["price_plan"] = plan_key
+        await query.edit_message_text(
+            f"💵 <b>NHẬP GIÁ MỚI CHO GÓI</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"• Dịch vụ: <b>{prod.get('name', prod_key)}</b>\n"
+            f"• Gói cước: <b>{plan_obj.get('label', plan_key)}</b>\n"
+            f"• Giá hiện tại: <b>{plan_obj.get('price', 0):,}đ</b>\n\n"
+            f"👉 Hãy gửi số tiền mới (VNĐ, VD: <code>55000</code> hoặc <code>55k</code>):\n"
+            f"<i>(Gõ /cancel để huỷ)</i>",
+            parse_mode=ParseMode.HTML,
+            reply_markup=back_admin_kb()
+        )
+
+    elif action == "reset_prices_confirm":
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        await query.answer()
+        kb = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("✅ Xác nhận khôi phục", callback_data="admin:reset_prices_do"),
+                InlineKeyboardButton("❌ Hủy", callback_data="admin:edit_prices"),
+            ]
+        ])
+        await query.edit_message_text(
+            "⚠️ <b>XÁC NHẬN KHÔI PHỤC BẢNG GIÁ MẶC ĐỊNH</b>\n\n"
+            "Mọi giá tùy chỉnh (bao gồm cả gói Filter AI & Caption VIP) sẽ trở về giá gốc mặc định.\n"
+            "Bạn chắc chắn muốn tiếp tục?",
+            parse_mode=ParseMode.HTML,
+            reply_markup=kb
+        )
+
+    elif action == "reset_prices_do":
+        db.reset_default_prices()
+        await query.answer("✅ Đã khôi phục bảng giá mặc định!", show_alert=True)
+        await query.edit_message_text(
+            "🔄 <b>ĐÃ KHÔI PHỤC TOÀN BỘ BẢNG GIÁ VỀ MẶC ĐỊNH!</b>",
+            parse_mode=ParseMode.HTML,
+            reply_markup=admin_prices_overview_kb()
+        )
+
+    elif action == "sync_upstream":
+        await query.answer()
+        await query.edit_message_text("⏳ Đang đồng bộ tài khoản kích hoạt từ máy chủ CTV (web chủ)...", parse_mode=ParseMode.HTML)
+        from order_service import sync_upstream_orders
+        cnt = await asyncio.to_thread(sync_upstream_orders)
+        await query.edit_message_text(
+            f"✅ <b>ĐỒNG BỘ HOÀN TẤT TỪ WEB CHỦ!</b>\n\n"
+            f"📦 Đã đồng bộ <b>{cnt}</b> tài khoản vào hệ thống.",
+            parse_mode=ParseMode.HTML,
+            reply_markup=back_admin_kb()
+        )
+
+    elif action == "clear_cache":
+        res_c = api.clear_all_caches()
+        try:
+            db.apply_custom_prices()
+        except Exception:
+            pass
+        cnt_c = res_c.get("cleared_lookups", 0)
+        await query.answer(f"✅ Đã xóa cache API ({cnt_c} mục tra cứu)!", show_alert=True)
+        await query.edit_message_text(
+            f"🧹 <b>ĐÃ XÓA TOÀN BỘ BỘ NHỚ ĐỆM API CTV</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"• Đã làm mới <b>{cnt_c}</b> cache tra cứu UID/Spotify (30s)\n"
+            f"• Đã làm mới cache số dư Coin, danh sách UID, Frames, LUTs, Symbols & Bảng giá.",
+            parse_mode=ParseMode.HTML,
+            reply_markup=back_admin_kb()
+        )
+
+    elif action == "grant_caption_menu":
+        await query.answer()
+        ctx.user_data["admin_action"] = "waiting_grant_caption"
+        await query.edit_message_text(
+            "🎁 <b>XEM / CẤP THÊM LƯỢT CAPTION VIP</b>\n\n"
+            "Hãy gửi <b>Username Locket</b> và tùy chọn <b>số lượt muốn cộng</b>:\n"
+            "• Kiểm tra quota hiện tại: <code>camsitup</code>\n"
+            "• Cộng thêm 10 lượt VIP: <code>camsitup 10</code>\n\n"
+            "<i>(Gõ /cancel để huỷ)</i>",
+            parse_mode=ParseMode.HTML,
+            reply_markup=back_admin_kb()
+        )
+
+    elif action == "close":
+        await query.answer()
+        await query.edit_message_text("🏠 <i>Đã đóng bảng điều khiển Admin. Gõ /admin để mở lại.</i>", parse_mode=ParseMode.HTML)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1179,15 +1345,21 @@ async def coin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         username = data.get("username", "CTV")
         balance = data.get("balanceCoin", 0)
         is_activated = data.get("isActivated", False)
-        status_text = "🟢 Đã kích hoạt" if is_activated else "🔴 Chưa kích hoạt"
+        status_text = "🟢 Đã kích hoạt" if is_activated else "🔴 Chưa kích hoạt (HTTP 403)"
+        warn_text = ""
+        if not is_activated:
+            warn_text += "\n🚨 <b>Cảnh báo:</b> Cần nạp tối thiểu 150.000đ trên web chủ để kích hoạt tài khoản CTV!"
+        if float(balance or 0) < 15:
+            warn_text += "\n⚠️ <b>Cảnh báo:</b> Số dư dưới 15 Coin, hãy nạp thêm Coin để tránh đơn hàng báo lỗi 402!"
 
         text = (
             f"🪙 <b>THÔNG TIN TÀI KHOẢN CTV (locket.2707226.xyz)</b>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"👤 <b>Tên CTV:</b> <code>{username}</code>\n"
-            f"💰 <b>Số dư Coin:</b> <b>{balance} Coin</b>\n"
+            f"💰 <b>Số dư Coin:</b> <b>{balance} Coin</b> ({utils.fmt_price(float(balance or 0) * 1000)})\n"
             f"🛡️ <b>Trạng thái:</b> {status_text}\n"
-            f"🌐 <b>API URL:</b> <code>{config.API_BASE_URL}</code>\n"
+            f"🌐 <b>API URL:</b> <code>{config.API_BASE_URL}</code>"
+            f"{warn_text}\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"💡 <i>Mỗi đơn kích hoạt Locket/Spotify sẽ tự động trừ Coin tương ứng. Nếu Coin sắp hết hãy nạp thêm trên Dashboard!</i>"
         )
@@ -1245,11 +1417,26 @@ async def duyet_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     # Nếu admin truyền kèm username mới để sửa lỗi khách gõ sai
     if len(ctx.args) >= 2:
-        new_acc = utils.clean_input(ctx.args[1])
-        db.update_order(raw_id, uid=new_acc, account_target=new_acc, display_name=new_acc)
-        order["uid"] = new_acc
-        order["account_target"] = new_acc
-        order["display_name"] = new_acc
+        raw_acc = ctx.args[1]
+        if order.get("product") == "spotify":
+            new_acc = utils.extract_spotify_uid(raw_acc) or utils.clean_input(raw_acc)
+        else:
+            new_acc = utils.clean_input(raw_acc).lstrip("@")
+        upd_fields = {
+            "uid": new_acc,
+            "identifier": new_acc,
+            "account_target": new_acc,
+            "display_name": new_acc,
+        }
+        if order.get("product") in ("locket", "combo", "locket_spotify", "locket_ai", "filter_topup", "caption_pack", "studio_caption"):
+            upd_fields["locket_username"] = new_acc
+        if order.get("product") in ("combo", "locket_spotify") and len(ctx.args) >= 3:
+            sp_new = utils.extract_spotify_uid(ctx.args[2]) or utils.clean_input(ctx.args[2])
+            upd_fields["spotify_uid"] = sp_new
+            upd_fields["spotify_target"] = sp_new
+            upd_fields["spotify_username"] = sp_new
+        db.update_order(raw_id, **upd_fields)
+        order.update(upd_fields)
         await update.message.reply_text(f"📝 <b>Đã sửa tài khoản đơn ORDER_{raw_id} thành:</b> <code>{new_acc}</code>", parse_mode=ParseMode.HTML)
 
     from order_service import execute_order_activation
@@ -1293,20 +1480,22 @@ async def setprice_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     # Nếu không truyền tham số: Hiển thị bảng giá & menu chọn
+    all_pricing = db.get_all_admin_pricing()
     text = (
         "💰 <b>QUẢN LÝ BẢNG GIÁ DỊCH VỤ (WEB & BOT)</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "Bảng giá hiện tại đang áp dụng đồng bộ trên cả Web và Bot:\n\n"
     )
-    for pk, pv in PRODUCTS.items():
+    for pk, pv in all_pricing.items():
         text += f"<b>{pv.get('emoji', '')} {pv.get('name', pk)}:</b>\n"
         for pl_k, pl_v in pv.get("plans", {}).items():
-            text += f" • <b>{pl_v.get('label', pl_k)}:</b> <code>{pl_v.get('price', 0):,}đ</code> ({pl_v.get('packageCode', '')})\n"
+            pkg_note = f" ({pl_v.get('packageCode')})" if pl_v.get("packageCode") else ""
+            text += f" • <b>{pl_v.get('label', pl_k)}:</b> <code>{pl_v.get('price', 0):,}đ</code>{pkg_note}\n"
         text += "\n"
     text += (
         "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "👉 <i>Bấm nút bên dưới để chọn gói cần sửa giá, hoặc gõ nhanh:</i>\n"
-        "<code>/setprice locket test 10000</code>"
+        "<code>/setprice locket test 10000</code> hoặc <code>/setprice filter_topup 20 7000</code>"
     )
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=admin_prices_overview_kb())
 
@@ -1322,6 +1511,91 @@ async def sync_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"✅ <b>ĐỒNG BỘ HOÀN TẤT TỪ WEB CHỦ!</b>\n\n"
         f"📦 Đã đồng bộ <b>{cnt}</b> tài khoản kích hoạt từ máy chủ CTV vào hệ thống.\n"
         f"🎉 Khách hàng giờ đây có thể nhập Username hoặc UID trên trang web để tra cứu và tải lại cấu hình DNS trọn đời!",
+        parse_mode=ParseMode.HTML
+    )
+
+
+async def clearcache_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin gõ /clearcache để xóa toàn bộ cache API CTV 30s và làm mới bảng giá."""
+    if not is_admin(update.effective_user.id):
+        return
+    res_c = api.clear_all_caches()
+    try:
+        db.apply_custom_prices()
+    except Exception:
+        pass
+    await update.message.reply_text(
+        f"🧹 <b>ĐÃ XÓA TOÀN BỘ CACHE API & BẢNG GIÁ!</b>\n"
+        f"• Số mục lookup vừa xóa: <b>{res_c.get('cleared_lookups', 0)}</b>\n"
+        f"• Đã làm mới cache Account Coin, UID list, Frames, LUTs & Symbols.",
+        parse_mode=ParseMode.HTML
+    )
+
+
+async def grantcaption_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin kiểm tra hoặc cộng lượt Caption VIP: /grantcaption <username_locket> [số_lượt]"""
+    if not is_admin(update.effective_user.id):
+        return
+    args = ctx.args or []
+    if not args:
+        await update.message.reply_text(
+            "🎁 <b>QUẢN LÝ QUOTA CAPTION VIP STUDIO</b>\n"
+            "• Kiểm tra quota: <code>/grantcaption camsitup</code>\n"
+            "• Cộng thêm lượt: <code>/grantcaption camsitup 10</code>",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    raw_ident = utils.clean_input(args[0]).lstrip("@")
+    extra_qty = 0
+    if len(args) >= 2:
+        try:
+            extra_qty = int(args[1])
+            if not (1 <= extra_qty <= 1000):
+                raise ValueError()
+        except Exception:
+            await update.message.reply_text("❌ Số lượt cộng thêm phải từ 1 đến 1000.")
+            return
+
+    msg = await update.message.reply_text(f"⏳ Đang tra cứu Locket <code>@{raw_ident}</code>...", parse_mode=ParseMode.HTML)
+    resolved_uid = raw_ident
+    resolved_uname = raw_ident
+    try:
+        u_info = api.parse_uid_check_data(api.check_uid_details(raw_ident, "locket", force_refresh=True))
+        if u_info.get("uid"):
+            resolved_uid = u_info["uid"]
+        if u_info.get("username"):
+            resolved_uname = u_info["username"]
+    except Exception:
+        try:
+            r_res = api.locket_resolve(raw_ident, force_refresh=True)
+            r_dt = r_res.get("data", {}) if isinstance(r_res.get("data"), dict) else {}
+            resolved_uid = str(r_dt.get("uid") or resolved_uid).strip()
+            resolved_uname = str(r_dt.get("username") or resolved_uname).strip()
+        except Exception:
+            pass
+
+    if extra_qty > 0:
+        import uuid as _uuid
+        q_info = db.add_caption_quota(
+            uid=resolved_uid,
+            extra_captions=extra_qty,
+            username=resolved_uname,
+            order_id=f"BOT_ADMIN_{update.effective_user.id}_{_uuid.uuid4().hex[:6]}",
+        )
+        title = f"✅ <b>ĐÃ CỘNG +{extra_qty} CAPTION VIP!</b>"
+    else:
+        q_info = db.get_caption_quota_info(resolved_uid, resolved_uname)
+        title = "📊 <b>THÔNG TIN QUOTA CAPTION VIP</b>"
+
+    await msg.edit_text(
+        f"{title}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"👤 Username: <b>@{resolved_uname}</b>\n"
+        f"🆔 UID: <code>{resolved_uid}</code>\n"
+        f"🎁 Miễn phí gốc: <b>{q_info.get('free_quota', 5)}</b>\n"
+        f"💎 Đã cộng / mua thêm: <b>+{q_info.get('extra_quota', 0)}</b>\n"
+        f"📈 Tổng giới hạn: <b>{q_info.get('total_quota', 5)}</b> caption\n"
+        f"💡 <i>Ghi nhận bởi Quota Tracker AloPremium</i>",
         parse_mode=ParseMode.HTML
     )
 
