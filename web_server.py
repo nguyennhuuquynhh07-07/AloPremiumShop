@@ -2595,7 +2595,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"ok": False, "error": str(e_dfr)})
             return
 
-        # API Admin: Đồng bộ Kho Khung Mẫu Dùng Chung từ web chính (locket.2707226.xyz/api/ctv/brand)
+        # API Admin: Đồng bộ Kho Khung Mẫu Dùng Chung từ web chính (locket.2707226.xyz/api/ctv/brand/shared)
         if path == "/api/admin/ctv/sync_frame_library":
             if not self._require_admin(body=body):
                 return
@@ -2636,7 +2636,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             source_payload = raw_frames if raw_frames is not None else raw_json
             if action != "clear" and not source_payload and cookie_val:
                 try:
-                    brand_url = f"{config.API_BASE_URL}/api/ctv/brand"
+                    brand_url = f"{config.API_BASE_URL}/api/ctv/brand/shared"
                     with httpx.Client(timeout=15.0) as br_client:
                         br_resp = br_client.get(
                             brand_url,
@@ -2654,7 +2654,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         return
                     source_payload = br_resp.json()
                 except Exception as e_ck:
-                    self._send_json(400, {"ok": False, "error": f"Không thể tải từ /api/ctv/brand: {e_ck}"})
+                    self._send_json(400, {"ok": False, "error": f"Không thể tải từ /api/ctv/brand/shared: {e_ck}"})
                     return
 
             normalized = []
@@ -2662,7 +2662,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 if isinstance(source_payload, str):
                     s_trim = source_payload.strip()
                     if not s_trim:
-                        self._send_json(400, {"ok": False, "error": "Vui lòng dán JSON từ https://locket.2707226.xyz/api/ctv/brand hoặc Cookie đăng nhập!"})
+                        self._send_json(400, {"ok": False, "error": "Vui lòng dán JSON từ https://locket.2707226.xyz/api/ctv/brand/shared hoặc Cookie đăng nhập!"})
                         return
                     try:
                         source_payload = json.loads(s_trim)

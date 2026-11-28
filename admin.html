@@ -1299,15 +1299,15 @@
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <div>
                                 <h4 class="font-black text-xs sm:text-sm text-[#1E1B18]">🔄 Đồng Bộ Kho Khung Mẫu Dùng Chung Từ Web Chính (<code>locket.2707226.xyz</code>)</h4>
-                                <p class="text-[11px] text-[#6E6659]">Thay thế kho tĩnh cũ bằng đúng các khung cộng đồng đang có trên <code>/api/ctv/brand</code> (không tốn quota 30 slot của CTV).</p>
+                                <p class="text-[11px] text-[#6E6659]">Thay thế kho tĩnh cũ bằng đúng các khung cộng đồng đang có trên <code>/api/ctv/brand/shared</code> (không tốn quota 30 slot của CTV).</p>
                             </div>
-                            <a href="https://locket.2707226.xyz/api/ctv/brand" target="_blank"
+                            <a href="https://locket.2707226.xyz/api/ctv/brand/shared" target="_blank"
                                 class="px-3 py-1.5 rounded-lg bg-[#FFF8DC] hover:bg-[#FFD84D] border-2 border-[#1E1B18] text-[11px] font-black text-[#1E1B18] shrink-0">
-                                🔗 Mở /api/ctv/brand ↗
+                                🔗 Mở /api/ctv/brand/shared ↗
                             </a>
                         </div>
                         <textarea id="admSyncBrandJsonInput" rows="2"
-                            placeholder='Dán JSON từ https://locket.2707226.xyz/api/ctv/brand vào đây (khi bạn đang đăng nhập web chính)...'
+                            placeholder='Dán JSON từ https://locket.2707226.xyz/api/ctv/brand/shared vào đây (khi bạn đang đăng nhập web chính)...'
                             class="w-full px-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-mono text-[#1E1B18] focus:outline-none"></textarea>
                         <div class="flex flex-wrap items-center gap-2">
                             <button type="button" onclick="adminSyncFrameLibrary('sync')" id="btnAdmSyncFrameLib"
@@ -3214,7 +3214,7 @@
         async function adminSyncFrameLibrary(mode = 'sync') {
             const rawJson = (document.getElementById('admSyncBrandJsonInput')?.value || '').trim();
             if (mode === 'sync' && !rawJson) {
-                alert('Vui lòng mở https://locket.2707226.xyz/api/ctv/brand khi đang đăng nhập, copy JSON và dán vào ô trên trước!');
+                alert('Vui lòng mở https://locket.2707226.xyz/api/ctv/brand/shared khi đang đăng nhập, copy JSON và dán vào ô trên trước!');
                 return;
             }
             const confirmMsg = mode === 'clear'
