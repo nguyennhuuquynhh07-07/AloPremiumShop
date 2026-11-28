@@ -1345,7 +1345,8 @@ def _build_success_message(order, pv, plnv, dns_link: str) -> str:
             f"2️⃣ Bấm <b>Cho phép (Allow)</b> khi thông báo tải hồ sơ xuất hiện\n"
             f"3️⃣ Mở <b>Cài đặt iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>\n"
             f"4️⃣ Vào <b>Cài đặt chung</b> → <b>Giới thiệu</b> → Kéo xuống cuối → <b>Cài đặt tin cậy chứng nhận</b> → Bật xanh <b>LocketGold</b>\n"
-            f"5️⃣ Mở đồng thời cả Locket và Spotify lên và tận hưởng trọn bộ tính năng VIP (Locket Gold 4K gốc, video 60s, Spotify nghe nhạc không quảng cáo)! 🎉\n\n"
+            f"5️⃣ Mở đồng thời cả Locket và Spotify lên và tận hưởng trọn bộ tính năng VIP (Locket Gold 4K gốc, video 60s, Spotify nghe nhạc không quảng cáo)! 🎉\n"
+            f"6️⃣ <b>Nếu chưa lên full tính năng:</b> Hãy <b>xóa Locket đi tải lại</b>, đồng thời vào <i>Cài đặt → Cài đặt chung → Quản lý VPN &amp; Thiết bị</i> <b>xóa toàn bộ DNS của bên khác</b>, chỉ để lại DNS của shop nhé!\n\n"
             f"{duration_note}"
         )
 
@@ -1385,7 +1386,8 @@ def _build_success_message(order, pv, plnv, dns_link: str) -> str:
             f"2️⃣ Bấm <b>Cho phép tải về hồ sơ cấu hình</b>\n"
             f"3️⃣ Mở <b>Cài đặt iPhone</b> → <b>Đã tải về hồ sơ</b> → Bấm <b>Cài đặt</b>\n"
             f"4️⃣ Vào <b>Cài đặt</b> → <b>Cài đặt chung</b> → <b>Giới thiệu</b> → Kéo xuống cuối → Bấm <b>Cài đặt tin cậy chứng nhận</b> → Bật <b>LocketGold</b>\n"
-            f"5️⃣ Mở app Locket và tận hưởng full tính năng Locket Gold! 🎉\n\n"
+            f"5️⃣ Mở app Locket và tận hưởng full tính năng Locket Gold! 🎉\n"
+            f"6️⃣ <b>Nếu chưa lên full tính năng:</b> Hãy <b>xóa Locket đi tải lại</b>, đồng thời vào <i>Cài đặt → Cài đặt chung → Quản lý VPN &amp; Thiết bị</i> <b>xóa toàn bộ DNS của bên khác</b>, chỉ để lại DNS của shop nhé!\n\n"
             f"{duration_note}"
         )
 
@@ -1979,6 +1981,8 @@ GUIDE_TEXT = """
 • Chọn <b>Tiếp tục (Continue)</b> để xác nhận.
 
 🎉 <b>Hoàn tất!</b> Mở Locket hoặc Spotify lên để tận hưởng trọn vẹn các tính năng VIP!
+
+⚠️ <b>Lưu ý nếu chưa lên full tính năng:</b> Hãy <b>xóa Locket đi tải lại</b> từ App Store, đồng thời vào <i>Cài đặt → Cài đặt chung → Quản lý VPN &amp; Thiết bị</i> để <b>xóa toàn bộ DNS của bên khác</b>, chỉ để lại duy nhất DNS của shop nhé!
 """
 
 async def guide_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
