@@ -2610,13 +2610,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     return "sanrio"
                 if "shin" in txt or "bút chì" in txt:
                     return "shin"
-                if any(k in txt for k in ("conan", "killua", "gojo", "luffy", "one piece", "dragon ball", "doraemon", "sukuna", "zenitsu", "kimetsu", "totoro", "anime")):
+                if any(k in txt for k in ("conan", "killua", "gojo", "luffy", "one piece", "dragon ball", "doraemon", "đô dê mon", "sukuna", "zenitsu", "kimetsu", "muichiro", "chú thuật", "totoro", "anime")):
                     return "anime"
-                if any(k in txt for k in ("chiikawa", "gấu", "thỏ", "mèo", "vịt", "heo", "cáo", "teddy", "lotso", "dễ thương", "cute")):
+                if any(k in txt for k in ("chiikawa", "gấu", "thỏ", "mèo", "vịt", "heo", "cáo", "teddy", "lotso", "pink panther", "love&heart", "dễ thương", "cute", "niko")):
                     return "cute"
                 if any(k in txt for k in ("noel", "halloween", "christmas", "20/10", "phụ nữ", "lễ hội", "tết")):
                     return "holiday"
-                if any(k in txt for k in ("bá khí", "sang trọng", "galaxy", "huyền thoại", "cr7")):
+                if any(k in txt for k in ("bá khí", "sang trọng", "galaxy", "huyền thoại", "cr7", "y2k", "holo")):
                     return "luxury"
                 return "community"
 
@@ -2687,7 +2687,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     seen_u.add(u_raw)
 
                     author = str(
-                        it.get("author")
+                        it.get("authorName")
+                        or it.get("author")
                         or it.get("creator")
                         or it.get("createdBy")
                         or it.get("ownerUsername")
@@ -2696,7 +2697,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         or ""
                     ).strip().lstrip("@")
                     try:
-                        used_cnt = int(it.get("usedCount") or it.get("ctvUsed") or it.get("usageCount") or it.get("uses") or 0)
+                        used_cnt = int(it.get("useCount") or it.get("usedCount") or it.get("ctvUsed") or it.get("usageCount") or it.get("uses") or 0)
                     except (TypeError, ValueError):
                         used_cnt = 0
                     fr_name = str(it.get("name") or it.get("title") or f"Khung Mẫu #{len(normalized)+1}").strip()

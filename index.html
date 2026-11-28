@@ -3690,14 +3690,15 @@
                 const matchSearch = !currentFrameSearchKey ||
                     (item.name && item.name.toLowerCase().includes(currentFrameSearchKey)) ||
                     (item.category && item.category.toLowerCase().includes(currentFrameSearchKey)) ||
+                    (item.author && item.author.toLowerCase().includes(currentFrameSearchKey)) ||
                     (item.badge && item.badge.toLowerCase().includes(currentFrameSearchKey));
 
                 if (!matchSearch) return false;
                 if (currentFrameCategory === 'all') return true;
                 if (currentFrameCategory === 'ctv_live') return item.source === 'ctv_live' || item.source === 'customer_assigned';
-                if (currentFrameCategory === 'anime') return item.group === 'cyber' || ['Hunter x Hunter', 'Nhân vật hư cấu', 'Bảy viên ngọc rồng', 'Thám tử lừng danh Conan'].includes(item.category) || (item.badge && item.badge.toLowerCase().includes('anime'));
-                if (currentFrameCategory === 'shin') return item.category === 'Shin cậu bé bút chì' || (item.name && item.name.toLowerCase().includes('shin'));
-                if (currentFrameCategory === 'sanrio') return (item.badge && item.badge.toLowerCase().includes('sanrio')) || (item.name && /kitty|kuromi|melody|cinnamoroll|pompompurin/i.test(item.name));
+                if (currentFrameCategory === 'anime') return item.group === 'anime' || item.group === 'cyber' || ['Hunter x Hunter', 'Nhân vật hư cấu', 'Bảy viên ngọc rồng', 'Thám tử lừng danh Conan'].includes(item.category) || (item.badge && item.badge.toLowerCase().includes('anime'));
+                if (currentFrameCategory === 'shin') return item.group === 'shin' || item.category === 'Shin cậu bé bút chì' || (item.name && item.name.toLowerCase().includes('shin'));
+                if (currentFrameCategory === 'sanrio') return item.group === 'sanrio' || (item.badge && item.badge.toLowerCase().includes('sanrio')) || (item.name && /kitty|kuromi|melody|cinnamoroll|pompompurin/i.test(item.name));
                 if (currentFrameCategory === 'cute') return item.group === 'cute' || (item.badge && item.badge.toLowerCase().includes('cute')) || (item.name && /chiikawa|gấu|thỏ|mèo|vịt/i.test(item.name));
                 if (currentFrameCategory === 'holiday') return item.group === 'holiday' || (item.badge && /halloween|christmas|20\/10/i.test(item.badge));
                 if (currentFrameCategory === 'luxury') return item.group === 'luxury' || (item.badge && /huyền thoại|huyền bí|chiến binh|bá khí/i.test(item.badge));
