@@ -1134,8 +1134,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
                                     "rawImage": masked_img,
                                     "badge": "Nổi Bật",
                                     "source": "ctv_live",
-                                    "author": str(fr.get("author") or "").strip().lstrip("@"),
-                                    "usedCount": fr.get("usedCount", 0),
                                 })
             except Exception as e_ctv_fr:
                 logger.warning(f"Fetch CTV live frames failed: {e_ctv_fr}")
@@ -1144,6 +1142,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
             frames_path, _ = _get_frames_library_paths()
             synced_at = ""
             lib_source = "legacy"
+            _grp_labels = {
+                "anime": "Anime",
+                "cyber": "Anime & Game",
+                "sanrio": "Sanrio",
+                "shin": "Shin Bút Chì",
+                "cute": "Dễ Thương",
+                "holiday": "Lễ Hội",
+                "luxury": "VIP Bá Khí",
+                "community": "Khung VIP",
+            }
             if os.path.exists(frames_path):
                 try:
                     with open(frames_path, "r", encoding="utf-8") as f:
@@ -1155,6 +1163,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         if raw_u and raw_u not in seen_urls:
                             seen_urls.add(raw_u)
                             fr_copy = dict(fr)
+                            fr_copy.pop("author", None)
+                            fr_copy.pop("usedCount", None)
+                            grp_lbl = _grp_labels.get(str(fr_copy.get("group") or "").lower(), "Khung VIP")
+                            if not fr_copy.get("category") or str(fr_copy.get("category", "")).strip().startswith("@"):
+                                fr_copy["category"] = grp_lbl
+                            if not fr_copy.get("badge") or str(fr_copy.get("badge", "")).strip().startswith("@"):
+                                fr_copy["badge"] = grp_lbl
                             if fr_copy.get("image"):
                                 fr_copy["image"] = _proxy_media_url(fr_copy["image"])
                             if fr_copy.get("rawImage"):
@@ -2686,33 +2701,31 @@ class WebAppHandler(BaseHTTPRequestHandler):
                         continue
                     seen_u.add(u_raw)
 
-                    author = str(
-                        it.get("authorName")
-                        or it.get("author")
-                        or it.get("creator")
-                        or it.get("createdBy")
-                        or it.get("ownerUsername")
-                        or it.get("username")
-                        or (it.get("user") or {}).get("username")
-                        or ""
-                    ).strip().lstrip("@")
-                    try:
-                        used_cnt = int(it.get("useCount") or it.get("usedCount") or it.get("ctvUsed") or it.get("usageCount") or it.get("uses") or 0)
-                    except (TypeError, ValueError):
-                        used_cnt = 0
+                    _grp_labels = {
+                        "anime": "Anime",
+                        "cyber": "Anime & Game",
+                        "sanrio": "Sanrio",
+                        "shin": "Shin Bút Chì",
+                        "cute": "Dễ Thương",
+                        "holiday": "Lễ Hội",
+                        "luxury": "VIP Bá Khí",
+                        "community": "Khung VIP",
+                    }
                     fr_name = str(it.get("name") or it.get("title") or f"Khung Mẫu #{len(normalized)+1}").strip()
-                    fr_cat = str(it.get("category") or it.get("groupName") or (f"@{author}" if author else "Kho Khung Chung")).strip()
-                    fr_badge = str(it.get("badge") or (f"@{author}" if author else fr_cat)).strip()
+                    raw_cat = str(it.get("category") or it.get("groupName") or "").strip()
+                    grp_code = _pick_group(fr_name, raw_cat)
+                    clean_lbl = _grp_labels.get(grp_code, "Khung VIP")
+                    fr_cat = clean_lbl if (not raw_cat or raw_cat.startswith("@")) else raw_cat
+                    raw_bdg = str(it.get("badge") or "").strip()
+                    fr_badge = clean_lbl if (not raw_bdg or raw_bdg.startswith("@")) else raw_bdg
                     normalized.append({
                         "id": str(it.get("id") or it.get("_id") or f"shared_{len(normalized)+1}").strip(),
                         "name": fr_name,
                         "category": fr_cat,
-                        "group": _pick_group(fr_name, fr_cat),
+                        "group": grp_code,
                         "image": u_raw,
                         "rawImage": u_raw,
                         "badge": fr_badge,
-                        "author": author,
-                        "usedCount": used_cnt,
                     })
 
                 if not normalized:

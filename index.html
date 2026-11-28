@@ -1750,7 +1750,7 @@
                             <div class="relative flex-1">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs">🔍</span>
                                 <input type="text" id="frameSearchInput" oninput="handleFrameSearch(this.value)"
-                                       placeholder="Tìm kiếm khung mẫu theo tên, tác giả, chủ đề..."
+                                       placeholder="Tìm kiếm khung mẫu theo tên, chủ đề..."
                                        class="w-full pl-8 pr-3 py-2 rounded-xl border-2 border-[#1E1B18] bg-white text-xs font-semibold focus:outline-none">
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
@@ -3687,21 +3687,22 @@
             if (!container) return;
 
             let filtered = allFramesData.filter(item => {
+                const safeCat = (item.category && !String(item.category).trim().startsWith('@')) ? item.category : '';
+                const safeBadge = (item.badge && !String(item.badge).trim().startsWith('@')) ? item.badge : '';
                 const matchSearch = !currentFrameSearchKey ||
                     (item.name && item.name.toLowerCase().includes(currentFrameSearchKey)) ||
-                    (item.category && item.category.toLowerCase().includes(currentFrameSearchKey)) ||
-                    (item.author && item.author.toLowerCase().includes(currentFrameSearchKey)) ||
-                    (item.badge && item.badge.toLowerCase().includes(currentFrameSearchKey));
+                    (safeCat && safeCat.toLowerCase().includes(currentFrameSearchKey)) ||
+                    (safeBadge && safeBadge.toLowerCase().includes(currentFrameSearchKey));
 
                 if (!matchSearch) return false;
                 if (currentFrameCategory === 'all') return true;
                 if (currentFrameCategory === 'ctv_live') return item.source === 'ctv_live' || item.source === 'customer_assigned';
-                if (currentFrameCategory === 'anime') return item.group === 'anime' || item.group === 'cyber' || ['Hunter x Hunter', 'Nhân vật hư cấu', 'Bảy viên ngọc rồng', 'Thám tử lừng danh Conan'].includes(item.category) || (item.badge && item.badge.toLowerCase().includes('anime'));
+                if (currentFrameCategory === 'anime') return item.group === 'anime' || item.group === 'cyber' || ['Hunter x Hunter', 'Nhân vật hư cấu', 'Bảy viên ngọc rồng', 'Thám tử lừng danh Conan'].includes(item.category) || (safeBadge && safeBadge.toLowerCase().includes('anime'));
                 if (currentFrameCategory === 'shin') return item.group === 'shin' || item.category === 'Shin cậu bé bút chì' || (item.name && item.name.toLowerCase().includes('shin'));
-                if (currentFrameCategory === 'sanrio') return item.group === 'sanrio' || (item.badge && item.badge.toLowerCase().includes('sanrio')) || (item.name && /kitty|kuromi|melody|cinnamoroll|pompompurin/i.test(item.name));
-                if (currentFrameCategory === 'cute') return item.group === 'cute' || (item.badge && item.badge.toLowerCase().includes('cute')) || (item.name && /chiikawa|gấu|thỏ|mèo|vịt/i.test(item.name));
-                if (currentFrameCategory === 'holiday') return item.group === 'holiday' || (item.badge && /halloween|christmas|20\/10/i.test(item.badge));
-                if (currentFrameCategory === 'luxury') return item.group === 'luxury' || (item.badge && /huyền thoại|huyền bí|chiến binh|bá khí/i.test(item.badge));
+                if (currentFrameCategory === 'sanrio') return item.group === 'sanrio' || (safeBadge && safeBadge.toLowerCase().includes('sanrio')) || (item.name && /kitty|kuromi|melody|cinnamoroll|pompompurin/i.test(item.name));
+                if (currentFrameCategory === 'cute') return item.group === 'cute' || (safeBadge && safeBadge.toLowerCase().includes('cute')) || (item.name && /chiikawa|gấu|thỏ|mèo|vịt/i.test(item.name));
+                if (currentFrameCategory === 'holiday') return item.group === 'holiday' || (safeBadge && /halloween|christmas|20\/10/i.test(safeBadge));
+                if (currentFrameCategory === 'luxury') return item.group === 'luxury' || (safeBadge && /huyền thoại|huyền bí|chiến binh|bá khí/i.test(safeBadge));
                 return true;
             });
 
@@ -3716,18 +3717,12 @@
                 const rawImgUrl = safeHttpUrl(item.rawImage || item.image, '/assets/index/sim-demos/demo-1.jpg');
                 const imgUrl = escapeFeatureHtml(rawImgUrl);
                 const jsImgUrl = escapeJsAttr(rawImgUrl);
-                const badgeText = escapeFeatureHtml(item.badge || item.category || 'VIP');
+                const rawBadge = item.badge || item.category || 'Khung VIP';
+                const cleanBadge = String(rawBadge).trim().startsWith('@') ? 'Khung VIP' : rawBadge;
+                const badgeText = escapeFeatureHtml(cleanBadge);
                 const safeName = escapeFeatureHtml(item.name);
                 const jsName = escapeJsAttr(item.name);
                 const jsId = escapeJsAttr(item.id);
-                const authorTxt = item.author ? `Bởi: @${escapeFeatureHtml(item.author)}` : '';
-                const usedTxt = Number(item.usedCount || 0) > 0 ? `${Number(item.usedCount)} CTV đã dùng` : '';
-                const metaHtml = (authorTxt || usedTxt)
-                    ? `<div class="flex items-center justify-between text-[10px] text-[#6E6659] mt-0.5 gap-1 truncate">
-                           <span class="truncate">${authorTxt}</span>
-                           <span class="shrink-0 font-bold">${usedTxt}</span>
-                       </div>`
-                    : '';
                 return `
                     <div class="bg-[#FFFDF5] rounded-2xl p-3 border-2 border-[#1E1B18] shadow-[3px_3px_0px_#1E1B18] flex flex-col justify-between">
                         <div>
@@ -3737,7 +3732,6 @@
                                 <span class="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded bg-[#1E1B18]/85 text-white text-[9px] font-black">${badgeText}</span>
                             </div>
                             <h4 class="font-bold text-xs text-[#1E1B18] truncate" title="${safeName}">${safeName}</h4>
-                            ${metaHtml}
                         </div>
                         <div class="flex gap-1.5 mt-2.5">
                             <button type="button" onclick="pickGalleryFrameToEditor('${jsImgUrl}', '${jsName}')"
@@ -3772,7 +3766,8 @@
             if (!frame) return;
             currentModalFrame = frame;
             document.getElementById('modalFrameTitle').textContent = frame.name;
-            document.getElementById('modalFrameBadge').textContent = frame.badge || frame.category || 'Khung Widget Locket';
+            const rawMBadge = frame.badge || frame.category || 'Khung Widget Locket';
+            document.getElementById('modalFrameBadge').textContent = String(rawMBadge).trim().startsWith('@') ? 'Khung Widget Locket' : rawMBadge;
             document.getElementById('modalTryFrameOverlay').src = frame.rawImage || frame.image;
             document.getElementById('frameTryModal').classList.remove('hidden');
         }
