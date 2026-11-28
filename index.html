@@ -2161,7 +2161,7 @@
                     <div>
                         <h3 class="font-bold text-sm sm:text-base text-[#1E1B18]">Kho 28+ Bộ Lọc Màu LUT Điện Ảnh</h3>
                         <p class="text-xs text-[#6E6659] mt-0.5">
-                            Toàn bộ bộ lọc được tích hợp sẵn trong nhóm "Lut Filter" trên app Locket. Bạn có thể chọn bất kỳ bộ lọc nào bên dưới để xem trước hiệu ứng Before / After trực tiếp.
+                            Toàn bộ bộ lọc được tích hợp sẵn trong nhóm "Lut Filter" trên app Locket. Nâng cấp VIP hoặc nạp thêm lượt để mở khóa đầy đủ bộ lọc.
                         </p>
                     </div>
 
@@ -2172,36 +2172,6 @@
                         <span class="px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-white font-black">
                             LUT độc quyền Shop: <span id="lutTotalCustomPill">0</span>
                         </span>
-                        <button type="button" onclick="document.getElementById('lutComparisonDrawer').classList.toggle('hidden')"
-                                class="ml-auto px-3 py-1 rounded-lg border-2 border-[#1E1B18] bg-[#FFD84D] hover:bg-[#FFC928] font-black cursor-pointer">
-                            🎛️ Mở Trình So Sánh Before / After
-                        </button>
-                    </div>
-
-                    <!-- DRAWER SO SÁNH BEFORE / AFTER (ẨN/HIỆN KHI CẦN) -->
-                    <div id="lutComparisonDrawer" class="hidden pt-2 border-t-2 border-dashed border-[#D6CEBC]">
-                        <div class="text-center mb-3">
-                            <span id="activeLutPreviewBadge" class="text-[11px] font-black uppercase text-amber-900 bg-amber-200 border border-[#1E1B18] px-3 py-0.5 rounded-full">
-                                SO SÁNH HIỆU ỨNG LUT • KÉO THANH TRƯỢT
-                            </span>
-                        </div>
-                        <div class="max-w-sm mx-auto aspect-square rounded-[32px] overflow-hidden relative shadow-xl border-2 border-[#1E1B18] select-none" id="lutSliderContainer">
-                            <div id="lutAfterLayer" class="absolute inset-0 w-full h-full bg-cover bg-center filter contrast-125 saturate-150 brightness-105"
-                                 style="background-image: url('/assets/index/sim-demos/demo-3.jpg');">
-                                <span id="lutAfterTag" class="absolute top-3 right-3 bg-emerald-600 text-white font-black text-[10px] px-2 py-0.5 rounded-full">✨ AFTER (LUT)</span>
-                            </div>
-                            <div id="lutBeforeLayer" class="absolute inset-0 h-full overflow-hidden border-r-2 border-white" style="width: 50%;">
-                                <div class="w-full h-full min-w-[320px] bg-cover bg-center filter grayscale-[30%] brightness-95"
-                                     style="background-image: url('/assets/index/sim-demos/demo-3.jpg'); width: 100%;">
-                                    <span class="absolute top-3 left-3 bg-black/70 text-white font-black text-[10px] px-2 py-0.5 rounded-full">📷 BEFORE (GỐC)</span>
-                                </div>
-                            </div>
-                            <input type="range" min="0" max="100" value="50" id="lutRangeSlider" oninput="handleLutSlider(this.value)"
-                                   class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20">
-                            <div id="lutSliderHandle" class="absolute top-0 bottom-0 pointer-events-none z-10 flex items-center justify-center -translate-x-1/2" style="left: 50%;">
-                                <div class="w-7 h-7 rounded-full bg-white text-black shadow-lg flex items-center justify-center font-black text-xs border-2 border-[#1E1B18]">⬄</div>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t-2 border-dashed border-[#D6CEBC]">
@@ -4490,54 +4460,18 @@
                 const safeIcon = escapeFeatureHtml(it.iconUrl || '');
                 const sizeTxt = it.size ? `${it.size}^3` : '16^3';
                 return `
-                    <div onclick="previewLutEffect('${safeName}', '${catLabel}')"
-                         class="bg-white rounded-xl border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] p-2.5 flex flex-col justify-between cursor-pointer hover:-translate-y-0.5 transition-all">
+                    <div class="bg-white rounded-xl border-2 border-[#1E1B18] shadow-[2px_2px_0px_#1E1B18] p-2.5 flex flex-col justify-between transition-all">
                         <div class="w-full aspect-square rounded-lg bg-[#E6DEC8] border border-[#1E1B18] relative overflow-hidden flex items-center justify-center mb-2">
                             <span class="absolute top-1.5 left-1.5 z-10 px-1.5 py-0.5 rounded bg-[#1E1B18]/85 text-white text-[9px] font-black">${catLabel}</span>
                             ${safeIcon ? `<img src="${safeIcon}" alt="${safeName}" loading="lazy" class="w-full h-full object-cover">` : '<span class="text-2xl">🎞️</span>'}
                         </div>
-                        <div class="flex items-end justify-between gap-1.5">
-                            <div class="min-w-0">
-                                <h5 class="font-bold text-xs text-[#1E1B18] truncate" title="${safeName}">${safeName}</h5>
-                                <p class="text-[10px] text-[#6E6659]">Kích thước: ${sizeTxt}</p>
-                            </div>
-                            <span class="px-2 py-0.5 rounded bg-emerald-300 border border-[#1E1B18] text-[10px] font-black text-[#1E1B18] shrink-0">
-                                👁️ Xem thử
-                            </span>
+                        <div class="min-w-0">
+                            <h5 class="font-bold text-xs text-[#1E1B18] truncate" title="${safeName}">${safeName}</h5>
+                            <p class="text-[10px] text-[#6E6659]">Kích thước: ${sizeTxt}</p>
                         </div>
                     </div>
                 `;
             }).join('');
-        }
-
-        function previewLutEffect(lutName, lutCat) {
-            document.getElementById('lutComparisonDrawer')?.classList.remove('hidden');
-            const b = document.getElementById('activeLutPreviewBadge');
-            const tag = document.getElementById('lutAfterTag');
-            const after = document.getElementById('lutAfterLayer');
-            if (b) b.textContent = `ĐANG XEM MẪU: ${lutName.toUpperCase()} (${lutCat})`;
-            if (tag) tag.textContent = `✨ AFTER (${lutName})`;
-            if (after) {
-                const lower = lutName.toLowerCase();
-                if (lower.includes('bw') || lower.includes('black') || lower.includes('mono')) {
-                    after.style.filter = 'grayscale(100%) contrast(1.25)';
-                } else if (lower.includes('hồng') || lower.includes('pink') || lower.includes('pastel') || lower.includes('beauty')) {
-                    after.style.filter = 'brightness(1.08) saturate(1.28) hue-rotate(-6deg)';
-                } else if (lower.includes('vintage') || lower.includes('film') || lower.includes('kodak') || lower.includes('phim')) {
-                    after.style.filter = 'sepia(0.28) contrast(1.18) saturate(1.35)';
-                } else {
-                    after.style.filter = 'contrast(1.22) saturate(1.45) brightness(1.05)';
-                }
-            }
-            document.getElementById('lutComparisonDrawer')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            showToast('🌈 Đang xem trước tone màu: ' + lutName);
-        }
-
-        function handleLutSlider(val) {
-            const beforeLayer = document.getElementById('lutBeforeLayer');
-            const handle = document.getElementById('lutSliderHandle');
-            if (beforeLayer) beforeLayer.style.width = val + '%';
-            if (handle) handle.style.left = val + '%';
         }
 
         // Chia sẻ Nhóm Zalo (Hỗ trợ Web Share API hoặc Copy link)
