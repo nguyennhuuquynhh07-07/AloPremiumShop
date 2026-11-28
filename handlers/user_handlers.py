@@ -1770,48 +1770,35 @@ async def guide_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def cb_free_locket(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    """Xử lý tải hồ sơ DNS Free trực tiếp trong Telegram Bot"""
+    """Xử lý thông báo gói DNS Free tạm đóng trong Telegram Bot"""
     query = update.callback_query
     await query.answer()
     web_url = getattr(config, "WEBSITE_URL", "https://alopremium.shop").rstrip("/")
-    guide_url = f"{web_url}/huong-dan"
-    free_config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Free.mobileconfig")
 
     caption = (
-        "🎁 <b>HỒ SƠ CẤU HÌNH DNS LOCKET GOLD MIỄN PHÍ (0đ)</b>\n\n"
-        "✨ <b>Đặc quyền bản thử nghiệm FREE:</b>\n"
-        "• Quay video 30s dài nhất\n"
-        "• Xem ai xem lén ảnh của bạn\n"
-        "• Đăng ảnh & video từ thư viện\n"
-        "• Caption dài hơn, không quảng cáo\n"
-        "• Cài đặt DNS iOS hoàn toàn miễn phí\n\n"
-        f"📖 <b>Xem hướng dẫn 15 bước cài đặt chi tiết tại:</b>\n"
-        f"👉 <a href='{guide_url}'>{guide_url}</a>\n\n"
-        "<i>File cấu hình .mobileconfig được đính kèm ngay bên dưới. Chúc bạn trải nghiệm vui vẻ!</i>"
+        "🚫 <b>THÔNG BÁO: GÓI LOCKET GOLD FREE ĐÃ TẠM ĐÓNG</b>\n\n"
+        "⚠️ Do hệ thống nâng cấp máy chủ DNS và đảm bảo quyền lợi dịch vụ, gói dùng thử miễn phí <b>Locket Gold Free 0đ</b> hiện đã tạm ngưng phát hành.\n\n"
+        "👑 <b>GIẢI PHÁP TỐT HƠN DÀNH CHO BẠN:</b>\n"
+        "Quý khách có thể lựa chọn các gói VIP bản quyền chính chủ, kích hoạt tự động chỉ 30 giây, không dính lỗi chứng chỉ và đầy đủ 100% đặc quyền cao cấp:\n"
+        "• <b>Locket Gold VIP:</b> Chỉ từ <b>5.000đ</b>\n"
+        "• <b>Spotify Premium:</b> Chỉ từ <b>5.000đ</b>\n"
+        "• <b>Combo Duo VIP (Locket + Spotify):</b> Tiết kiệm tối đa\n"
+        "• <b>VIP ALL-IN-ONE:</b> Bản quyền vĩnh viễn trọn đời\n\n"
+        f"🌐 <i>Xem bảng giá và đặt mua ngay tại: <a href='{web_url}'>{web_url}</a></i>"
     )
 
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("📖 Xem Hướng Dẫn 15 Bước (Web)", url=guide_url)],
-        [InlineKeyboardButton("⚡ Nâng Cấp Locket VIP 1 Năm / Vĩnh Viễn", callback_data="product:locket_spotify")],
+        [InlineKeyboardButton("👑 Xem Bảng Giá Locket VIP (Từ 5K)", callback_data="product:locket")],
+        [InlineKeyboardButton("👑 Xem Gói Combo Duo VIP", callback_data="product:locket_spotify")],
+        [InlineKeyboardButton("🌐 Mở Website Mua Hàng", url=web_url)],
         [InlineKeyboardButton("🏠 Menu Chính", callback_data="back_main")]
     ])
 
-    if os.path.exists(free_config_path):
-        with open(free_config_path, "rb") as f:
-            await ctx.bot.send_document(
-                chat_id=update.effective_user.id,
-                document=f,
-                filename="Free.mobileconfig",
-                caption=caption,
-                parse_mode=ParseMode.HTML,
-                reply_markup=kb
-            )
-    else:
-        await query.message.reply_text(
-            caption + f"\n\n🔗 Tải trực tiếp qua trình duyệt: {web_url}/Free.mobileconfig",
-            parse_mode=ParseMode.HTML,
-            reply_markup=kb
-        )
+    await query.message.reply_text(
+        caption,
+        parse_mode=ParseMode.HTML,
+        reply_markup=kb
+    )
 
 
 async def cb_show_guide(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
